@@ -16,6 +16,35 @@ function codexStream() {
 const streamed = (text: string) => new Response(text, { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8' } });
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
 
+it('checks a complete Gemini tool round trip and keeps a failed return unavailable per model', async () => {
+  const gemini = { ...target, endpoints: { gemini: 'https://synthetic.invalid/api/v1beta' } };
+  const tool = { functionCall: { name: 'wy_ping', id: 'probe-id', args: {} }, thoughtSignature: 'probe-signature' };
+  const frame = (...parts: unknown[]) => streamed(`data: ${JSON.stringify({
+    candidates: [{ index: 0, content: { role: 'model', parts }, finishReason: 'STOP' }],
+  })}\n\n`);
+  const fake = vi.fn(async (address: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(address));
+    expect(new Headers(init?.headers).get('x-goog-api-key')).toBe(gemini.key);
+    expect(url.searchParams.get('alt')).toBe('sse');
+    expect(url.pathname).toMatch(/^\/api\/v1beta\/models\/gemini-4-(?:carbon|argon):streamGenerateContent$/);
+    const body = JSON.parse(String(init?.body));
+    if (body.contents.length === 1) {
+      expect(body.toolConfig.functionCallingConfig.mode).toBe('ANY');
+      return frame({ thought: true, text: 'Synthetic intermediate reasoning' }, { text: 'Checking connectivity' }, tool);
+    }
+    // Match the gateway's tool continuation contract and preserve the call signature.
+    if (body.toolConfig || JSON.stringify(body.contents[1]?.parts) !== JSON.stringify([tool])) {
+      return json({ error: { message: 'Invalid tool continuation' } }, 400);
+    }
+    const result = body.contents.at(-1).parts[0].functionResponse;
+    expect(result).toMatchObject({ name: 'wy_ping', id: 'probe-id' });
+    return frame({ text: url.pathname.includes('-carbon') ? result.response.value : 'Basic text worked' });
+  });
+  await expect(verifyProviderModel(gemini, 'antigravity', 'gemini-4-carbon', { fetch: fake })).resolves.toMatchObject({ status: 'available', attempts: 1 });
+  await expect(verifyProviderModel(gemini, 'antigravity', 'gemini-4-argon', { fetch: fake })).resolves.toMatchObject({ status: 'unavailable', attempts: 2, message: 'Gemini 未确认测试工具的回传结果' });
+  expect(fake).toHaveBeenCalledTimes(6);
+});
+
 it('SMG upstream errors retry once and preserve the final error without exposing the Key', async () => {
   const message = 'SMG synthetic upstream is temporarily unavailable';
   const fake = vi.fn(async () => json({ error: { message } }, 503));

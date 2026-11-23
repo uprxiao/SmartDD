@@ -49,6 +49,7 @@ export function PluginIcon({ id, name = '', size = 36 }) {
 const A = '/assets/m13-agent-icons/';
 const PROVIDER_IMAGES = {
   'tool-claude': { href: A + 'claude.png', bleed: 1.22 }, 'tool-codex': { href: A + 'codex.svg', bg: '#fff', inset: 5, border: true },
+  'tool-antigravity': { href: A + 'antigravity.png', bg: '#fff', inset: 1, border: true },
   anthropic: { href: A + 'anthropic.png', bleed: 1 }, openai: { href: A + 'openai.svg', bg: '#fff', inset: 7, border: true },
   deepseek: { href: A + 'deepseek.png', bg: '#fff', inset: 3, border: true },
   ultracloud: { href: A + 'model-hub.svg', bg: '#fff', inset: 3, border: true },

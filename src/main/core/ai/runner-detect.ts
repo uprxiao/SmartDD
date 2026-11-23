@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import { accessSync, constants, realpathSync, statSync } from 'node:fs';
+import { isAbsolute } from 'node:path';
 import type { RunnerInfo } from '@shared/ai-profiles';
 import { RUNNERS } from '@shared/ai-profiles';
 import type { Runner } from '@shared/types';
@@ -91,6 +92,18 @@ export async function detectRunner(runner: Runner, executable: string | null, o:
 
 function runDetect(runner: Runner, executable: string | null, o: DetectOptions): Promise<{ info: RunnerInfo; stdout: string }> {
   const command = executable?.trim() || RUNNERS[runner].command;
+  if (runner === 'antigravity' && executable && isAbsolute(command)) {
+    let error: string | undefined;
+    try {
+      if (!statSync(command).isFile()) error = '所选 Antigravity 路径不是文件';
+      else accessSync(command, constants.X_OK);
+    } catch (cause) {
+      const code = (cause as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT' && code !== 'ENOTDIR') error = '所选 Antigravity 文件不可执行';
+    }
+    // PATH lookup omits nonexecutable files, which would look like missing installations.
+    if (error) return Promise.resolve({ info: { runner, command, path: null, version: null, error }, stdout: '' });
+  }
   return new Promise((resolve) => {
     execFile(
       o.shell ?? loginShell(),

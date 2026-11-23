@@ -47,6 +47,15 @@ describe.each(['/bin/zsh', '/bin/bash'])('detectRunner via %s', (shell) => {
     const r = await detectRunner('claude', join(bin, 'claude'), { env: env(), shell });
     expect(r).toMatchObject({ command: join(bin, 'claude'), path: join(bin, 'claude'), version: '9.9.9 (Claude Code)' });
   });
+
+  it('distinguishes an explicit nonexecutable Antigravity file from a missing program', async () => {
+    const path = join(bin, 'nonexecutable agy');
+    writeFileSync(path, '#!/bin/sh\nexit 1\n', { mode: 0o600 });
+    expect(await detectRunner('antigravity', path, { env: env(), shell })).toMatchObject({
+      path: null, version: null, error: '所选 Antigravity 文件不可执行',
+    });
+    expect((await detectRunner('antigravity', join(bin, 'missing'), { env: env(), shell })).error).toContain('找不到');
+  });
 });
 
 describe('parseDetectOutput', () => {

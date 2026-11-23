@@ -8,7 +8,7 @@ const adapterAt = (id:string,version:string) => {
 };
 const adaptersAt = (version:string) => ['claude-code','codex'].map(id => adapterAt(id,version));
 
-export const bundledAgentAdapters=()=>[...adaptersAt('1.0.0'),adapterAt('codex','1.2.0'),adapterAt('codex','1.3.0'),adapterAt('codex','1.4.0'),adapterAt('codex','1.5.0'),adapterAt('claude-code','1.2.0'),adapterAt('claude-code','1.3.0')];
+export const bundledAgentAdapters=()=>[...adaptersAt('1.0.0'),adapterAt('codex','1.2.0'),adapterAt('codex','1.3.0'),adapterAt('codex','1.4.0'),adapterAt('codex','1.5.0'),adapterAt('claude-code','1.2.0'),adapterAt('claude-code','1.3.0'),adapterAt('antigravity','1.0.0')];
 export const bundledDistributionAgentAdapters=()=>[
   ...bundledAgentAdapters(), ...adaptersAt('1.1.0'), adapterAt('codex','1.6.0'), adapterAt('claude-code','1.4.0'),
 ];

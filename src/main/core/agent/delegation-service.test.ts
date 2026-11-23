@@ -305,6 +305,36 @@ it('A66/A68: Git child runs in the mapped host worktree; child result is committ
   const observed = f.co.observe(f.taskId, c.childTaskId)[0]; expect(observed.commitRange.commits).toHaveLength(1); expect(observed.commitRange.files).toContain('child.txt'); expect(observed.body?.chunk).toContain('child result');
 }, 20_000);
 
+it('F35 A21: four worktree children occupy the host limit, and a child cannot create another delegation', async () => {
+  const f = fixture();
+  const git = async (...args: string[]) => {
+    const result = await runWorkspaceCommand(f.root, 'git', args);
+    expect(result.code, result.stderr).toBe(0);
+  };
+  await git('init', '-q', '-b', 'main');
+  await git('config', 'user.name', 'Fixture');
+  await git('config', 'user.email', 'fixture@example.invalid');
+  await git('commit', '--allow-empty', '-qm', 'baseline');
+  await f.send('keep the parent running while worktree children start');
+
+  const firstFour: Awaited<ReturnType<typeof f.delegate>>[] = [];
+  for (let index = 0; index < 4; index++) firstFour.push(await f.delegate(undefined, undefined, 'worktree'));
+  await until(() => firstFour.every(child => f.runs.runForTask(child.childTaskId)?.turnId), 8000);
+  const first = firstFour[0].childTaskId;
+  await expect(f.delegate(undefined, first, 'worktree')).rejects.toThrow('子任务');
+  expect(f.co.view(first).childrenTotal).toBe(0);
+
+  const fifth = await f.delegate(undefined, undefined, 'worktree');
+  await until(() => f.git.workspace(fifth.childTaskId)?.state === 'ready', 8000);
+  expect(f.co.observe(f.taskId, fifth.childTaskId)[0].state).toBe('queued');
+  expect(f.runs.runForTask(fifth.childTaskId)).toBeUndefined();
+
+  (f.runs.runForTask(first)!.instance as Instance).finish('release one slot');
+  await until(() => !!f.runs.runForTask(fifth.childTaskId)?.turnId, 8000);
+  expect(f.co.observe(f.taskId, fifth.childTaskId)[0].state).toBe('running');
+  expect(f.co.view(f.taskId).childrenTotal).toBe(5);
+}, 25_000);
+
 it('D06-64 reports an unsuccessful worktree commit to the parent once and preserves the child changes', async () => {
   const commit = vi.fn(async () => ({ stdout: '', stderr: 'Author identity unknown', code: 128 }));
   const f = fixture((cwd, command, args, timeout, options) =>

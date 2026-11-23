@@ -1,0 +1,214 @@
+{
+  "bundle": "79e775869ae6e14a45cccff7f5f96a4193647466e81456be5a2aefc02166362d",
+  "modelSource": "synthetic loopback with native CLIs",
+  "A16": {
+    "durableBusiness": [
+      {
+        "case": "A16-business",
+        "scope": "synthetic local draft, no recipients or sender, no email sent",
+        "modelRoundCompletedWithRequestWaiting": true,
+        "originalRequestSha256": "427a88ade352be6b9d821f46074fd12421940b574bcd4f0aa429e3252ea7aa1a",
+        "sameRequestAndRevisionAfterControlledRestart": true,
+        "initialRevision": 1,
+        "finalRevision": 4,
+        "finalStatus": "resolved",
+        "finalDecision": "allow",
+        "lateDecisionDidNotMutate": true,
+        "approvedPrivateDraftCount": 1,
+        "assertions": [
+          "valid host business request survives the normal native end and isolated crash restart; real approval writes exactly one private draft"
+        ],
+        "cleanup": {
+          "finalAppPid": 81523,
+          "normalExitCode": null,
+          "requestedQuit": true,
+          "initialControlledCrash": {
+            "pid": 81376,
+            "signal": "SIGKILL"
+          },
+          "cleanupFallback": "SIGKILL",
+          "rendererErrors": 0,
+          "priorState": [
+            "completed"
+          ],
+          "registeredRuns": [
+            {
+              "pid": 81478,
+              "state": "stopped",
+              "revocation_state": "revoked"
+            },
+            {
+              "pid": 81587,
+              "state": "stopped",
+              "revocation_state": "revoked"
+            }
+          ]
+        }
+      },
+      {
+        "case": "A16-business-revoke",
+        "scope": "synthetic local draft, no recipients or sender, no email sent",
+        "modelRoundCompletedWithRequestWaiting": true,
+        "originalRequestSha256": "79aec7aae65000e76ae303c4039145274185de14e46fbba3b383f60cf8ef81d4",
+        "sameRequestAndRevisionAfterControlledRestart": true,
+        "initialRevision": 1,
+        "finalRevision": 2,
+        "finalStatus": "retired",
+        "finalDecision": null,
+        "lateDecisionDidNotMutate": true,
+        "approvedPrivateDraftCount": 0,
+        "assertions": [
+          "stopping the restored host business request retires the approval without creating a private draft"
+        ],
+        "cleanup": {
+          "finalAppPid": 81936,
+          "normalExitCode": 0,
+          "requestedQuit": true,
+          "initialControlledCrash": {
+            "pid": 81789,
+            "signal": "SIGKILL"
+          },
+          "cleanupFallback": null,
+          "rendererErrors": 0,
+          "priorState": [
+            "stopped"
+          ],
+          "registeredRuns": [
+            {
+              "pid": 81901,
+              "state": "stopped",
+              "revocation_state": "revoked"
+            }
+          ]
+        }
+      }
+    ],
+    "remaining": "review content/account changes not executed; owner-only restoration used controlled crash rather than a native quit dialog"
+  },
+  "A21": {
+    "parentBusyQueuedFirst": true,
+    "secondChildWasRunning": true,
+    "twoIndependentWorktrees": true,
+    "confirmedResultReceipts": 3,
+    "children": [
+      {
+        "childIdSha256": "d24a4835762f089120199a8fd0f886c2e0102ec54436b91bf808f589b09580ef",
+        "nativeSessionSha256": "2a732f75bb1fd949e069ef4bae58aab454e8272ce6ecfd68c9ca85648d5c6fe1",
+        "attempts": 2,
+        "resultRevision": 2,
+        "finalState": "delivered"
+      },
+      {
+        "childIdSha256": "beacfdb444666f1a2007c86cf400cafc9c6105e89d10894a055e8e74be9d4e64",
+        "nativeSessionSha256": "e2d996cbbd8558746d561e1edff54cc0ce2289b3ad4ed9c4428cd414ffec72e8",
+        "attempts": 1,
+        "resultRevision": 1,
+        "finalState": "delivered"
+      }
+    ],
+    "assertions": [
+      "two isolated worktrees; busy parent queues a child result; after wake observes once; rework retains child/native/cwd; disabled delegation rejects new request and second child closes"
+    ],
+    "remaining": "maximum concurrent children and nested delegation denial",
+    "cleanup": {
+      "finalAppPid": 82006,
+      "normalExitCode": 0,
+      "requestedQuit": true,
+      "initialControlledCrash": null,
+      "cleanupFallback": null,
+      "rendererErrors": 0,
+      "priorState": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "registeredRuns": [
+        {
+          "pid": 82251,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82558,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82671,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82859,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82969,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 83124,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82395,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82386,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 82760,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        }
+      ]
+    }
+  },
+  "A25": {
+    "bothStoppedAfterRecovery": true,
+    "lateApprovalDenied": true,
+    "originalWriterFileAbsent": true,
+    "noAutomaticNotificationDispatch": true,
+    "assertions": [
+      "actual parent tree stop retired the child write before side effects",
+      "stale child decision rejected by the live packaged host after stop",
+      "cancelled child stays stopped and the stale approval remains denied after the isolated App process crashes and reopens",
+      "reopened parent is visibly stopped and the durable notification is not dispatched without a user continuation"
+    ],
+    "remaining": "deduplicated previously delivered receipt, separate recoverable child and unknown accepted side effect",
+    "cleanup": {
+      "finalAppPid": 81257,
+      "normalExitCode": 0,
+      "requestedQuit": true,
+      "initialControlledCrash": {
+        "pid": 81029,
+        "signal": "SIGKILL"
+      },
+      "cleanupFallback": null,
+      "rendererErrors": 0,
+      "priorState": [
+        "stopped",
+        "stopped"
+      ],
+      "registeredRuns": [
+        {
+          "pid": 81171,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        },
+        {
+          "pid": 81224,
+          "state": "stopped",
+          "revocation_state": "revoked"
+        }
+      ]
+    }
+  }
+}

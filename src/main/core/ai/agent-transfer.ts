@@ -1,3 +1,4 @@
+import { agentProtocol, codeAgentKindSchema } from '@shared/ai-agents';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { agentExportSelectionSchema, portableAgentsSchema, type AgentExportSelection, type AgentImportPreview, type AgentImportResult, type PortableAgents } from '@shared/agent-transfer';
@@ -28,7 +29,7 @@ function validate(input: unknown, encrypted: boolean): PortableAgents {
   for(const item of p.agents){
     use(item.ref);
     if(item.source==='provider'){
-      const provider=providers.get(item.provider), protocol=item.kind==='claude'?'anthropic':'responses';
+      const provider=providers.get(item.provider), protocol=agentProtocol[item.kind];
       if(!provider?.endpoints[protocol])throw new AgentTransferError('智能体引用的供应商或协议缺失');
       if(!item.models.includes(item.defaultModel)||new Set(item.models).size!==item.models.length||item.models.some(id=>!provider.models.some(m=>m.id===id)))throw new AgentTransferError('智能体的模型引用无效');
       const key=`${item.kind}:${item.provider}`;if(combinations.has(key))throw new AgentTransferError('文件包含重复的智能体组合');combinations.add(key);
@@ -76,13 +77,15 @@ export class AgentTransferService {
     if(!ps.length&&!selected.length)throw new AgentTransferError('请至少选择一项');
     const credentials:PortableAgents['credentials']={};
     const agents:PortableAgents['agents']=selected.map(c=>{
-      if(c.kind!=='claude'&&c.kind!=='codex')throw new AgentTransferError('此高级配置的 Code Agent 尚不支持导出');
-      if(c.source==='provider')return {ref:c.id,name:c.name,source:'provider',kind:c.kind,provider:c.providerId!,models:c.models,defaultModel:c.defaultModel!,homeVisible:c.homeVisible};
+      const parsed=codeAgentKindSchema.safeParse(c.kind);
+      if(!parsed.success)throw new AgentTransferError('此高级配置的 Code Agent 尚不支持导出');
+      const kind=parsed.data;
+      if(c.source==='provider')return {ref:c.id,name:c.name,source:'provider',kind,provider:c.providerId!,models:c.models,defaultModel:c.defaultModel!,homeVisible:c.homeVisible};
       const row=this.db.select().from(aiProfiles).where(eq(aiProfiles.id,c.id)).get()!;
       const env=JSON.parse(row.env) as Extract<PortableAgents['agents'][number],{source:'legacy'}>['env'];
       if(select.includeKeys){const values:Record<string,string>={};for(const e of env)if(e.secret){const value=this.secrets.get(`ai:${c.id}:env:${e.name}`);if(value!==null)values[e.name]=value;}
         if(Object.keys(values).length)credentials[c.id]={env:values};}
-      return {ref:c.id,name:c.name,source:'legacy',kind:c.kind,env,args:JSON.parse(row.args),homeVisible:c.homeVisible};
+      return {ref:c.id,name:c.name,source:'legacy',kind,env,args:JSON.parse(row.args),homeVisible:c.homeVisible};
     });
     if(select.includeKeys)for(const p of ps){const row=this.db.select().from(aiProviders).where(eq(aiProviders.id,p.id)).get()!;
       const key=row.secretRef?this.secrets.get(row.secretRef):null;if(key)credentials[p.id]={key};}

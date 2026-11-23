@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { TimelineProjector } from './timeline';
 
+it('keeps Antigravity effort fallback in the diagnostics for the affected turn', () => {
+  const projector = new TimelineProjector('antigravity-acp');
+  expect(projector.project({
+    type: 'item.completed', nativeItemId: 'turn-1:effort', itemType: 'acpEffortFallback',
+    payload: { detail: '当前模型未公布所选档位 high，本轮使用原生档位 medium。可以重新选择。' },
+  })).toEqual([{
+    key: 'turn-1:effort', type: 'system_notice', terminal: 'completed',
+    payload: {
+      severity: 'warning', title: '推理档位', code: 'configWarning', status: 'completed', diagnosticOnly: false,
+      detail: '当前模型未公布所选档位 high，本轮使用原生档位 medium。可以重新选择。',
+    },
+  }]);
+});
+
 // M14-A59 时间线（投影层）、A71 计划卡来源、A76 待办只在执行器提供时出现。
 describe('Claude 投影', () => {
   it('文本、思考、工具调用与结果配对；结果失败标失败', () => {

@@ -248,6 +248,10 @@ export function requestOptions(r: TimelineRequest, driverId: string): RequestOpt
   if (requestForm(r, driverId)) return [];
   // 未知种类的请求不给通用批准，只能拒绝（复核 NR09）。
   if (r.kind === 'other') return [{ key: 'deny', label: '拒绝（WillYou 不支持该请求）', result: () => (driverId === 'claude-sdk' ? { behavior: 'deny', message: 'WillYou 不支持该请求' } : { decision: 'decline' }), deny: true }];
+  if (driverId === 'antigravity-acp') return [
+    ...(r.payload?.canApprove ? [{ key: 'once', label: '批准一次', result: () => ({ behavior: 'allow' }) }] : []),
+    { key: 'deny', label: '拒绝', result: () => ({ behavior: 'deny' }), deny: true },
+  ];
   if (driverId === 'claude-sdk') {
     const input = r.payload?.input;
     if (r.kind === 'plan_approval') return [

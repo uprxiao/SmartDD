@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { asc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import {
-  cliLoginSchema, codeAgentKindSchema, providerInputSchema, providerModelSchema,
+  agentProtocol, cliLoginSchema, codeAgentKindSchema, providerInputSchema, providerModelSchema,
   providerEndpointsSchema, runConfigInputSchema,
   type CodeAgentTool, type ProviderInput, type ProviderView, type RunConfigInput, type RunConfigView,
 } from '@shared/ai-agents';
@@ -16,11 +16,7 @@ type ProviderRow = typeof aiProviders.$inferSelect;
 type ConfigRow = typeof aiRunConfigs.$inferSelect;
 const modelsOf = (row: ProviderRow) => z.array(providerModelSchema).parse(JSON.parse(row.models));
 const endpointsOf = (row: ProviderRow) => providerEndpointsSchema.parse(JSON.parse(row.endpoints));
-const recommendedSchema = z.object({ claude: z.string().optional(), codex: z.string().optional() });
-const sameEndpoints = (a: ProviderRow, b: z.infer<typeof providerEndpointsSchema>) => {
-  const old = endpointsOf(a);
-  return (['anthropic', 'responses', 'openai'] as const).every((key) => old[key] === b[key]);
-};
+const recommendedSchema = z.object({ claude: z.string().optional(), codex: z.string().optional(), antigravity: z.string().optional() });
 
 /** M13 metadata shares the existing profile IDs, task foreign keys and encrypted store. */
 export class AgentService {
@@ -95,11 +91,31 @@ export class AgentService {
         this.secrets.set(secretRef, data.key);
         keyHint=[...data.key].length>4?[...data.key].slice(-4).join(''):null;
       }
-      const identityChanged = Boolean(before && (!sameEndpoints(before, data.endpoints) || before.authType !== data.authType || (hadKey && data.key !== undefined)));
+      const oldEndpoints = before && endpointsOf(before);
+      const authChanged = Boolean(before && (before.authType !== data.authType || (hadKey && data.key !== undefined)));
+      const originalEndpointsChanged = Boolean(oldEndpoints && (['anthropic', 'responses', 'openai'] as const).some(protocol => oldEndpoints[protocol] !== data.endpoints[protocol]));
+      const geminiChanged = Boolean(oldEndpoints && oldEndpoints.gemini !== data.endpoints.gemini);
+      const identityChanged = authChanged || originalEndpointsChanged || geminiChanged;
+      const models = data.models.map(model => {
+        if (!identityChanged) return model;
+        const updated = { ...model, availability: { ...model.availability }, checks: { ...model.checks } };
+        if (authChanged || originalEndpointsChanged) {
+          updated.claude = undefined;
+          updated.availability.claude = updated.availability.codex = 'untested';
+          delete updated.checks.claude;
+          delete updated.checks.codex;
+        }
+        if (authChanged || geminiChanged) {
+          updated.antigravity = undefined;
+          delete updated.availability.antigravity;
+          delete updated.checks.antigravity;
+        }
+        return { ...updated, checks: Object.keys(updated.checks).length ? updated.checks : undefined };
+      });
       const row = {
         id: providerId, name: data.name, preset: data.preset, endpoints: JSON.stringify(data.endpoints),
         authType: data.authType, secretRef, keyHint, identityRevision: (before?.identityRevision ?? 1) + Number(identityChanged),
-        models: JSON.stringify(identityChanged ? data.models.map((model) => ({ ...model, claude: undefined, availability: { claude: 'untested', codex: 'untested' }, checks: undefined })) : data.models), recommended: JSON.stringify(data.recommended),
+        models: JSON.stringify(models), recommended: JSON.stringify(data.recommended),
         refreshedAt: identityChanged ? null : before?.refreshedAt ?? null, createdAt: before?.createdAt ?? this.now(), updatedAt: this.now(),
       };
       this.db.insert(aiProviders).values(row).onConflictDoUpdate({ target: aiProviders.id, set: row }).run();
@@ -138,13 +154,13 @@ export class AgentService {
       if (data.source === 'provider') {
         if (!providerId) throw new Error('请选择供应商');
         const provider = this.requireProvider(providerId), endpoints = endpointsOf(provider);
-        if (!(kind === 'claude' ? endpoints.anthropic : endpoints.responses)) throw new Error('供应商不支持该 Code Agent 所需协议');
+        if (!endpoints[agentProtocol[kind]]) throw new Error('供应商不支持该 Code Agent 所需协议');
         if (!verifiedPresetProtocol(provider.preset, endpoints, kind) && !modelsOf(provider).some((model) => !model.offline && model.availability[kind] === 'available')) throw new Error('自定义供应商须先验证该协议的模型工具调用');
         const allowed = new Set(modelsOf(provider).filter((model) => !model.offline && model.availability[kind] !== 'unavailable').map((model) => model.id));
         selected = [...new Set(data.models)].filter((model) => allowed.has(model));
         if (!selected.length) throw new Error('至少选择一个可用或未测试的模型');
         defaultModel = data.defaultModel && selected.includes(data.defaultModel) ? data.defaultModel : selected[0];
-      } else if (tool.login === 'none') throw new Error('请先在终端登录该 Code Agent');
+      } else if (kind === 'antigravity' || tool.login === 'none') throw new Error('此 Code Agent 当前没有可用的本机登录');
       const profileId = id ?? randomUUID();
       this.db.insert(aiProfiles).values({ id: profileId, name: data.name, runner: tool.kind, executable: tool.executable, env: '[]', args: '[]', isDefault: false, createdAt: this.now(), updatedAt: this.now() })
         .onConflictDoUpdate({ target: aiProfiles.id, set: { name: data.name, updatedAt: this.now() } }).run();

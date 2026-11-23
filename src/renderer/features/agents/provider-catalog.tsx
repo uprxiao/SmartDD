@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Check, Eye, EyeOff, Info, Plus, RefreshCw, Search, TriangleAlert } from 'lucide-react';
-import type { CodeAgentKind, ProviderInput, ProviderModel, ProviderView } from '@shared/ai-agents';
+import { agentProtocol, codeAgentKindSchema, type CodeAgentKind, type ProviderInput, type ProviderModel, type ProviderView } from '@shared/ai-agents';
 import { modelForStorage, type ProviderCatalogModel } from '@shared/provider-model-metadata';
 import { providerCatalog, type ProviderPreset } from '@shared/provider-catalog';
 import { transferValue } from '@shared/project-transfer';
@@ -21,16 +21,16 @@ export function modelCheckDescription(model:ProviderModel,kind:CodeAgentKind):st
 type ModelCheck = { model: string; kind: CodeAgentKind };
 
 export function configuredModelCheckKinds(provider: ProviderView): CodeAgentKind[] {
-  return (['claude', 'codex'] as const).filter(kind => provider.endpoints[kind === 'claude' ? 'anthropic' : 'responses']);
+  return codeAgentKindSchema.options.filter(kind => provider.endpoints[agentProtocol[kind]]);
 }
 
 export function untestedModelChecks(provider: ProviderView, kinds: readonly CodeAgentKind[]): ModelCheck[] {
   return provider.models.flatMap(model => model.offline ? [] : kinds
-    .filter(kind => model.availability[kind] === 'untested')
+    .filter(kind => (model.availability[kind] ?? 'untested') === 'untested')
     .map(kind => ({ model: model.id, kind })));
 }
 
-export const protocolLabels={responses:'OpenAI Responses',anthropic:'Anthropic',openai:'OpenAI 兼容'};
+export const protocolLabels={responses:'OpenAI Responses',anthropic:'Anthropic',openai:'OpenAI 兼容',gemini:'Gemini 原生'};
 type Protocol=keyof typeof protocolLabels;
 const protocols=Object.keys(protocolLabels) as Protocol[];
 export const contextLabel=(tokens:number|null)=>tokens===null?'—':tokens>=1048576?`${Math.round(tokens/1048576)}M`:tokens>=1000?`${Math.round(tokens/1000)}K`:String(tokens);
@@ -44,7 +44,7 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const [step,setStep]=useState<'catalog'|'form'|'done'>('catalog'),[item,setItem]=useState<ProviderPreset|null>(null),[query,setQuery]=useState('');
   const [name,setName]=useState(''),[key,setKey]=useState(''),[showKey,setShowKey]=useState(false),[proto,setProto]=useState<Protocol>('responses'),[url,setUrl]=useState('');
   const [more,setMore]=useState<Partial<Record<Protocol,string>>>({}),[manual,setManual]=useState(''),[detected,setDetected]=useState<string|null>(null);
-  const [result,setResult]=useState<{models:ProviderCatalogModel[];recommended:{claude?:string;codex?:string};note:string|null}|null>(null),[picked,setPicked]=useState<string[]>([]);
+  const [result,setResult]=useState<{models:ProviderCatalogModel[];recommended:ProviderView['recommended'];note:string|null}|null>(null),[picked,setPicked]=useState<string[]>([]);
   const [done,setDone]=useState<ProviderView|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState<'fetch'|'probe'|'connect'|null>(null);
   const [testing, setTesting] = useState<(ModelCheck & { progress?: string }) | null>(null);
   const closed = useRef(false);
@@ -85,7 +85,7 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const probe=async()=>{
     if(busy)return;setError('');try{validate();}catch(e){setError(rpcErrorMessage(e));return;}setBusy('probe');
     try{
-      const kinds=(['claude','codex'] as const).filter(k=>endpoints[k==='claude'?'anthropic':'responses']);
+      const kinds=codeAgentKindSchema.options.filter(k=>endpoints[agentProtocol[k]]);
       const notes:string[]=[];
       for(const kind of kinds){const r=transferValue(await rpc.providerSetup.probe(input(),kind));notes.push(`${agentLabels[kind]}：${r.message}`);}
       setDetected(notes.length?notes.join('；'):'只有 OpenAI 兼容地址，两个工具都不能直接使用');
@@ -170,7 +170,7 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
           {testing?.progress ?? `测试全部未测试（${untested.length}）`}
         </button>}
       </h3>
-      <div className="m13-table matrix done-models" role="table" aria-label="模型">
+      <div className={'m13-table matrix done-models'+(configured.length===3?' three-tools':'')} role="table" aria-label="模型">
         <div role="row" className="m13-th"><span>模型</span><span>上下文</span>{configured.map(kind => <span key={kind} className="m13-th-tool"><ToolIcon tool={kind} size={14}/>{agentLabels[kind]}</span>)}</div>
         {done.models.map(model => <div role="row" key={model.id} data-model={model.id}>
           <span className="m13-cell-name">{model.name}</span><span>{contextLabel(model.contextWindow)}</span>
@@ -187,7 +187,7 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
           })}
         </div>)}
       </div>
-      {!supported.length && <div className="m13-alert warn"><Info size={16}/><div><p>两个 Code Agent 都不能直接使用这个供应商。可先通过 Magpie 等网关接入，或在详情里核对并重测协议。</p></div></div>}
+      {!supported.length && <div className="m13-alert warn"><Info size={16}/><div><p>当前 Code Agent 无法直接使用这个供应商。可先通过 Magpie 等网关接入，或在详情里核对并重测协议。</p></div></div>}
       <p className="m13-hint">接入时每种适用协议只测试一个推荐模型。「未测试」表示模型已加入目录，尚未验证该工具的实际调用。点击「测试」会发起一次最小调用，结果保存在供应商上。</p>
     </div>}
   </AgentDialog>;

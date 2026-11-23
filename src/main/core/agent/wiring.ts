@@ -1,4 +1,5 @@
 import { realpathSync, statSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { applicationRunsForAgent } from './application-runs';
 import { attachAgentBrowserRequests } from './business-browser';
 import { HostBusinessRequests } from './host-business-requests';
@@ -9,7 +10,7 @@ import { TurnDiffs } from './turn-diffs';
 // M14 统一 Agent 工作区的主进程装配：配置档案解析、本机程序发现、托管文件落盘与事件推送。
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { withShellProxy } from '../ai/runner-detect';
+import { nativeExecutableIdentity, withShellProxy } from '../ai/runner-detect';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema, type CodeAgentTool, type RunConfigView } from '@shared/ai-agents';
 import { ApplicationError } from '@shared/applications';
@@ -28,13 +29,14 @@ import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
 import { DriverError } from './driver';
 import { previewCodexModels } from './drivers/codex-app-server';
+import { antigravityArgs, previewAntigravityModels } from './drivers/antigravity-acp';
 import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
 import type { AgentModelCatalog, AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
 import { providerModelOptions } from '@shared/agent-model-choice';
 import { tiersFor } from './permissions';
 import { AgentManualTerminals } from './manual-terminal';
 import { canonicalPath } from './identity';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import type { ManagedTaskCapabilities } from '../applications/task-capability-launcher';
 import { DelegationService } from './delegation-service';
 import { runWorkspaceCommand, GitWorkspaces } from './git-workspaces';
@@ -74,7 +76,7 @@ export interface AgentWorkspaceDeps {
 export function driverForKind(kind: string): DriverId {
   const k = codeAgentKindSchema.safeParse(kind);
   if (!k.success) throw new DriverError('UNSUPPORTED', `暂不支持的执行器：${kind}`);
-  return k.data === 'codex' ? 'codex-app-server' : 'claude-sdk';
+  return k.data === 'antigravity' ? 'antigravity-acp' : k.data === 'codex' ? 'codex-app-server' : 'claude-sdk';
 }
 
 export function createAgentWorkspace(d: AgentWorkspaceDeps) {
@@ -173,14 +175,14 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
         const home = base.HOME ?? homedir();
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
-        const skills = role?.access === 'read' || applicationScope ? undefined : d.skillProjection?.prepare({
+        const skills = kind === 'antigravity' || role?.access === 'read' || applicationScope ? undefined : d.skillProjection?.prepare({
           runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
         });
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
         if (skills?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedSkillUnavailable', detail: skills.issues.map(issue => issue.reason).join('；'),
         });
-        const projected = role?.access === 'read' || applicationScope ? undefined : d.mcpProjection?.prepare({
+        const projected = kind === 'antigravity' || role?.access === 'read' || applicationScope ? undefined : d.mcpProjection?.prepare({
           runner: actual.plan.profile.runner, cwd, runRoot,
           injectedNames: Object.keys(actual.plan.profile.env), requireKnownFields: true,
         });
@@ -200,7 +202,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         }
         return {
           ...result, env: { ...actual.env, ...result.env, ...projected?.env },
-          extraArgs: [...actual.extraArgs, ...(result.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
+          extraArgs: [...(kind === 'antigravity' ? [] : actual.extraArgs), ...(result.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
           claudeMcp: projected?.claude,
           plugins: skillPlugin ? [...(result.plugins ?? []), { type: 'local' as const, path: skillPlugin }] : result.plugins,
         };
@@ -273,13 +275,43 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   };
   const modelCatalog = async (scope: AgentModelScope, profileId: string, mode?: CatalogReadMode): Promise<AgentModelCatalog> => {
     const profile = config(profileId);
-    if (profile.kind !== 'codex' || profile.source !== 'login') return { status: 'ready', models: [] };
+    const antigravity = profile.kind === 'antigravity' && profile.source === 'provider';
+    if (!antigravity && (profile.kind !== 'codex' || profile.source !== 'login')) return { status: 'ready', models: [] };
     if (profile.loggedOut || !profile.available) return { status: 'unavailable', models: [] };
     const task = scope.kind === 'task' ? store.task(scope.taskId) : undefined;
     if (scope.kind !== 'project' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
     const cwd = scope.kind === 'project' ? registeredProjectCwd(d.sqlite, scope.projectId, scope.dirId) : canonicalPath(task!.cwd);
     const tool = d.agents.tools().find(item => item.id === profile.toolId);
     if (!tool) throw new DriverError('REJECTED', '执行器不可用');
+    if (antigravity) {
+      const provider = d.agents.providers().find(item => item.id === profile.providerId);
+      if (!provider?.hasKey || !provider.endpoints.gemini) return { status: 'unavailable', models: [] };
+      const stamp = sha256(JSON.stringify([profile.id, provider.id, provider.identityRevision, profile.models,
+        tool.customPath ?? tool.executable, nativeExecutableIdentity(tool.executable)]));
+      return modelCatalogs.read(`antigravity:${stamp}`, async observer => {
+        const baseEnv = d.baseEnv();
+        const connection = d.providers.runtimeConnection(provider.id, 'antigravity');
+        const launch = resolveProfileLaunch({ config: profile, tool, provider, key: connection.target.key, cwd, userData: d.userData,
+          runId: randomUUID(), baseEnv });
+        const native = await probeDriver('antigravity-acp', { env: baseEnv, executable: launch.command, detect });
+        if (!native.realpath || native.state === 'unsupported') throw new DriverError('UNSUPPORTED', native.reason ?? 'Antigravity 不可用');
+        const home = await mkdtemp(join(tmpdir(), 'willyou-agy-catalog-'));
+        const signal = AbortSignal.any([recoveryAbort.signal, AbortSignal.timeout(12_000)]);
+        try {
+          connection.assertCurrent();
+          const env = withShellProxy({ ...launch.env, HOME: home, USERPROFILE: home, TMPDIR: home,
+            XDG_CONFIG_HOME: home, XDG_DATA_HOME: home, XDG_CACHE_HOME: home,
+            ...(native.shellPath ? { PATH: native.shellPath } : {}) }, native.shellProxy);
+          const models = await previewAntigravityModels({
+            executable: { path: native.realpath, version: native.version ?? 'unknown' }, env, cwd: home,
+            extraArgs: antigravityArgs(join(home, '.gemini')), tier: 'ask', startupSignal: signal,
+          }, profile.models.slice(0, 200));
+          connection.assertCurrent();
+          observer.account?.(stamp);
+          return { confirmed: true, models };
+        } finally { await rm(home, { recursive: true, force: true }); }
+      }, mode, true);
+    }
     return readSubscriptionCatalog(profile, tool, cwd, mode);
   };
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskProject: taskId => store.task(taskId)?.project_id ?? null, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;

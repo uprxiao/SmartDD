@@ -6,6 +6,7 @@ import { verifiedPresetProtocol } from '@shared/ai-provider-presets';
 import type { ResolvedProfile } from './ai-profile-service';
 import { buildCodexModelCatalog } from './codex-model-catalog';
 import { providerCodexMetadata } from '@shared/agent-model-choice';
+import { geminiApiRoot } from './provider-client';
 
 export const CLAUDE_MODEL_VARIABLES = ['ANTHROPIC_MODEL', 'ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_SMALL_FAST_MODEL', 'CLAUDE_CODE_SUBAGENT_MODEL'] as const;
@@ -26,6 +27,7 @@ export interface AgentLaunchPlan {
   claudeRoot: string | null;
   /** M14 isolated native Codex state, materialized before app-server starts. */
   codexRoot?: string;
+  antigravityRoot?: string;
   files: { path: string; value: unknown }[];
 }
 export interface AgentLaunchInput {
@@ -60,6 +62,7 @@ export function planAgentLaunch(input: AgentLaunchInput): AgentLaunchPlan {
   const profile: ResolvedProfile = { id: config.id, name: config.name, runner: kind, command: tool.executable,
     args: [...permission.args], env: {}, isolatePrefixes: [], isolateNames: [] };
   if (config.source === 'login') {
+    if (kind === 'antigravity') throw new Error('Antigravity 当前使用供应商 Gemini API Key');
     if (tool.login === 'none' || config.loggedOut) throw new Error('请先在终端登录该 Code Agent');
     const retained:string[]=[];let originalModel:string|null=null;
     for(let index=0;index<(input.nativeArgs?.length??0);index++){
@@ -94,6 +97,13 @@ export function planAgentLaunch(input: AgentLaunchInput): AgentLaunchPlan {
   if (!model || !allowed.some((item) => item?.id === model)) throw new Error('所选模型已下线或不再允许，请选择其他模型');
   const configHash = createHash('sha256').update(config.id).digest('hex').slice(0, 32);
   const runRoot = join(input.userData, 'agents', 'runs', input.runId);
+  if (kind === 'antigravity') {
+    if (!provider.endpoints.gemini) throw new Error('供应商没有 Gemini 原生协议');
+    profile.env.GEMINI_API_KEY = input.key;
+    profile.env.GOOGLE_GEMINI_BASE_URL = geminiApiRoot(provider.endpoints.gemini);
+    profile.isolatePrefixes = ['GEMINI_', 'GOOGLE_', 'AGY_', 'ANTIGRAVITY_', 'ANTHROPIC_', 'OPENAI_'];
+    return { profile, permission, model, claudeRoot: null, files: [] };
+  }
   if (kind === 'codex') {
     if (!provider.endpoints.responses) throw new Error('供应商没有 OpenAI Responses 协议');
     if (input.codexResumeProviderId && !/^[a-zA-Z0-9_-]{1,128}$/.test(input.codexResumeProviderId)) {

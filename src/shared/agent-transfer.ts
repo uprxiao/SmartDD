@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { codeAgentKindSchema, providerInputSchema } from './ai-agents';
+import { codeAgentKindSchema, providerInputSchema, type CodeAgentKind } from './ai-agents';
 
 const ref = z.string().min(1).max(100).regex(/^[A-Za-z0-9_-]+$/);
 const name = z.string().trim().min(1).max(60);
@@ -29,7 +29,7 @@ export type AgentExportSelection = z.input<typeof agentExportSelectionSchema>;
 export interface AgentImportPreview {
   token: string; encrypted: boolean;
   providers: { ref: string; name: string; finalName: string; needsKey: boolean; endpoints: PortableAgents['providers'][number]['endpoints'] }[];
-  agents: { ref: string; name: string; finalName: string; kind: 'claude'|'codex'; source: 'provider'|'legacy'; toolInstalled: boolean }[];
+  agents: { ref: string; name: string; finalName: string; kind: CodeAgentKind; source: 'provider'|'legacy'; toolInstalled: boolean }[];
   skipped: { name: string; reason: string }[];
 }
 export interface AgentImportResult { providerIds: string[]; agentIds: string[]; skipped: AgentImportPreview['skipped'] }

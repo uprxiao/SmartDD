@@ -192,7 +192,7 @@ export class AgentStore {
     const taskId = input.taskId ?? randomUUID(), at = now(), ms = Date.now();
     this.tx(emit => {
       this.sqlite.prepare('INSERT INTO tasks(id,project_id,dir_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)')
-        .run(taskId, input.projectId, input.dirId, input.cwd, input.selection.driverId === 'codex-app-server' ? 'codex' : 'claude', input.title, ms, ms);
+        .run(taskId, input.projectId, input.dirId, input.cwd, input.selection.driverId === 'antigravity-acp' ? 'antigravity' : input.selection.driverId === 'codex-app-server' ? 'codex' : 'claude', input.title, ms, ms);
       this.sqlite.prepare('INSERT INTO agent_tasks(task_id,parent_task_id,selection_json,created_at,updated_at) VALUES(?,?,?,?,?)')
         .run(taskId, input.parentTaskId ?? null, JSON.stringify(input.selection), at, at);
       emit(taskId, 'task.created', { selection: input.selection });
@@ -673,6 +673,15 @@ export class AgentStore {
     });
   }
   tasksWithQueue() { return (this.sqlite.prepare("SELECT DISTINCT task_id FROM agent_turns WHERE status='accepted'").all() as { task_id: string }[]).map(r => r.task_id); }
+
+  tasksStoppedByUser(): string[] {
+    return this.sqlite.prepare(`
+      SELECT task.task_id FROM agent_tasks task
+      WHERE (SELECT event_type FROM agent_events
+             WHERE task_id = task.task_id AND event_type IN ('task.user_stopped', 'task.user_continued')
+             ORDER BY seq DESC LIMIT 1) = 'task.user_stopped'
+    `).pluck().all() as string[];
+  }
 
   /** 原生自行开始的回合（目标自动续跑等）：宿主记录为系统来源的回合，不生成用户消息。 */
   acceptAutoTurn(taskId: string, runId: string, nativeTurnId: string): string {

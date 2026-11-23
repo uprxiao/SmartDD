@@ -44,7 +44,12 @@ export function providerCodexMetadata(provider: Pick<ProviderView, 'preset' | 'e
 }
 
 export function providerModelOptions(provider: ProviderView | undefined, profile: { kind: string; models: string[] }): AgentModelOption[] {
-  if (!provider || (profile.kind !== 'codex' && profile.kind !== 'claude')) return [];
+  if (!provider) return [];
+  if (profile.kind === 'antigravity') return provider.models.flatMap(model =>
+    profile.models.includes(model.id) && !!provider.endpoints.gemini && !model.offline && model.antigravity?.reasoningLevels.length
+      ? [{ id: model.id, name: model.name, efforts: model.antigravity.reasoningLevels, defaultEffort: model.antigravity.defaultReasoning ?? undefined }]
+      : []);
+  if (profile.kind !== 'codex' && profile.kind !== 'claude') return [];
   const officialClaudeDeepSeek = provider.preset === 'deepseek' && verifiedPresetProtocol(provider.preset, provider.endpoints, 'claude');
   return provider.models.flatMap(model => {
     if (!profile.models.includes(model.id)) return [];

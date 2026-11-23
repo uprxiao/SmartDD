@@ -113,6 +113,47 @@ it('real GCM encrypted export accepts 8 codepoints, has fresh random salt/nonce,
  const preview=await transfer.unlock(1,pending.token,password);expect(preview.providers[0].needsKey).toBe(false);expect(JSON.stringify(preview)).not.toContain(KEY);expect(state()).toBe(before);
  const result=transfer.commit(1,pending.token);const provider=sqlite.prepare('SELECT * FROM ai_providers WHERE id=?').get(result.providerIds[0]) as any;expect(secrets.get(provider.secret_ref)).toBe(KEY);expect(provider.id).not.toBe(c.providerId);
 });
+it('roundtrips an Antigravity provider and agent through both plaintext and encrypted transfer', async () => {
+  const toolId = 'recipient-agy';
+  const executable = '/synthetic/recipient/bin/agy';
+  agents.recordTools([{ id: toolId, kind: 'antigravity', executable, installed: true, login: 'none', version: '1.5.14' }]);
+  const endpoint = 'https://provider.example.invalid/gemini';
+  const model = 'gemini-4-argon';
+  const provider = agents.saveProvider({
+    name: 'Gemini test provider', key: KEY, endpoints: { gemini: endpoint },
+    models: [{ id: model, name: model, availability: { antigravity: 'available' } }],
+  });
+  const agent = agents.saveConfig({
+    name: 'Antigravity', toolId, source: 'provider', providerId: provider.id,
+    models: [model], defaultModel: model, homeVisible: false,
+  });
+  const selection = { providerIds: [], agentIds: [agent.id] };
+  const plain = await transfer.exportBytes(selection);
+  expect(plain.toString()).not.toContain(KEY);
+  expect(plain.toString()).not.toContain(executable);
+  const preview = transfer.inspect(1, plain);
+  expect(preview.preview?.providers[0].needsKey).toBe(true);
+  const plainImport = transfer.commit(1, preview.token);
+  expect(agents.providers().find(row => row.id === plainImport.providerIds[0])).toMatchObject({
+    endpoints: { gemini: endpoint }, hasKey: false,
+  });
+  expect(agents.configs().find(row => row.id === plainImport.agentIds[0])).toMatchObject({
+    toolId, providerId: plainImport.providerIds[0], models: [model], defaultModel: model, homeVisible: false,
+  });
+  const encrypted = await transfer.exportBytes({ ...selection, includeKeys: true, password: PASS, confirmation: PASS });
+  expect(encrypted.toString()).not.toContain(KEY);
+  const locked = transfer.inspect(1, encrypted);
+  const before = state();
+  await expect(transfer.unlock(1, locked.token, 'invalid password')).rejects.toThrow('口令');
+  expect(state()).toBe(before);
+  const unlocked = await transfer.unlock(1, locked.token, PASS);
+  expect(unlocked.providers[0].needsKey).toBe(false);
+  expect(JSON.stringify(unlocked)).not.toContain(KEY);
+  const restored = transfer.commit(1, locked.token);
+  expect(agents.providers().find(row => row.id === restored.providerIds[0])).toMatchObject({
+    endpoints: { gemini: endpoint }, hasKey: true,
+  });
+});
 it('tampered GCM ciphertext refuses without mutation; foreign project-format envelope is rejected before import',async()=>{
  const p=payload({credentials:{p1:{key:KEY}}}),raw=await encryptTransfer(p,PASS,'willyou.agents'),value=JSON.parse(raw.toString());const cipher=Buffer.from(value.ciphertext,'base64');cipher[0]^=1;value.ciphertext=cipher.toString('base64');
  const pending=transfer.inspect(1,bytes(value)),before=state();await expect(transfer.unlock(1,pending.token,PASS)).rejects.toThrow();expect(state()).toBe(before);

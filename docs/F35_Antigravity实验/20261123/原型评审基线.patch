@@ -1,0 +1,415 @@
+diff --git a/prototypes/m6-codex/public/assets/m13-agent-icons/SOURCE.md b/prototypes/m6-codex/public/assets/m13-agent-icons/SOURCE.md
+index 5618acb15..9f184b2d5 100644
+--- a/prototypes/m6-codex/public/assets/m13-agent-icons/SOURCE.md
++++ b/prototypes/m6-codex/public/assets/m13-agent-icons/SOURCE.md
+@@ -9,6 +9,7 @@
+ | `openai.svg` | OpenAI 官方供应商 | <https://developers.openai.com/codex> 页头 OpenAI 标志的内联 SVG（原始抽取 SHA256 `468ebe03…ae90`） | 去掉 class，宽高改为 411，`currentColor` 改为 `#000` | `0f0b712ba0e80ac8023c40c2a0ef8807c1ff8bc069d7d170e193df3382f92989` |
+ | `openai-white.svg` | 历史临时 Codex 回退（当前不再使用） | 同上 | 同上，填充改为 `#fff` | `6a831a6dabed97cf585dec92d708cec15134cb8146a653367876e3e86133d8cc` |
+ | `codex.svg` | Codex 工具及其智能体 | [官方 Codex 页面](https://chatgpt.com/codex/) 直接引用的 [官方 sprite](https://chatgpt.com/cdn/assets/sprites-shell-41232287.svg) 中 `codex` symbol；2026-11-13复核 | 仅将symbol容器改为独立SVG，20×20路径／填充规则未改；白底容器留空隙；官方单色界面符号，不冒充彩色macOS App图标 | `e20cb416aca6ba02f03a50e0af49951a09456ec266d77e1ea289cfc6583f754d` |
++| `antigravity.png` | F35 Antigravity 工具及其智能体 | Google Antigravity 的全彩图标（2026-11-23 获取）。[官方素材页](https://antigravity.google/press) · [原始 PNG](https://antigravity.google/assets/image/brand/antigravity-icon__full-color.png) | `sips` 从 540×540 缩至 144×144，保留透明背景，界面用统一的白色圆角容器 | `647991c897410a1a80a502a53e8d4c7276b4d10aced0af051839b0ad3ed3fe11` |
+ | `deepseek.png` | DeepSeek | <https://www.deepseek.com/favicon.ico>（官网 `<link rel="icon">`，SHA256 `30a4420e…1321`） | `sips` 转 PNG，225² | `d1e6058d19b04817a623dc6e3a99405c70defaf412e9296edf7dbe2032ff7cbe` |
+ | `zhipu.png` | GLM（智谱） | <https://open.bigmodel.cn/static/images/favicon.png>（智谱开放平台 `<link rel="icon">`） | 未修改，90² | `94ff9c00af67774e5178428942a6e0a9952c7e2f3aba4c25f3b05c782841ee4c` |
+ | `magpie.png` | Magpie | 本机 `/Applications/magpie.app/Contents/Resources/magpie.icns`（Magpie 0.1.2823，icns SHA256 `d4cc207f…2545`） | `sips` 转 PNG（1024²，SHA256 `48066664…4c2b`）后缩到 256² | `fc5399bed33358752680c261db7fa99aa248029afca2947c27d595c3b72cad50` |
+diff --git a/prototypes/m6-codex/src/M13AgentSettings.jsx b/prototypes/m6-codex/src/M13AgentSettings.jsx
+index 6c26a53ad..21cce60c6 100644
+--- a/prototypes/m6-codex/src/M13AgentSettings.jsx
++++ b/prototypes/m6-codex/src/M13AgentSettings.jsx
+@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
+ import { AgentDialog, CodeAgentConfig, CatalogDialog, ProviderDialog, ToolPathDialog } from './M13CodeAgent.jsx';
+ import { ExportDialog, ImportDialog } from './M13Pages.jsx';
+ import { SCENES } from './M13Workspace.jsx';
+-import { AGENTS, LOGIN_LABEL, moveAgent, reconcileDefault, removeAgent, removeProviderImpact, reorderAgent, syncLogin, withDefault } from './m13-model.mjs';
++import { AGENTS, F35_PREVIEW, LOGIN_LABEL, moveAgent, reconcileDefault, removeAgent, removeProviderImpact, reorderAgent, syncLogin, withDefault } from './m13-model.mjs';
+ import { clearLiveKey } from './m13-live.mjs';
+ import './m13.css';
+ 
+@@ -35,7 +35,7 @@ export function M13AgentSettings({ tab, focus, store, nav }) {
+     const d = detectByScene(scene), msgs = [];
+     let cs = configs;
+     const nextTools = tools.map(t => {
+-      if (only && t.id !== only) return t;
++      if ((only && t.id !== only) || t.acpProtocol) return t;
+       const r = d[t.id];
+       if (!t.installed && r.installed) msgs.push(`检测到 ${t.name}，新建智能体时可以选择它`);
+       if (t.installed && !r.installed) msgs.push(`没有检测到 ${t.name}：它的智能体暂时不能使用，也不在首页显示`);
+@@ -69,8 +69,8 @@ export function M13AgentSettings({ tab, focus, store, nav }) {
+   /** 新建入口：同一个 Code Agent＋供应商已有智能体时直接打开它（P0.15 唯一性）。 */
+   const newAgent = preset => { const ex = preset?.provider && configs.find(c => !c.legacy && c.tool === preset.tool && c.provider === preset.provider); setModal(ex ? { type: 'agent', config: ex } : { type: 'agent', preset }); nav('settings/ai/configs'); if (ex) notify(`已有“${ex.name}”，可以在这里勾选更多模型`); };
+ 
+-  return <div className="m13-shell m13-settings-embed">
+-    <div className="m13-scene-line"><span>M13 原型 · 合成数据（SMG 供应商例外：真实请求，Key 只在页面内存）</span><label>演示场景<select value={scene} onChange={e => setScene(e.target.value)}>{SCENES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label></div>
++  return <div className={'m13-shell m13-settings-embed' + (F35_PREVIEW ? ' f35-preview' : '')}>
++    <div className="m13-scene-line"><span>{F35_PREVIEW ? 'F35 接入原型 · Model Hub 和 Antigravity 使用合成数据' : 'M13 原型 · 合成数据（SMG 供应商例外：真实请求，Key 只在页面内存）'}</span><label>演示场景<select value={scene} onChange={e => setScene(e.target.value)}>{SCENES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label></div>
+     <CodeAgentConfig tab={tab || 'configs'} {...{ store, nav, scene, setModal, notify, menu, setMenu, ops }} />
+     {modal?.type === 'export' && <ExportDialog providers={providers} configs={configs} onClose={close} notify={notify} />}
+     {modal?.type === 'import' && <ImportDialog providers={providers} configs={configs} onClose={close} onImport={pv => {
+diff --git a/prototypes/m6-codex/src/M13CodeAgent.jsx b/prototypes/m6-codex/src/M13CodeAgent.jsx
+index 23eb444b9..061195a84 100644
+--- a/prototypes/m6-codex/src/M13CodeAgent.jsx
++++ b/prototypes/m6-codex/src/M13CodeAgent.jsx
+@@ -3,14 +3,14 @@
+ // 除 SMG 真实接入外全部为合成数据，不读取真实 CLI 登录或配置、不保存秘密原文。
+ import React, { useState } from 'react';
+ import { ArrowLeft, Check, Copy, GripVertical, Download, Eye, EyeOff, ExternalLink, Info, Plus, RefreshCw, Search, Star, Terminal, TriangleAlert, Upload } from 'lucide-react';
+-import { AGENTS, AVAIL_LABEL, applyProviderKey, CATALOG, CODE_AGENTS, agentModels, canBeDefault, cleanPicked, reconcileModels, uniformTiers, existingAgent, nameTaken, agentName, providersForTool, providerSummary, recommendedModel, CATALOG_GROUPS, CLAUDE_TIERS, LOGIN_DESC, LOGIN_LABEL, PROTOCOL_LABEL_FULL, PROTOCOL_TABS, TOOL_PROTOCOL, applyTest, autoName, autoTest, availOf, catalogItem, checkToolPath, compatible, detectProtocols, globalModelNotice, modelsFor, pairingNote, probe, rebuildTiers, runNotes, tiersValid, toolsFor } from './m13-model.mjs';
++import { AGENTS, AVAIL_LABEL, applyProviderKey, CATALOG, CODE_AGENTS, F35_PREVIEW, agentModels, canBeDefault, cleanPicked, reconcileModels, uniformTiers, existingAgent, nameTaken, agentName, providersForTool, providerSummary, recommendedModel, CATALOG_GROUPS, CLAUDE_TIERS, LOGIN_DESC, LOGIN_LABEL, PROTOCOL_LABEL_FULL, PROTOCOL_TABS, TOOL_PROTOCOL, applyTest, autoName, autoTest, availOf, catalogItem, checkToolPath, compatible, detectProtocols, globalModelNotice, modelsFor, pairingNote, probe, rebuildTiers, runNotes, tiersValid, toolsFor } from './m13-model.mjs';
+ import { AgentIcon, ProviderIcon, ToolIcon } from './m13-icons.jsx';
+ import { Dialog, Menu, Pill } from './m13-ui.jsx';
+ import { clearLiveKey, getLiveKey, isLive, liveClaudeTest, liveModels, liveProbe, setLiveKey } from './m13-live.mjs';
+ import { ProviderModelPicker } from '../../../src/renderer/features/agents/provider-model-picker';
+ import { providerModelMetadata } from '@shared/provider-model-metadata';
+ 
+-const TOOL_IDS = ['claude', 'codex'];
++const TOOL_IDS = Object.keys(AGENTS);
+ const providerKind = p => p.type === 'custom' ? '自定义' : '目录';
+ const availTone = s => s === 'ok' ? 'ok' : s === 'bad' ? 'warn' : 'muted';
+ const modelName = (p, id) => p?.models?.find(m => m.id === id)?.name || id;
+@@ -136,10 +136,10 @@ export function AgentDialog({ initial, preset, copy, store, onClose, onSave, onA
+   return <Dialog title={editing ? '编辑智能体' : copy ? '复制智能体' : '新建智能体'} sub={editing ? initial.name : '选 Code Agent，再选订阅或供应商，最后勾选模型；Key 已保存在供应商上'} wide onClose={onClose} footer={footer}>
+     <section className="m13-step" data-step="1"><h3 className="m13-step-h"><i>1</i>Code Agent{editing && <small>编辑时不能更换</small>}</h3>
+       <div className="m13-agent-cards" role="radiogroup" aria-label="Code Agent">{CODE_AGENTS.map(a => { const t = tools.find(x => x.id === a.id); const can = a.supported && t?.installed && !(editing && a.id !== tool);
+-        const state = !a.supported ? '暂不支持' : !t?.installed ? '未检测到 · 安装后重新检测' : `v${t.version} · ${loginState(t)}`;
++        const state = !a.supported ? '暂不支持' : !t?.installed ? '未检测到 · 安装后重新检测' : t.acpProtocol ? `v${t.version} · ACP v${t.acpProtocol}` : `v${t.version} · ${loginState(t)}`;
+         return <button key={a.id} role="radio" aria-checked={tool === a.id} disabled={!can} className={'m13-agent-card' + (tool === a.id ? ' selected' : '')} onClick={() => pickTool(a.id)} title={!a.supported ? `${a.name} 暂不支持，后续版本接入` : ''}>
+           {a.supported ? <ToolIcon tool={a.id} size={24} /> : <ProviderIcon catalog={'agent-' + a.id} name={a.name} size={24} />}<span><b>{a.name}</b><small>{state}</small></span>{tool === a.id && <Check size={14} className="m13-card-check" />}</button>; })}</div>
+-      <div className="m13-tool-status" aria-label="本机检测"><span className="m13-ts-label">本机检测</span>{tools.map(t => { const v = store.scene === 'codex-unverified' && t.id === 'codex' ? '0.167.0' : t.version; return <span key={t.id} className="m13-ts-item" data-tool={t.id}><b>{t.name}</b>{!t.installed ? <span className="warn"><TriangleAlert size={12} />未检测到</span> : <span className="m13-checks"><span><Check size={12} />检测到程序</span><span><Check size={12} />程序可启动</span>{t.verified.includes(v) ? <span><Check size={12} />版本已验证</span> : <span className="warn"><TriangleAlert size={12} />未验证版本 {v}，可继续使用</span>}</span>}<button className="m13-link" onClick={() => onToolPath(t)}>自定义路径…</button></span>; })}<button className="m13-link" onClick={onRedetect}>重新检测</button></div></section>
++      <div className="m13-tool-status" aria-label="本机检测"><span className="m13-ts-label">本机检测</span>{tools.map(t => { const v = store.scene === 'codex-unverified' && t.id === 'codex' ? '0.167.0' : t.version; return <span key={t.id} className="m13-ts-item" data-tool={t.id}><b>{t.name}</b>{!t.installed ? <span className="warn"><TriangleAlert size={12} />未检测到</span> : <span className="m13-checks"><span><Check size={12} />检测到程序</span><span><Check size={12} />程序可启动</span>{t.acpProtocol ? <span><Check size={12} />ACP v{t.acpProtocol} 握手通过</span> : t.verified.includes(v) ? <span><Check size={12} />版本已验证</span> : <span className="warn"><TriangleAlert size={12} />未验证版本 {v}，可继续使用</span>}</span>}<button className="m13-link" onClick={() => onToolPath(t)}>自定义路径…</button></span>; })}<button className="m13-link" onClick={onRedetect}>重新检测</button></div></section>
+     <section className="m13-step" data-step="2"><h3 className="m13-step-h"><i>2</i>订阅或供应商<small>只列支持 {AGENTS[tool]} 的</small></h3>
+       <div className="m13-prov-list" role="radiogroup" aria-label="订阅或供应商">
+         {taken(tool, 'login') ? <ExistingOpt icon={<ToolIcon tool={tool} size={22} />} title={LOGIN_LABEL[method || 'subscription']} agent={taken(tool, 'login')} onEdit={onEditExisting} />
+@@ -277,7 +277,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
+         <input className="m13-input" aria-label="服务地址" value={url} onChange={e => { setUrl(e.target.value); setDetected(null); setResult(null); }} placeholder={proto === 'anthropic' ? 'https://…/anthropic' : 'https://…/v1'} />
+         <div className="m13-inline-actions"><button className="m10-button secondary m13-row-btn" onClick={() => setDetected(detectProtocols(url))}>检测协议</button>{detected && (detected.ok ? <span className="m13-hint">候选：{detected.candidates.map(c => PROTOCOL_LABEL_FULL[c]).join('、')}（接入时以最小调用确认）</span> : <span className="m13-hint m13-err">{detected.error}</span>)}</div>
+         <details className="m13-adv"><summary>更多端点</summary>{PROTOCOL_TABS.filter(([k]) => k !== proto).map(([k, t]) => <label key={k} className="m13-field"><span>{t}</span><input value={more[k] || ''} onChange={e => setMore(m => ({ ...m, [k]: e.target.value }))} placeholder="可选" /></label>)}</details>
+-        <small className="m13-hint">Codex 需要 OpenAI Responses，Claude Code 需要 Anthropic；只有 OpenAI 兼容时两个工具都不能直接使用。</small></div>
++        <small className="m13-hint">{F35_PREVIEW ? '按服务实际提供的协议填写。Antigravity 使用 Gemini 原生端点。' : 'Codex 需要 OpenAI Responses，Claude Code 需要 Anthropic；只有 OpenAI 兼容时两个工具都不能直接使用。'}</small></div>
+       <span className="m13-form-label">API 密钥</span><div className="m13-key"><input type={showKey ? 'text' : 'password'} aria-label="API 密钥" value={key} onChange={e => { setKey(e.target.value); setResult(null); }} placeholder="粘贴 API 密钥" /><button type="button" className="m13-link" onClick={() => setShowKey(!showKey)}>{showKey ? <EyeOff size={14} /> : <Eye size={14} />}{showKey ? '隐藏' : '显示'}</button></div>
+       <span className="m13-form-label">图标</span><div className="m13-inline-actions"><ProviderIcon catalog={'custom-' + cName} name={cName || '?'} size={28} /><span className="m13-hint">默认使用名称首字母</span></div>
+       <span className="m13-form-label">模型</span><div><input className="m13-input" aria-label="模型 ID" value={manual} onChange={e => setManual(e.target.value)} placeholder="模型 ID，逗号分隔；留空则从服务获取" /></div>
+@@ -349,7 +349,7 @@ export function ProviderDialog({ provider: p, store, scene, onClose, notify, onR
+     {down && <div className="m13-alert warn"><TriangleAlert size={16} /><div><strong>Magpie 未运行</strong><p>启动任务前会先提示，不会让 CLI 卡在重连。请先打开 Magpie。</p></div></div>}
+     {p.needKey && <div className="m13-alert warn"><Info size={16} /><div><strong>需要填写 Key</strong><p>这个供应商从导入文件创建，文件里不含 Key。填写后才能启动任务和测试模型。</p></div></div>}
+     <dl className="m13-info compact">
+-      <dt>适用工具</dt><dd className="m13-fit-line"><FitChips provider={p} />{ts.length < 2 && <small className="m13-hint">{TOOL_IDS.filter(t => !ts.includes(t)).map(t => compatible(t, p).reason).join('；')}</small>}</dd>
++      <dt>适用工具</dt><dd className="m13-fit-line"><FitChips provider={p} />{ts.length < TOOL_IDS.length && <small className="m13-hint">{TOOL_IDS.filter(t => !ts.includes(t)).map(t => compatible(t, p).reason).join('；')}</small>}</dd>
+       <dt>服务地址</dt><dd>{editingAddress?<><div className="m13-form-grid">{Object.keys(PROTOCOL_LABEL_FULL).map(k=><label key={k} className="m13-field"><span>{PROTOCOL_LABEL_FULL[k]}</span><input aria-label={PROTOCOL_LABEL_FULL[k]+' 地址'} value={addresses[k]||''} onChange={e=>setAddresses(a=>({...a,[k]:e.target.value}))}/></label>)}</div><button className="m10-button secondary m13-row-btn" onClick={()=>{const next=Object.fromEntries(Object.entries(addresses).filter(([,v])=>v.trim()));if(!Object.keys(next).length)return notify('至少填写一个服务地址');try{for(const v of Object.values(next)){const u=new URL(v);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error();}}catch{return notify('请填写不含凭据的 HTTP(S) 地址');}patch(x=>({...x,endpoints:next,protocols:Object.keys(next),url:Object.values(next)[0],rev:(x.rev||0)+(JSON.stringify(x.endpoints)!==JSON.stringify(next)?1:0)}));setEditingAddress(false);notify('地址已保存（原型合成数据）');}}>保存地址</button><button className="m13-link" onClick={()=>setEditingAddress(false)}>取消</button></>:<>{Object.entries(p.endpoints || { [p.protocols[0]]: p.url }).map(([k,v])=><div key={k} className="m13-endpoint"><Pill tone={k==='openai'?'muted':'info'}>{PROTOCOL_LABEL_FULL[k]}</Pill><code>{v}</code></div>)}<button className="m13-link" onClick={()=>{setAddresses({...p.endpoints});setEditingAddress(true);}}>编辑地址</button></>}</dd>
+       <dt>Key</dt><dd>{keyEdit === null ? <><code>{p.key || '未填写'}</code><button className="m13-link" onClick={() => setKeyEdit('')}>{p.key ? '更换' : '填写'}</button></> : <span className="m13-inline-edit"><input type="password" aria-label="新的 Key" value={keyEdit} onChange={e => setKeyEdit(e.target.value)} placeholder="加密保存，只在启动时注入" /><button className="m10-button secondary m13-row-btn" disabled={!keyEdit.trim()} onClick={() => { if (live) setLiveKey(p.id, keyEdit.trim()); patch(x => applyProviderKey(x, keyEdit)); setKeyEdit(null); notify('Key 已更新（原型只保留脱敏后四位）'); }}>保存</button>{!p.needKey && <button className="m13-link" onClick={() => setKeyEdit(null)}>取消</button>}</span>}</dd>
+       <dt>模型目录</dt><dd>{p.models.length>0&&p.models.every(m=>m.catalogSource==='manual')?'手填模型 · 启动前检查服务可达性':`${p.refreshed} 刷新 · 每次启动任务前自动比对`}<button className="m13-link" disabled={refreshing || down} onClick={refresh}>{refreshing ? '刷新中…' : '刷新模型'}</button></dd></dl>
+diff --git a/prototypes/m6-codex/src/m13-icons.jsx b/prototypes/m6-codex/src/m13-icons.jsx
+index 9a86205cb..090020599 100644
+--- a/prototypes/m6-codex/src/m13-icons.jsx
++++ b/prototypes/m6-codex/src/m13-icons.jsx
+@@ -49,6 +49,7 @@ export function PluginIcon({ id, name = '', size = 36 }) {
+ const A = '/assets/m13-agent-icons/';
+ const PROVIDER_IMAGES = {
+   'tool-claude': { href: A + 'claude.png', bleed: 1.22 }, 'tool-codex': { href: A + 'codex.svg', bg: '#fff', inset: 5, border: true },
++  'tool-antigravity': { href: A + 'antigravity.png', bg: '#fff', inset: 1, border: true },
+   anthropic: { href: A + 'anthropic.png', bleed: 1 }, openai: { href: A + 'openai.svg', bg: '#fff', inset: 7, border: true },
+   deepseek: { href: A + 'deepseek.png', bg: '#fff', inset: 3, border: true },
+   ultracloud: { href: A + 'model-hub.svg', bg: '#fff', inset: 3, border: true },
+diff --git a/prototypes/m6-codex/src/m13-model.mjs b/prototypes/m6-codex/src/m13-model.mjs
+index 092b30689..9be7de191 100644
+--- a/prototypes/m6-codex/src/m13-model.mjs
++++ b/prototypes/m6-codex/src/m13-model.mjs
+@@ -2,7 +2,9 @@
+ // 依据 docs/里程碑/M13_应用Skill与MCP插件化重构/需求.md R0.3（含补记）与 技研/技术方案.md T1.0 草案。
+ // 全部为合成数据：不读取真实插件、CLI 配置、Skill 目录或密钥，不发网络请求，不启动任何程序。
+ 
+-export const AGENTS = { claude: 'Claude Code', codex: 'Codex' };
++export const F35_PREVIEW = new URLSearchParams(globalThis.location?.search).get('f35') === '1';
++export const F35_MODELS = ['gemini-4-carbon', 'gemini-4-argon'].map(id => ({ id, name: id, ctx: '—' }));
++export const AGENTS = { claude: 'Claude Code', codex: 'Codex', ...(F35_PREVIEW ? { antigravity: 'Antigravity' } : {}) };
+ 
+ // ---------- 插件 ----------
+ /** 连接表单声明（审核 P03）：由插件声明字段，WillYou 渲染；密码／Token 只显示“已保存”，原型不保存秘密值。 */
+@@ -158,6 +160,7 @@ export function unmanage(c) { return { ...c, state: 'new', targets: Object.fromE
+ export const TOOLS = [
+   { id: 'claude', name: 'Claude Code', path: '~/.local/bin/claude', version: '2.1.322', verified: ['2.1.321', '2.1.322'], installed: true, login: 'subscription' },
+   { id: 'codex', name: 'Codex', path: '~/.local/bin/codex', version: '0.166.0', verified: ['0.166.0'], installed: true, login: 'none' },
++  ...(F35_PREVIEW ? [{ id: 'antigravity', name: 'Antigravity', path: '~/.local/bin/agy', version: '1.5.14', acpProtocol: 1, installed: true, login: 'none' }] : []),
+ ];
+ export const LOGIN_LABEL = { subscription: '订阅', api: 'API' };
+ export const LOGIN_DESC = { subscription: '使用 CLI 里登录的订阅账号，消耗订阅额度', api: '使用 CLI 里登录的 API Key，按官方价格计费' };
+@@ -171,8 +174,8 @@ export const PROVIDERS = [
+   { id: 'magpie', name: 'Magpie', type: 'preset', preset: 'magpie', catalog: 'magpie', url: 'http://127.0.0.1:3425/v1', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, protocols: ['responses', 'anthropic'], key: 'magpie-codex', refreshed: '今天 08:40', recommended: { codex: 'gpt-5.5', claude: 'claude-sonnet-5-5' },
+     models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K', avail: { codex: 'ok', claude: 'untested' } }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K', avail: { claude: 'ok', codex: 'bad' }, detail: 'Codex 调用时工具调用格式不兼容' }] },
+ ];
+-export const PROTOCOL_LABEL = { responses: 'OpenAI Responses', anthropic: 'Anthropic Messages' };
+-export const TOOL_PROTOCOL = { codex: 'responses', claude: 'anthropic' };
++export const PROTOCOL_LABEL = { responses: 'OpenAI Responses', anthropic: 'Anthropic Messages', ...(F35_PREVIEW ? { gemini: 'Gemini 原生' } : {}) };
++export const TOOL_PROTOCOL = { codex: 'responses', claude: 'anthropic', ...(F35_PREVIEW ? { antigravity: 'gemini' } : {}) };
+ export function compatible(toolId, provider) {
+   return (provider.protocols || []).includes(TOOL_PROTOCOL[toolId]) ? { ok: true } : { ok: false, reason: `${AGENTS[toolId]} 需要 ${PROTOCOL_LABEL[TOOL_PROTOCOL[toolId]]} 兼容接口` };
+ }
+@@ -216,6 +219,7 @@ export const RUN_CONFIGS = [
+ /** Code Agent 列表（P0.13）：首期支持 Claude Code、Codex；其余先展示并标“暂不支持”。 */
+ export const CODE_AGENTS = [
+   { id: 'claude', name: 'Claude Code', supported: true }, { id: 'codex', name: 'Codex', supported: true },
++  ...(F35_PREVIEW ? [{ id: 'antigravity', name: 'Antigravity', supported: true }] : []),
+   { id: 'opencode', name: 'OpenCode', supported: false }, { id: 'zcode', name: 'Z Code', supported: false }, { id: 'pi', name: 'Pi', supported: false }, { id: 'dsh', name: 'DSH', supported: false },
+ ];
+ const newId = () => 'rc-' + Math.random().toString(36).slice(2, 8);
+@@ -462,19 +466,20 @@ export const CATALOG = [
+     models: [{ id: 'glm-5', name: 'GLM-5', ctx: '128K' }, { id: 'glm-5-air', name: 'GLM-5-Air', ctx: '128K' }] },
+   // SMG（SmartModelGate）：用户 2026-11-11 提供的内网网关；原型中真实接入（live，见 m13-live.mjs）。公开的 /openapi.json 只有 /v1/messages、/v1/chat/completions、/v1/models 等，没有 Responses；Codex 0.166 已不支持 chat 接口，所以只适用 Claude Code（补验 D）。
+   { id: 'smg', group: 'vendor', name: 'SMG', desc: '公司内网模型网关', endpoints: { anthropic: SMG_URL, openai: SMG_URL + '/v1' }, keyLabel: 'SMG API Key', verified: true, live: true, recommended: 'deepseek-v4-pro', models: [] },
+-  { id: 'ultracloud', group: 'vendor', name: 'Model Hub', desc: '模型网关', endpoints: { responses: 'https://rjmodel.rjupc.com/v1', anthropic: 'https://rjmodel.rjupc.com' }, keyLabel: 'Model Hub Key', verified: true,
+-    models: ['qwen3.8-max', 'glm-5.1', 'gpt-5.4', 'claude-sonnet-4-6', 'wan3.0-video', 'gemini-nano-banana-2.1'].map(id => ({ id, name: id, ctx: '—' })) },
++  { id: 'ultracloud', group: 'vendor', name: 'Model Hub', desc: '模型网关', endpoints: { responses: 'https://rjmodel.rjupc.com/v1', anthropic: 'https://rjmodel.rjupc.com', ...(F35_PREVIEW ? { gemini: 'https://rjmodel.rjupc.com' } : {}) }, keyLabel: 'Model Hub Key', verified: true,
++    ...(F35_PREVIEW ? { recommended: { antigravity: F35_MODELS[0].id } } : {}),
++    models: F35_PREVIEW ? F35_MODELS : ['qwen3.8-max', 'glm-5.1', 'gpt-5.4', 'claude-sonnet-4-6', 'wan3.0-video', 'gemini-nano-banana-2.1'].map(id => ({ id, name: id, ctx: '—' })) },
+   { id: 'magpie', group: 'vendor', name: 'Magpie', desc: '本机网关，真实 Key 与路由留在 Magpie', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, keyLabel: '令牌', defaultKey: 'magpie-codex', verified: true, recommended: { codex: 'gpt-5.5', claude: 'claude-sonnet-5-5' },
+     models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K' }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K' }] },
+ ];
+-export const PROTOCOL_TABS = [['responses', 'OpenAI Responses'], ['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容']];
+-export const PROTOCOL_LABEL_FULL = { responses: 'OpenAI Responses', anthropic: 'Anthropic', openai: 'OpenAI 兼容' };
++export const PROTOCOL_TABS = [['responses', 'OpenAI Responses'], ['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容'], ...(F35_PREVIEW ? [['gemini', 'Gemini 原生']] : [])];
++export const PROTOCOL_LABEL_FULL = Object.fromEntries(PROTOCOL_TABS);
+ /** 供应商能用于哪些工具：Codex 需要 Responses，Claude Code 需要 Anthropic。 */
+ export function toolsFor(p) {
+   const pr = p.protocols || Object.keys(p.endpoints || {});
+-  return ['claude', 'codex'].filter(t => pr.includes(TOOL_PROTOCOL[t]));
++  return Object.keys(AGENTS).filter(t => pr.includes(TOOL_PROTOCOL[t]));
+ }
+-export const pairingNote = p => { const t = toolsFor(p); return t.length ? '适用 ' + t.map(x => AGENTS[x]).join('、') : '两个工具都不能直接使用，可经 Magpie 等网关接入'; };
++export const pairingNote = p => { const t = toolsFor(p); return t.length ? '适用 ' + t.map(x => AGENTS[x]).join('、') : F35_PREVIEW ? '需要兼容的 Code Agent 接口' : '两个工具都不能直接使用，可经 Magpie 等网关接入'; };
+ /** 自定义供应商检测协议（合成）：按地址给出候选协议；以 /anthropic 结尾判为 Anthropic，含 /chat 判为 OpenAI 兼容。 */
+ export function detectProtocols(url) {
+   if (!/^https?:\/\/.+/.test(url)) return { ok: false, error: '请输入以 http:// 或 https:// 开头的地址' };
+diff --git a/prototypes/m6-codex/src/m13.css b/prototypes/m6-codex/src/m13.css
+index 9d013b64a..9d8208fa9 100644
+--- a/prototypes/m6-codex/src/m13.css
++++ b/prototypes/m6-codex/src/m13.css
+@@ -391,6 +391,8 @@
+ .m13-icon.image{flex-shrink:0}
+ :root[data-theme=dark] .m13-icon.image{box-shadow:0 0 0 1px #ffffff1f}
+ @media (max-width:760px){.m13-fit-label{display:none}.m13-table.matrix>div{grid-template-columns:minmax(0,1fr) 110px 110px}.m13-table.matrix>div>span:nth-child(2){display:none}.m13-agent-row{flex-wrap:wrap}}
++.f35-preview .m13-table.matrix>div{grid-template-columns:minmax(0,1fr) 60px repeat(3,minmax(110px,1fr))}
++@media (max-width:760px){.f35-preview .m13-table.matrix>div{grid-template-columns:minmax(0,1fr) repeat(3, minmax(86px,1fr))}}
+ .m13-info.compact dd>code{display:inline;margin-right:8px}
+ .m13-tool-checks{margin:0 0 0 6px;gap:4px 10px}
+ @media (max-width:900px){.m13-tool-checks span:not(.warn){display:none}}
+diff --git a/prototypes/m6-codex/src/m14-model.mjs b/prototypes/m6-codex/src/m14-model.mjs
+index c34a24312..74823b325 100644
+--- a/prototypes/m6-codex/src/m14-model.mjs
++++ b/prototypes/m6-codex/src/m14-model.mjs
+@@ -1,6 +1,8 @@
+ // M14 统一任务区原型的合成数据与纯逻辑。不读本机文件、不连模型、不发网络请求。
+ // 依据：需求 R1.1（R01–R13）、技术方案 T1.1 §4/§5/§6/§9/§10/§11、原型说明 P0.3 的 S01–S15。
+ 
++import { F35_MODELS, F35_PREVIEW } from './m13-model.mjs';
++
+ export const PROJECT_ROOT = '/workspace/SmartDD';
+ // 原型文件区中“不存在”的路径（真实 App 由文件服务核对存在性）
+ const MISSING = new Set(['fixtures/已删除.md', 'src/missing.ts']);
+@@ -15,6 +17,11 @@ export const AGENTS = [
+   { id: 'cx-hub', tool: 'codex', caps: { goal: true, compact: true, review: true }, provider: true, providerBadge: { catalog: 'ultracloud', name: 'Model Hub' }, name: 'Codex · Model Hub', short: 'Codex · Model Hub', source: 'WillYou 托管 · 合成目录', models: [{ id: 'gpt-6.1-sol', name: 'gpt-6.1-sol', efforts: ['低', '中等', '高', '更高', '最高'], defaultEffort: '中等' }, { id: 'gpt-6-astra', name: 'gpt-6-astra' }], efforts: [], steer: true },
+   { id: 'cc-hub', tool: 'claude', caps: { goal: true, compact: true, init: true }, provider: true, providerBadge: { catalog: 'ultracloud', name: 'Model Hub' }, name: 'Claude Code · Model Hub', short: 'Claude Code · Model Hub', source: 'WillYou 托管 · 合成目录', models: [{ id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5' }, { id: 'declared-claude-effort', name: '档位声明示例（合成）', efforts: ['低', '中等', '高'] }], efforts: [], steer: true },
+   { id: 'cc-rj', tool: null, name: 'CC-rj', short: 'CC-rj', source: '本机程序 · 旧版配置', status: { kind: 'unavailable', label: '不可用', reason: '本机 claude 2.0.1 低于已验证的最低版本 2.1.321，请升级后重新检测' }, models: [{ id: 'default', name: '默认模型', note: '执行器当前默认' }], efforts: [], steer: false, steerReason: '未验证运行中插话，只能排队' },
++  ...(F35_PREVIEW ? [{
++    id: 'agy-hub', tool: 'antigravity', provider: true, providerBadge: { catalog: 'ultracloud', name: 'Model Hub' },
++    name: 'Antigravity · Model Hub', short: 'Antigravity · Model Hub', source: 'WillYou 托管 · 合成目录',
++    models: F35_MODELS, efforts: ['低', '中等', '高'], defaultEffort: '低', steer: false,
++  }] : []),
+   { id: 'oc', name: 'OpenCode', placeholder: '后续接入', models: [] },
+ ];
+ export const PERMISSIONS = [
+diff --git a/prototypes/m6-codex/public/assets/m13-agent-icons/antigravity.png b/prototypes/m6-codex/public/assets/m13-agent-icons/antigravity.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..3e04303f1c611271eceaf298d4e134275fdaf902
+GIT binary patch
+literal 10032
+zcmcI~^;a8C5NCp<I24Cs#Twk*f;$cFQrxYiNYPSCad$5kytoy2cP~<0S|}1E*!6pN
+z@9zGA+xKQav$Hd6Kh5k+1XM#27mE@L007`BE6Hj7!}$LQ1N5&yP}pwy2WWQE>e2u}
+zZ5;N)JM@2JIx8hDbpXJR82||W3;-biiGmLS02ns_aBKkph^7MoWbWB*n&ST^d~6Jq
+zZPnEQtp9in02+`I@ZSo+e<TTf^?!H;AQ*u9KjkO@K)3?{?SJcN{KNm+@;~~|=6@k-
+zKJb5Q|C8mT{2%T3eANHT|7TWLFKGM^Fx{05-va=zh5sX<d@7Fx0KiPIEGMnw1N@VN
+z-NK{`J2>&3>}Yl<>iP0=fEx=9UFYznHO}x{@JsWr<N|{@polvqujpx9(N;<lBM2d`
+zC^vH;pRyB(xqmBEE@@hY0F5#egKw9pa3r4VM{h;e>Bp(Ep@$%+KcY7u>^{5x>AcCF
+z(_OzmHElnhFEhH=e{Q_49*X$(!I5LyD8CWn6taj?g>Ho1Kx+U0L$Dl(-M{vnaQ-A0
+zaQF1ld0D*Hn^gXzZikPuDWmS{m>~1xal)xH0{XD>Q82a{z3J@GDA>AYsMCFGY_?8P
+z;B;t6vE$ILaK-uzuGHor6;T*SxKOW2f|#4|NDz-F9$D9wLRO44bV_zQuH!dN{oHB3
+z=ER-u)9>0Mn`ITzpQe%`Db8^ej2z7nF8|0IrM0d~FI`-BK_64c8*w4Cr)4s+_*N;W
+z(<tq{w6xRbvT7%Mu!(wx6Lb1;iN+tAJ5L)oc07^88ta!;2nJF1$k34OMo3%3v<eJH
+zM%lGRNaT_<DG`1MHJyRys^;3unf0!^>jW3R``gOKG2m5SP1oVL2KA$vQ0#SvZ#mv~
+zjC`505IH&~=`ebrtjKBcOPf%qc*O)__C!D6?2T<C^0%Go$2pFj&>=qB2#pF;JLHoP
+zz9B{NIa!qO%7Jog1-**+fbu*UTEL!swn8!C*s$tC8YWA^^mwsoYLvF=%Ym6Mb&-jT
+zlFsz%)tgsetTZ-Z?Bz+W`Xb98pZ0C?(v?nh2ljc(J#@9Q<y^t1h2o6*Y1Y^zi7@`W
+z?>M@=HzbR)wJI*5qD_UKrFv%ad>wU9DaAn_cJh8>HLWuN+N}QkdTz}cOiSTw49@=*
+zdV)g#Uh$F+tDE4g2o$@hnIl~S3mGXWFjMByF`0iI_sxWWNw=X4T;9yydOBDWBPM5s
+zKkdCpb2sQpX=-|NQhB@-X^4h>JQFO7r<00`0R^gojZaSicw>e_GlCdJAql*6Ou-b%
+zaMqLXu|WUc*_x`3kJ+y&oq}C|oDYZ23O_de9F?@0dL^WZ`U>LcAA>O15dw&a8@aNg
+zDFH$W!$gxo?tm{gfI=G()2SMZZlsP>v5!NO`Fa!MaUQw3_uLncFeTLL9TC$2#OoZh
+zpN~J~Qh)Q+D_60eF_}hK?y2p{(5VcQ5Ula?6n{(6_B>9}A1%8Pb&0HNqZOErU(ym>
+zFqA99z06S8rT&vz%C)&17pSPZG2|V)!{5~LooUMO$w^sA>Rn&upzk*|mN?rJ_RL!G
+z=DXZ|yT)jwS*2)kXX=ehfMgO2v6c#N1PRO4^kMOgY`yPUM#`dWR7WXu`C$Ptf%xx|
+zQ1*vj%pDB;p?+V!4|52iyt*L6v}P4pD$xy`%Qa$Io}*G&-mg&flX;w-yQ0c|T@fqk
+z3uT-1wDwVV!xq-6xO<g|VkqtYUNu~Q%lUG5{?`Wh?P&jFok?>+;P!GrSDouz3&lrv
+z)AY%Q=h;8|V|IeNn(EV)I&%a2{;!8z3^^h5-{!|MYIO=FQKZpLv_#$CNtz#p7PWa8
+z6VRu;lT3NV7X%;gB-n(vO{l2OI?L;_i>azg7V_&63BIa0dh05>x2K%=RJEO?!Gc~^
+zEDR<P!77}Q)@Sg87Q}jFmw1QO<%^f_?h4k3>byWCtXfkFj}L3+=0i&4k~thKG@Y4R
+zxF@`=f7Ml<zMb<Kn3cL8l-;rZd#*(%KFg7l;+y)x7O6#B7X3z_N}%jVCR_YbOlsBz
+z9gU;zG2udiOj$Ary%$m@nG(?+f}%WI$)2LD9&*d+B4?vd8&D&upY^aXQ+b?bdv|Gz
+z+!HB(g3m6i@s8c91^HZ_#Hl1*t?9l-B$Vrb<1UPN@N46~nQ7A{zhJ7XrCl(*F?O^%
+zk7vOf{Z)%!E{pSdHN7og{1abN9ZoXFLYYpfUvM3QT`?lL;RoBd<8owLU;<U`%~ID>
+zcZ)$lB{96Rep79>l26Q7zL>6zBs>1=M}ly;f-#g1Smc*d8GTGp2TfvS(xSy-aQ)`r
+zozp$-A}zubPYiF$zWw)3^q9$_3qM9DJdsZyCe%)*RFaBhrpivX(;8P6RIGSL#CLd1
+zJuWl25-VCe$`i|E9KV@hlE}c&2q7#&2<edC00~T3KSYbllJUfsB~Tg$C5(cB9CcRx
+zW4FP0qu6D!!{fsdQ3hS}drKwkaB!gvc>c4RDd}Fo>cz{kns!%q5ZRDI2=Qbt39PQn
+zaQ&NR<~9ah84f{#V2Q%(*#!1<)&e0op7N({EXD;$X@4?{Mw!jF;w6fll~hVmIU#>*
+z89^<yP*}bCtZswivdz7M({%L4p*^cuL$&T9c;%Z<j$o^T!)|FU;P7%&#Azx9F`gl@
+z-mHz0nrMy17#v&zRD#iW@8gmQI9J-V@Gr2Q<GUxL=`c5I!+%Z0IH*E)d+I$|u=90L
+z(*}M7zsr5?SnX!Nh9mrImVN2wP>-<5BUSL3>0L2;p+pQi<ZXY)5|i(ZZ+%uVo($lt
+zT7Znkl@{Am!3*0Ml|Djz7a+l?tj_LVs6yCbK*}mB_nu0xbgKo{_jE$s?gV5yy~A3G
+zWMvGp;2l`gW=F;_vE$;`QqI%tVVhLP`-byhjIYie{QQjY)gBJhwzY&lk2EHyaPnZp
+zYX!GpYonG=nxyYR(8Oi>0VotKagw1GwHA~@wp(Bwts5#Il{?|H!S=Op(NX2>=-%k!
+zlx-hKdQ*U`Fi8K8V0uy&;zPwp^I5VuafpFiQE61yWp!V<XnU18^STVs0~N}YuTs2f
+zVrVPf=zV}rYU*S9yq);vg>cy?)1E@upTsZdGid!<48`O75=xWk5YC$vHUnmN=CgQX
+z30UTmFiHrlT71a><)nC5W!F^NFl`_%Rl|mB-Dx88jbbZM!7K!6b8ux%e|DXlXq-^)
+z^HBIRS!uO^uS+HdO3P$P_mjf6(z-P{+*n_N^dg_^pzlxles2*wIKF}a>+?kmp>O_g
+zkGPaZcCGI&DxdFrk4C~;+2(#&<{MnDv#&poWISPhIvC@CL|KQt?+SEnroGwhw-V}?
+zK%eFxvA`NF6fH{**}=tRZy}>3^8Ru{AFPlePP*-9z^t#3Y&?pKyY&()^A!M1Em(G3
+z+mM|&cqYX!=I*nBlB>G$P%#SsO|VykOT;|IzYWmv&D-x2J>@C(xK2+%+*`FY1}UwC
+zKwNH2DxDIY09?89zN%J~nPI#Hd}b}Z`&m>Xr4&N-I5kzbD|{a)P5wDKT$6h1D4&0n
+zEySu^_BX2Y)d_rOwiB}5E`&KMJfiUwZtj00$#pw>K)dUs;6dp?ruXLVWLy00ecRf1
+zjL6VesLVe}rvV9Nall;!I4(rCZ#I7vh@s0H&nVU{`<7kv$MzP#H2*QGILe3xW+bXk
+z3<^4er?D@LWyRYu3ZBT4vRzolZd}b%K-7q8P9^WNe2{={kNo1T?hH;`n&l1yVc&Pl
+zY_X^Cr1QUBX*(MQjxB_X>H|+AFuAoELaYfA#<+{0EU7rlCm&@4sAxDdjr?V+KU$kc
+z6mgrZ=5Okqfap;b{u)eGYBETyv-$wi$UDsy+~(D=<D<Xl&kf$LgrA7c^>l1?LbFhy
+zXmW;$g_607(qZiJcyu!@^Qc>NG`s@|$MGk5+0jtC?V0jklpBF*hLGKAHCTzT7A5+W
+z;FFc(=TS_f>cPn5NZ9!6wr$Nol{KQqp`RXutz&U5`+WFZaG>{eT1+Jh;^a!eV?!Ac
+z-PVJ`9RR_cCWnA@h;A^@iAVB#QUGzN)&wk^wfCX!R=k|j0%R7-{2c@0qw2m;>OpUI
+zQu-yz7OvzWx&o?B+55f;g$2F8=^wSz0(qyd%aWdWkfToC&@9eFTLr@WqgN&M;U^m`
+zusk2dH!YN9-0q(GbRo0Ba%SP5MMWT@zX61Q`A6E%595ZUda+};*Lj3Wax;zy&f~Ty
+zx~=JWY8Z=qfNe<lI0IdYEz(sRJOIgTHp^H%gSVGj39GX;0!A>fc_j!CczSWi-)Gy-
+zUZ1{X#O1G+1Tt?)`|g(lm8u~h!f5nMf;QOt9;dPS6iWy7dY;-)U$yW+YRSRfs7fsy
+zmh>j1@tLB^6eAfz67SP7;H`TC8W%fmzV}zBH3obVo}rNpWf1up5tct*?Thz>bkV|O
+zDb-NT+!utGEmbOGlq7W^ywkDubVYGTSX3DF#V3dAtOChy+4?o=a6wu}bUZBUrDJv9
+z-O=3=DDC^0Zks%>Mj%al!^`<n506HaW7kyipr+q7)8TGV$}$H=pw`)Oa$UDe*$AjR
+zU-&(%b#=wH=oSSIV>uPe#973zUh#NWx{DcmV$9D}4Cj_g7#v$bE>CSL3(Zy!^GFwy
+zF!oGO5}6e8Aej&-!^Hb3!s^Pb(Kv)%kQufj9-T&YLgv$)P{|Dmm^Nu!jdXDhCGjUQ
+zT+d98TANBI9BD+5u&?v=uF52H-$gFegge7CU#o=9@i$b_ifAf53;US<nIT`NCc(zI
+zWKXb0WZ&050S5jkDde_RKgDOO`}W7Zp<>Xlu4j7=uh?;ZPptWhlGxZe|EW$IaxbOb
+zrupUMbsJ2opQIzlXrEHhab3{{=tzMC#34VoY4`YB&=i9jakpP{@UEYOzls?55D)h{
+zRD}}On#P5WtJj)V_rLJ|lI3XmO?2;`LMW4#>`2Cmlv<0XVF@_1dbp8LpeQEl31Ha}
+z5z%PRu2tz5e|;@&g94rxa*Yx-S$yE3Beut*>Ec|3N4=PxjChKqfY5hJze9^>+GjzH
+zBP=RlEK#}YPsX7Hq*xjPaQRtZG%w7f(x!=AI9t|juK8yRuA(q9{7ycKu8<Na)7;nh
+zI8V;n$IO;EJ*R7B4Mp+;!hWXM<)UO91Mo&?S{N;6esBXw2&0!#BU<RldA@+bz_-C)
+z-Lnc5YZ%DXzy#&}2%Z7C5~XfgiM1rGRRO+~*5OQ+K-SA+>ww!X)|m1Bnb=AGl+KpQ
+zOVr=nEZ@`XeEhX1Lx)WDgCk*-WF`L7udJdod_%wR*1mMbf$L1==jTS<^hmSh>|=B6
+zZ1ig(igOF!a3xPM<rXj1BO(ZW!8hq|MK!tp9NN^3CRLBVF8is!%Fd(}IG<^5T<`2f
+zY29y<e)=fFd8B3=mP^>^qv$Ry7ffJD7pihODq+C9pC4TTz<aCyJCv<Qy?_$_()2c8
+z>JuwG0Zma={r#ca5o)#8Yf{g>o}5}-9mTa>l^+3bjtd#nY+YkT+wQ?cCo6W#Z`u_P
+zTXh}R@49AH7<giIaEgTYcU9KC*SAU;1>%oe+VTbQ;-#&6cs=mx&@Cvxe(J^Pt_6|s
+z2N!|{D0t{yvZp^^7}M#pOakdiHLpqd8N3H6#XH_%d%RtZ9MUPbp@F(PMdOAof0dT=
+z&ikE*n!=XIX)BZiPcaU*{!A^}alShBN5a^K%_sbQL5OU4A#j*v=-6F<zuZ3Eca&ji
+zr+g0l5?6ID93*J(4|vIF?@EV4qWLWd9G_|+k4nG>1rZQ`-P@%hy3;F?be^!Je{Db7
+zzlZaOmK%M5zWGc|tfssa!9CqDk|injb8Z+s?JNSb&Vl8c9v-)^?}TmxqAsLOthTuE
+z#rfme2y)vz-j#ri@Q6=mla1#R!mUjJ=<a`)#vuJtuL+q|jE3Nji!aDs!oR+P6ia?s
+z3vYVY!M(4ZK*ioZqc+Bhs%%i4ljeUN(d8c^=xKhNSTLyoqU+fHTf~^L#X;t28axA#
+zGYkhR;qs?q6CSIF*~{tE=wnlU<XpifpFiXm!~g~t_Wg*L&at<a9rD<&vH?XN`@0lQ
+zcGpJHNk@QAqsORMV*}beoU|Bpun-<htc4L?mdaciB1W&=fQc_Z3^#0#vLU8r1D%Uc
+z+a>CLM&F?g@IcY9y<ZEOerPwDffV{_qwJ}R%eY$PgFqNDC%5UI!RW*kU@FkqVOZ-^
+zFfG*c&v<Z806JO8SA`^5GHfa;3%)6mk5RQKa)6XI$?vp&4d7yL!`Yl?h9=(ML?6hJ
+z4skYPc=LxBQSRmw-36_0SQ6Nxha{?Hs+9uuEq2=MvqgNwefFkxOF`Lr`>DQ#Yd^~5
+z0MXLY0+QcnRO{2?-tU>hy8FjQ*iQDHOcY@o3pdqLH3Mu7(XO4aM_JePK-lHc@s#~5
+z`NS?yWQWji!7JQCYAQ^!#S@#MlJ&9(Plb1t0|KYL7>NPNEAPV@m)-%R-b4w3UqBx|
+zF+*Bqe5&gv=B($P^e&kteV83PMB&LpGRK#y>J8YHV|LEe#~4K`Scq!}w)&T;hI#5X
+z+7Jsl++sDnirhD2ZBj{pa%jr&*L(H8_)=m9@3Lwzp4J}BQ2fOv$jHJXFpP7Wp8Myy
+zC2ZO@tQZTyC&Zg=EM^85ks1*@0J&HI!LsGkcdTiH1S$KM3qRARVr=Kpg>h(*u4>LH
+zXG7?T*yL<Zt#rIg<*{V7&=N6@icZ);I1OE_HM}&>_;SG}GANdFKEMrx-;ssKSS`L`
+zTKcme@~d)xT+l#RjYE6Ibq&MOI))icMLrb##Wmi3RImmS&1XD$-S9_xMaqgNp=yXX
+zF7B}UJs$;^Zn|pblCin!#)IP+d6?@4Xl%_AvBTl<A@Nk&vh<4|r5`%$$>htntroZ9
+z+o87g#d;J_D^oJYSDYefDafj0x$VM#@YNb;Zh22YAYLkn&<K-m-)KCfNB%q!%sA}y
+zLn6R*L8-*vHqi;YHeRxSX|)qNrsrW&FiwC^3n^P}3iu>imKcyGbHXU~@bGry#)RXC
+zxr6;1vGIa+u|EbYQD&xZl6bmt{&_N3TNpGaopS~%AX0aMQQ1lPac;L$6oh>@3O1$o
+zU8+h^CUlCI+3j~L@9Ajh0dv0IzY7O!(`$oS@OuPUca=jLuaf{D|BgXEsJn2soYn{3
+z&DVQP39a81<bE*<iOtHL%#FO*L1Yn0E)pdxEb2PdoxEP;v7pqYC*xPwvTC7<uQ(5p
+zaR5a1_l`9rsW=)uHtTBU_4NCxOjK3HCb-3((N{J-8wF4Pb$+24tBx|^VX47pFZ<z$
+z!JjVLqawEo`Q!-E<S{?f(KYES{Q{$O3>G}~{*7G>4qvGnj5#*Qk4Eyd^1X$TzjIAy
+z+PzFE2^o5&5+i@FLP5B(*Xx{zt+T-3$8!*x84xXIYpDNcec?i)aZnQ3U%wMe7fPs#
+zw91;Lbs<<N$Q<dJ&+Z&r4puAW*7?qyr(NggSrgS-C^Z=;^06(q%~6zQl`I)w0D_fk
+zp5j%)Tu!0jfe<A<2?0iIj#)|9hkO%lExRkXV(7$GQ)dtm!79qv&6On^sTd;ht4wJy
+z;aX_nI2(LkHYRj2xS<JDuyGaLnuB@Q;GWZ1UWN7kwhxmmRnaxe@ZuM*PLS1S_5!gM
+zv(SS$fEKy7=tRt21G*=-;5`6&;S5W?%l8iU3G?Y3|G!Mg<>~9eFO+m4p5>+`+|6?>
+zZ2Gj@uXi^#tAXOiWpO=)w%DAi9P*b(UECu@M)C;ALX@O=|09>b+d{vT{jWKVn@0ul
+z3McFzXdzeB#bdEQS^^ym<<3Y1-KIPP=}m6`24oU9gw=pp|K>{u_ql?7sSz=R3H7Np
+zX?sM<Gn-eAy0{#W-;Yp@@aJF6X-ki%>zY5;v&f`@iG81(Td-d8yUnbj&`;hg__FJ#
+z2(bQ(fEYKSiu#Di-5u{B@KcxA_7+fiO4ncQ+qDt8(5lqcly0~_s8EhPQ*>0^?X4mC
+z)B+~`V)5nF6mz_HT`VN8^{6%LTKt3Gs(+TGgbC3QU$XX0)<c{oZ)<a)(b`}Tl)Qb?
+zrWy;HyzjkmAj=1(u2SgOCo;846c;aA-X0gzD>?WL_Tk>BV%urIZkO<r)s#Cps<5@1
+z*_Gg)>ag3F;0MuR=4XAbs261^L@aulTpL$KqaW!RAQoe94~pZcx^HlH_!|JqE@rO=
+zh#cRC&|_3q;K_x`QM-R;>@zORSpD3`8}GG$K-s}r(N(j(eXvwD`az{;KhtUZV)1fE
+zRj$W)?<>s?Q&bD*+M7M$H=*)>0m-JaNl)%%@u52iP^!hZ3iI#JIqS@@vB!u$4E%fk
+zWB|42fJFPzC=wIP9Tie7St1IAGuv;V&|7TB<4}!i<*NN9Ug*%Bm2!FX%|TFIO=i1F
+zO6{k>+>*&YdP&Mncnd;a%BI2N$`WL)$;@%VEXk=Egh%ODtCG1nw4)AS;4GVFY-G}D
+z*MY`cZ&MoKwJ<1!7a->RY}(*2t2_BaVM4ItR9u1hv(DAMn?cY<{|#9=x~nADQ>v@6
+zU+G4BYXn(Lz105T*O*445=c4USLc;%W2a!53}|8JH?Q^a=Sc5BN20=6Ss`2|2y$j^
+zNpa*er%8BAsfTun<ms%5L&JT{@$j;7w-uKVT#z-`Z)h{XXZwt7^&&E=vxH#(@vmC+
+z&L|ONb~0TRl^%8YgrY+sjEZ~8cfvjUEoYM0D-|I@FF?m`VtXo_*0cPl29z@ReA$lR
+z42`7s_OieMDJHr2%|`bsM2vIT&BWd(^X&e#{FYVPE6mRhb+2H$yTAA)M8;v5x`aCp
+zTQ<yKX!JZQ^ADc3q!%ECXuWW|rJ_fa{f}dP*cc@k&k7O<5?c4diMmv|@{(Pzc{+^M
+zJ<^SG`5m$TO;@+3Ge=tWXIkG}vV<KiE}_K?4-ZDwrVFMDqfkkbvh)p)o2ltp`|?md
+z;s&1@g7iq9vufpPJG_Q}r>i@s-KI_+BItQ@`-7oR{7?zTzo?DC9uPZv(ImM%kZyi|
+za;_j@7ZjUpkJ@feaD*?CkHgufRl*65ZRa_@BE}Me+uY^aEZRXm;3Wkphrw@yg1iMD
+zoZQVr$rZQKog9NHcJandYOuWrf6a^f?%ZtpN{jQKQ6;k(zX{fJE0ckjUh4&c97B=t
+z$zPhSnv4szu_o)rx>V&3aKQ24jEA2`?-Lz2lpOVocA6;(qjUt=*SiC#EYLdWHg+7h
+zR5RWwsH3+yd1Y5Ph9F;dF~J5Uf@sDB;wUu*$w>Fr3&1A^zLfHS$Dc=CLhtj-zt~c;
+z247`vG|PJoy~9+oid#kVp(+=#_!mk#h`zV-GnKy!rV)MkJ8j^-5nFl5c1)|Y)Tt;i
+z+J`v<;FofvyVz=ri0~@P@lx)}yD-`+$oK-vm*r}AlNu1O(d#D%Tmbx3nKDsJTJ2X1
+zW;to+7tVeUs}fH%dFxEx#`k7C7kG32`<TN0sHRAxqlCUC17k0(B>H?qa^!8&V0N*{
+zSK^do)5n903$aP<Vwo&WZS8bw{)8gX<B@c)PAJUn{qCyY647?0o!IPblK9-?o{ktg
+z3-h`CItZfO(#jouJ;5^Lf3sgpz<uXeY|=h{F`Ka-RnV&K0S1U#BWczH$vWof<xgN`
+zQFwHzht*SAWZdtGY^Xn(H89MX4ResaANx{&wSKvCU(8-1U}lenDhIfDes4FQMQEr&
+zS5>G+^oZeg!KsToz)uWV7|VsJWq-ia$JyCJL#&`s8E^mPKMqAtGI6b{d^*^y8hy3}
+zv$x@jX*$PNv)&{8+FP~Iew718=(Kuz&izK&ofc<Ef<|kk{%lW79S}uH;J$#^z?wk#
+z2y5=rJ@Lj`8nWrnpONV(cj6)SoGp^6wnuJUO|P2|?m6-`wz1Jss5!z>-IGC=^WiqA
+zB$ln;{tCZMMbuBOH64g~FSbSDO-rXe{oP_b`oYZF5=!i|%;as1%l`gU4ea3Df1<m{
+zL6mvF4m%i-S~di&8m>K_`pzKQRFDT~^TE7ON@`8i*gbab0^g%IC(7`UQ+=}l<qm7R
+zKbuXi-ZMazq|+4-!PYE=2`U^GHPq;XjZ1n1L8jjFWUY1+4>yU+-O>)*`6owziCD=>
+zF+4$cQhv@+d^Z}oa&8+fjkpO5%WQU4yxIJvEV6qz8A-lu&F#VC75Ri%Vc;gJ&3p4|
+zNnCD_rn{+nP6*@sV_U?gnN-K`^8vx_x5!7Ks_3(q1bGfR_L6elC~B#_txUgozP9|@
+zfJ7GFRJSDBWs|xY=>(5XoUbSgHm2Qle(H4>HL_g#o;@`oq}luRz2?(^Dc{j^rnyw)
+zo)>dl<!?o)Y3fS6sMxfuCTixc2I-ZWj62bOxiB5@WFmw2CY1Ad!Zr#tEuH7L+xjnk
+zQjSaYWqBy{5R@;Xzt}JHh48HpDPoXuL{CB1ukh|V*#FY&0S+SLl5<EO&dOh*<IP9W
+zX=1NL)ycNdz33UxDUe51k_vy!Qf{)Q_5LgEVoh+;hQCcsJREZ2qhz&!q_8n%Yk$yK
+zACB!Ade`P6*ru>F(rH<ZV?oS<nn>N|yzN-zoBz&NNi^Y5>4)VJ(cZUpwgxbO+JEKo
+z#ZgbEc@@XCNAU_}HuHvuJ5`dL6cH3r@sSxhQoIA0+#)Y3GNjHaWxI}>!xZqLggP_P
+zU8H|CG_IyfKTIiGLKX}hCvadv4A&o_*&4s!k#a`~VDY=*C=GgibvHpC$TkPWg#LJL
+zpF2;oZRSC~zeGRpX#4r385KrgM!iO=%ol@_ffcsL#F{)5KAAf6k+hEr8*jRxf>zv6
+zDB#g@{tOdaLr6b=P#4#e12M9mj-sH^I#u1p{k(5U?)bX%vTWrLOTzYX>H1-3k-$Zw
+zhT0J_+bEDxW#;=+9`S@-n|Ik|B@INbEZ}oh&HYZ|(U<yjMJO(aq@v@s2Pj4W`v97i
+ziU}U3et$+3_s<?$QqD4BKSqXalwJvkOMVUL4e?vrFr^sFgt7Wr`~EOFqeb@1tXWF~
+zM`v$;@aOp%R$+_MT>eGig1d=F;fX1R<5g7%+sB4okxgR~sitX=(cxM9WACl2X_Z0P
+zkZs*1&dowHN8ZVXwp-yG@-7_wc2e9H){!3?g$<g1mnP}uOywO|k$U1OwD%VfSw?WG
+z2EUaeaY;<lu2F5~@!zdZx!V+M+{vvmrZ6q5E#O-1fZ>YoPJeTlCeqGeRqZsXd936L
+zx*HPwGvtTO!+`-|;|#c1fh7lV>g_t0s=6D$Ki*-wcT(_Vvh4nTnzBT5)ys1Nlh7VJ
+zuB#g)36gcgZ~f>_3uBl>R{DD9IN~Zf$MOPU$pcek^&?YMLM}C2z9nwRva~a=;K`OY
+zjgK&oFq5Sy29qVdXUeaKCC7WjnctH|OJ1MOs9ztLT#}kyb~>pyn-M%$fRQ$3lZE?}
+z)~~ebJTrQ=zlL+ij4PO~%t=HUULjXT97z_$KCT`C9`l0yA7tB1&Ql#f=nV}oC1lQx
+zjGYe3P^;PiJHqx}$JBLNrRP>Juf)_Mu3>3C)NPi}G&#nP%#8f*S3^L0GP&_^(cK7R
+z^Bw-XzcXYccFr9W)DmZ<_puv}%Nwur{2$i+szy_4AH{hTg@dw7L*Nm9{u_Y{%#nf-
+z`9hnmyzPN+{;VpwTz_3a+<Wakc`CqTsBAXex90d?EAc2+&*@C<Mimdi8lQ0~t&pj@
+zr=O+7)I;#vuV$J{9j@>Fex%>?2p7437q$4g@FOTj#Q8h4x!wNz-`}LUt&5#I54YY6
+zja}*Ya2vra?lSL_S0($cd>j?T#3SP$5BbbRkH2MZ7HzW3X#fwutLFM-opL{*vS{cl
+zZg;1HPEIiLC$R7m^8}C;?bx~#>l0_jU986S+OZ!#3$>ko^3h$7laz<9L;8QUY=FJL
+zIZG0Az*AfEh~6O5;yU4y{&rM>TfRds$mxZ+ylm?nF1G57ateBv<RQTJ$uvy~h%SZr
+z627CEY;*q9t_KU;ByA3QszRTiGw|^6iWo-#%>t~ZhofEJny-t|$EMsY&ZC$FS0B?J
+z>+-$XK=#~*KY!?x@|}1%dm3pbl=K~ze@hi_v(oHUINI3=;(eG#8~69A9Dngp(OM5p
+zT{c-*Sn;kJe-d^spU53VdHzL&7~0F^gt+2-3lZoG*NK4fz~;IgIDO9+gwzn*OO-jX
+zcDc5fYmN3pt=}tZH0BuF#3z|?X#7k_572xnox}TH-@Q90#WmcLe&oET;1FNiaBVgx
+zFozFsnPljlS<N2+BI1Nvi-tbhz4u7Snez3282lmXwAOW$vE&R0*cZrq7t_bN;-f`q
+zw>gdP7v{o>N)xO0qF?G?O2i@jRbM%xt@XgvyZU$ZM2EzbMG1A=?bo;SH4AYxW=sNp
+zvD<~Td=y3>CNE@Q1L-%%-gf$*6{~{A?V39L!dakNrEVHp9W*`p4p+>(pqLLTBIkIa
+zpKWSPl8Qz~{yVCHagFZ~`nf)0GAxN0e;vMA&hWEgB>tCw<NFWL=~hSBi(|j;kk0+L
+z&)(s{BA&>D`*n3l;RGoD0q#X`jK?Tq`W2}ufpKewXxOMdZQfQ4M9MBVHs^;dK2uL9
+zlpZQNc%{kCH=9xF4d$SqJFxdxYF$_jlpA`8T~LGKH^!ehT))V?qY4ONd@<qA>TbEN
+z4i8*J3^+fxi0PN)t;Gg7>j!|aw_=MF4xAdzq0ZKBvOBr-QE>!xMuw<SlsYeU&V_{3
+z<ZmSVn45iTBYq0jJo2+uPse>qCVGrJ`g9~lOw4uD9OZD!7V#{<ya{JJ_1iPKN)xTD
+znv5!4v2V9;=YWXKuOITahBObKa%peBuoO<Cg<6?&rQIY@`}*341LvuZ#-t3N#guok
+zck0r0yr15g(mj=${*uhyzYS*z+B^0;DhX_Ob5>!HDEI6)cX$5f-D=kd^Z##kQvXl!
+eReLr16RmDdm8M>vK=yy7WXkdya@8^xpZ*86WH?p;
+
+literal 0
+HcmV?d00001
+

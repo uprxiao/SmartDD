@@ -1,0 +1,131 @@
+{
+  "syntheticOnly": true,
+  "packagedApp": false,
+  "models": [
+    {
+      "fullShape": {
+        "model": "gemini-4-carbon",
+        "http": 0,
+        "curlExit": 28,
+        "elapsedMs": 44017,
+        "firstByteMs": 0,
+        "syntheticBodyBytes": 42727,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "reasonCategory": null,
+        "stage": "full-shaped synthetic gateway preflight",
+        "functionCallReturned": false
+      },
+      "actualAgyReducedCap": {
+        "model": "gemini-4-carbon",
+        "profile": "8192-large",
+        "realAgy": {
+          "elapsedMs": 44084,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": false,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "approved": [],
+        "localToolInvocations": 0,
+        "isolatedFileVerified": false,
+        "gateway": [
+          {
+            "model": "gemini-4-carbon",
+            "http": 0,
+            "curlExit": 28,
+            "elapsedMs": 40015,
+            "firstByteMs": 0,
+            "syntheticBodyBytes": 42769,
+            "sseFrames": 0,
+            "finishReasons": [],
+            "step": "functionCall",
+            "matched": false,
+            "reasonCategory": null
+          }
+        ],
+        "passed": false
+      }
+    },
+    {
+      "fullShape": {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 5906,
+        "firstByteMs": 5578,
+        "syntheticBodyBytes": 42727,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "reasonCategory": null,
+        "stage": "full-shaped synthetic gateway preflight",
+        "functionCallReturned": true
+      },
+      "actualAgyReducedCap": {
+        "model": "gemini-4-argon",
+        "profile": "8192-large",
+        "realAgy": {
+          "elapsedMs": 13295,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "tool_call",
+            "tool_call_update",
+            "usage_update"
+          ]
+        },
+        "approved": [
+          "allow_once_for_report_probe"
+        ],
+        "localToolInvocations": 1,
+        "isolatedFileVerified": true,
+        "gateway": [
+          {
+            "model": "gemini-4-argon",
+            "http": 200,
+            "curlExit": 0,
+            "elapsedMs": 8632,
+            "firstByteMs": 8439,
+            "syntheticBodyBytes": 42769,
+            "sseFrames": 2,
+            "finishReasons": [
+              "STOP"
+            ],
+            "step": "functionCall",
+            "matched": true,
+            "reasonCategory": null
+          },
+          {
+            "model": "gemini-4-argon",
+            "http": 200,
+            "curlExit": 0,
+            "elapsedMs": 4622,
+            "firstByteMs": 4241,
+            "syntheticBodyBytes": 43196,
+            "sseFrames": 2,
+            "finishReasons": [
+              "STOP"
+            ],
+            "step": "functionResponse",
+            "matched": true,
+            "reasonCategory": null
+          }
+        ],
+        "passed": true
+      }
+    }
+  ]
+}

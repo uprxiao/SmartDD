@@ -18,16 +18,17 @@ export class JsonlRpcPeer {
   private readonly pending = new Map<string | number, Pending>();
   private closedError: Error | null = null;
 
-  constructor(private readonly input: Readable, private readonly output: Writable, private readonly handlers: RpcHandlers, private readonly defaultTimeoutMs = 60_000) {
+  constructor(private readonly input: Readable, private readonly output: Writable, private readonly handlers: RpcHandlers, private readonly defaultTimeoutMs = 60_000, private readonly protocol?: '2.0') {
     createInterface({ input, crlfDelay: Infinity }).on('line', line => this.onLine(line));
   }
 
   private onLine(line: string) {
     if (!line.trim()) return;
     if (line.length > MAX_LINE) { this.handlers.invalid?.(line.slice(0, 200)); return; }
-    let msg: { id?: string | number; method?: string; params?: unknown; result?: unknown; error?: unknown };
+    let msg: { jsonrpc?: string; id?: string | number; method?: string; params?: unknown; result?: unknown; error?: unknown };
     try { msg = JSON.parse(line); } catch { this.handlers.invalid?.(line.slice(0, 2000)); return; }
     if (msg === null || typeof msg !== 'object') { this.handlers.invalid?.(line.slice(0, 2000)); return; }
+    if (this.protocol && msg.jsonrpc !== this.protocol) { this.handlers.invalid?.(line.slice(0, 200)); return; }
     if (msg.id !== undefined && msg.method === undefined) {
       const p = this.pending.get(msg.id);
       if (!p) return;
@@ -43,9 +44,9 @@ export class JsonlRpcPeer {
     else this.handlers.notification(msg.method, msg.params);
   }
 
-  private write(obj: unknown) {
+  private write(obj: Record<string, unknown>) {
     if (this.closedError) throw this.closedError;
-    this.output.write(JSON.stringify(obj) + '\n');
+    this.output.write(JSON.stringify(this.protocol ? { jsonrpc: this.protocol, ...obj } : obj) + '\n');
   }
 
   call<T = unknown>(method: string, params: unknown, timeoutMs = this.defaultTimeoutMs): Promise<T> {

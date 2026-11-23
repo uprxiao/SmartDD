@@ -7,6 +7,7 @@ const args: Record<CodeAgentKind, Partial<Record<AgentPermission, readonly strin
   codex: { ask: ['-s', 'workspace-write', '-a', 'on-request', '-c', 'approvals_reviewer="user"'],
     auto: ['--approve-for-me'], full: ['--dangerously-bypass-approvals-and-sandbox'] },
   claude: { ask: ['--permission-mode', 'default'], full: ['--permission-mode', 'bypassPermissions'] },
+  antigravity: { ask: [], full: [] },
 };
 
 /** Unsupported remembered choices fall back without changing the remembered value. */

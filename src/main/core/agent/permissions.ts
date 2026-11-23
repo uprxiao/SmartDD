@@ -45,7 +45,7 @@ export const codexSupportsTurnPermissions = (version: string): boolean => versio
 /** 不在三档内的输入（含旧 edits）拒绝；执行器不支持的档位降为请求批准并给出原因。 */
 export function resolveTier(driverId: DriverId | string, permission: unknown): TierResolution {
   if (!isTier(permission)) return { ok: false, reason: 'unknown-tier' };
-  const table: Partial<Record<Tier, CodexTierParams | ClaudeTierParams>> | null = driverId === 'codex-app-server' ? CODEX_TIERS : driverId === 'claude-sdk' ? CLAUDE_TIERS : null;
+  const table: Partial<Record<Tier, CodexTierParams | ClaudeTierParams>> | null = driverId === 'codex-app-server' ? CODEX_TIERS : driverId === 'claude-sdk' || driverId === 'antigravity-acp' ? CLAUDE_TIERS : null;
   if (!table) return { ok: false, reason: 'unknown-driver' };
   const params = table[permission];
   if (!params) return { ok: true, tier: 'ask', requested: permission, downgraded: true, reason: `${TIER_LABEL[permission]}不适用于该执行器，已按请求批准运行`, params: table.ask! };

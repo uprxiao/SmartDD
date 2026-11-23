@@ -1,0 +1,323 @@
+{
+  "timeUtc": "2026-11-23T03:34:47.719123+00:00",
+  "realAgyLocalFixture": {
+    "testMode": "real-agy-with-scripted-local-model",
+    "results": [
+      {
+        "model": "gemini-4-carbon",
+        "effortAcknowledgements": {
+          "low": "low",
+          "medium": "medium",
+          "high": "high"
+        },
+        "sessionNewMs": 30,
+        "first": {
+          "elapsedMs": 21,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "warm": {
+          "elapsedMs": 13,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk"
+          ]
+        },
+        "cold": {
+          "elapsedMs": 17,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "coldResumeMs": 25,
+        "modelAfterReapply": "gemini-4-carbon",
+        "effortAfterReapply": "medium"
+      },
+      {
+        "model": "gemini-4-argon",
+        "effortAcknowledgements": {
+          "low": "low",
+          "medium": "medium",
+          "high": "high"
+        },
+        "sessionNewMs": 26,
+        "first": {
+          "elapsedMs": 15,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "warm": {
+          "elapsedMs": 15,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk"
+          ]
+        },
+        "cold": {
+          "elapsedMs": 21,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": true,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "coldResumeMs": 25,
+        "modelAfterReapply": "gemini-4-argon",
+        "effortAfterReapply": "high",
+        "pendingApprovalCancellation": {
+          "canceled": {
+            "elapsedMs": 20,
+            "outcome": "ok",
+            "stopReason": "cancelled",
+            "assistantChunkCount": 0,
+            "hasExpectedMarker": false,
+            "sessionUpdateTypes": [
+              "tool_call",
+              "tool_call_update"
+            ]
+          },
+          "lateApprovalSentAfterCancel": true,
+          "fixtureToolCallCount": 0,
+          "resultFileExists": false,
+          "subsequent": {
+            "elapsedMs": 19,
+            "outcome": "ok",
+            "stopReason": "end_turn",
+            "assistantChunkCount": 1,
+            "hasExpectedMarker": true,
+            "sessionUpdateTypes": [
+              "agent_message_chunk"
+            ]
+          }
+        }
+      }
+    ],
+    "requestSummary": [
+      {
+        "model": "gemini-4-carbon",
+        "step": "first_prompt",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "step": "resume_history",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": true
+      },
+      {
+        "model": "gemini-4-carbon",
+        "step": "resume_history",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "step": "first_prompt",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": false
+      },
+      {
+        "model": "gemini-4-argon",
+        "step": "resume_history",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "step": "resume_history",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "step": "tool_request",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "step": "resume_history",
+        "fixtureToolDeclared": true,
+        "previousMarkerInRequest": true
+      }
+    ]
+  },
+  "minimalNativeGateway": {
+    "scope": [
+      "gemini-4-carbon",
+      "gemini-4-argon"
+    ],
+    "results": [
+      {
+        "model": "gemini-4-carbon",
+        "probe": "text",
+        "http": 200,
+        "curlExit": 0,
+        "durationMs": 11705,
+        "sseFrames": 3,
+        "expectedReplyOrCall": true,
+        "firstByteMs": 11359,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "probe": "text",
+        "http": 0,
+        "curlExit": 28,
+        "durationMs": 44025,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "probe": "tool_call",
+        "http": 200,
+        "curlExit": 0,
+        "durationMs": 14427,
+        "sseFrames": 2,
+        "expectedReplyOrCall": true,
+        "firstByteMs": 14324,
+        "passed": true
+      }
+    ],
+    "toolProbesWaitingForText": [
+      "gemini-4-argon"
+    ]
+  },
+  "realAgyCarbonGateway": {
+    "testMode": "real-agy-and-authorized-gateway-via-scoped-relay",
+    "credentialPassedToAgy": false,
+    "singleSseFrameTranslation": false,
+    "allowedModels": [
+      "gemini-4-carbon",
+      "gemini-4-argon"
+    ],
+    "results": [
+      {
+        "model": "gemini-4-carbon",
+        "fixtureApprovals": [],
+        "initialize": {
+          "outcome": "ok",
+          "code": null,
+          "description": "",
+          "destinationHints": [],
+          "errorHints": []
+        },
+        "authenticate": {
+          "outcome": "ok",
+          "code": null,
+          "description": "",
+          "destinationHints": [],
+          "errorHints": []
+        },
+        "sessionNew": {
+          "outcome": "ok",
+          "code": null,
+          "description": "",
+          "destinationHints": [],
+          "errorHints": []
+        },
+        "confirmedModel": "gemini-4-carbon",
+        "effort": {
+          "currentValue": "low",
+          "values": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "firstTurn": {
+          "elapsedMs": 6226,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": false,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "mcpMethods": [
+          "initialize",
+          "notifications/initialized",
+          "tools/list"
+        ],
+        "toolWroteSyntheticResult": false
+      }
+    ],
+    "upstreamRequests": [
+      {
+        "model": "gemini-3.1-flash-lite-preview",
+        "operation": "streamGenerateContent",
+        "blockedByFixture": true
+      },
+      {
+        "model": "gemini-4-carbon",
+        "operation": "streamGenerateContent",
+        "requestFields": [
+          "contents",
+          "generationConfig",
+          "systemInstruction",
+          "tools"
+        ],
+        "generationFields": [
+          "maxOutputTokens",
+          "thinkingConfig"
+        ],
+        "toolGroups": 1,
+        "http": 400,
+        "upstreamFirstByteMs": 6202,
+        "providerReason": "分组 gemini-vertex 下模型 gemini-4-carbon 的可用渠道不存在（retry） (request id: 202611230332069419584798268d9d63A1mP1lR)",
+        "forwardedBodyBytes": 191,
+        "curlExit": 0,
+        "elapsedMs": 6204
+      },
+      {
+        "model": "gemini-3.1-flash-lite-preview",
+        "operation": "streamGenerateContent",
+        "blockedByFixture": true
+      },
+      {
+        "model": "gemini-3.1-flash-lite-preview",
+        "operation": "streamGenerateContent",
+        "blockedByFixture": true
+      }
+    ]
+  }
+}

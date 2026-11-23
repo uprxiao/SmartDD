@@ -1,7 +1,7 @@
 // M14 能力协商（技术方案 T1.5 §7.1）：最低已验证版本＋已知不兼容列表＋启动探测，不以精确版本相等判定可用性。
 // minVersion 指本期研究实测通过的最低版本，不声称是厂商最初引入该能力的版本。
 
-export type DriverId = 'claude-sdk' | 'codex-app-server';
+export type DriverId = 'claude-sdk' | 'codex-app-server' | 'antigravity-acp';
 export type CapabilityName = 'basic' | 'resume' | 'mcp' | 'skills' | 'nativeSubagents' | 'steer' | 'approvalsReviewer' | 'goal' | 'plan';
 export type CapabilityState = 'enabled' | 'disabled';
 export type CapabilityReason = 'below-minimum' | 'known-incompatible' | 'unparsed-version' | 'probe-unavailable' | 'not-declared';
@@ -27,6 +27,11 @@ const ALL: readonly CapabilityName[] = ['basic', 'resume', 'mcp', 'skills', 'nat
 
 /** 版本指 CLI 版本（Claude Code CLI、Codex CLI）；锁定 SDK 的版本另由依赖锁保证。 */
 export const CAPABILITY_TABLE: Record<DriverId, Partial<Record<CapabilityName, CapabilityDeclaration>>> = {
+  'antigravity-acp': {
+    basic: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 ACP 握手与会话', core: true },
+    resume: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 原生恢复', core: false },
+    mcp: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 宿主桥', core: false },
+  },
   'claude-sdk': {
     basic: { minVersion: '2.1.321', knownIncompatible: [], evidence: '验证账 Q01–Q05；SDK 0.3.321', core: true },
     resume: { minVersion: '2.1.321', knownIncompatible: [], evidence: '验证账 Q05', core: false },
@@ -71,7 +76,8 @@ export function evaluateCapabilities(driverId: DriverId, versionText: string | n
     const decl = table[name];
     if (!decl) { capabilities[name] = { state: 'disabled', reason: 'not-declared' }; continue; }
     const min = parseVersion(decl.minVersion)!;
-    if (!parsed) capabilities[name] = { state: 'disabled', reason: 'unparsed-version', minVersion: decl.minVersion };
+    if (driverId === 'antigravity-acp') capabilities[name] = probe(name) ? { state: 'enabled' } : { state: 'disabled', reason: 'probe-unavailable' };
+    else if (!parsed) capabilities[name] = { state: 'disabled', reason: 'unparsed-version', minVersion: decl.minVersion };
     else if (compareVersions(parsed, min) < 0) capabilities[name] = { state: 'disabled', reason: 'below-minimum', minVersion: decl.minVersion };
     else if (decl.knownIncompatible.includes(fmt(parsed))) capabilities[name] = { state: 'disabled', reason: 'known-incompatible', minVersion: decl.minVersion };
     else if (!probe(name)) capabilities[name] = { state: 'disabled', reason: 'probe-unavailable', minVersion: decl.minVersion };

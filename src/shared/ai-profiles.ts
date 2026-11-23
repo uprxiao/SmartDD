@@ -9,6 +9,7 @@ import { agentIdSchema } from './agent-id';
 export const RUNNERS: Record<Runner, { label: string; command: string }> = {
   claude: { label: 'Claude Code', command: 'claude' },
   codex: { label: 'Codex', command: 'codex' },
+  antigravity: { label: 'Antigravity', command: 'agy' },
 };
 export const RUNNER_IDS = Object.keys(RUNNERS) as Runner[];
 /** Historical or externally registered ids remain readable without guessing a builtin identity. */
@@ -21,6 +22,7 @@ export const runnerDescription = (id: Runner) => RUNNERS[id] ?? { label: id, com
 export const ISOLATED_ENV_PREFIXES: Record<Runner, string[]> = {
   claude: ['ANTHROPIC_'],
   codex: [],
+  antigravity: ['GEMINI_', 'GOOGLE_', 'AGY_', 'ANTIGRAVITY_'],
 };
 
 export const PROFILE_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#06b6d4', '#64748b'] as const;

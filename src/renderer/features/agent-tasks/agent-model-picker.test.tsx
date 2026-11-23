@@ -68,6 +68,26 @@ it('keeps the model menu open to save model and reasoning together', async () =>
   expect(screen.getByRole('dialog')).toBeTruthy();
 });
 
+it('keeps the applied Antigravity effort in the collapsed task picker using its own probed catalog', async () => {
+  const model = 'gemini-4-carbon';
+  const scope = { kind: 'task' as const, taskId: 'antigravity-catalog-effort' };
+  const installed = [
+    { profileId: 'ag', name: 'Antigravity · Model Hub', kind: 'antigravity', source: 'provider', models: [model], available: true },
+    { profileId: 'another', name: 'Another Antigravity profile', kind: 'antigravity', source: 'provider', models: [model], defaultModel: model, available: true },
+  ];
+  catalog.mockImplementation(async (_scope, profileId) => ({ status: 'ready', models: [
+    { id: model, name: model, efforts: profileId === 'ag' ? ['low', 'medium'] : ['high'], defaultEffort: profileId === 'ag' ? 'low' : 'high' },
+  ] }));
+  render(<AgentModelPicker profiles={installed} profileId="ag" model={model} effort="medium" scope={scope} onPick={() => {}} onExtensions={() => {}} />);
+  open();
+  expect((await screen.findByRole('button', { name: '中等' })).getAttribute('aria-pressed')).toBe('true');
+  fireEvent.click(screen.getByRole('button', { name: 'Another Antigravity profile' }));
+  await screen.findByRole('button', { name: '高' });
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(screen.queryByRole('dialog')).toBeNull();
+  expect(screen.getByRole('button', { name: '选择智能体与模型' }).textContent).toContain(`${model} · 中等`);
+});
+
 it.each([undefined, { model: 'gpt-6.2-sol', effort: 'high' }, { model: null, effort: null }])(
   'previews the subscription model and effort when switching from Claude (%j)', async (saved) => {
     const choose = vi.fn();

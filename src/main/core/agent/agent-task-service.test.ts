@@ -47,9 +47,36 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
   const launches: Parameters<LaunchResolver>[0][] = [];
   const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
   const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData, profileModelSettings: opts.profileModelSettings });
-  return { db, store, runs, svc, insts, launches };
+  return { db, store, runs, svc, insts, launches, resolveLaunch };
 }
 const id = (n: number) => `client-input-${n}`;
+
+it('keeps a stopped task stopped when a child result is recovered after restart', async () => {
+  const { svc, store, runs, insts, resolveLaunch } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'Stopped parent', profileId: 'cd', tier: 'ask' });
+  store.tx(emit => emit(taskId, 'task.user_stopped', { subtree: true }));
+  expect(store.queuedTurns(taskId)).toHaveLength(0);
+
+  const restored = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: () => 'codex-app-server' });
+  let continued = false;
+  restored.attachCoordination({
+    beforeDispatch: async () => continued, opened() {}, async settleClosedRun() {}, assertTargetCurrent() {},
+    blocked: () => false, waitingChildren: () => false, hasUnfinishedChildren: () => false,
+    userContinued: () => { continued = true; }, async userStopped() {},
+  });
+  const result = restored.enqueueHost(taskId, 'child-result-fixture', 'Recovered child result', 'notification');
+  await Promise.resolve();
+  expect(restored.status(taskId)).toBe('stopped');
+  expect(store.turn(result.turn.turn_id)?.status).toBe('accepted');
+  expect(insts).toHaveLength(0);
+
+  await restored.submit(taskId, { clientInputId: id(911), text: 'Continue the recovered task', expectedSelectionRevision: 1 });
+  await until(() => insts[0]?.turns[0]?.clientInputId === 'child-result-fixture');
+  insts[0].finish();
+  await until(() => insts[0]?.turns[1]?.clientInputId === id(911));
+  insts[0].finish();
+  await runs.closeAll();
+});
 
 it('sends the first Claude turn with the selected DeepSeek level and keeps each model setting on resume', async () => {
   const flash = 'deepseek-flash', pro = 'deepseek-v4-pro', other = 'unverified';

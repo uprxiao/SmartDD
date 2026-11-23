@@ -56,7 +56,7 @@ export interface TurnInput {
   tier: Tier;
 }
 
-export type TurnStatus = 'completed' | 'failed' | 'interrupted';
+export type TurnStatus = 'completed' | 'failed' | 'interrupted' | 'unknown';
 export type DriverRequestKind = 'command_approval' | 'file_approval' | 'permission_approval' | 'tool_approval' | 'user_input' | 'plan_approval' | 'elicitation' | 'other';
 
 /** Native callbacks may omit schema constraints. Until we can verify the original request, only cancellation is supported. */

@@ -1,0 +1,111 @@
+{
+  "asarSha256": "79e775869ae6e14a45cccff7f5f96a4193647466e81456be5a2aefc02166362d",
+  "platform": "macOS arm64",
+  "rows": [
+    {
+      "case": "A23-git",
+      "evidence": "attempt-lylSwo/A23-git/result.json",
+      "assertions": [
+        "no child consumption before the parent releases the physical directory",
+        "native role, chosen model, parent/child identity and exactly one observed descendant result",
+        "approval produces exactly one isolated write with exact bytes"
+      ],
+      "exits": {
+        "pid": 87131,
+        "code": 0,
+        "signal": null
+      },
+      "states": {
+        "parent": "completed",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindingVerified": true
+    },
+    {
+      "case": "A23-svn",
+      "evidence": "attempt-3I5QtY/A23-svn/result.json",
+      "assertions": [
+        "no child consumption before the parent releases the physical directory",
+        "native role, chosen model, parent/child identity and exactly one observed descendant result",
+        "approval produces exactly one isolated write with exact bytes"
+      ],
+      "exits": {
+        "pid": 88881,
+        "code": 0,
+        "signal": null
+      },
+      "states": {
+        "parent": "completed",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindingVerified": true
+    },
+    {
+      "case": "A23-plain",
+      "evidence": "attempt-3I5QtY/A23-plain/result.json",
+      "assertions": [
+        "no child consumption before the parent releases the physical directory",
+        "native role, chosen model, parent/child identity and exactly one observed descendant result",
+        "approval produces exactly one isolated write with exact bytes"
+      ],
+      "exits": {
+        "pid": 89205,
+        "code": 0,
+        "signal": null
+      },
+      "states": {
+        "parent": "completed",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindingVerified": true
+    },
+    {
+      "case": "A24",
+      "evidence": "attempt-3I5QtY/A24/result.json",
+      "assertions": [
+        "isolated Git worktree with correct parent relative subdirectory and no uncommitted source marker",
+        "independent parent write succeeds while the child retains its actual independent write approval",
+        "native role, chosen model, parent/child identity and exactly one observed descendant result",
+        "approval produces exactly one isolated write with exact bytes",
+        "one tracked child commit and parent HEAD retains original commit"
+      ],
+      "exits": {
+        "pid": 89546,
+        "code": 0,
+        "signal": null
+      },
+      "states": {
+        "parent": "working",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindingVerified": true
+    },
+    {
+      "case": "A26-codex-claude",
+      "evidence": "attempt-3I5QtY/A26-codex-claude/result.json",
+      "assertions": [
+        "native role, chosen model, parent/child identity and exactly one observed descendant result"
+      ],
+      "exits": {
+        "pid": 90101,
+        "code": 0,
+        "signal": null
+      },
+      "states": {
+        "parent": "completed",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindingVerified": true
+    }
+  ],
+  "notes": [
+    "A23 的目录别名和在途操作排空仍需对照。",
+    "A24 第一轮并行写入已经成功，收口时隔离测试仓库未配置 Git 作者。只补测试仓库内的合成作者，复验成功。",
+    "A26 的固定角色委派通过，升级后的两边审批另核。"
+  ]
+}

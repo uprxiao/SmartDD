@@ -24,7 +24,7 @@ export function modelCatalogQuery(scope: AgentModelScope | undefined, profileId:
 const effortLabels = new Map([['low', '低'], ['medium', '中等'], ['high', '高'], ['xhigh', '更高'], ['max', '最高']]);
 const effortLabel = (value: string) => effortLabels.get(value) ?? value;
 const modelLabel = (value: string) => value === CODEX_LOGIN_MODEL ? 'GPT-6.2-Sol' : value;
-const toolLabel = (kind: string) => kind === 'codex' ? 'Codex' : kind === 'claude' ? 'Claude Code' : kind;
+const toolLabel = (kind: string) => kind === 'codex' ? 'Codex' : kind === 'claude' ? 'Claude Code' : kind === 'antigravity' ? 'Antigravity' : kind;
 function profileLabel(profile: PickerProfile) {
   if (!profile.provider) return profile.name;
   return [profile.name, toolLabel(profile.kind), profile.provider.name].filter((part, i) => i === 0 || !profile.name.includes(part)).join(' · ');
@@ -67,10 +67,12 @@ export function AgentModelPicker(p: Props) {
   const selected = p.profiles.find(x => x.profileId === p.profileId), target = p.profiles.find(x => x.profileId === rail) ?? selected;
   const targetId = target?.profileId;
   const selectedNative = targetId === p.profileId ? p.nativeModels : undefined;
-  const canProbe = !!p.scope && !!target?.available && target.kind === 'codex' && target.source === 'login';
+  const canProbe = !!p.scope && !!target?.available && (target.kind === 'codex' && target.source === 'login' ||
+    target.kind === 'antigravity' && target.source === 'provider');
   const client = useQueryClient();
   const options = modelCatalogQuery(p.scope, targetId ?? '');
   const catalog = useQuery({ ...options, enabled: open && canProbe });
+  const selectedCatalog = useQuery({ ...modelCatalogQuery(p.scope, p.profileId), enabled: false });
   const status = canProbe ? (catalog.isError ? 'unavailable' : catalog.data?.status ?? 'loading') : undefined;
   const rows = canProbe ? catalog.data?.models : undefined;
   const native = (status === 'ready' || rows?.length ? rows : selectedNative) ?? [];
@@ -130,7 +132,8 @@ export function AgentModelPicker(p: Props) {
   const label = p.defaultPending ? '正在读取模型' : p.model
     ? p.nativeModels?.find(m => m.id === p.model)?.name ?? modelLabel(p.model)
     : selected?.source === 'provider' && triggerModel ? modelLabel(triggerModel) : '执行器默认';
-  const triggerOption = modelOption(selected, p.nativeModels ?? [], triggerModel);
+  const triggerModels = selected?.kind === 'antigravity' ? selectedCatalog.data?.models ?? p.nativeModels : p.nativeModels;
+  const triggerOption = modelOption(selected, triggerModels ?? [], triggerModel);
   const triggerEffort = resolveModelEffort(triggerOption, p.modelEfforts ? p.modelEfforts[modelEffortKey(p.profileId, triggerModel)] : p.effort, selected?.kind === 'codex');
   const detail = `${label}${triggerEffort ? ` · ${effortLabel(triggerEffort)}` : ''}`;
   return <div className="agent-model-picker" ref={root}>

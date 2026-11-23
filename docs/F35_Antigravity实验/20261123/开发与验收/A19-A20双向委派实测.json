@@ -1,0 +1,150 @@
+{
+  "sourceBaseline": "b1bde25357be481c35459e58f316467f28a2768daed997f84a6ca8cbd2a0cb8c",
+  "fixture": "native execution on isolated App with synthetic loopback model and pre-entry encrypted synthetic key",
+  "limits": [
+    "both child profiles were left at their native default, no explicit effort was requested",
+    "the A20 App did not exit within the driver’s original 12-second window; durable records show all owned agent runs stopped and revoked; remaining reason undetermined"
+  ],
+  "results": [
+    {
+      "case": "A19",
+      "selection": {
+        "parent": {
+          "driver": "codex-app-server",
+          "profileSha256": "73d2ff4257f5c1546678cd45a0b928d2536486ead4d7cf694b9c1efae5aa7faa",
+          "model": "fixture-codex-parent",
+          "tier": "ask"
+        },
+        "child": {
+          "driver": "antigravity-acp",
+          "profileSha256": "3ca680790816d581c9eca908b8df0eece8bf16025dba59991d688e6876dc912e",
+          "model": "gemini-4-carbon",
+          "selectedEffort": null,
+          "tier": "ask"
+        },
+        "access": "write",
+        "state": "delivered",
+        "resultRevision": 1
+      },
+      "nativeEvidence": {
+        "sourceField": "PLANNER_RESPONSE.model",
+        "actualModelAndEffort": "gemini-4-carbon-low",
+        "nativeSessionSha256": "2e5a37848c5cdc10a90be34c0fca1d9b725bdb75e3f3b53acc18619f1b9c319f",
+        "transcriptSha256": "99822631e2b97df4a0bffd8b8490ead09c195ffafa5f9fa68ac3d90126596de3",
+        "transcriptFieldPath": "userdata/agents/antigravity/<profile>/.gemini/antigravity-acp/brain/<session>/.system_generated/logs/transcript_full.jsonl"
+      },
+      "parentReceipt": {
+        "calls": 1,
+        "protocol": "responses",
+        "targetTaskSha256": "766e8a6f154a6537fa2f1316f2986c021ae775d87dd3fcb1305577c1e6bf2e5b",
+        "confirmedResult": true
+      },
+      "cleanup": {
+        "appPid": 19267,
+        "quitRequested": true,
+        "normalExitCode": 0,
+        "timeout": null,
+        "controlledFallback": null,
+        "credentialFixture": "restored",
+        "appAndRegisteredAgentPidsGone": true,
+        "registeredAgentRuns": [
+          {
+            "pid": 19435,
+            "state": "stopped",
+            "revocation_state": "revoked",
+            "driver_id": "codex-app-server",
+            "generation": 1,
+            "ended_at": "2026-11-23T06:19:27.683Z"
+          },
+          {
+            "pid": 19492,
+            "state": "stopped",
+            "revocation_state": "revoked",
+            "driver_id": "antigravity-acp",
+            "generation": 1,
+            "ended_at": "2026-11-23T06:19:29.244Z"
+          },
+          {
+            "pid": 19547,
+            "state": "stopped",
+            "revocation_state": "revoked",
+            "driver_id": "codex-app-server",
+            "generation": 2,
+            "ended_at": "2026-11-23T06:19:30.287Z"
+          }
+        ]
+      },
+      "uiSnapshot": "A19/child-history-after-result.png"
+    },
+    {
+      "case": "A20",
+      "selection": {
+        "parent": {
+          "driver": "claude-sdk",
+          "profileSha256": "a2fee0a891f85428eddf8b085854eb13e8c83318f11a7221504b801906140d3d",
+          "model": "fixture-claude-parent",
+          "tier": "ask"
+        },
+        "child": {
+          "driver": "antigravity-acp",
+          "profileSha256": "23516cc1739017d2e8916f1e4ff6aecff17546a4d459cddd1f5b9a001fe8c77c",
+          "model": "gemini-4-argon",
+          "selectedEffort": null,
+          "tier": "ask"
+        },
+        "access": "write",
+        "state": "delivered",
+        "resultRevision": 1
+      },
+      "nativeEvidence": {
+        "sourceField": "PLANNER_RESPONSE.model",
+        "actualModelAndEffort": "gemini-4-argon-low",
+        "nativeSessionSha256": "c0a19549bbdb39ab456e38cfca9a115a1e151dbb4bb81f0ac7c2af38fdc79e26",
+        "transcriptSha256": "8bcff325fab9304d54231283d1e6059e7de5c29d966bcfa674a4c509435591eb",
+        "transcriptFieldPath": "userdata/agents/antigravity/<profile>/.gemini/antigravity-acp/brain/<session>/.system_generated/logs/transcript_full.jsonl"
+      },
+      "parentReceipt": {
+        "calls": 1,
+        "protocol": "anthropic",
+        "targetTaskSha256": "53de69534631c8a413fe5e3eaa385e5784d9009b7367b5deda1af30a67d27885",
+        "confirmedResult": true
+      },
+      "cleanup": {
+        "appPid": 20044,
+        "quitRequested": true,
+        "normalExitCode": null,
+        "timeout": "Error: Isolated App did not finish its normal exit",
+        "controlledFallback": "SIGKILL",
+        "credentialFixture": "restored",
+        "appAndRegisteredAgentPidsGone": true,
+        "registeredAgentRuns": [
+          {
+            "pid": 20179,
+            "state": "stopped",
+            "revocation_state": "revoked",
+            "driver_id": "claude-sdk",
+            "generation": 1,
+            "ended_at": "2026-11-23T06:20:20.069Z"
+          },
+          {
+            "pid": 20260,
+            "state": "stopped",
+            "revocation_state": "revoked",
+            "driver_id": "antigravity-acp",
+            "generation": 1,
+            "ended_at": "2026-11-23T06:20:22.158Z"
+          },
+          {
+            "pid": 20316,
+            "state": "stopped",
+            "revocation_state": "revoked",
+            "driver_id": "claude-sdk",
+            "generation": 2,
+            "ended_at": "2026-11-23T06:20:23.246Z"
+          }
+        ]
+      },
+      "uiSnapshot": "A20/child-history-after-result.png"
+    }
+  ]
+}

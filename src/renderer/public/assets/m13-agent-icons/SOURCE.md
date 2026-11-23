@@ -16,6 +16,7 @@
 | `pi.svg` | Pi（Code Agent，暂不支持） | <https://pi.dev/logo-auto.svg>（本机 `@earendil-works/pi-coding-agent` 0.85.1 的 README 引用的官方 Logo），2026-11-11T06:12Z | 未修改 | `abd66e7868b2d24f0f0895f9237ee8a6dcb22337583b0dc54aeb595acecb4d6b` |
 | `zcode.png` | Z Code（Code Agent，暂不支持） | 本机 `/Applications/Z Code.app/Contents/Resources/icon.icns`（Z Code 0.11.1，`ai.z.zcode`，icns SHA256 `d3f0455f…3418`） | `sips` 转 PNG（1024²，SHA256 `34059bfb…8aa`）后缩到 256² | `57912b0a4820adf38c80ab7bb244c10d3034a18f087f11c5394823968b9e1353` |
 | `dsh.png` | DSH（DeepSeek Harness，Code Agent，暂不支持） | 本机 `/Applications/DeepSeek Harness.app/Contents/Resources/icon.icns`（0.2.2-rc.1，`com.deepseek.dsh`，icns SHA256 `8d84ca64…82f2`） | `sips` 转 PNG（1024²，SHA256 `b8170a7b…ce9`）后缩到 256² | `750a8d563b2ce3e318007630dcfa47dd6da88e531c3fb4824f68117d9fc71f4a` |
+| `antigravity.png` | F35 Antigravity 工具及其智能体 | Google Antigravity 的全彩图标（2026-11-23 获取）。[官方素材页](https://antigravity.google/press) · [原始 PNG](https://antigravity.google/assets/image/brand/antigravity-icon__full-color.png) | `sips` 从 540×540 缩至 144×144，保留透明背景，界面用统一的白色圆角容器 | `647991c897410a1a80a502a53e8d4c7276b4d10aced0af051839b0ad3ed3fe11` |
 
 ## 差异与待办
 

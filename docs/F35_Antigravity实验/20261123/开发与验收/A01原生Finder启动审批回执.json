@@ -1,0 +1,45 @@
+{
+  "finderActionReview": {
+    "case": "F35-A01",
+    "layer": "S",
+    "system": "macOS Finder",
+    "caseMode": "discovery",
+    "observed": {
+      "finderWindow": "discovery",
+      "selection": "file:///private/tmp/f35-qa-g01/a01-finder-r5/discovery/WillYou%20F35%20Finder%20discovery.app/",
+      "plannedInput": "native Finder mouse clickCount=2",
+      "reviewOutcome": "rejected before execution",
+      "reason": "This double-click executes an ad-hoc temporary application; although the test scope is described in assistant context, the available trusted user messages do not provide action-time confirmation for running this unrecognized source."
+    },
+    "isolation": {
+      "target": "temporary ad-hoc outer launcher",
+      "intendedApp": "unmodified nested WillYou R5",
+      "asarSha256": "960a63cfb8235df5b5b7372c3b4cd6e2ace33bf0123b7719c1817b97fd1e5a29",
+      "oneTimeLaunchArmRevoked": true,
+      "launchReceiptPresent": false,
+      "matchingPrivateAppOrWrapperProcessFound": false
+    },
+    "missingBranch": "not armed after approval denial",
+    "status": "blocked by action-time confirmation requirement"
+  },
+  "launcherResult": {
+    "asarSha256": "960a63cfb8235df5b5b7372c3b4cd6e2ace33bf0123b7719c1817b97fd1e5a29",
+    "start": "2026-11-23T08:43:02.006Z",
+    "finished": "2026-11-23T08:44:20.019Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "host": "26.6.1",
+    "layers": [
+      "Finder outer launcher awaiting independent system receipt",
+      "packaged Electron CDP",
+      "isolated loopback fixture"
+    ],
+    "status": "blocked or failed",
+    "failure": {
+      "step": "launch",
+      "message": "No in-window launch receipt from the exact Finder test bundle",
+      "stack": "Error: No in-window launch receipt from the exact Finder test bundle\n    at awaitFinderProcess (file:///private/tmp/f35-qa-g01/a01-finder-r5/finder-process.mjs:97:11)\n    at async openElectron (file:///private/tmp/f35-qa-g01/a01-finder-r5/electron-harness.mjs:80:71)\n    at async launch (file:///private/tmp/f35-qa-g01/a01-finder-r5/run.mjs:289:9)\n    at async file:///private/tmp/f35-qa-g01/a01-finder-r5/run.mjs:1811:3"
+    },
+    "startupCount": 0
+  }
+}

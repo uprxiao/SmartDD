@@ -8,6 +8,7 @@ import { parse as parseToml } from 'smol-toml';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
 import { planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
 import type { DriverId } from './capabilities';
+import { antigravityArgs } from './drivers/antigravity-acp';
 
 export interface ProfileLaunch {
   driverId: DriverId;
@@ -68,6 +69,19 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   const carry = managed ? false : i.carryExtensions !== false;
   // 只保存凭据与端点来源的摘要；换账号／凭据或端点不能恢复旧账号的原生绑定。
   const identity = createHash('sha256').update(JSON.stringify({ key: i.key ?? null, env: Object.fromEntries(Object.entries(p.env).filter(([k]) => /KEY|TOKEN|BASE_URL|ACCOUNT/.test(k))) })).digest('hex');
+  if (p.runner === 'antigravity') {
+    const stateRoot = join(i.userData, 'agents', 'antigravity', createHash('sha256').update(JSON.stringify([i.config.id, identity])).digest('hex').slice(0, 32));
+    plan.antigravityRoot = stateRoot;
+    Object.assign(env, {
+      HOME: stateRoot, USERPROFILE: stateRoot, XDG_CONFIG_HOME: join(stateRoot, 'config'),
+      XDG_DATA_HOME: join(stateRoot, 'data'), XDG_CACHE_HOME: join(stateRoot, 'cache'),
+    });
+    return {
+      driverId: 'antigravity-acp', command: i.tool.customPath || i.tool.executable, env, stateRoot,
+      compatibility: { source: i.config.source, providerId: i.config.providerId, identity, extensions: false },
+      model: plan.model ?? undefined, extraArgs: antigravityArgs(join(stateRoot, '.gemini')), plan,
+    };
+  }
   if (p.runner === 'claude') {
     const stateRoot = plan.claudeRoot ?? env.CLAUDE_CONFIG_DIR ?? join(env.HOME ?? homedir(), '.claude');
     return {

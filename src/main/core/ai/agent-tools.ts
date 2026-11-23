@@ -5,8 +5,10 @@ import { constants } from 'node:fs';
 import { isAbsolute } from 'node:path';
 import { codeAgentKindSchema, type CliLogin, type CodeAgentKind, type CodeAgentTool } from '@shared/ai-agents';
 import { loginShell, PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
-import { detectRunner } from './runner-detect';
+import { detectRunner, type DetectOptions } from './runner-detect';
 import type { AgentService } from './agent-service';
+import { probeDriver, type DriverProbe } from '../agent/discovery';
+import { RUNNERS } from '@shared/ai-profiles';
 
 export interface CliProbeResult { code: number | null; stdout: string; stderr: string; timedOut?: boolean }
 export interface CliLoginResult { login: CliLogin; error: string | null; loginSourceEnv?: CodeAgentTool['loginSourceEnv'] }
@@ -62,6 +64,7 @@ type Dependencies = {
   discover?: typeof detectRunner;
   probe?: typeof probeNativeCli;
   executable?: (path: string) => Promise<boolean>;
+  antigravityProbe?: (options: DetectOptions & { executable?: string | null }) => Promise<DriverProbe>;
 };
 
 export class AgentToolService {
@@ -74,7 +77,7 @@ export class AgentToolService {
 
   private async refreshNow(): Promise<ToolDetection[]> {
     const stored = this.agents.tools(), requests = [...stored.filter((tool) => codeAgentKindSchema.safeParse(tool.kind).success)];
-    for (const kind of ['claude', 'codex'] as const) if (!requests.some((tool) => tool.kind === kind)) requests.push({ id: `tool-${kind}`, kind, executable: kind, customPath: null, version: null, installed: false, login: 'none' });
+    for (const kind of codeAgentKindSchema.options) if (!requests.some((tool) => tool.kind === kind)) requests.push({ id: `tool-${kind}`, kind, executable: RUNNERS[kind].command, customPath: null, version: null, installed: false, login: 'none' });
     const env = this.detectEnv(), results: ToolDetection[] = [];
     for (const request of requests) results.push(await this.inspect(request, env));
     this.agents.recordTools(results.map((result) => result.tool));
@@ -86,7 +89,7 @@ export class AgentToolService {
     if (path !== null && (!isAbsolute(path) || /[\x00-\x1f\x7f]/.test(path))) throw new Error('请选择本机可执行文件的绝对路径');
     const existing = this.agents.tools().find((tool) => tool.kind === kind&&(!toolId||tool.id===toolId));
     if(toolId&&!existing)throw new Error('Code Agent 已删除或类型变化，请重新检测');
-    const request: CodeAgentTool = { ...(existing ?? { id: `tool-${kind}`, kind, version: null, installed: false, login: 'none' }), executable: path ?? kind, customPath: path };
+    const request: CodeAgentTool = { ...(existing ?? { id: `tool-${kind}`, kind, version: null, installed: false, login: 'none' }), executable: path ?? RUNNERS[kind].command, customPath: path };
     const result = await this.inspect(request, this.detectEnv());
     // A rejected file selection must not discard the user's last working tool.
     if (result.tool.installed || path === null) this.agents.recordTool(result.tool);
@@ -107,6 +110,16 @@ export class AgentToolService {
 
   private async inspect(request: CodeAgentTool, env: Record<string, string>): Promise<ToolDetection> {
     const kind = codeAgentKindSchema.parse(request.kind);
+    if (kind === 'antigravity') {
+      const options = { env, executable: request.customPath };
+      const result = await (this.dependencies.antigravityProbe?.(options) ?? probeDriver('antigravity-acp', {
+        ...options, detect: this.dependencies.discover && (async (...args) => ({
+          ...await this.dependencies.discover!(...args), shellPath: null, shellProxy: {},
+        })),
+      }));
+      return { tool: { ...request, executable: result.realpath ?? request.executable, installed: result.state !== 'unsupported',
+        version: result.version, login: 'none' }, error: result.reason ?? null };
+    }
     const discovered = await (this.dependencies.discover ?? detectRunner)(kind, request.customPath ?? null, { env });
     const missing = (error: string): ToolDetection => ({ tool: { ...request, installed: false, version: null, login: 'none', loginSourceEnv: undefined }, error });
     if (!discovered.path) return missing('没有检测到可执行的 Code Agent');

@@ -184,6 +184,41 @@ it('resets compatibility on identity change and ignores a canceled model check',
   expect(agents.providers()[0]).toEqual(changed);
 });
 
+it('rejects a successful Gemini tool result from a previous endpoint and Key revision', async () => {
+  const secondRequest = deferred<string>();
+  const previousReply = deferred<Response>();
+  const frame = (part: unknown) => new Response(`data: ${JSON.stringify({
+    candidates: [{ index: 0, content: { parts: [part] }, finishReason: 'STOP' }],
+  })}\n\n`, { headers: { 'content-type': 'text/event-stream' } });
+  const fetch = vi.fn(async (address: RequestInfo | URL, options?: RequestInit) => {
+    const contents = JSON.parse(String(options?.body)).contents;
+    if (contents.length === 1) {
+      return frame({ functionCall: { name: 'wy_ping', args: {} } });
+    }
+    const marker: string = contents.at(-1).parts[0].functionResponse.response.value;
+    if (new URL(String(address)).hostname === 'former-gemini.invalid') {
+      secondRequest.resolve(marker);
+      return previousReply.promise;
+    }
+    expect(new Headers(options?.headers).get('x-goog-api-key')).toBe('PUBLIC_REPLACEMENT_GEMINI_KEY');
+    return frame({ text: marker });
+  });
+  const service = new ProviderService(db, secrets, agents, { fetch });
+  const provider = service.save(input({ endpoints: { gemini: 'https://former-gemini.invalid' } }));
+  const oldCheck = service.check(provider.id, 'antigravity', 'a');
+  const marker = await secondRequest.promise;
+  const current = service.save(input({
+    endpoints: { gemini: 'https://current-gemini.invalid' }, key: 'PUBLIC_REPLACEMENT_GEMINI_KEY',
+  }), provider.id);
+  previousReply.resolve(frame({ text: marker }));
+  await expect(oldCheck).rejects.toThrow('已变更');
+  expect(agents.providers()[0]).toEqual(current);
+  expect(current.models[0].availability.antigravity).not.toBe('available');
+  const checked = await service.check(provider.id, 'antigravity', 'a');
+  expect(checked.models[0].availability.antigravity).toBe('available');
+  expect(fetch).toHaveBeenCalledTimes(4);
+});
+
 it.each(['forged', 'deepseek'])('does not accept the %s preset label as proof for an arbitrary custom endpoint', (preset) => {
   const service = new ProviderService(db, secrets, agents);
   const p = service.save(input({ preset }));

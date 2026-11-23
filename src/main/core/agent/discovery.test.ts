@@ -57,6 +57,24 @@ describe('本机程序发现', () => {
     expect(r.state).toBe('unsupported');
     expect(r.reason).toContain('执行器不可用');
   });
+  it.each([
+    ['exit 23', '启动失败'],
+    ['while IFS= read -r line; do :; done', '握手超时'],
+    [String.raw`IFS= read -r line; printf '{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":77}}\n'`, '协议不兼容'],
+    [String.raw`IFS= read -r line; printf '{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":1,"authMethods":[{"id":"gemini-api-key"}]}}\n'
+while IFS= read -r line; do
+  id=$(printf '%s' "$line" | sed -n 's/.*"id":\([0-9][0-9]*\).*/\1/p')
+  printf '{"jsonrpc":"2.0","id":%s,"error":{"code":-32601,"message":"unsupported"}}\n' "$id"
+done`, '缺少新建会话能力'],
+  ])('explains why an Antigravity executable cannot provide a core session (%s)', async (body, reason) => {
+    const { link, real } = fakeBin('agy');
+    writeFileSync(real, `#!/bin/sh\n${body}\n`);
+    const response = await probeDriver('antigravity-acp', {
+      env: { PATH: '/usr/bin:/bin' }, executable: link, detect: detect(link, '1.9.0') as never,
+    });
+    expect(response.state).toBe('unsupported');
+    expect(response.reason).toContain(reason);
+  }, 10_000);
   it('低于最低版本拒绝并说明；每次探测留档', async () => {
     const { link } = fakeBin('claude');
     const db = new Database(':memory:'); runBundledMigrations(db);

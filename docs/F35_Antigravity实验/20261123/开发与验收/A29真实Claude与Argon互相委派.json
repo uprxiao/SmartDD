@@ -1,0 +1,187 @@
+{
+  "appAsarSha256": "22d2239454126674bffc7156b094257a3903e5e085ea3e16c7966a1d82752b0e",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "start": "2026-11-23T07:17:49.439Z",
+  "end": "2026-11-23T07:19:24.632Z",
+  "source": "/private/tmp/f35-qa-live-delegation/attempt-XKHQK0/result.json",
+  "roles": [
+    {
+      "case": "A29-agy-claude",
+      "assertions": [
+        "native role, chosen model, parent/child identity and exactly one observed descendant result"
+      ],
+      "states": {
+        "parent": "completed",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindings": {
+        "parent": [
+          {
+            "bindingId": "98dfbdb0-e083-4846-86df-799407ba299b",
+            "nativeSessionId": "480ba88b-aa22-42d6-9399-a02c167a3e50"
+          }
+        ],
+        "child": [
+          {
+            "bindingId": "fc9eeaef-27ad-4d3f-8b9b-26d986856472",
+            "nativeSessionId": "15c49c8c-3dc2-4725-8c23-b59de439f5a9"
+          }
+        ]
+      },
+      "parentId": "da1bddaf-573f-4fe5-a440-8343f7b879f5",
+      "childId": "06ba2c31-7f70-4d1d-9698-15cb039b2c98",
+      "delegationId": "cc325091-ee25-4c0a-aa28-026d22f48bf7",
+      "permission": {
+        "parent": "ask",
+        "child": "ask",
+        "access": "write"
+      },
+      "exit": {
+        "pid": 29004,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "case": "A29-claude-agy",
+      "assertions": [
+        "native role, chosen model, parent/child identity and exactly one observed descendant result"
+      ],
+      "states": {
+        "parent": "completed",
+        "child": "completed",
+        "relation": "delivered"
+      },
+      "bindings": {
+        "parent": [
+          {
+            "bindingId": "6c05e269-18e6-4666-ba2b-2d1e72a545b4",
+            "nativeSessionId": "01159653-b2b5-4a92-8b87-5e4a427f399a"
+          }
+        ],
+        "child": [
+          {
+            "bindingId": "7561274a-1ba8-4535-be06-1cfba1567630",
+            "nativeSessionId": "a42c0a23-3a1e-420c-8e4f-009cc612ff4a"
+          }
+        ]
+      },
+      "parentId": "4e6f9b64-20b5-4e3a-84e2-0af86d8afdaa",
+      "childId": "29360750-95c2-47bc-86fe-da27a8a0a1f7",
+      "delegationId": "3a5220e9-d9d1-420e-a582-c99398654347",
+      "permission": {
+        "parent": "ask",
+        "child": "ask",
+        "access": "write"
+      },
+      "exit": {
+        "pid": 29706,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "upstreamReceipts": [
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "stage": "discover",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 17629
+    },
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "stage": "delegate",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 4917
+    },
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "stage": "handoff",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 11921
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "protocol": "anthropic",
+      "stage": "child",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 2032
+    },
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "stage": "observe",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 5916
+    },
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "stage": "collected",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 7307
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "protocol": "anthropic",
+      "stage": "discover",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 2729
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "protocol": "anthropic",
+      "stage": "delegate",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 3726
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "protocol": "anthropic",
+      "stage": "handoff",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 1563
+    },
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "stage": "child",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 4230
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "protocol": "anthropic",
+      "stage": "observe",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 3206
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "protocol": "anthropic",
+      "stage": "collected",
+      "http": 200,
+      "matched": true,
+      "elapsedMs": 1833
+    }
+  ],
+  "boundary": "从本轮实际请求读取的任务与回执只在本机。官方 DeepSeek 与 Model Hub 仅接收固定的合成阶段提示、专用工具名称和合成标记。模型实际选择抽象工具，宿主原生工具参数按已核验的本地任务及回执映射。"
+}

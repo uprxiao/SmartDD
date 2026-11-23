@@ -3,8 +3,10 @@ import type { DriverId } from './capabilities';
 import type { AgentDriver } from './driver';
 import { claudeSdkDriver } from './drivers/claude-sdk';
 import { codexAppServerDriver } from './drivers/codex-app-server';
+import { antigravityAcpDriver } from './drivers/antigravity-acp';
 
 export const DRIVERS: ReadonlyMap<DriverId, AgentDriver> = new Map<DriverId, AgentDriver>([
   [claudeSdkDriver.id, claudeSdkDriver],
   [codexAppServerDriver.id, codexAppServerDriver],
+  [antigravityAcpDriver.id, antigravityAcpDriver],
 ]);

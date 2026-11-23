@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ProviderInput } from '@shared/ai-agents';
-import { providerCatalog } from '@shared/provider-catalog';
+import { modelHubEndpoints, providerCatalog } from '@shared/provider-catalog';
 import { registerRPCRouter } from '@shared/ipc/rpc';
 import { runBundledMigrations } from '../../db/migrations';
 import * as schema from '../../db/schema';
@@ -37,7 +37,19 @@ function scoped(s:ProviderService){
 it('models preview reads normalized directory without creating Provider, encrypted secret or Agent',async()=>{
  const fake=vi.fn(async()=>json({data:[{id:'a',display_name:' A ',context_window:128000},{id:'b',name:'B'}]})),s=service(fake),before=state();const result=await s.previewDraft(input());expect(result.models.map(m=>[m.id,m.name])).toEqual([['a','A'],['b','B']]);expect(result.models.every(m=>m.availability.codex==='untested'&&m.availability.claude==='untested')).toBe(true);expect(state()).toBe(before);expect(fake).toHaveBeenCalledTimes(1);expect(JSON.stringify(result)).not.toContain(KEY);
 });
-it('uses the Model Hub preset Key for its directory and verifies both configured protocols before saving', async () => {
+it.each(['http://127.0.0.1:invalid-port', 'ftp://example.invalid', 'https://example.invalid/?api_key=synthetic'])('returns a field error before fetching a model directory from %s', async gemini => {
+  const fetch = vi.fn(async () => json({ models: [] }));
+  const setup = scoped(service(fetch));
+  const before = state();
+  expect(await setup.call('models', input({ endpoints: { gemini } }))).toMatchObject({
+    ok: false,
+    code: 'INVALID_DRAFT',
+    message: '供应商字段无效，请检查地址、Key 和模型',
+  });
+  expect(fetch).not.toHaveBeenCalled();
+  expect(state()).toBe(before);
+});
+it('keeps Model Hub directory and both legacy protocol checks on an existing two-endpoint configuration', async () => {
   const preset = providerCatalog.find(entry => entry.name === 'Model Hub')!;
   const requests: [string, string, string?][] = [];
   const setup = service(async (url, init) => {
@@ -52,7 +64,7 @@ it('uses the Model Hub preset Key for its directory and verifies both configured
     requests.push([method, String(url), body.model]);
     return stream(String(url).endsWith('/messages')?'claude':'codex');
   });
-  const draft: ProviderInput = {name:preset.name,preset:preset.id,endpoints:preset.endpoints,key:KEY,authType:preset.authType};
+  const draft: ProviderInput = {name:preset.name,preset:preset.id,endpoints:modelHubEndpoints,key:KEY,authType:preset.authType};
   const preview = await setup.previewDraft(draft);
   expect(preview.models[2]).toMatchObject({id:'wan3.0-video',vendor:'阿里云',purpose:'video'});
   expect(preview.recommended).toEqual({claude:'claude-opus-5-5',codex:'gpt-6.1-sol'});

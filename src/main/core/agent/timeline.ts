@@ -1,6 +1,7 @@
 // 统一时间线投影（技术方案 T1.5 §4）：把两种执行器的原生条目映射为同一组规范条目类型。
 // 只做映射与配对，不推断执行器没提供的内容（待办只在执行器提供结构化清单时出现）。
 import type { DriverEvent } from './driver';
+import type { DriverId } from './capabilities';
 
 export type ItemType =
   | 'assistant_message' | 'reasoning' | 'proposed_plan' | 'todo_list' | 'command_execution' | 'file_change'
@@ -41,10 +42,31 @@ export class TimelineProjector {
   private codexTurnId?: string;
   private codexQuota: { primary?: CodexQuotaWindow; secondary?: CodexQuotaWindow } = {};
 
-  constructor(private readonly driverId: 'claude-sdk' | 'codex-app-server') {}
+  private readonly acpTools = new Map<string, Record<string, unknown>>();
+  constructor(private readonly driverId: DriverId) {}
 
   project(e: DriverEvent): ItemUpsert[] {
+    if (this.driverId === 'antigravity-acp') return this.acp(e);
     return this.driverId === 'claude-sdk' ? this.claude(e) : this.codex(e);
+  }
+
+  private acp(event: DriverEvent): ItemUpsert[] {
+    if (event.type !== 'item.completed') return [];
+    const payload = event.payload as Record<string, unknown>;
+    const key = event.nativeItemId;
+    if (event.itemType === 'agentMessage') return [{ key, type: 'assistant_message', payload, terminal: 'completed' }];
+    if (event.itemType === 'reasoning') return [{ key, type: 'reasoning', payload, terminal: 'completed' }];
+    if (event.itemType === 'acpError') return [{ key, type: 'error', payload, terminal: 'failed' }];
+    if (event.itemType === 'acpEffortFallback' && typeof payload.detail === 'string') {
+      return this.lifecycleNotice(key, '推理档位', payload.detail, 'completed', 'warning', false,
+        { code: 'configWarning', status: 'completed', diagnosticOnly: false });
+    }
+    if (event.itemType !== 'acpToolCall') return [];
+    const update = { ...this.acpTools.get(key), ...payload };
+    const terminal = update.status === 'completed' ? 'completed' : update.status === 'failed' ? 'failed' : null;
+    if (terminal) this.acpTools.delete(key);
+    else this.acpTools.set(key, update);
+    return [{ key, type: 'tool_call', terminal, payload: { name: update.title, input: update.rawInput, status: update.status, output: update.rawOutput } }];
   }
 
   private todoItem(): ItemUpsert {

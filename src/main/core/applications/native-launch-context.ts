@@ -9,6 +9,14 @@ export interface NativeLaunchContext { command: string; version: string; invento
 /** Read only native files and execute exactly --version in the login shell, never profile arguments, login helpers or a model. */
 export async function inspectNativeLaunch(input: TaskLaunchInput, checked?: CheckedNativeCli): Promise<NativeLaunchContext> {
   const env = input.environment, requested = input.profile.command;
+  if (input.profile.runner === 'antigravity') {
+    if (!checked || checked.runner !== 'antigravity' || checked.path !== requested ||
+        checked.identity !== nativeExecutableIdentity(requested) || input.signal.aborted) {
+      throw new ApplicationError('RESOURCE_STATE_CHANGED', 'Antigravity 探测身份已变化，请重新检测');
+    }
+    return { command: checked.path, version: checked.version, inventory: [], userSkillConfig: [],
+      shellPath: checked.shellPath, shellProxy: checked.shellProxy };
+  }
   // Same login shell as the PTY launch: a Finder-launched app has a bare PATH, so `#!/usr/bin/env node` CLIs fail outside it.
   const detected = checked && checked.runner === input.profile.runner && checked.path === requested
     && checked.identity === nativeExecutableIdentity(requested) ? checked

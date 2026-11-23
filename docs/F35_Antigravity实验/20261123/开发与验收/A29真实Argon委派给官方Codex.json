@@ -1,0 +1,164 @@
+{
+  "case": "A29-agy-codex",
+  "states": {
+    "parent": "completed",
+    "child": "completed",
+    "relation": "delivered"
+  },
+  "bindings": {
+    "parent": [
+      {
+        "bindingId": "b9e7cfca-4e59-424f-96b4-de9adbf16a39",
+        "nativeSessionId": "9cb2a68d-65da-4050-87cd-72aed407ed81"
+      }
+    ],
+    "child": [
+      {
+        "bindingId": "6def62d0-5381-40ab-a929-96efa789ef77",
+        "nativeSessionId": "01a2078f-a5c7-7b23-814a-99fa56bfa798"
+      }
+    ]
+  },
+  "runIdentities": {
+    "parent": [
+      {
+        "run_id": "b8d22868-bbff-4ea8-b2c1-242f8285fc31",
+        "driver_id": "antigravity-acp",
+        "runner": "antigravity",
+        "pid": 8333,
+        "process_started_at": "darwin-proc-v1:1795423161:381477",
+        "generation": 1,
+        "state": "stopped"
+      },
+      {
+        "run_id": "41464894-6906-4822-a795-c9a0d04feaf0",
+        "driver_id": "antigravity-acp",
+        "runner": "antigravity",
+        "pid": 8674,
+        "process_started_at": "darwin-proc-v1:1795423191:740789",
+        "generation": 2,
+        "state": "active"
+      }
+    ],
+    "child": [
+      {
+        "run_id": "7c0cc53c-df4e-4261-a0db-e3b61692d454",
+        "driver_id": "codex-app-server",
+        "runner": "codex",
+        "pid": 8557,
+        "process_started_at": "darwin-proc-v1:1795423184:265142",
+        "generation": 1,
+        "state": "stopped"
+      }
+    ]
+  },
+  "assertions": [
+    "native role, chosen model, parent/child identity and exactly one observed descendant result"
+  ],
+  "officialSubscription": true,
+  "officialChildDefaultModel": "gpt-6.2-sol",
+  "delegationId": "f47d7d64-b5cc-422c-a01e-ef8018dd08e3",
+  "temporaryAuthRemoved": true,
+  "packageSha256": "960a63cfb8235df5b5b7372c3b4cd6e2ace33bf0123b7719c1817b97fd1e5a29",
+  "actualArgon": [
+    {
+      "protocol": "gemini",
+      "stage": "discover",
+      "http": 200,
+      "curlExit": 0,
+      "matched": true,
+      "elapsedMs": 5691,
+      "tool": "wy_targets"
+    },
+    {
+      "protocol": "gemini",
+      "stage": "delegate",
+      "http": 200,
+      "curlExit": 0,
+      "matched": true,
+      "elapsedMs": 7618,
+      "tool": "wy_delegate"
+    },
+    {
+      "protocol": "gemini",
+      "stage": "handoff",
+      "http": 200,
+      "curlExit": 0,
+      "matched": true,
+      "elapsedMs": 5754,
+      "tool": null
+    },
+    {
+      "protocol": "gemini",
+      "stage": "observe",
+      "http": 200,
+      "curlExit": 0,
+      "matched": true,
+      "elapsedMs": 12463,
+      "tool": "wy_observe"
+    },
+    {
+      "protocol": "gemini",
+      "stage": "collected",
+      "http": 200,
+      "curlExit": 0,
+      "matched": true,
+      "elapsedMs": 6764,
+      "tool": null
+    }
+  ],
+  "nativeHostActions": [
+    {
+      "tool": "mcp_wy_26eeffa507908788_wy_targets",
+      "origin": {
+        "taskId": "6ddd4b63-8094-47f4-b689-5ca7c3e808d5",
+        "bindingId": "b9e7cfca-4e59-424f-96b4-de9adbf16a39",
+        "runId": "b8d22868-bbff-4ea8-b2c1-242f8285fc31",
+        "generation": 1,
+        "turnId": "9156f9a8-e71a-4a3f-9da9-230c0ceae621",
+        "nativeRequest": "6fb90811-f12a-4c40-9725-9cda04e4b11d:1"
+      }
+    },
+    {
+      "tool": "mcp_wy_26eeffa507908788_wy_delegate",
+      "origin": {
+        "taskId": "6ddd4b63-8094-47f4-b689-5ca7c3e808d5",
+        "bindingId": "b9e7cfca-4e59-424f-96b4-de9adbf16a39",
+        "runId": "b8d22868-bbff-4ea8-b2c1-242f8285fc31",
+        "generation": 1,
+        "turnId": "9156f9a8-e71a-4a3f-9da9-230c0ceae621",
+        "nativeRequest": "6fb90811-f12a-4c40-9725-9cda04e4b11d:2"
+      }
+    },
+    {
+      "tool": "mcp_wy_26eeffa507908788_wy_observe",
+      "origin": {
+        "taskId": "6ddd4b63-8094-47f4-b689-5ca7c3e808d5",
+        "bindingId": "b9e7cfca-4e59-424f-96b4-de9adbf16a39",
+        "runId": "41464894-6906-4822-a795-c9a0d04feaf0",
+        "generation": 2,
+        "turnId": "84f15341-a1eb-4d1a-b26f-186b4adfa656",
+        "nativeRequest": "c5146142-9c7c-4425-a9ea-15380d3f45d2:1"
+      }
+    }
+  ],
+  "finalStates": [
+    {
+      "taskId": "a83d6226-7727-4c8b-93eb-886f6d90068c",
+      "parentTaskId": "6ddd4b63-8094-47f4-b689-5ca7c3e808d5",
+      "status": "completed",
+      "stopping": false
+    },
+    {
+      "taskId": "6ddd4b63-8094-47f4-b689-5ca7c3e808d5",
+      "parentTaskId": null,
+      "status": "completed",
+      "stopping": false
+    }
+  ],
+  "exit": {
+    "pid": 8197,
+    "code": 0,
+    "signal": null
+  }
+}

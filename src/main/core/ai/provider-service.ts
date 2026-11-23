@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { modelForStorage, type ProviderCatalogModel } from '@shared/provider-model-metadata';
-import { codeAgentKindSchema, providerInputSchema, providerModelSchema, type CodeAgentKind, type ProviderInput, type ProviderModel, type ProviderView } from '@shared/ai-agents';
+import { agentProtocol, codeAgentKindSchema, providerInputSchema, providerModelSchema, type CodeAgentKind, type ProviderInput, type ProviderModel, type ProviderView } from '@shared/ai-agents';
 import type { AppDb } from '../../db/client';
 import { aiProviders, appSecrets } from '../../db/schema';
 import type { SecretsStore } from '../../secrets';
@@ -48,7 +48,8 @@ export class ProviderService {
     try{models=presetModelMetadata(data.preset,data.endpoints,await fetchProviderModels(target,options));}
     catch(error){if(error instanceof ProviderRequestError&&error.status===404){models=[];note='模型列表接口不存在，请手动填写模型 ID';}else throw error;}
     check();
-    return {models,recommended:{claude:recommendedProviderModel(data.preset,models,'claude'),codex:recommendedProviderModel(data.preset,models,'codex')},
+    return {models,recommended:{claude:recommendedProviderModel(data.preset,models,'claude'),codex:recommendedProviderModel(data.preset,models,'codex'),
+      ...(data.endpoints.gemini ? { antigravity: recommendedProviderModel(data.preset,models,'antigravity') } : {})},
       note:note??(!models.length?'模型列表为空，请手动填写模型 ID':null)};
   }
   async probeDraft(input:ProviderInput,kind:CodeAgentKind,signal?:AbortSignal){
@@ -63,10 +64,10 @@ export class ProviderService {
       const current=await fetchProviderModels(target,options);check();
       models=data.models.map(selected=>{const model=current.find(m=>m.id===selected.id&&!m.offline);if(!model)throw new ProviderRequestError('选中的模型已下线，请重新获取模型');return modelForStorage(model);});
     }
-    const endpoints={...data.endpoints},recommended:{claude?:string;codex?:string}={};
+    const endpoints={...data.endpoints},recommended:Partial<Record<CodeAgentKind,string>>={};
     const successful:CodeAgentKind[]=[],failures:string[]=[];
-    for(const kind of ['claude','codex'] as const){
-      if(!(kind==='claude'?endpoints.anthropic:endpoints.responses))continue;
+    for(const kind of codeAgentKindSchema.options){
+      if(!endpoints[agentProtocol[kind]])continue;
       check();const preferred=data.recommended[kind];
       const id=models.some(m=>m.id===preferred&&!m.offline&&m.availability[kind]!=='unavailable')?preferred:recommendedProviderModel(data.preset,models,kind);
       if(!id)continue;
@@ -80,12 +81,12 @@ export class ProviderService {
         // check can be retried with a different model from the same directory.
         const canRetestModelHub = data.preset === 'ultracloud' && kind === 'claude'
           && endpoints.anthropic === modelHubEndpoints.anthropic;
-        if(!canRetestModelHub&&!verifiedPresetProtocol(data.preset,endpoints,kind))delete endpoints[kind==='claude'?'anthropic':'responses'];
+        if(kind!=='antigravity'&&!canRetestModelHub&&!verifiedPresetProtocol(data.preset,endpoints,kind))delete endpoints[agentProtocol[kind]];
       }
     }
     check();
-    if(!endpoints.anthropic&&!endpoints.responses&&!endpoints.openai)throw new ProviderRequestError(failures[0]??'没有可用的协议，未保存供应商');
-    if(!successful.length&&!endpoints.openai&&!(['claude','codex'] as const).some(kind=>verifiedPresetProtocol(data.preset,endpoints,kind)))throw new ProviderRequestError(failures[0]??'模型工具调用未通过，未保存供应商');
+    if(!Object.values(endpoints).some(Boolean))throw new ProviderRequestError(failures[0]??'没有可用的协议，未保存供应商');
+    if(!successful.length&&!endpoints.openai&&!endpoints.gemini&&!(['claude','codex'] as const).some(kind=>verifiedPresetProtocol(data.preset,endpoints,kind)))throw new ProviderRequestError(failures[0]??'模型工具调用未通过，未保存供应商');
     // Trusted checks are produced above in main; the ordinary save RPC rejects
     // renderer-forged statuses. No async work occurs inside this transaction.
     return this.agents.saveProvider({...data,endpoints,models,recommended});
@@ -123,11 +124,12 @@ export class ProviderService {
       const models: ProviderModel[] = received.map((model) => {
         const previous=old.get(model.id);
         const availability={...model.availability},checks={...previous?.checks};
-        for(const kind of ['claude','codex'] as const){
+        for(const kind of codeAgentKindSchema.options){
+          if(kind==='antigravity'&&!captured.target.endpoints.gemini)continue;
           if(magpie&&model.availability[kind]==='unavailable'){availability[kind]='unavailable';delete checks[kind];}
-          else availability[kind]=magpie&&previous?.availability[kind]==='unavailable'&&!previous.checks?.[kind]?'untested':previous?.availability[kind]??model.availability[kind];
+          else availability[kind]=magpie&&previous?.availability[kind]==='unavailable'&&!previous.checks?.[kind]?'untested':previous?.availability[kind]??model.availability[kind]??'untested';
         }
-        return {...model,availability,...(Object.keys(checks).length?{checks}:{checks:undefined})};
+        return {...model,availability,antigravity:previous?.antigravity,...(Object.keys(checks).length?{checks}:{checks:undefined})};
       });
       for (const model of old.values()) if (!present.has(model.id)) models.push({ ...model, offline: true });
       if (models.length > 4096) throw new Error('合并后的模型目录超过大小限制');

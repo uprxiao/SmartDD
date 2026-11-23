@@ -56,7 +56,10 @@ describe('Tool discovery publishes data but never creates an agent automatically
     const env = { PATH: '/test', ANTHROPIC_API_KEY: 'PUBLIC_TEST_ENV', CLAUDECODE: 'parent' };
     const auth = vi.fn(probe);
     const tools = new AgentToolService(agents, { env: () => env, discover, probe: auth, executable: async () => true });
-    const results = await tools.refresh(); expect(results.map((row) => row.tool.login)).toEqual(['api', 'subscription']);
+    const results = await tools.refresh();
+    expect(results.map((row) => [row.tool.kind, row.tool.login])).toEqual([
+      ['claude', 'api'], ['codex', 'subscription'], ['antigravity', 'none'],
+    ]);
     expect(agents.configs()).toEqual([]);
     for (const call of auth.mock.calls) expect(call[2]).toEqual({ PATH: '/test', ANTHROPIC_API_KEY: 'PUBLIC_TEST_ENV' });
     expect(env.CLAUDECODE).toBe('parent'); expect(JSON.stringify(results)).not.toContain('PUBLIC_TEST_ENV');

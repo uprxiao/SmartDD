@@ -1,0 +1,53 @@
+{
+  "case": "A25",
+  "assertions": [
+    "actual parent tree stop retired the child write before side effects",
+    "stale child decision rejected by the live packaged host after stop",
+    "cancelled child stays stopped and the stale approval remains denied after the isolated App process crashes and reopens",
+    "reopened parent is visibly stopped and the durable notification is not dispatched without a user continuation"
+  ],
+  "close": {
+    "requested": true,
+    "cipher": "restored",
+    "exit": {
+      "pid": 81257,
+      "code": 0,
+      "signal": null
+    },
+    "quitReadback": {
+      "tasks": [
+        {
+          "taskId": "f0495789-a21f-4f00-88ae-129239cbee88",
+          "parentTaskId": "6b30ecd4-da08-407b-9339-561dd73629c9",
+          "status": "stopped",
+          "stopping": false
+        },
+        {
+          "taskId": "6b30ecd4-da08-407b-9339-561dd73629c9",
+          "parentTaskId": null,
+          "status": "stopped",
+          "stopping": false
+        }
+      ],
+      "visible": [
+        {
+          "taskId": "6b30ecd4-da08-407b-9339-561dd73629c9",
+          "state": "已停止",
+          "active": true
+        },
+        {
+          "taskId": "f0495789-a21f-4f00-88ae-129239cbee88",
+          "state": "已停止",
+          "active": false
+        }
+      ]
+    },
+    "waitMs": 218,
+    "rendererErrors": []
+  },
+  "reserved": [
+    "native macOS SafeStorage is outside this fixture",
+    "separate interrupted active child, recoverable native binding, and unknown accepted side effect"
+  ],
+  "appAsarSha256": "79e775869ae6e14a45cccff7f5f96a4193647466e81456be5a2aefc02166362d"
+}

@@ -1,11 +1,12 @@
+import { randomUUID } from 'node:crypto';
 import { verifiedPresetProtocol } from '@shared/ai-provider-presets';
 import { CODEX_CATALOG_VERSION } from './codex-model-catalog';
-import { claudeEffortSchema, type CodeAgentKind, type ProviderModel } from '@shared/ai-agents';
+import { agentProtocol, claudeEffortSchema, type CodeAgentKind, type ProviderModel } from '@shared/ai-agents';
 import { modelHubEndpoints } from '@shared/provider-catalog';
 import { providerModelMetadata, type ProviderCatalogModel } from '@shared/provider-model-metadata';
 
 export interface ProviderTarget {
-  endpoints: { anthropic?: string; responses?: string; openai?: string };
+  endpoints: { anthropic?: string; responses?: string; openai?: string; gemini?: string };
   key: string;
   authType: 'bearer' | 'api-key';
   preset?: string | null;
@@ -54,7 +55,20 @@ function serviceUrl(base: string, resource: string): string {
 }
 
 function auth(target: ProviderTarget, kind?: CodeAgentKind): Record<string, string> {
+  if (kind === 'antigravity') return { 'x-goog-api-key': target.key };
   return kind === 'claude' && target.authType === 'api-key' ? { 'x-api-key': target.key } : { Authorization: `Bearer ${target.key}` };
+}
+
+export function geminiApiRoot(base: string): string {
+  const url = new URL(base);
+  url.pathname = url.pathname.replace(/\/(?:v1beta|v1)(?:\/models)?\/?$/, '/');
+  return url.toString();
+}
+
+function geminiStreamUrl(base: string, model: string): string {
+  const url = new URL(serviceUrl(geminiApiRoot(base), `v1beta/models/${encodeURIComponent(model)}:streamGenerateContent`));
+  url.searchParams.set('alt', 'sse');
+  return url.toString();
 }
 
 function protocolUrl(base: string, kind: CodeAgentKind): string {
@@ -201,11 +215,12 @@ function decodeProviderModels(body:unknown,key:string,fromAnthropic:boolean):Pro
   const found = new Map<string, ProviderCatalogModel>();
   for (const raw of rows) {
     if (!raw || typeof raw !== 'object') continue;
-    const row = raw as Record<string, unknown>, id = row.id ?? row.slug;
+    const row = raw as Record<string, unknown>, id = row.id ?? row.slug ??
+      (typeof row.name === 'string' && row.name.startsWith('models/') ? row.name.slice(7) : undefined);
     if (typeof id !== 'string' || !id.trim() || id.trim() !== id || id.length > 256 || id.startsWith('-') || /[\x00-\x1f\x7f]/.test(id)) continue;
     if (containsCredential(id, key)) throw new ProviderRequestError('模型目录包含认证值，已拒绝保存');
     const context = row.context_window ?? row.context_length;
-    const rawName = row.display_name ?? row.name ?? id;
+    const rawName = row.display_name ?? row.displayName ?? row.name ?? id;
     const name = typeof rawName === 'string' && rawName.trim() ? redact(rawName.trim(), key).slice(0, 256) : id;
     const effort = row.effort as { supported_levels?: unknown; default_level?: unknown } | undefined;
     const rawLevels = Array.isArray(row.supported_reasoning_levels) ? row.supported_reasoning_levels : Array.isArray(effort?.supported_levels) ? effort.supported_levels : [];
@@ -262,10 +277,11 @@ export async function fetchProviderModels(target: ProviderTarget, options: Provi
   for (const [protocol, base] of endpoints) {
     // The documented Model Hub directory remains under /v1 for both API protocols.
     const modelHubRoot = target.preset === 'ultracloud' && base === modelHubEndpoints.anthropic;
-    const first = serviceUrl(base, modelHubRoot ? 'v1/models' : 'models');
+    const first = protocol === 'gemini' ? serviceUrl(geminiApiRoot(base), 'v1beta/models') : serviceUrl(base, modelHubRoot ? 'v1/models' : 'models');
     const paths = /\/v1\/models$/.test(new URL(first).pathname) ? [first] : [...new Set([first, serviceUrl(base, 'v1/models')])];
     for (const url of paths) {
-      const response = await request(target, url, { headers: { ...auth(target, protocol === 'anthropic' ? 'claude' : 'codex'), Accept: 'application/json', 'anthropic-version': '2023-06-01' } }, options);
+      const headers = { ...auth(target, protocol === 'gemini' ? 'antigravity' : protocol === 'anthropic' ? 'claude' : 'codex'), Accept: 'application/json', 'anthropic-version': '2023-06-01' };
+      const response = await request(target, url, { headers }, options);
       if (response.status === 404) { last = responseError(404, response.text, target.key); continue; }
       if (response.status < 200 || response.status >= 300) throw responseError(response.status, response.text, target.key);
       let body: unknown; try { body = JSON.parse(response.text); } catch { throw new ProviderRequestError('模型列表 JSON 无效'); }
@@ -276,7 +292,7 @@ export async function fetchProviderModels(target: ProviderTarget, options: Provi
         const cursor=(body as {last_id?:unknown}).last_id;
         if(page++>=16||typeof cursor!=='string'||!found.has(cursor)||cursors.has(cursor))throw new ProviderRequestError('模型目录分页不完整，未保存部分结果');
         cursors.add(cursor);const next=new URL(url);next.searchParams.set('after_id',cursor);
-        const result=await request(target,next.toString(),{headers:{...auth(target,protocol==='anthropic'?'claude':'codex'),Accept:'application/json','anthropic-version':'2023-06-01'}},options);
+        const result=await request(target,next.toString(),{headers},options);
         if(result.status<200||result.status>=300)throw responseError(result.status,result.text,target.key);
         try{body=JSON.parse(result.text);}catch{throw new ProviderRequestError('模型列表 JSON 无效');}
         for(const model of decodeProviderModels(body,target.key,fromAnthropic))found.set(model.id,model);
@@ -288,15 +304,56 @@ export async function fetchProviderModels(target: ProviderTarget, options: Provi
   throw last ?? new ProviderRequestError('没有可读取模型列表的服务地址');
 }
 
+type GeminiPart = { functionCall?: { name?: string; id?: string; args?: unknown }; text?: string; thought?: boolean };
+async function verifyGeminiTool(target: ProviderTarget, base: string, model: string, options: ProviderClientOptions) {
+  const headers = { ...auth(target, 'antigravity'), 'Content-Type': 'application/json', Accept: 'text/event-stream' };
+  const tools = [{ functionDeclarations: [{ name: PROBE_TOOL, description: 'Return the connectivity check result.' }] }];
+  const contents: unknown[] = [{ role: 'user', parts: [{ text: `Call ${PROBE_TOOL} exactly once. Reply with the exact returned value.` }] }];
+  const ask = async (step: 'call' | 'result') => {
+    const response = await request(target, geminiStreamUrl(base, model), {
+      method: 'POST', headers, body: JSON.stringify({ contents, tools,
+        ...(step === 'call' ? { toolConfig: { functionCallingConfig: { mode: 'ANY' } } } : {}),
+        generationConfig: { maxOutputTokens: 1024 } }),
+    }, { ...options, timeoutMs: options.timeoutMs ?? 60000 });
+    if (response.status < 200 || response.status >= 300) throw responseError(response.status, response.text, target.key);
+    if (response.media !== 'text/event-stream') throw new ProviderRequestError('Gemini 未返回流式响应');
+    const candidates = sse(response.text).flatMap(({ value }) => {
+      if (value.error) throw responseError(response.status, JSON.stringify(value), target.key);
+      const rows = value.candidates as { index?: number; finishReason?: string; content?: { parts?: GeminiPart[] } }[] | undefined;
+      return Array.isArray(rows) ? rows.filter(candidate => candidate?.index === undefined || candidate.index === 0) : [];
+    });
+    if (candidates.at(-1)?.finishReason !== 'STOP') throw new ProviderRequestError('Gemini 流式回合未完整结束');
+    return candidates.flatMap(candidate => Array.isArray(candidate.content?.parts) ? candidate.content.parts : []);
+  };
+  const first = await ask('call');
+  const calls = first.filter(part => part?.functionCall);
+  const call = calls[0]?.functionCall;
+  if (calls.length !== 1 || call?.name !== PROBE_TOOL) throw new ProviderRequestError('Gemini 未发出所需的测试工具调用');
+  const marker = randomUUID();
+  // Replay the tool call and its signature without the intermediate text and thoughts.
+  contents.push({ role: 'model', parts: calls }, { role: 'user', parts: [{ functionResponse: {
+    name: PROBE_TOOL, ...(typeof call.id === 'string' ? { id: call.id } : {}), response: { value: marker },
+  } }] });
+  const second = await ask('result');
+  if (second.some(part => part?.functionCall) ||
+      !second.filter(part => !part?.thought).map(part => part?.text ?? '').join('').includes(marker)) {
+    throw new ProviderRequestError('Gemini 未确认测试工具的回传结果');
+  }
+}
+
 export async function verifyProviderModel(target: ProviderTarget, kind: CodeAgentKind, model: string, options: ProviderClientOptions = {}): Promise<ModelCheckResult> {
   target=providerTargetForTool(target,kind);
   const started = Date.now(), failures: ModelCheckResult['failures'] = [];
-  const base = kind === 'claude' ? target.endpoints.anthropic : target.endpoints.responses;
+  const base = target.endpoints[agentProtocol[kind]];
   if (!base) return { status: 'unavailable', attempts: 0, durationMs: 0, message: '该供应商没有所需协议', failures: [] };
   if (!model.trim() || model.length > 256 || /^[\s-]/.test(model) || /[\x00-\x1f\x7f]/.test(model)) throw new ProviderRequestError('模型 ID 无效');
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       if (options.signal?.aborted) throw new ProviderRequestError('请求已取消');
+      if (kind === 'antigravity') {
+        await verifyGeminiTool(target, base, model, options);
+        return { status: 'available', attempts: attempt, durationMs: Date.now() - started, message: 'Gemini 流式工具调用和回传验证通过', failures };
+      }
       const body = kind === 'claude' ? { model, max_tokens: 4096, stream: true, thinking: { type: 'adaptive', display: 'updates' },
         messages: [{ role: 'user', content: `Call the ${PROBE_TOOL} tool exactly once.` }],
         tools: [{ name: PROBE_TOOL, description: 'Synthetic connectivity check.', input_schema: { type: 'object', properties: {}, additionalProperties: false } }], tool_choice: { type: 'auto' } } :
@@ -319,8 +376,14 @@ export async function verifyProviderModel(target: ProviderTarget, kind: CodeAgen
 /** Empty probes identify candidates only. A successful model-tool check is still required. */
 export async function probeProviderProtocol(target: ProviderTarget, kind: CodeAgentKind, options: ProviderClientOptions = {}): Promise<{ state: 'candidate' | 'unsupported' | 'unknown'; status: number; message: string }> {
   target=providerTargetForTool(target,kind);
-  const base = kind === 'claude' ? target.endpoints.anthropic : target.endpoints.responses;
+  const base = target.endpoints[agentProtocol[kind]];
   if (!base) return { state: 'unsupported', status: 0, message: '未填写该协议地址' };
+  if (kind === 'antigravity') {
+    const result = await request(target, serviceUrl(geminiApiRoot(base), 'v1beta/models'), { headers: auth(target, kind) }, options);
+    if ([401, 403].includes(result.status)) throw responseError(result.status, result.text, target.key);
+    const state = result.status >= 200 && result.status < 300 ? 'candidate' : [404, 405].includes(result.status) ? 'unsupported' : 'unknown';
+    return { state, status: result.status, message: state === 'candidate' ? '已连接，需验证模型工具调用和回传' : '无法确认 Gemini 原生接口' };
+  }
   const url = protocolUrl(base, kind);
   const response = await request(target, url, { method: 'POST', headers: { ...auth(target, kind), 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' }, body: '{}' }, options);
   if (response.status === 401 || response.status === 403) throw responseError(response.status, response.text, target.key);

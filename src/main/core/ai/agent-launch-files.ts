@@ -39,7 +39,7 @@ function atomicJson(path: string, value: unknown): void {
  * the user's native CLI root as a destination and never writes any credentials.
  */
 export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cwd: string): void {
-  if (!plan.files.length && !plan.claudeRoot && !plan.codexRoot) return;
+  if (!plan.files.length && !plan.claudeRoot && !plan.codexRoot && !plan.antigravityRoot) return;
   const base = realpathSync(userData), managed = join(base, 'agents');
   const keyValues = Object.entries(plan.profile.env).filter(([name]) => ['OPENAI_API_KEY','ANTHROPIC_API_KEY','ANTHROPIC_AUTH_TOKEN'].includes(name)).map(([,value]) => value);
   const serialized = JSON.stringify(plan.files);
@@ -55,6 +55,11 @@ export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cw
     // The managed Codex run uses this as HOME (D06-72); it must exist before the native process starts.
     requirePrivateDirectory(base, join(plan.codexRoot, 'home'));
     if (existsSync(join(plan.codexRoot, 'auth.json'))) throw new Error('Codex 管理目录含有残留认证，请移除后重试');
+  }
+  if (plan.antigravityRoot) {
+    const rest = relative(join(managed, 'antigravity'), resolve(plan.antigravityRoot));
+    if (!/^[a-f0-9]{32}$/.test(rest)) throw new Error('Antigravity 管理目录身份异常');
+    requirePrivateDirectory(base, plan.antigravityRoot);
   }
   if (plan.claudeRoot) {
     const rest = relative(join(managed, 'claude'), resolve(plan.claudeRoot));

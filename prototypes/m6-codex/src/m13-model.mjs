@@ -2,7 +2,9 @@
 // 依据 docs/里程碑/M13_应用Skill与MCP插件化重构/需求.md R0.3（含补记）与 技研/技术方案.md T1.0 草案。
 // 全部为合成数据：不读取真实插件、CLI 配置、Skill 目录或密钥，不发网络请求，不启动任何程序。
 
-export const AGENTS = { claude: 'Claude Code', codex: 'Codex' };
+export const F35_PREVIEW = new URLSearchParams(globalThis.location?.search).get('f35') === '1';
+export const F35_MODELS = ['gemini-4-carbon', 'gemini-4-argon'].map(id => ({ id, name: id, ctx: '—' }));
+export const AGENTS = { claude: 'Claude Code', codex: 'Codex', ...(F35_PREVIEW ? { antigravity: 'Antigravity' } : {}) };
 
 // ---------- 插件 ----------
 /** 连接表单声明（审核 P03）：由插件声明字段，WillYou 渲染；密码／Token 只显示“已保存”，原型不保存秘密值。 */
@@ -158,6 +160,7 @@ export function unmanage(c) { return { ...c, state: 'new', targets: Object.fromE
 export const TOOLS = [
   { id: 'claude', name: 'Claude Code', path: '~/.local/bin/claude', version: '2.1.322', verified: ['2.1.321', '2.1.322'], installed: true, login: 'subscription' },
   { id: 'codex', name: 'Codex', path: '~/.local/bin/codex', version: '0.166.0', verified: ['0.166.0'], installed: true, login: 'none' },
+  ...(F35_PREVIEW ? [{ id: 'antigravity', name: 'Antigravity', path: '~/.local/bin/agy', version: '1.5.14', acpProtocol: 1, installed: true, login: 'none' }] : []),
 ];
 export const LOGIN_LABEL = { subscription: '订阅', api: 'API' };
 export const LOGIN_DESC = { subscription: '使用 CLI 里登录的订阅账号，消耗订阅额度', api: '使用 CLI 里登录的 API Key，按官方价格计费' };
@@ -171,8 +174,8 @@ export const PROVIDERS = [
   { id: 'magpie', name: 'Magpie', type: 'preset', preset: 'magpie', catalog: 'magpie', url: 'http://127.0.0.1:3425/v1', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, protocols: ['responses', 'anthropic'], key: 'magpie-codex', refreshed: '今天 08:40', recommended: { codex: 'gpt-5.5', claude: 'claude-sonnet-5-5' },
     models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K', avail: { codex: 'ok', claude: 'untested' } }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K', avail: { claude: 'ok', codex: 'bad' }, detail: 'Codex 调用时工具调用格式不兼容' }] },
 ];
-export const PROTOCOL_LABEL = { responses: 'OpenAI Responses', anthropic: 'Anthropic Messages' };
-export const TOOL_PROTOCOL = { codex: 'responses', claude: 'anthropic' };
+export const PROTOCOL_LABEL = { responses: 'OpenAI Responses', anthropic: 'Anthropic Messages', ...(F35_PREVIEW ? { gemini: 'Gemini 原生' } : {}) };
+export const TOOL_PROTOCOL = { codex: 'responses', claude: 'anthropic', ...(F35_PREVIEW ? { antigravity: 'gemini' } : {}) };
 export function compatible(toolId, provider) {
   return (provider.protocols || []).includes(TOOL_PROTOCOL[toolId]) ? { ok: true } : { ok: false, reason: `${AGENTS[toolId]} 需要 ${PROTOCOL_LABEL[TOOL_PROTOCOL[toolId]]} 兼容接口` };
 }
@@ -216,6 +219,7 @@ export const RUN_CONFIGS = [
 /** Code Agent 列表（P0.13）：首期支持 Claude Code、Codex；其余先展示并标“暂不支持”。 */
 export const CODE_AGENTS = [
   { id: 'claude', name: 'Claude Code', supported: true }, { id: 'codex', name: 'Codex', supported: true },
+  ...(F35_PREVIEW ? [{ id: 'antigravity', name: 'Antigravity', supported: true }] : []),
   { id: 'opencode', name: 'OpenCode', supported: false }, { id: 'zcode', name: 'Z Code', supported: false }, { id: 'pi', name: 'Pi', supported: false }, { id: 'dsh', name: 'DSH', supported: false },
 ];
 const newId = () => 'rc-' + Math.random().toString(36).slice(2, 8);
@@ -462,19 +466,20 @@ export const CATALOG = [
     models: [{ id: 'glm-5', name: 'GLM-5', ctx: '128K' }, { id: 'glm-5-air', name: 'GLM-5-Air', ctx: '128K' }] },
   // SMG（SmartModelGate）：用户 2026-11-11 提供的内网网关；原型中真实接入（live，见 m13-live.mjs）。公开的 /openapi.json 只有 /v1/messages、/v1/chat/completions、/v1/models 等，没有 Responses；Codex 0.166 已不支持 chat 接口，所以只适用 Claude Code（补验 D）。
   { id: 'smg', group: 'vendor', name: 'SMG', desc: '公司内网模型网关', endpoints: { anthropic: SMG_URL, openai: SMG_URL + '/v1' }, keyLabel: 'SMG API Key', verified: true, live: true, recommended: 'deepseek-v4-pro', models: [] },
-  { id: 'ultracloud', group: 'vendor', name: 'Model Hub', desc: '模型网关', endpoints: { responses: 'https://rjmodel.rjupc.com/v1', anthropic: 'https://rjmodel.rjupc.com' }, keyLabel: 'Model Hub Key', verified: true,
-    models: ['qwen3.8-max', 'glm-5.1', 'gpt-5.4', 'claude-sonnet-4-6', 'wan3.0-video', 'gemini-nano-banana-2.1'].map(id => ({ id, name: id, ctx: '—' })) },
+  { id: 'ultracloud', group: 'vendor', name: 'Model Hub', desc: '模型网关', endpoints: { responses: 'https://rjmodel.rjupc.com/v1', anthropic: 'https://rjmodel.rjupc.com', ...(F35_PREVIEW ? { gemini: 'https://rjmodel.rjupc.com' } : {}) }, keyLabel: 'Model Hub Key', verified: true,
+    ...(F35_PREVIEW ? { recommended: { antigravity: F35_MODELS[0].id } } : {}),
+    models: F35_PREVIEW ? F35_MODELS : ['qwen3.8-max', 'glm-5.1', 'gpt-5.4', 'claude-sonnet-4-6', 'wan3.0-video', 'gemini-nano-banana-2.1'].map(id => ({ id, name: id, ctx: '—' })) },
   { id: 'magpie', group: 'vendor', name: 'Magpie', desc: '本机网关，真实 Key 与路由留在 Magpie', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, keyLabel: '令牌', defaultKey: 'magpie-codex', verified: true, recommended: { codex: 'gpt-5.5', claude: 'claude-sonnet-5-5' },
     models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K' }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K' }] },
 ];
-export const PROTOCOL_TABS = [['responses', 'OpenAI Responses'], ['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容']];
-export const PROTOCOL_LABEL_FULL = { responses: 'OpenAI Responses', anthropic: 'Anthropic', openai: 'OpenAI 兼容' };
+export const PROTOCOL_TABS = [['responses', 'OpenAI Responses'], ['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容'], ...(F35_PREVIEW ? [['gemini', 'Gemini 原生']] : [])];
+export const PROTOCOL_LABEL_FULL = Object.fromEntries(PROTOCOL_TABS);
 /** 供应商能用于哪些工具：Codex 需要 Responses，Claude Code 需要 Anthropic。 */
 export function toolsFor(p) {
   const pr = p.protocols || Object.keys(p.endpoints || {});
-  return ['claude', 'codex'].filter(t => pr.includes(TOOL_PROTOCOL[t]));
+  return Object.keys(AGENTS).filter(t => pr.includes(TOOL_PROTOCOL[t]));
 }
-export const pairingNote = p => { const t = toolsFor(p); return t.length ? '适用 ' + t.map(x => AGENTS[x]).join('、') : '两个工具都不能直接使用，可经 Magpie 等网关接入'; };
+export const pairingNote = p => { const t = toolsFor(p); return t.length ? '适用 ' + t.map(x => AGENTS[x]).join('、') : F35_PREVIEW ? '需要兼容的 Code Agent 接口' : '两个工具都不能直接使用，可经 Magpie 等网关接入'; };
 /** 自定义供应商检测协议（合成）：按地址给出候选协议；以 /anthropic 结尾判为 Anthropic，含 /chat 判为 OpenAI 兼容。 */
 export function detectProtocols(url) {
   if (!/^https?:\/\/.+/.test(url)) return { ok: false, error: '请输入以 http:// 或 https:// 开头的地址' };

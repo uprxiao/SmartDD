@@ -221,6 +221,11 @@ export class AgentTaskService {
     this.handoffs = new HandoffService(d.store);
     // 重启后排队的输入保留但不自动发出，等用户再次提交或取消（未知接收不自动重发）。
     for (const taskId of d.store.tasksWithQueue()) this.paused.add(taskId);
+    // A child can finish recovery after startup and enqueue a result on a stopped parent.
+    for (const taskId of d.store.tasksStoppedByUser()) {
+      this.paused.add(taskId);
+      this.stoppedByUser.add(taskId);
+    }
     d.store.subscribe(e => {
       if (e.type === 'goal.changed') { this.goalPending.delete(e.taskId); this.goalUnknown.delete(e.taskId); }
       if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g && g.turnId === (e.payload as { turnId?: string }).turnId) { this.goalPending.delete(e.taskId); this.goalUnknown.set(e.taskId, { kind: g.kind, ...(g.objective ? { objective: g.objective } : {}) }); } }
@@ -782,8 +787,9 @@ export class AgentTaskService {
         : selection.effort;
       const confirmedNativeEffort = !modelInfo?.efforts.length && model === selectedModel &&
         matchesNativeSelection && preferred === selection.effort && preferred !== 'none';
-      const effort = confirmedNativeEffort ? preferred : resolveModelEffort(modelInfo, preferred, isCodex);
-      if (preferred && effort !== preferred) this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${preferred}：执行器未公布该模型的此选项。` });
+      const acp = run.driverId === 'antigravity-acp';
+      const effort = acp || confirmedNativeEffort ? preferred : resolveModelEffort(modelInfo, preferred, isCodex);
+      if (!acp && preferred && effort !== preferred) this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${preferred}：执行器未公布该模型的此选项。` });
       const hostContext = [this.coordination?.dispatchContext?.(taskId), run.hostBusinessInstructionsInstalled ? undefined : run.hostBusinessInstructions].filter(Boolean).join('\n\n');
       const remaining = INPUT_TEXT_LIMIT - Buffer.byteLength(input.text) - (hostContext ? Buffer.byteLength(hostContext) + 2 : 0);
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);

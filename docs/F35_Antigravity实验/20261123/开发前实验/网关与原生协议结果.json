@@ -1,0 +1,544 @@
+{
+  "sourceCommit": "e7fc5f57ffc4191c175f0a41902e62e4d4bf3133",
+  "timeUtc": "2026-11-23T03:51:02.545970+00:00",
+  "nativeAgyLauncherSha256": "e8c2959bf4744580d0e5b8f938ec2dc3918a942b620a6262e53856400f14e5fb",
+  "capturedNativeShape": {
+    "gemini-4-carbon": {
+      "route": "/v1beta/models/gemini-4-carbon:streamGenerateContent?alt=sse",
+      "accept": null,
+      "bodySha256": "1e5f2678398987d4c20298fd6ded8e0261f7c0bf12820a4e4bfe00b28f1a4679",
+      "bodySize": 44501,
+      "systemSize": 20017,
+      "generation": {
+        "maxOutputTokens": 65536,
+        "thinkingConfig": {
+          "includeThoughts": true,
+          "thinkingLevel": "LOW"
+        }
+      },
+      "toolNames": [
+        "read_file",
+        "run_command",
+        "manage_task",
+        "send_message",
+        "schedule",
+        "invoke_subagent",
+        "define_subagent",
+        "manage_subagents",
+        "write_file",
+        "edit_file",
+        "search_web",
+        "run_workflow",
+        "swarm",
+        "ask_question",
+        "mcp_f35_probe_tools_report_probe",
+        "list_resources",
+        "read_resource"
+      ]
+    },
+    "gemini-4-argon": {
+      "route": "/v1beta/models/gemini-4-argon:streamGenerateContent?alt=sse",
+      "accept": null,
+      "bodySha256": "77278b397dc64ca2453cad5de9258472ee33183f76e0e2d176d35aff72511e66",
+      "bodySize": 44491,
+      "systemSize": 20008,
+      "generation": {
+        "maxOutputTokens": 65536,
+        "thinkingConfig": {
+          "includeThoughts": true,
+          "thinkingLevel": "LOW"
+        }
+      },
+      "toolNames": [
+        "read_file",
+        "run_command",
+        "manage_task",
+        "send_message",
+        "schedule",
+        "invoke_subagent",
+        "define_subagent",
+        "manage_subagents",
+        "write_file",
+        "edit_file",
+        "search_web",
+        "run_workflow",
+        "swarm",
+        "ask_question",
+        "mcp_f35_probe_tools_report_probe",
+        "list_resources",
+        "read_resource"
+      ]
+    }
+  },
+  "capturedToolResultShape": {
+    "toolTurn": {
+      "elapsedMs": 27,
+      "outcome": "ok",
+      "stopReason": "end_turn",
+      "assistantChunkCount": 1,
+      "hasExpectedMarker": true,
+      "sessionUpdateTypes": [
+        "agent_message_chunk",
+        "tool_call",
+        "tool_call_update"
+      ]
+    },
+    "shapes": [
+      {
+        "route": "/v1beta/models/gemini-4-carbon:streamGenerateContent?alt=sse",
+        "requestFields": [
+          "contents",
+          "generationConfig",
+          "systemInstruction",
+          "tools"
+        ],
+        "generationFields": [
+          "maxOutputTokens",
+          "thinkingConfig"
+        ],
+        "tailOfHistory": [
+          {
+            "role": "user",
+            "parts": [
+              [
+                "text"
+              ]
+            ]
+          },
+          {
+            "role": "model",
+            "parts": [
+              [
+                "functionCall",
+                "thoughtSignature"
+              ]
+            ]
+          },
+          {
+            "role": "model",
+            "parts": [
+              [
+                "functionResponse"
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "observedNativeTurnFailure": {
+    "upstreamStatus": [
+      400,
+      200
+    ],
+    "failedAcp": {
+      "elapsedMs": 13,
+      "outcome": "ok",
+      "stopReason": "end_turn",
+      "assistantChunkCount": 1,
+      "hasExpectedMarker": true,
+      "sessionUpdateTypes": [
+        "agent_message_chunk",
+        "available_commands_update",
+        "config_option_update",
+        "usage_update"
+      ]
+    },
+    "ordinaryAcp": {
+      "elapsedMs": 14,
+      "outcome": "ok",
+      "stopReason": "end_turn",
+      "assistantChunkCount": 1,
+      "hasExpectedMarker": true,
+      "sessionUpdateTypes": [
+        "agent_message_chunk"
+      ]
+    },
+    "failureNativeStepTypes": [
+      14,
+      17
+    ],
+    "failureIsNewType17WithGatewayMarker": true,
+    "ordinaryNativeStepTypes": [
+      14,
+      15
+    ],
+    "successfulTurnHasNoNewErrorStep": true,
+    "isolatedSessionDatabaseReadOnly": true
+  },
+  "gatewaySyntheticProfiles": {
+    "models": [
+      "gemini-4-carbon",
+      "gemini-4-argon"
+    ],
+    "fullySynthesizedBody": true,
+    "results": [
+      {
+        "model": "gemini-4-carbon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 9023,
+        "firstByteMs": 8858,
+        "syntheticBodyBytes": 134,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "small_text",
+        "expectedOutput": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-carbon",
+        "http": 400,
+        "curlExit": 0,
+        "elapsedMs": 4967,
+        "firstByteMs": 4955,
+        "syntheticBodyBytes": 136,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "gatewayReason": "分组 gemini-vertex 下模型 gemini-4-carbon 的可用渠道不存在（retry） (request id: 202611230342321463968128268d9d6hUpbi3dl)",
+        "case": "large_output_cap_only",
+        "expectedOutput": false,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "http": 400,
+        "curlExit": 0,
+        "elapsedMs": 5049,
+        "firstByteMs": 5024,
+        "syntheticBodyBytes": 203,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "gatewayReason": "分组 gemini-vertex 下模型 gemini-4-carbon 的可用渠道不存在（retry） (request id: 202611230342379044728458268d9d6cHuhVUAN)",
+        "case": "thinking_only",
+        "expectedOutput": false,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "http": 400,
+        "curlExit": 0,
+        "elapsedMs": 6018,
+        "firstByteMs": 6000,
+        "syntheticBodyBytes": 19881,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "gatewayReason": "分组 gemini-vertex 下模型 gemini-4-carbon 的可用渠道不存在（retry） (request id: 202611230342431775423038268d9d6r2xcKD3T)",
+        "case": "synthesized_system_only",
+        "expectedOutput": false,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 9767,
+        "firstByteMs": 9203,
+        "syntheticBodyBytes": 22909,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "synthesized_17_tools",
+        "expectedOutput": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-carbon",
+        "http": 400,
+        "curlExit": 0,
+        "elapsedMs": 9223,
+        "firstByteMs": 9205,
+        "syntheticBodyBytes": 23290,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "gatewayReason": "Requests ending with a model turn are not supported. (request id: 202611230342580415523428268d9d6E6lCw9P0)",
+        "case": "tool_result_followup",
+        "expectedOutput": false,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 16225,
+        "firstByteMs": 15935,
+        "syntheticBodyBytes": 134,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "small_text",
+        "expectedOutput": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 0,
+        "curlExit": 28,
+        "elapsedMs": 44026,
+        "firstByteMs": 0,
+        "syntheticBodyBytes": 136,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "case": "large_output_cap_only",
+        "expectedOutput": false,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 6567,
+        "firstByteMs": 5760,
+        "syntheticBodyBytes": 203,
+        "sseFrames": 3,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "thinking_only",
+        "expectedOutput": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 13514,
+        "firstByteMs": 13193,
+        "syntheticBodyBytes": 19881,
+        "sseFrames": 3,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "synthesized_system_only",
+        "expectedOutput": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 8325,
+        "firstByteMs": 7863,
+        "syntheticBodyBytes": 22909,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "synthesized_17_tools",
+        "expectedOutput": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 400,
+        "curlExit": 0,
+        "elapsedMs": 12378,
+        "firstByteMs": 12362,
+        "syntheticBodyBytes": 23290,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "gatewayReason": "Requests ending with a model turn are not supported. (request id: 202611230343528149729498268d9d6Oqc6Y1X8)",
+        "case": "tool_result_followup",
+        "expectedOutput": false,
+        "passed": false
+      }
+    ]
+  },
+  "gatewayToolFollowup": {
+    "models": [
+      "gemini-4-carbon",
+      "gemini-4-argon"
+    ],
+    "fullySynthesizedBody": true,
+    "results": [
+      {
+        "model": "gemini-4-carbon",
+        "http": 400,
+        "curlExit": 0,
+        "elapsedMs": 5041,
+        "firstByteMs": 5029,
+        "syntheticBodyBytes": 510,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "gatewayReason": "分组 gemini-vertex 下模型 gemini-4-carbon 的可用渠道不存在（retry） (request id: 202611230345130247389678268d9d66phzWgoq)",
+        "case": "single_echo_request",
+        "passed": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "http": 0,
+        "curlExit": 28,
+        "elapsedMs": 40027,
+        "firstByteMs": 0,
+        "syntheticBodyBytes": 135,
+        "sseFrames": 0,
+        "finishReasons": [],
+        "case": "medium_output_cap_8192",
+        "expectedText": false,
+        "passed": false
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 6373,
+        "firstByteMs": 5869,
+        "syntheticBodyBytes": 510,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "single_echo_request",
+        "passed": true,
+        "gatewayReturnedCallId": true,
+        "gatewayReturnedThoughtSignature": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 5906,
+        "firstByteMs": 5632,
+        "syntheticBodyBytes": 907,
+        "sseFrames": 2,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "result_role_model_agy_shape",
+        "expectedText": true,
+        "passed": true
+      },
+      {
+        "model": "gemini-4-argon",
+        "http": 200,
+        "curlExit": 0,
+        "elapsedMs": 13774,
+        "firstByteMs": 13427,
+        "syntheticBodyBytes": 135,
+        "sseFrames": 3,
+        "finishReasons": [
+          "STOP"
+        ],
+        "case": "medium_output_cap_8192",
+        "expectedText": true,
+        "passed": true
+      }
+    ]
+  },
+  "realAgyViaSyntheticRelay": {
+    "outboundFixturesOnly": true,
+    "records": [
+      {
+        "model": "gemini-4-argon",
+        "profile": "compact",
+        "realAgy": {
+          "elapsedMs": 44037,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": false,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "approved": [],
+        "localToolInvocations": 0,
+        "isolatedFileVerified": false,
+        "gateway": [
+          {
+            "model": "gemini-4-argon",
+            "http": 0,
+            "curlExit": 28,
+            "elapsedMs": 40013,
+            "firstByteMs": 0,
+            "syntheticBodyBytes": 497,
+            "sseFrames": 0,
+            "finishReasons": [],
+            "step": "functionCall",
+            "matched": false
+          }
+        ],
+        "passed": false
+      },
+      {
+        "model": "gemini-4-argon",
+        "profile": "8192-large",
+        "realAgy": {
+          "elapsedMs": 44042,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": false,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "approved": [],
+        "localToolInvocations": 0,
+        "isolatedFileVerified": false,
+        "gateway": [
+          {
+            "model": "gemini-4-argon",
+            "http": 0,
+            "curlExit": 28,
+            "elapsedMs": 40018,
+            "firstByteMs": 0,
+            "syntheticBodyBytes": 42769,
+            "sseFrames": 0,
+            "finishReasons": [],
+            "step": "functionCall",
+            "matched": false
+          }
+        ],
+        "passed": false
+      },
+      {
+        "model": "gemini-4-carbon",
+        "profile": "compact",
+        "realAgy": {
+          "elapsedMs": 5738,
+          "outcome": "ok",
+          "stopReason": "end_turn",
+          "assistantChunkCount": 1,
+          "hasExpectedMarker": false,
+          "sessionUpdateTypes": [
+            "agent_message_chunk",
+            "available_commands_update",
+            "config_option_update",
+            "usage_update"
+          ]
+        },
+        "approved": [],
+        "localToolInvocations": 0,
+        "isolatedFileVerified": false,
+        "gateway": [
+          {
+            "model": "gemini-4-carbon",
+            "http": 400,
+            "curlExit": 0,
+            "elapsedMs": 1708,
+            "firstByteMs": 1699,
+            "syntheticBodyBytes": 497,
+            "sseFrames": 0,
+            "finishReasons": [],
+            "gatewayReason": "Model \"gemini-4-carbon\" is not supported by any configured account in this group",
+            "step": "functionCall",
+            "matched": false
+          }
+        ],
+        "passed": false
+      }
+    ]
+  },
+  "automaticApproval": "The replay of the original capturable agy system prompt and tool declarations was rejected. No captured request body was sent by this batch."
+}

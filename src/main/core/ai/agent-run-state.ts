@@ -1,8 +1,9 @@
+import { codeAgentKindSchema } from '@shared/ai-agents';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
 import type { AgentSourceIdentity } from '@shared/agent-run-state';
 
 export function agentSourceIdentity(config: RunConfigView, tool: CodeAgentTool, provider?: ProviderView): AgentSourceIdentity {
-  if (config.toolId !== tool.id || config.kind !== tool.kind || !['claude', 'codex'].includes(tool.kind)) throw new Error('智能体工具身份不一致');
+  if (config.toolId !== tool.id || config.kind !== tool.kind || !codeAgentKindSchema.safeParse(tool.kind).success) throw new Error('智能体工具身份不一致');
   if (config.source === 'provider' && (!provider || config.providerId !== provider.id)) throw new Error('原供应商已删除，请重新选择智能体');
   return { configId: config.id, toolId: tool.id, kind: tool.kind as AgentSourceIdentity['kind'], source: config.source,
     providerId: config.source === 'provider' ? provider!.id : null,
@@ -40,7 +41,7 @@ export function lastRequestedModel(kind: AgentSourceIdentity['kind'], lines: rea
 export function resumeModel(config: RunConfigView, provider: ProviderView | undefined, last: string | null): { model: string | null; changed: boolean; reason: string | null } {
   if (config.source !== 'provider') return { model: last, changed: false, reason: null };
   if (!provider || provider.id !== config.providerId) throw new Error('原供应商已删除，请重新选择智能体');
-  const usable = (id: string | null): id is string => Boolean(id && config.models.includes(id) && provider.models.some((model) => model.id === id && !model.offline && model.availability[config.kind as 'claude' | 'codex'] !== 'unavailable'));
+  const usable = (id: string | null): id is string => Boolean(id && config.models.includes(id) && provider.models.some((model) => model.id === id && !model.offline && model.availability[codeAgentKindSchema.parse(config.kind)] !== 'unavailable'));
   if (usable(last)) return { model: last, changed: false, reason: null };
   if (!usable(config.defaultModel)) throw new Error('默认模型已下线或不可用，请先编辑智能体');
   return { model: config.defaultModel, changed: true, reason: last ? `上次模型 ${last} 不再允许，将使用 ${config.defaultModel}` : `无法读取上次模型，将使用 ${config.defaultModel}` };

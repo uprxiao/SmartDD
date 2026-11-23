@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, GripVertical, Plus, Star, Terminal } from 'lucide-react';
-import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
+import { codeAgentKindSchema, type CodeAgentTool, type ProviderView, type RunConfigView } from '@shared/ai-agents';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { Ellipsis } from 'lucide-react';
 import { AgentIcon, ProviderIcon, ToolIcon } from './icons';
@@ -16,7 +16,7 @@ export function AgentList({configs,providers,tools,actions}:{configs:RunConfigVi
   if(!configs.length)return <div className="m13-empty"><Terminal size={20}/><h3>还没有智能体</h3><p>选一个 Code Agent，再选订阅或供应商。</p><button className="m10-button primary" onClick={actions.create}><Plus size={14}/>新建智能体</button></div>;
   return <div className="m13-agent-list m13-sortable">{configs.map((c,index)=>{
     const p=providers.find(p=>p.id===c.providerId),tool=tools.find(t=>t.id===c.toolId),m=p?.models.find(m=>m.id===c.defaultModel);
-    const missing=!tool?.installed,legacy=c.source==='legacy',status=m?.availability[c.kind==='codex'?'codex':'claude'];
+    const missing=!tool?.installed,legacy=c.source==='legacy',kind=codeAgentKindSchema.safeParse(c.kind).data,status=kind&&m?(m.availability[kind]??'untested'):undefined;
     const blocked=c.isDefault?'默认智能体必须在首页显示':c.loggedOut?'重新登录后才能在首页显示':missing?`${agentLabels[c.kind]??c.kind} 未安装`:'';
     return <div key={c.id} className={'m13-agent-row m13-agent-item'+(c.loggedOut||missing?' dim':'')+(drag===c.id?' dragging':'')+(over===c.id&&drag&&drag!==c.id?' drop-target':'')} data-agent={c.id}
       draggable={!c.isDefault} onDragStart={e=>{setDrag(c.id);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',c.id);}}
@@ -41,6 +41,6 @@ export function AgentList({configs,providers,tools,actions}:{configs:RunConfigVi
 export function ProviderList({providers,configs,onEdit,onCreate}:{providers:ProviderView[];configs:RunConfigView[];onEdit:(p:ProviderView)=>void;onCreate:()=>void}){
   return <div className="m13-agent-list">{providers.map(p=>{
     const count=configs.filter(c=>c.providerId===p.id).length;
-    return <button key={p.id} className="m13-agent-row clickable" data-provider={p.id} onClick={()=>onEdit(p)}><span className="m13-agent-icon"><ProviderIcon catalog={p.preset} name={p.name} size={36}/></span><span className="m13-cap-main"><b>{p.name}<Pill>{p.preset?'目录':'自定义'}</Pill>{!p.hasKey&&<Pill tone="warn">需要填写 Key</Pill>}</b><small>{p.models.length} 个模型 · {count?`${count} 个智能体在用`:'还没有智能体使用'}</small></span><span className="m13-fit"><span className="m13-fit-label">适用</span>{(['claude','codex'] as const).map(k=>{const fit=providerFits(p,k);return <span key={k} className={'m13-toolchip'+(fit?'':' off')} title={fit?'':'所需协议缺失或尚未验证'}><ToolIcon tool={k} size={14}/>{agentLabels[k]}{fit?<Check size={12}/>:<span className="m13-dash">—</span>}</span>;})}</span></button>;
+    return <button key={p.id} className="m13-agent-row clickable" data-provider={p.id} onClick={()=>onEdit(p)}><span className="m13-agent-icon"><ProviderIcon catalog={p.preset} name={p.name} size={36}/></span><span className="m13-cap-main"><b>{p.name}<Pill>{p.preset?'目录':'自定义'}</Pill>{!p.hasKey&&<Pill tone="warn">需要填写 Key</Pill>}</b><small>{p.models.length} 个模型 · {count?`${count} 个智能体在用`:'还没有智能体使用'}</small></span><span className="m13-fit"><span className="m13-fit-label">适用</span>{codeAgentKindSchema.options.filter(k=>k!=='antigravity'||p.endpoints.gemini).map(k=>{const fit=providerFits(p,k);return <span key={k} className={'m13-toolchip'+(fit?'':' off')} title={fit?'':'所需协议缺失或尚未验证'}><ToolIcon tool={k} size={14}/>{agentLabels[k]}{fit?<Check size={12}/>:<span className="m13-dash">—</span>}</span>;})}</span></button>;
   })}<button className="m13-agent-row m13-add-row" onClick={onCreate}><span className="m13-cap-icon big"><Plus size={18}/></span><span className="m13-cap-main"><b>添加供应商</b><small>从目录选择，或填写自定义地址与 Key；Key 与模型可用性保存在供应商上</small></span></button></div>;
 }

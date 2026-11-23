@@ -69,14 +69,17 @@ it('adds Model Hub from a mixed directory with no initial selection, then submit
   fireEvent.click(card);
   expect(screen.queryByRole('textbox',{name:'服务地址'})).toBeNull();
   expect(screen.getByText('https://rjmodel.rjupc.com/v1')).toBeTruthy();
-  expect(screen.getByText('https://rjmodel.rjupc.com')).toBeTruthy();
+  const sharedAddress = screen.getAllByText('https://rjmodel.rjupc.com');
+  expect(sharedAddress.map(element => element.parentElement?.textContent)).toEqual([
+    'Anthropichttps://rjmodel.rjupc.com', 'Gemini 原生https://rjmodel.rjupc.com',
+  ]);
   fireEvent.change(screen.getByLabelText('Model Hub Key'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});
   fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));
 
   const picker = await screen.findByRole('region',{name:'选择模型'});
   const selection = within(picker);
   expect(api.models).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-    endpoints:{responses:'https://rjmodel.rjupc.com/v1',anthropic:'https://rjmodel.rjupc.com'},
+    endpoints:{responses:'https://rjmodel.rjupc.com/v1',anthropic:'https://rjmodel.rjupc.com',gemini:'https://rjmodel.rjupc.com'},
     key:'PUBLIC_UI_KEY_ONLY',
   }));
   const search = selection.getByRole('textbox',{name:'搜索模型'});

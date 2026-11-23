@@ -227,7 +227,7 @@ export class ManagedTaskCapabilities {
     if(new Set(packages.map(p=>p.runtimeHash)).size>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
     const mcp:CapabilitySessionSnapshot['mcp']=runtimeHash?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash}]:[];
     const externalPlugins=scope?undefined:this.applications.plugins?.selections(input.projectId);
-    if(!scope&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
+    if(!scope&&runner!=='antigravity'&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
     const toolNames=[...packages.flatMap(p=>Object.keys(p.toolContractMajors)),...(externalPlugins??[]).flatMap(p=>p.capabilities.flatMap(c=>[c.mcpTool,...c.aliases]))];
     return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(toolNames.map(name=>[name,'mcp__'+appMcp+'__'+name]))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:agentVersion,adapterRevision:1},catalogGeneration:'library',packages,...(externalPlugins?{externalPlugins}:{}),standardSkills:[],mcp,provenance:'created'};
   }
@@ -237,6 +237,7 @@ export class ManagedTaskCapabilities {
     const delivery=this.support.adapters.deliveryAdapters.forRunner(runner);
     const adapter=this.libraryAdapter(delivery.id,version);
     if(!adapter)return;
+    if(runner==='antigravity')return browserMcpCandidate&&process.platform==='darwin'&&process.arch==='arm64'?'verified':undefined;
     if(this.support.adapters.levels(adapter.hash,version).includes('L0.mcp'))return 'verified';
     if(browserMcpCandidate&&delivery.entryDelivery('mcp')&&this.support.adapters.versionSupport(adapter.hash,version)==='best-effort')return 'browser';
   }
@@ -262,8 +263,9 @@ export class ManagedTaskCapabilities {
     if (this.closed) throw new ApplicationError('CANCELED', '应用服务已关闭');
     const store = this.support.store, task = input.task, runner = this.support.adapters.deliveryAdapters.forRunner(task.profile.runner).id;
     const adapter = this.libraryAdapter(runner, input.version); if (!adapter) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '没有此执行器的受控交付资源');
+    const managedAcp = runner === 'antigravity';
     input.assertCurrent();
-    this.syncSkillLibrary(task.profile.runner === 'claude' ? task.stateRoot : undefined,input.managedCodexHome);
+    if (!managedAcp) this.syncSkillLibrary(task.profile.runner === 'claude' ? task.stateRoot : undefined,input.managedCodexHome);
     const native = await (this.options.inspectNative ?? inspectNativeLaunch)(task, input.checkedCli);
     if (input.checkedCli && native.version !== input.version) throw new ApplicationError('RESOURCE_STATE_CHANGED', '执行器版本在准备期间已变化，请重新发送');
     const snapshot = this.createLibrarySnapshot(task, input.version, adapter.hash, {scope:input.applicationScope,nativeAgent:true}), bytes = canonicalJson(snapshot), hash = digest(bytes);
@@ -282,19 +284,19 @@ export class ManagedTaskCapabilities {
     if (codex) args.push('--sandbox', fullAccess && !prepareRestrictedProfile ? 'danger-full-access' : 'workspace-write');
     else args.push('--setting-sources', 'user', '--permission-mode', fullAccess ? 'bypassPermissions' : 'default');
     const cliTask = { ...task, profile: { ...task.profile, args } };
-    let cliPolicy = role?.access === 'read' || input.applicationScope ? undefined : await this.configureCli(cliTask,native,snapshot);
+    let cliPolicy = managedAcp || role?.access === 'read' || input.applicationScope ? undefined : await this.configureCli(cliTask,native,snapshot);
     if (cliPolicy && !cliPolicy.available && fullAccess && prepareRestrictedProfile) {
       const fullArgs = [...args.slice(0, -1), 'danger-full-access'];
       cliPolicy = await this.configureCli({ ...cliTask, profile: { ...cliTask.profile, args: fullArgs } }, native, snapshot);
     }
     const available: RunPlanAvailability = { cli: !!this.cli&&this.cliReady&&cliPolicy?.available===true&&role?.access!=='read', mcp: true };
-    const skills = this.pluginSkills?.describe(snapshot, input.runId, available);
+    const skills = managedAcp ? undefined : this.pluginSkills?.describe(snapshot, input.runId, available);
     if (skills) this.pluginSkills!.checkNative(skills, native);
     let skillsMaterialized = false;
     const sources = snapshot.packages.map(p => { const application = this.applications.builtin.retainedMetadata(p.packageHash); return { packageHash: p.packageHash, manifest: application.manifest, capabilities: builtinApplicationModules.capabilityViews(application.manifest) }; });
     const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, applicationScope: input.applicationScope, sandbox:cliPolicy?.available?{source:cliPolicy.source,digest:cliPolicy.digest}:undefined, cliVersion: input.version });
     const browserEntry = plan.allowed.find(capability=>capability.capabilityId==='browser.tab.create')?.entry;
-    const browserMcp = !codex && browserEntry === 'mcp' ? {
+    const browserMcp = !codex && !managedAcp && browserEntry === 'mcp' ? {
       serverName: server.serverName,
       alwaysLoad: input.applicationScope === 'browser',
       toolNames: plan.allowed.flatMap(capability =>
@@ -328,7 +330,7 @@ export class ManagedTaskCapabilities {
         skillsMaterialized = true;
       }
       store.sqlite.transaction(()=>{for(const resourceId of resourceIds){const resource=store.get(resourceId);for(const [ownerKind,ownerId] of [['run',input.runId],['binding',input.bindingId]])store.sqlite.prepare('INSERT OR IGNORE INTO agent_resource_refs(owner_kind,owner_id,resource_kind,resource_id,hold_reason,created_at) VALUES(?,?,?,?,?,?)').run(ownerKind,ownerId,resource.kind,resourceId,JSON.stringify({contentHash:resource.contentHash,generation:resource.generation}),new Date().toISOString());}})();
-      const opensNativeThread = task.profile.runner === 'codex';
+      const opensNativeThread = codex || managedAcp;
       bridge = opensNativeThread
         ? await this.broker.reserve(run, server.serverName, assertCurrent)
         : await this.broker.prepare(run, server.serverName, assertCurrent);
@@ -371,7 +373,7 @@ export class ManagedTaskCapabilities {
           try { bridge!.issue(); }
           catch (error) { await bridge!.bridge.releaseUnclaimed?.(); throw error; }
         } } : {}),
-        attached: async pid => {await run.cli.attach(pid);nativeStarted=true;this.applications.nativeMessages.register(run.runId,input.version,run.signal);},
+        attached: async pid => {await run.cli.attach(pid);nativeStarted=true;if(!managedAcp)this.applications.nativeMessages.register(run.runId,input.version,run.signal);},
         exited: async () => { await run.cli.exited(); const deadline = Date.now() + 20_000; while (!['stopped', 'failed'].includes(this.runs.get(run.runId).state)) { if (Date.now() >= deadline) throw new ApplicationError('RESOURCE_BUSY', '业务或桥进程尚未排空'); await new Promise(r => setTimeout(r, 50)); } },
         cancelBeforeFork: async () => { this.broker.revokeRun(run.runId); await run.cli.cancelUnforked!(); await bridge!.bridge.releaseUnclaimed?.(); await run.stop('agent-unforked'); },
       };

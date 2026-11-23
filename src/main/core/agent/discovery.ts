@@ -11,11 +11,13 @@ import { evaluateCapabilities, type CapabilityName, type DriverCapabilities, typ
 import type { AgentStore } from './agent-store';
 import { DriverError } from './driver';
 import { JsonlRpcPeer } from './jsonl-rpc';
+import { inspectAntigravity } from './drivers/antigravity-acp';
 
-const RUNNER: Record<DriverId, 'claude' | 'codex'> = { 'claude-sdk': 'claude', 'codex-app-server': 'codex' };
+const RUNNER = { 'claude-sdk': 'claude', 'codex-app-server': 'codex', 'antigravity-acp': 'antigravity' } as const;
 const INSTALL_HINT: Record<DriverId, string> = {
   'claude-sdk': '安装 Claude Code（https://docs.claude.com/claude-code）后重新检测，或在配置中指定 claude 的完整路径',
   'codex-app-server': '安装 Codex CLI（npm i -g @openai/codex）后重新检测，或在配置中指定 codex 的完整路径',
+  'antigravity-acp': '安装 Antigravity CLI 后重新检测，或指定 agy 的完整路径',
 };
 
 export interface DriverProbe extends DriverCapabilities {
@@ -132,7 +134,7 @@ async function probeCodex(executable: string, shellPath: string | undefined, bas
 export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<DriverProbe> {
   const info = await (o.detect ?? detectNativeCli)(RUNNER[driverId], o.executable ?? null, o);
   if (!info.path) {
-    const caps = evaluateCapabilities(driverId, null);
+    const caps = evaluateCapabilities(driverId, null, () => false);
     return { ...caps, state: 'unsupported', reason: info.error ?? '找不到执行器', binaryPath: null, realpath: null, shellPath: info.shellPath, shellProxy: info.shellProxy, missing: { searched: info.command, hint: INSTALL_HINT[driverId] } };
   }
   let real: string | null = null;
@@ -141,11 +143,34 @@ export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<
     if (!statSync(real).isFile()) throw new Error('不是文件');
     accessSync(real, constants.X_OK);
   } catch (e) {
-    const caps = evaluateCapabilities(driverId, null);
+    const caps = evaluateCapabilities(driverId, null, () => false);
     return { ...caps, state: 'unsupported', reason: `执行器不可用：${(e as Error).message}`, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy };
   }
   let caps = evaluateCapabilities(driverId, info.version, o.probe);
   const identity = nativeExecutableIdentity(real);
+  if (driverId === 'antigravity-acp') {
+    const home = await mkdtemp(join(tmpdir(), 'willyou-agy-probe-'));
+    try {
+      const capabilities = await inspectAntigravity(real, home, {
+        PATH: info.shellPath ?? o.env.PATH, HOME: home, USERPROFILE: home, TMPDIR: home,
+        XDG_CONFIG_HOME: home, XDG_DATA_HOME: home, XDG_CACHE_HOME: home,
+        SystemRoot: o.env.SystemRoot, WINDIR: o.env.WINDIR,
+      });
+      caps = evaluateCapabilities(driverId, info.version, name =>
+        capabilities[name as keyof typeof capabilities] === true && o.probe?.(name) !== false);
+    } catch (error) {
+      let reason = 'Antigravity 启动失败或握手前退出';
+      if (error instanceof DriverError) {
+        if (error.code === 'TIMEOUT') reason = 'Antigravity ACP 握手超时';
+        else if (error.code === 'PROTOCOL' || error.nativeCode !== undefined) reason = 'Antigravity ACP 协议不兼容';
+        else if (error.code === 'UNSUPPORTED') reason = error.message;
+      }
+      caps = { ...evaluateCapabilities(driverId, info.version, () => false), reason };
+    } finally {
+      await rm(home, { recursive: true, force: true });
+    }
+    caps.version ??= info.version?.slice(0, 120) || 'unknown';
+  }
   const checkedCli = identity && caps.version && info.shellPath
     ? { runner: RUNNER[driverId], path: real, version: caps.version, shellPath: info.shellPath, shellProxy: info.shellProxy, identity }
     : undefined;

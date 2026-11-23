@@ -8,9 +8,11 @@ import { createInterface } from 'node:readline';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BRIDGE_LIMITS, type BridgeBootstrap, type BridgeResponse } from '@shared/application-bridge';
+import { applicationMcpServerName } from '@shared/application-session';
 import { ApplicationToolService } from '../tool-service';
 import { PrivateApplicationBroker } from '../private-broker';
 import { ApplicationBridgeClient, consumeBridgeBootstrap } from '../bridge-client';
+import { digest } from '../manifest';
 import { FixtureProcessReader, runFixture } from './run-fixture';
 let f: Awaited<ReturnType<typeof runFixture>>, broker: PrivateApplicationBroker, run: Awaited<ReturnType<typeof f.create>>, time: number, count: number, onInvoke: (() => void) | undefined;
 let ticketTtlMs:number|undefined, tools:ApplicationToolService;
@@ -250,6 +252,44 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
     expect(await a.send({ schema: 1,method: 'tools/call',token,projectId: 'another',call: { operation: 'smartdd_zentao_query_v1',contractMajor: 1,connectionId: null,arguments: { value: 'x' } } })).toMatchObject({ status: 'error',error: { code: 'INVALID_INPUT' } });
     expect(await a.send({ schema: 1,method: 'tools/call',token,call: { operation: 'smartdd_zentao_query_v1',contractMajor: 1,connectionId: null,arguments: { value: 'x',projectId: 'another' } } })).toMatchObject({ status: 'error',error: { code: 'INVALID_INPUT' } }); expect(count).toBe(0);
     expect(await a.send({ schema: 1,method: 'tools/list',token })).toMatchObject({ status: 'ok' });
+  });
+  it('F35 A15: a second task cannot exchange its ticket or use its token for the first task', async () => {
+    const snapshot = structuredClone(f.snapshot);
+    snapshot.taskId = randomUUID();
+    const serverName = applicationMcpServerName(digest(snapshot.taskId));
+    snapshot.mcp.forEach(item => { item.serverName = serverName; });
+    snapshot.adapterBinding.nativeToolNames = Object.fromEntries(Object.keys(snapshot.adapterBinding.nativeToolNames)
+      .map(name => [name, 'mcp__' + serverName + '__' + name]));
+    for (const pack of snapshot.packages) {
+      for (const skill of pack.skills) {
+        skill.projectionPath = join(f.store.root, 'sessions', snapshot.taskId, 'claude/plugin/skills', skill.nativeName, 'SKILL.md');
+      }
+    }
+    const saved = await f.sessions.create(snapshot, f.home);
+    const second = await f.runs.reserve({ taskId: snapshot.taskId, snapshotHash: saved.pointer.snapshotHash, bindings: [] });
+    await second.prepare();
+    await second.cli.arm();
+    (f.reader as FixtureProcessReader).identities.set(200002, 'darwin-proc-v1:200:2');
+    await second.cli.attach(200002);
+    try {
+      const prepared = await broker.prepare(second, serverName);
+      await prepared.bridge.arm();
+      const data = JSON.parse(readFileSync(prepared.bootstrapPath, 'utf8')) as BridgeBootstrap;
+      const invalid = await peer(broker.endpoint);
+      expect(await invalid.send({ ...exchange(data), runId: run.runId })).toMatchObject({ status: 'error' });
+      expect(count).toBe(0);
+
+      const caller = await peer(broker.endpoint);
+      const token = valueToken(await caller.send(exchange(data))).token;
+      const call = { operation: 'smartdd_zentao_query_v1', contractMajor: 1, connectionId: null, arguments: { value: 'second task fixture' } };
+      expect(await caller.send({ schema: 1, method: 'tools/call', token, runId: run.runId, call })).toMatchObject({ status: 'error' });
+      expect(count).toBe(0);
+      expect(await caller.send({ schema: 1, method: 'tools/call', token, call })).toMatchObject({
+        status: 'ok', value: { taskId: snapshot.taskId, value: 'second task fixture' },
+      });
+      expect(count).toBe(1);
+      await prepared.bridge.exited();
+    } finally { await second.cli.exited(); }
   });
   it('rotates credentials without accepting the old token and expires unrenewed credentials', async () => {
     const prepared = await ticket(), a = await peer(broker.endpoint), first = valueToken(await a.send(exchange(prepared.data))).token;

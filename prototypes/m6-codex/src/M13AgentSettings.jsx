@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AgentDialog, CodeAgentConfig, CatalogDialog, ProviderDialog, ToolPathDialog } from './M13CodeAgent.jsx';
 import { ExportDialog, ImportDialog } from './M13Pages.jsx';
 import { SCENES } from './M13Workspace.jsx';
-import { AGENTS, LOGIN_LABEL, moveAgent, reconcileDefault, removeAgent, removeProviderImpact, reorderAgent, syncLogin, withDefault } from './m13-model.mjs';
+import { AGENTS, F35_PREVIEW, LOGIN_LABEL, moveAgent, reconcileDefault, removeAgent, removeProviderImpact, reorderAgent, syncLogin, withDefault } from './m13-model.mjs';
 import { clearLiveKey } from './m13-live.mjs';
 import './m13.css';
 
@@ -35,7 +35,7 @@ export function M13AgentSettings({ tab, focus, store, nav }) {
     const d = detectByScene(scene), msgs = [];
     let cs = configs;
     const nextTools = tools.map(t => {
-      if (only && t.id !== only) return t;
+      if ((only && t.id !== only) || t.acpProtocol) return t;
       const r = d[t.id];
       if (!t.installed && r.installed) msgs.push(`检测到 ${t.name}，新建智能体时可以选择它`);
       if (t.installed && !r.installed) msgs.push(`没有检测到 ${t.name}：它的智能体暂时不能使用，也不在首页显示`);
@@ -69,8 +69,8 @@ export function M13AgentSettings({ tab, focus, store, nav }) {
   /** 新建入口：同一个 Code Agent＋供应商已有智能体时直接打开它（P0.15 唯一性）。 */
   const newAgent = preset => { const ex = preset?.provider && configs.find(c => !c.legacy && c.tool === preset.tool && c.provider === preset.provider); setModal(ex ? { type: 'agent', config: ex } : { type: 'agent', preset }); nav('settings/ai/configs'); if (ex) notify(`已有“${ex.name}”，可以在这里勾选更多模型`); };
 
-  return <div className="m13-shell m13-settings-embed">
-    <div className="m13-scene-line"><span>M13 原型 · 合成数据（SMG 供应商例外：真实请求，Key 只在页面内存）</span><label>演示场景<select value={scene} onChange={e => setScene(e.target.value)}>{SCENES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label></div>
+  return <div className={'m13-shell m13-settings-embed' + (F35_PREVIEW ? ' f35-preview' : '')}>
+    <div className="m13-scene-line"><span>{F35_PREVIEW ? 'F35 接入原型 · Model Hub 和 Antigravity 使用合成数据' : 'M13 原型 · 合成数据（SMG 供应商例外：真实请求，Key 只在页面内存）'}</span><label>演示场景<select value={scene} onChange={e => setScene(e.target.value)}>{SCENES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label></div>
     <CodeAgentConfig tab={tab || 'configs'} {...{ store, nav, scene, setModal, notify, menu, setMenu, ops }} />
     {modal?.type === 'export' && <ExportDialog providers={providers} configs={configs} onClose={close} notify={notify} />}
     {modal?.type === 'import' && <ImportDialog providers={providers} configs={configs} onClose={close} onImport={pv => {

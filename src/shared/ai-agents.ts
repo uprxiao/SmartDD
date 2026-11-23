@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
-export const codeAgentKindSchema = z.enum(['claude', 'codex']);
+export const codeAgentKindSchema = z.enum(['claude', 'codex', 'antigravity']);
 export type CodeAgentKind = z.infer<typeof codeAgentKindSchema>;
+export const agentProtocol = { claude: 'anthropic', codex: 'responses', antigravity: 'gemini' } as const;
 export const claudeEffortSchema = z.enum(['low', 'medium', 'high', 'xhigh', 'max']);
 export const cliLoginSchema = z.enum(['none', 'subscription', 'api', 'local']);
 export type CliLogin = z.infer<typeof cliLoginSchema>;
@@ -12,16 +13,17 @@ export const modelCheckSchema = z.object({
   failures: z.array(z.object({ status: z.number().int().nullable(), message: z.string().max(4096) })).max(2),
 });
 
-const endpoint = z.string().trim().url().max(2048).refine((value) => {
+const endpoint = z.string().trim().url().max(2048).pipe(z.string().refine((value) => {
   const url = new URL(value);
   return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && !url.hash &&
     ![...url.searchParams.keys()].some((key) => /^(?:token|api[-_]?key|access[-_]?token|secret|password|authorization|sig)$/i.test(key));
-}, '服务地址必须是不含用户名、密码或片段的 HTTP(S) 地址');
+}, '服务地址必须是不含用户名、密码或片段的 HTTP(S) 地址'));
 
 export const providerEndpointsSchema = z.object({
   anthropic: endpoint.optional(),
   responses: endpoint.optional(),
   openai: endpoint.optional(),
+  gemini: endpoint.optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, '至少填写一个服务地址');
 
 export const providerModelSchema = z.object({
@@ -33,8 +35,13 @@ export const providerModelSchema = z.object({
   availability: z.object({
     claude: modelAvailabilitySchema.default('untested'),
     codex: modelAvailabilitySchema.default('untested'),
+    antigravity: modelAvailabilitySchema.optional(),
   }).default({ claude: 'untested', codex: 'untested' }),
-  checks: z.object({ claude: modelCheckSchema.optional(), codex: modelCheckSchema.optional() }).optional(),
+  checks: z.object({ claude: modelCheckSchema.optional(), codex: modelCheckSchema.optional(), antigravity: modelCheckSchema.optional() }).optional(),
+  antigravity: z.object({
+    reasoningLevels: z.array(z.string().min(1).max(24)).max(12),
+    defaultReasoning: z.string().max(24).nullable(),
+  }).strict().optional(),
   claude: z.object({
     reasoningLevels: z.array(claudeEffortSchema).max(claudeEffortSchema.options.length),
     defaultReasoning: claudeEffortSchema.nullable().default(null),
@@ -56,7 +63,7 @@ export const providerInputSchema = z.object({
   // undefined keeps the encrypted reference; null explicitly clears it.
   key: z.string().min(1).max(8192).nullable().optional(),
   models: z.array(providerModelSchema).max(4096).default([]),
-  recommended: z.object({ claude: z.string().max(256).optional(), codex: z.string().max(256).optional() }).default({}),
+  recommended: z.object({ claude: z.string().max(256).optional(), codex: z.string().max(256).optional(), antigravity: z.string().max(256).optional() }).default({}),
 }).strict().superRefine((value, ctx) => {
   const ids = new Set<string>();
   value.models.forEach((model, index) => {
@@ -77,7 +84,7 @@ export interface ProviderView {
   keyHint?: string|null;
   identityRevision: number;
   models: ProviderModel[];
-  recommended: { claude?: string; codex?: string };
+  recommended: Partial<Record<CodeAgentKind, string>>;
   refreshedAt: number | null;
 }
 

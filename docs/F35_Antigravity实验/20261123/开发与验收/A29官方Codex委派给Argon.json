@@ -1,0 +1,112 @@
+{
+  "case": "A29-codex-agy",
+  "states": {
+    "parent": "working",
+    "child": "completed",
+    "relation": "delivered"
+  },
+  "bindings": {
+    "parent": [
+      {
+        "bindingId": "ae5db6df-b723-47cd-b132-c451fe8935cb",
+        "nativeSessionId": "01a20788-7071-7391-940f-63ba6215e1c5"
+      }
+    ],
+    "child": [
+      {
+        "bindingId": "c209f69b-7f26-4952-a6fe-5e9013fd8b27",
+        "nativeSessionId": "9db9d0a4-f23a-4ddd-bbfa-297799a1679e"
+      }
+    ]
+  },
+  "runIdentities": {
+    "parent": [
+      {
+        "run_id": "7a22af67-6751-4f36-b86e-c57ebc3d2459",
+        "driver_id": "codex-app-server",
+        "runner": "codex",
+        "pid": 6042,
+        "process_started_at": "darwin-proc-v1:1795422711:848409",
+        "generation": 1,
+        "state": "stopped"
+      },
+      {
+        "run_id": "e91e3290-da2a-4643-b788-865e764976a0",
+        "driver_id": "codex-app-server",
+        "runner": "codex",
+        "pid": 6311,
+        "process_started_at": "darwin-proc-v1:1795422739:396727",
+        "generation": 2,
+        "state": "active"
+      }
+    ],
+    "child": [
+      {
+        "run_id": "7621cb8b-3c47-4504-9d20-afe1ae15fb25",
+        "driver_id": "antigravity-acp",
+        "runner": "antigravity",
+        "pid": 6203,
+        "process_started_at": "darwin-proc-v1:1795422732:156808",
+        "generation": 1,
+        "state": "stopped"
+      }
+    ]
+  },
+  "assertions": [
+    "native role, chosen model, parent/child identity and exactly one observed descendant result"
+  ],
+  "officialSubscription": true,
+  "childId": "196953c4-350f-41da-8081-1f98a84299f2",
+  "delegationId": "7c5b4777-4e67-4343-8ab2-f910becc238c",
+  "officialObservationCount": 1,
+  "temporaryAuthRemoved": true,
+  "packageSha256": "960a63cfb8235df5b5b7372c3b4cd6e2ace33bf0123b7719c1817b97fd1e5a29",
+  "actualCodexModel": [
+    "gpt-6.2-sol",
+    "gpt-6.2-sol"
+  ],
+  "actualArgon": [
+    {
+      "model": "gemini-4-argon",
+      "protocol": "gemini",
+      "thinkingLevel": "LOW",
+      "realModel": {
+        "protocol": "gemini",
+        "stage": "child",
+        "http": 200,
+        "curlExit": 0,
+        "matched": true,
+        "elapsedMs": 5781,
+        "tool": null
+      }
+    }
+  ],
+  "finalStates": [
+    {
+      "taskId": "196953c4-350f-41da-8081-1f98a84299f2",
+      "parentTaskId": "11fffdb4-ad34-4cd5-b195-d5b32ecc47f7",
+      "status": "completed",
+      "stopping": false
+    },
+    {
+      "taskId": "11fffdb4-ad34-4cd5-b195-d5b32ecc47f7",
+      "parentTaskId": null,
+      "status": "completed",
+      "stopping": false
+    }
+  ],
+  "exit": {
+    "pid": 5908,
+    "code": 0,
+    "signal": null
+  },
+  "earlierOppositeDirection": {
+    "result": "rejected explicit model unavailable in subscription profile",
+    "nativeAppExit": {
+      "pid": 5210,
+      "code": 0,
+      "signal": null
+    },
+    "zeroChildCreated": true
+  }
+}
