@@ -61,6 +61,11 @@ describe('M11 R16 Skill library delivery',()=>{
   expect(withStandard.sync().written).toEqual(['willyou-remote-password-ssh']);
   const text=readFileSync(join(shared(),'willyou-remote-password-ssh','SKILL.md'),'utf8');expect(text).toContain('name: willyou-remote-password-ssh');expect(text).toContain('SSH helper（仅在 WillYou 任务中使用）');
   expect(readFileSync(join(shared(),'willyou-remote-password-ssh','scripts/run.sh'),'utf8')).toBe('echo\n');expect(lstatSync(join(claude(),'willyou-remote-password-ssh')).isSymbolicLink()).toBe(true);
+  const privateHome = join(f.root, 'private-codex-home');
+  mkdirSync(privateHome);
+  withStandard.syncManagedCodex(privateHome);
+  expect(ours(join(privateHome, '.agents', 'skills'))).toEqual(['willyou-remote-password-ssh']);
+  expect(readFileSync(join(privateHome, '.agents', 'skills', 'willyou-remote-password-ssh', 'scripts/run.sh'), 'utf8')).toBe('echo\n');
  });
  it('leaves a same-named user directory untouched and reports the conflict',()=>{
   const name=library.skills()[0].name,user=join(shared(),name);mkdirSync(user,{recursive:true});writeFileSync(join(user,'SKILL.md'),'user owned\n');
@@ -74,7 +79,7 @@ describe('M11 R16 Skill library delivery',()=>{
   const file=join(shared(),name,'SKILL.md'),original=readFileSync(file,'utf8');
   mkdirSync(privateHome);
   symlinkSync(join(f.home,'.agents'),join(privateHome,'.agents'));
-  expect(()=>library.syncManagedBrowser(privateHome)).toThrow('智能体管理目录身份异常');
+  expect(()=>library.syncManagedCodex(privateHome)).toThrow('智能体管理目录身份异常');
   expect(readFileSync(file,'utf8')).toBe(original);
  });
 });

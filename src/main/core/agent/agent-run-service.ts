@@ -131,13 +131,27 @@ export class AgentRunService {
         run.hostBusinessInstructions = input.hostBusinessInstructions + '\n' + browserInstructions(run.integration?.browserEntry, run.readOnly);
       }
       assertStarting();
-      const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], envNames: Object.keys({ ...input.env, ...run.integration?.env }).sort(), mcp: run.integration?.mcpServers, browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp, skills: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions }));
+      const extraArgs = [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])];
+      const env = { ...input.env, ...run.integration?.env };
+      const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs, envNames: Object.keys(env).sort(), mcp: run.integration?.mcpServers, projectContextMcp: run.integration?.projectContextMcp, browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp, skills: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions }));
       if (store.sqlite.prepare("UPDATE capability_runs SET launch_plan_hash=? WHERE run_id=? AND launch_plan_hash=? AND state IN ('preparing','prepared') AND pid IS NULL").run(finalLaunchHash, runId, launchPlanHash).changes !== 1) throw new DriverError('REJECTED', '启动计划已变化或已经启动');
-      if (!run.integration) store.freezeNativeRun(runId, { version: input.executable.version, capabilities, launchPlanHash: finalLaunchHash });
-      await run.integration?.beforeFork();
+      if (!run.integration?.attached) store.freezeNativeRun(runId, { version: input.executable.version, capabilities, launchPlanHash: finalLaunchHash });
+      await run.integration?.beforeFork?.();
       assertStarting();
       forkAttempted = true;
-      const opened = await instance.open({ executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: run.hostBusinessInstructions, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, startupSignal: input.startupSignal, beforeThreadOpen: run.integration?.beforeThreadOpen, beforeInitialize: async () => { await run.registration; assertStarting(); } });
+      const opened = await instance.open({
+        executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: run.hostBusinessInstructions,
+        cwd: input.cwd, env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs, settingSources: input.settingSources,
+        mcpServers: run.integration?.mcpServers, projectContextMcp: run.integration?.projectContextMcp,
+        browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp,
+        skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined,
+        plugins: run.integration?.plugins, hostBusinessCli: run.integration?.hostBusinessCli,
+        claudeSettings: run.integration?.claudeSettings, codexCliPermissions: run.integration?.codexCliPermissions,
+        stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly,
+        requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, startupSignal: input.startupSignal,
+        beforeThreadOpen: run.integration?.beforeThreadOpen,
+        beforeInitialize: async () => { await run.registration; assertStarting(); },
+      });
       await run.registration;
       assertStarting();
       if (run.closing || this.runs.get(runId) !== run) throw new DriverError('EXITED', '执行器在会话就绪前退出');
@@ -154,6 +168,12 @@ export class AgentRunService {
         }
         store.addHostItem(input.taskId, null, 'system_notice', {
           severity: 'warning', code: 'browserMcpUnavailable', title: '内置浏览器工具尚未就绪', detail: 'Claude Code 启动时未确认浏览器 MCP 工具。基本对话仍可使用。',
+        });
+      }
+      if (opened.projectContextMcpReady === false) {
+        store.addHostItem(input.taskId, null, 'system_notice', {
+          severity: 'warning', code: 'projectContextMcpUnavailable', title: '项目上下文 MCP 不可用',
+          detail: '启动时未确认项目上下文工具。可使用已启用的数据库和 SSH 诊断 Skill。',
         });
       }
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
@@ -187,7 +207,10 @@ export class AgentRunService {
       run.openError = cancelled ? undefined : !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED';
       await instance.close().catch(() => {});
       if (run.exitFinishing) await run.exitFinishing.catch(() => {});
-      if (!store.run(runId)?.pid) await run.integration?.cancelBeforeFork().catch(() => {});
+      if (!store.run(runId)?.pid) {
+        await run.integration?.cancelBeforeFork?.().catch(() => {});
+        run.integration?.projectRuntime?.release();
+      }
       if (this.runs.has(runId)) {
         if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, cancelled ? 'stopped' : 'failed', run.openError ?? null); this.runs.delete(runId); run.markEnded(); }
         else store.markRunStopping(runId, input.taskId);
@@ -283,7 +306,7 @@ export class AgentRunService {
           // PID 来自本宿主自己启动的 ChildProcess；出生身份由进程身份读取器核对（取不到时只记 PID）。
           const identity = this.deps.processes.read(e.pid);
           store.attachRunProcess(run.runId, run.taskId, e.pid, identity?.pid === e.pid ? identity.startedAt : null);
-          if (run.integration) {
+          if (run.integration?.attached) {
             run.registration = run.integration.attached(e.pid);
             void run.registration.catch(error => {
               run.openError = 'IDENTITY_REGISTRATION_FAILED';
@@ -378,8 +401,23 @@ export class AgentRunService {
           const closing = run.closing; run.closing = true;
           this.flushLifecycleNotices(run, true);
           const finish = () => { for (const nodeId of run.nativeNodes ?? []) store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${nodeId}`, nodeId, type: 'subagent_status', payload: { state: 'interrupted', reason: 'owner-exited' }, terminalState: 'failed' }); run.nativeNodes?.clear(); store.finishRun(run.runId, run.taskId, run.openError ? 'failed' : closing ? 'stopped' : 'failed', run.openError ?? (closing ? null : `EXIT_${e.code ?? e.signal}`)); this.runs.delete(run.runId); run.markEnded(); };
-          if (!run.integration) finish();
-          else if (!run.exitFinishing) { run.exitFinishing = Promise.resolve(run.registration).catch(() => {}).then(async () => { if (!await this.drainNativeGroup(run.runId)) throw new Error('原生进程组退出不明'); await run.integration!.exited(); }).then(finish); void run.exitFinishing.catch(error => { store.markRunStopping(run.runId, run.taskId); store.addHostItem(run.taskId, run.turnId, 'error', { message: `进程已退出，业务或后代尚未排空，保留占用：${(error as Error).message}` }); }); }
+          const integration = run.integration;
+          if (!integration?.exited && !integration?.projectRuntime) finish();
+          else if (!run.exitFinishing) {
+            run.exitFinishing = Promise.resolve(run.registration).catch(() => {}).then(async () => {
+              // Hosts without process-group inspection can retire a standalone session
+              // after the native exit event, while leaving its files for verified cleanup.
+              if (!integration.exited && process.platform !== 'darwin') { finish(); return; }
+              if (!await this.drainNativeGroup(run.runId)) throw new Error('原生进程组退出不明');
+              await integration.exited?.();
+              integration.projectRuntime?.release();
+              finish();
+            });
+            void run.exitFinishing.catch(error => {
+              store.markRunStopping(run.runId, run.taskId);
+              store.addHostItem(run.taskId, run.turnId, 'error', { message: `进程已退出，业务或后代尚未排空，保留占用：${(error as Error).message}` });
+            });
+          }
           break;
         }
       }

@@ -186,7 +186,7 @@ async function main(): Promise<void> {
   let browser:BrowserService|undefined;
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
-  const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,
+  const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,capabilities,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,
     host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e),ptys});
   const fileBroker = new NativeFileBroker(app.isPackaged ? join(process.resourcesPath, 'native/willyou-files') : join(app.getAppPath(), 'out/native/willyou-files'));
   const fileSources = new FileSourceResolver(client.db);agentWorkspace.attachFiles(fileSources);

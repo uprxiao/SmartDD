@@ -1,5 +1,6 @@
 import type { DriverOpenOptions } from './driver';
 import type { ApplicationEntry } from '@shared/application-capabilities';
+import type { PreparedRuntime } from '../capabilities/capability-service';
 /** Host-minted lifecycle closure. No process or scope receipt comes from RPC/MCP arguments. */
 export interface RunIntegrationContext {
   runId: string;
@@ -10,21 +11,28 @@ export interface RunIntegrationContext {
   startupCancelled(): boolean;
 }
 
-export interface RunIntegration {
+interface ApplicationRunLifecycle {
+  beforeFork(): Promise<void>;
+  attached(pid: number): Promise<void>;
+  exited(): Promise<void>;
+  cancelBeforeFork(): Promise<void>;
+}
+
+export interface RunIntegration extends Partial<ApplicationRunLifecycle> {
   browserEntry?: ApplicationEntry;
   browserMcp?: DriverOpenOptions['browserMcp'];
+  projectContextMcp?: DriverOpenOptions['projectContextMcp'];
+  projectRuntime?: Pick<PreparedRuntime, 'release'>;
   hostBusinessCli?:DriverOpenOptions['hostBusinessCli'];
   codexCliPermissions?:DriverOpenOptions['codexCliPermissions'];
   claudeSettings?:Record<string,unknown>;extraArgs?: string[]; env?: Record<string, string>; mcpServers?: DriverOpenOptions['mcpServers'];
   claudeMcp?: DriverOpenOptions['claudeMcp'];
   skillRoots?: DriverOpenOptions['skillRoots']; plugins?: DriverOpenOptions['plugins'];
-  beforeFork(): Promise<void>;
   beforeThreadOpen?(): Promise<void>;
-  attached(pid: number): Promise<void>;
-  exited(): Promise<void>;
-  cancelBeforeFork(): Promise<void>;
   assertCurrent?(): void;
 }
+
+export type ApplicationRunIntegration = RunIntegration & ApplicationRunLifecycle;
 
 export function browserInstructions(entry: ApplicationEntry | undefined, readOnly: boolean) {
   const taskBrowser = '用户未指定外部浏览器时，优先使用本任务的 WillYou 内置浏览器。若任务没有可用的内置浏览器入口，说明当前状态，征询用户是否改用外部窗口。';

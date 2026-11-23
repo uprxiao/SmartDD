@@ -40,7 +40,7 @@ export class SkillLibraryService {
         result.push({name,files,executables});
       }
     }
-    for(const standard of appScope?[]:this.options.standardSkills?.()??[]){
+    for(const standard of this.options.standardSkills?.()??[]){
       const name=libraryName(undefined,standard.skillId),files={...standard.files};
       if(!files['SKILL.md'])throw new ApplicationError('INVALID_PACKAGE','标准Skill缺少入口');
       files['SKILL.md']=libraryFrontMatter(files['SKILL.md'],name);result.push({name,files,executables:new Set()});
@@ -61,7 +61,7 @@ export class SkillLibraryService {
     this.last=syncAgentSkillLibrary({home:this.options.home,targets,skills:this.skills()});
     return this.last;
   }
-  syncManagedBrowser(home:string):void{
+  syncManagedCodex(home:string):void{
     requirePrivateDirectory(home,join(home,'.agents','skills'));
     syncAgentSkillLibrary({home,targets:[],skills:this.skills('browser')});
   }
