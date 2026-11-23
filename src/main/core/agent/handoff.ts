@@ -1,6 +1,6 @@
 // T1.5 §5：原生绑定自己的历史与已接受交接分别计覆盖；交接只带历史来源，绝不产生真人授权。
 import { randomUUID } from 'node:crypto';
-import { AgentStore, INPUT_TEXT_LIMIT } from './agent-store';
+import { AgentStore, BRANCH_HISTORY_KEY, INPUT_TEXT_LIMIT } from './agent-store';
 
 interface Source { item_id: string; revision: number; type: string; payload_ref: string; ordinal: number; turn_id: string | null }
 export interface Transfer { id: string; text: string; covered: { itemId: string; revision: number }[]; omissions: { itemId: string; reason: string }[] }
@@ -12,7 +12,9 @@ export class HandoffService {
   prepare(taskId: string, bindingId: string, turnId: string | null, budget: number): Transfer | null {
     const db = this.store.sqlite;
     const limit = Math.max(0, Math.min(budget, INPUT_TEXT_LIMIT));
-    if (!db.prepare('SELECT 1 FROM agent_bindings WHERE task_id=? AND binding_id<>? LIMIT 1').get(taskId, bindingId)) return null;
+    const previousBinding = db.prepare('SELECT 1 FROM agent_bindings WHERE task_id=? AND binding_id<>? LIMIT 1').get(taskId, bindingId);
+    const branchHistory = db.prepare('SELECT 1 FROM agent_items WHERE task_id=? AND native_key GLOB ? LIMIT 1');
+    if (!previousBinding && !branchHistory.get(taskId, BRANCH_HISTORY_KEY + '*')) return null;
     const previous = db.prepare("SELECT i.item_id,t.transfer_id FROM agent_transfers t JOIN agent_items i ON i.task_id=t.task_id AND i.native_key='transfer:'||t.transfer_id WHERE t.task_id=? AND t.target_binding_id=? AND t.delivery_state IN ('pending','unsent') AND i.turn_id IS ? ORDER BY t.rowid DESC LIMIT 1").get(taskId, bindingId, turnId) as { item_id: string; transfer_id: string } | undefined;
     if (previous) {
       try {

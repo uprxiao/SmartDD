@@ -18,12 +18,13 @@ class Inst implements DriverInstance {
   emitter = new Emitter(); turns: TurnInput[] = []; responses: [string, unknown][] = []; interrupts = 0;
   constructor(readonly driverId: DriverId) {}
   on = this.emitter.on.bind(this.emitter); emit = this.emitter.emit.bind(this.emitter);
-  nativeDefault?: string; lazyDefault?: string;
+  nativeDefault?: string; lazyDefault?: string; newNativeId = 'n1';
   modelCatalog?: (onFallback?: (models: DriverModel[]) => void) => Promise<DriverModel[]>;
   nativeSelection?: { model: string; effort: string };
-  async open(o: DriverOpenOptions) { this.opened = o; this.emit({ type: 'process', pid: 9 }); return { nativeId: o.resumeNativeId ?? 'n1', confirmed: true, ...(this.nativeDefault ? { defaultModel: this.nativeDefault } : {}), ...(this.nativeSelection ? { nativeSelection: this.nativeSelection } : {}) }; }
+  async open(o: DriverOpenOptions) { this.opened = o; this.emit({ type: 'process', pid: 9 }); return { nativeId: o.resumeNativeId ?? this.newNativeId, confirmed: true, ...(this.nativeDefault ? { defaultModel: this.nativeDefault } : {}), ...(this.nativeSelection ? { nativeSelection: this.nativeSelection } : {}) }; }
   async defaultModel() { return this.lazyDefault; }
-  async injectHistory() {}
+  histories: string[] = [];
+  async injectHistory(text: string) { this.histories.push(text); }
   async startTurn(t: TurnInput) { this.turns.push(t); const id = `nt-${this.turns.length}`; this.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
   finish(status: 'completed' | 'interrupted' = 'completed') { this.emit({ type: 'turn.completed', nativeTurnId: `nt-${this.turns.length}`, status }); }
   async respond(k: string, r: unknown) { this.responses.push([k, r]); }
@@ -38,11 +39,11 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: Inst['modelCatalog']; nativeSelection?: Inst['nativeSelection']; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string>; profileModelSettings?: ConstructorParameters<typeof AgentTaskService>[0]['profileModelSettings'] } = {}) {
+function setup(opts: { distinctNativeIds?: boolean; failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: Inst['modelCatalog']; nativeSelection?: Inst['nativeSelection']; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string>; profileModelSettings?: ConstructorParameters<typeof AgentTaskService>[0]['profileModelSettings'] } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db, { artifactDir: opts.artifactDir });
   const insts: Inst[] = [];
-  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.modelCatalog = opts.modelCatalog; i.nativeSelection = opts.nativeSelection; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
+  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); if (opts.distinctNativeIds) i.newNativeId = `n${insts.length + 1}`; i.nativeDefault = opts.nativeDefault; i.modelCatalog = opts.modelCatalog; i.nativeSelection = opts.nativeSelection; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
   const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
@@ -76,6 +77,52 @@ it('keeps a stopped task stopped when a child result is recovered after restart'
   await until(() => insts[0]?.turns[1]?.clientInputId === id(911));
   insts[0].finish();
   await runs.closeAll();
+});
+
+it('opens a branch at the chosen reply with a new identity and hands off only the preceding conversation', async () => {
+  const { svc, store, insts } = setup({ distinctNativeIds: true });
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: '原会话', profileId: 'cc', tier: 'ask' });
+  const first = await svc.submit(taskId, { clientInputId: id(960), text: '第一轮口令是琥珀', expectedSelectionRevision: 1 });
+  await until(() => store.turn(first.turnId)?.status === 'started' && !svc.isDispatching(taskId));
+  const second = await svc.submit(taskId, { clientInputId: id(961), text: '下一轮才提交的内容', expectedSelectionRevision: 1 });
+  const driver = insts[0];
+  store.upsertItem({ taskId, turnId: first.turnId, runId: store.turn(first.turnId)!.run_id, nativeKey: 'branch-answer', type: 'assistant_message', payload: { text: '记住琥珀' }, terminalState: 'completed' });
+  driver.finish();
+  await until(() => store.turn(second.turnId)?.status === 'started' && !svc.isDispatching(taskId));
+  store.upsertItem({ taskId, turnId: second.turnId, runId: store.turn(second.turnId)!.run_id, nativeKey: 'later-answer', type: 'assistant_message', payload: { text: '后来回复' }, terminalState: 'completed' });
+  driver.finish();
+  await until(() => store.turn(second.turnId)?.status === 'completed');
+  const reply = svc.snapshot(taskId).items.find(item => item.type === 'assistant_message' && item.payload.text === '记住琥珀')!;
+  const { taskId: branchedId } = svc.branchFromReply(taskId, reply.itemId);
+  expect(branchedId).not.toBe(taskId);
+  expect(insts).toHaveLength(1);
+  expect(svc.snapshot(branchedId).items.map(item => item.payload.text)).toEqual(['第一轮口令是琥珀', '记住琥珀']);
+  expect(svc.snapshot(taskId).items.some(item => item.payload.text === '后来回复')).toBe(true);
+  const next = await svc.submit(branchedId, { clientInputId: id(962), text: '口令是什么？', expectedSelectionRevision: 1 });
+  await until(() => store.turn(next.turnId)?.status === 'started' && !svc.isDispatching(branchedId));
+  const branchDriver = insts[1];
+  expect(branchDriver.opened?.resumeNativeId).toBeUndefined();
+  expect(branchDriver.turns[0].text).toBe('口令是什么？');
+  expect(branchDriver.histories).toHaveLength(1);
+  expect(branchDriver.histories[0]).toContain('第一轮口令是琥珀');
+  expect(branchDriver.histories[0]).toContain('记住琥珀');
+  expect(branchDriver.histories[0]).not.toMatch(/下一轮才提交的内容|后来回复/);
+});
+
+it('keeps reply likes local and reversible without changing the reply time or body', async () => {
+  const { svc, store } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: '点赞', profileId: 'cc', tier: 'ask' });
+  const { turn } = store.acceptTurn({ taskId, clientInputId: id(965), text: '问题', sourceKind: 'user' });
+  const itemId = store.upsertItem({ taskId, turnId: turn.turn_id, runId: null, nativeKey: 'liked-answer', type: 'assistant_message', payload: { text: '回答' }, terminalState: 'completed' });
+  store.endTurn(turn.turn_id, 'completed');
+  const getReply = () => svc.snapshot(taskId).items.find(item => item.itemId === itemId)!;
+  const initial = getReply();
+  expect(svc.setReplyLiked(taskId, itemId, true)).toEqual({ liked: true });
+  expect(getReply()).toEqual({ ...initial, liked: true });
+  const { taskId: other } = svc.branchFromReply(taskId, itemId);
+  expect(svc.snapshot(other).items.find(item => item.type === 'assistant_message')?.liked).not.toBe(true);
+  expect(svc.setReplyLiked(taskId, itemId, false)).toEqual({ liked: false });
+  expect(getReply()).toEqual(initial);
 });
 
 it('sends the first Claude turn with the selected DeepSeek level and keeps each model setting on resume', async () => {

@@ -2,7 +2,7 @@
 // 行样式对照 TimelineWorkGroupRows／TimelineWorkEntryRow／TimelineUserMessageRow／ChangedFilesTree／QueuedRunsControl；
 // 模型选择器对照 ModelPickerContent／ModelPickerSidebar／TraitsPicker。输入框外壳、左侧栏、右侧文件／浏览器沿用 WillYou。全部为合成数据。
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { GitBranch, GitMerge } from 'lucide-react';
+import { GitBranch, GitMerge, ThumbsUp } from 'lucide-react';
 import { AlertCircle, AlertTriangle, ArrowRightLeft, ArrowUp, Bell, Brain, Check, CheckCircle2, ChevronDown, ChevronRight, CircleDashed, Copy, FileDiff, FilePlus2, FileText, Globe, Hourglass, ListChecks, LoaderCircle, Pencil, Plus, Search, Settings, ShieldAlert, Square, SquareTerminal, Star, Wrench, X, Zap, Layers, ArrowUpLeft, Network, Lock, PlugZap, RefreshCw, WifiOff, Minimize2, Image as ImageIcon, Link2, Gauge } from 'lucide-react';
 import { AgentIcon, PermIcon, ProviderIcon } from './m13-icons.jsx';
 import { VoiceButton } from './VoicePreview';
@@ -165,7 +165,27 @@ function SubagentBar({ c, onBack, onToast }) {
   return <div className="m14-subbar"><AgentGlyph r={c} /><b>{c.target}</b><span className="muted">{c.model}</span><span className={'m14-subbar-status' + (c.state === 'running' ? ' m14-shine' : '')}>{c.state === 'queued' ? '排队中 · 等主任务本轮结束' : `${STATE_LABEL[c.state]} ${c.secs} 秒`}</span><span className="muted push">独立运行</span>{(c.state === 'running' || c.state === 'waiting') && <button onClick={() => onToast('已请求停止该子任务（合成）')}>停止</button>}<button onClick={onBack}><ArrowUpLeft size={13} />返回主任务</button></div>;
 }
 
-function Row({ row, ui, onLink, onToast, onOpenChild }) {
+function ReplyMeta({ time, onToast, onBranch }) {
+  const [liked, setLiked] = useState(false);
+  return <div className="m14-assistant-meta">
+    <button aria-label="复制回复" title="复制回复" onClick={() => onToast('已复制回复（合成）')}><Copy size={14}/></button>
+    <button aria-label={liked ? '取消点赞' : '点赞'} title={liked ? '取消点赞' : '点赞'} aria-pressed={liked}
+      onClick={() => setLiked(value => !value)}><ThumbsUp size={14}/></button>
+    <button aria-label="分支到新聊天" title="分支到新聊天" onClick={onBranch}><GitBranch size={14}/></button>
+    <time>{time}</time>
+  </div>;
+}
+
+function ReplyTable({ table }) {
+  const [head, ...body] = table;
+  return <div className="m14-reply-table" role="region" aria-label="回复表格" tabIndex={0}>
+    <table><thead><tr>{head.map((cell, i) => <th key={i}>{cell}</th>)}</tr></thead>
+      <tbody>{body.map((row, i) => <tr key={i}>{row.map((cell, k) => <td key={k}>{cell}</td>)}</tr>)}</tbody>
+    </table>
+  </div>;
+}
+
+function Row({ row, ui, onLink, onToast, onOpenChild, onBranch }) {
   const { openEntries, toggleEntry, toggleGroup, toggleTurn } = ui;
   switch (row.kind) {
     case 'working': return <div className={'m14-working' + (row.stopping ? ' stopping' : '')}><span className="m14-shine">{row.label}</span></div>;
@@ -195,7 +215,8 @@ function Row({ row, ui, onLink, onToast, onOpenChild }) {
       </div>;
     }
     case 'message': return <div className="m14-assistant"><Markdown lines={row.entry.lines} onLink={onLink} /></div>;
-    case 'final': return <div className={'m14-assistant' + (row.partial ? ' partial' : '')}>{row.agent && <div className="m14-agent-tag"><AgentIcon tool={row.agent} size={14} />Codex · DeepSeek · deepseek-flash</div>}<Markdown lines={row.lines} onLink={onLink} streaming={row.streaming} />{row.showActions && !row.streaming && <div className="m14-assistant-meta"><button aria-label="复制回复" title="复制回复" onClick={() => onToast('已复制回复（合成）')}><Copy size={12} /></button><span>14:04</span></div>}</div>;
+    case 'final': return <div className={'m14-assistant' + (row.partial ? ' partial' : '')}>{row.agent && <div className="m14-agent-tag"><AgentIcon tool={row.agent} size={14} />Codex · DeepSeek · deepseek-flash</div>}<Markdown lines={row.lines} onLink={onLink} streaming={row.streaming} />{row.table && <ReplyTable table={row.table}/>}
+      {row.showActions && !row.streaming && <ReplyMeta time={row.time} onToast={onToast} onBranch={onBranch}/>}</div>;
     case 'changes': return <ChangesCard files={row.files} label={row.turnId} />;
     case 'subagents': return <Subagents e={row.entry} onToast={onToast} onOpenChild={onOpenChild} />;
     case 'created': return <LogRow icon={<FilePlus2 size={14} />} label={`创建子任务「${row.entry.title}」`} detail={`${row.entry.target} · ${row.entry.access}${row.entry.branch ? ' · 工作副本 ' + row.entry.branch : ''}`} />;
@@ -453,7 +474,10 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
   useEffect(() => { onStatus?.(stopped ? { kind: 'stopped', label: '已停止' } : m14TaskStatus(scenario, resolved)); }, [scenario.id, resolved, stopped]); // eslint-disable-line react-hooks/exhaustive-deps
   const linkAction = act => { const m = linkMenu; setLinkMenu(null); if (!m) return; if (act === 'open') onLink(m.href, false); else if (act === 'external') onLink(m.href, true); else if (act === 'copy-rel') setToast({ text: `已复制相对路径：${m.route.path}` }); else setToast({ text: `已复制：${m.route.url || ctxRoot + '/' + m.route.path}` }); }; // 完整路径按当前工作目录（复核 RR04）
   const eff0 = resolved ? { ...scenario, pending: null, turns: scenario.turns.map(t => ({ ...t, entries: t.entries?.filter(e => e.kind !== 'approval' && e.kind !== 'business'), question: false })) } : scenario;
-  const eff = stopped ? { ...eff0, status: 'stopped', pending: null, childApprovals: [] } : eff0;
+  const [previewBranch, setPreviewBranch] = useState(null);
+  const branchHere = previewBranch?.taskId === taskId && previewBranch?.scenarioId === scenarioId ? previewBranch : null;
+  const eff = branchHere ? { ...eff0, turns: branchHere.turns, status: 'done', pending: null, childApprovals: [] }
+    : stopped ? { ...eff0, status: 'stopped', pending: null, childApprovals: [] } : eff0;
   const ui = { openEntries, toggleEntry, expandedGroups, toggleGroup, expandedTurns, toggleTurn, waiting: scenario.waiting };
   const line = statusLine(eff);
   useEffect(() => { const h = e => enterChild(e.detail.id); addEventListener('m14:open-child', h); return () => removeEventListener('m14:open-child', h); }, []);
@@ -490,7 +514,11 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
     {t.auto && <LogRow icon={<CornerIcon />} label={t.autoLabel ?? "子任务完成，主任务自动继续"} />}
     {t.state === 'unknown' ? <div className="m14-unknown"><CircleDashed size={14} /><div><b>发送后连接中断，无法确认 Codex 是否收到这条消息</b><small>正在核对原生记录；确认前不会自动重发</small></div><button onClick={() => setToast({ text: '已重新核对（合成）' })}>重新核对</button></div>
       : t.state === 'queued' ? <div className="m14-queued-turn"><Hourglass size={14} /><div><b>排队中，尚未启动</b><small>主任务本轮结束并交出共用目录的写入资格后，子任务将继续。</small></div></div>
-      : <div className="m14-turn-rows">{deriveRows(t, { expandedGroups, expandedTurns }).map(r => <Row key={r.id} row={r} ui={ui} onLink={onLink} onToast={text => setToast({ text })} onOpenChild={archived ? undefined : enterChild} />)}</div>}
+      : <div className="m14-turn-rows">{deriveRows(t, { expandedGroups, expandedTurns }).map(r => <Row key={(branchHere?.id ?? '') + r.id} row={r} ui={ui} onLink={onLink}
+        onBranch={() => {
+          setPreviewBranch({ id: r.id, taskId, scenarioId, turns: turns.slice(0, turns.indexOf(t) + 1) });
+          setToast({ text: '已打开分支到新聊天（合成）' });
+        }} onToast={text => setToast({ text })} onOpenChild={archived ? undefined : enterChild} />)}</div>}
     {!child && t === turns.at(-1) && promoted.filter(q => q.steer).map(q => <UserRow key={q.id} user={{text:q.text,time:q.time,attachments:q.chips}}/>)}
   </div>);
   if (child) {

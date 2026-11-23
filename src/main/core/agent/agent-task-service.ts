@@ -280,6 +280,21 @@ export class AgentTaskService {
     return { taskId: this.d.store.createTask({ taskId, projectId: input.projectId, dirId: input.dirId, cwd: input.cwd, title, selection }), selection, ...(tier.downgraded ? { tierNotice: tier.reason } : {}) };
   }
 
+  setReplyLiked(taskId: string, itemId: string, liked: boolean) {
+    this.selection(taskId);
+    if (typeof liked !== 'boolean') throw new DriverError('REJECTED', '点赞状态无效');
+    return this.d.store.setReplyLiked(taskId, itemId, liked);
+  }
+
+  branchFromReply(taskId: string, itemId: string) {
+    const { task, selection } = this.selection(taskId, true);
+    const { pendingSwitch: _pendingSwitch, ...currentSelection } = selection;
+    const title = `分支 · ${task.title}`.slice(0, 120);
+    return { taskId: this.d.store.branchFromReply(taskId, itemId, {
+      projectId: task.project_id, dirId: task.dir_id, cwd: task.cwd, title, selection: currentSelection,
+    }) };
+  }
+
   private selection(taskId: string, readOnly = false) {
     const t = this.d.store.task(taskId);
     if (!t) throw new DriverError('REJECTED', '任务不存在');

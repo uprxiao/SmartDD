@@ -1,7 +1,7 @@
 // 新任务区时间线的纯函数（便于单测）：按回合分组，工作条目聚合为“工作了 Ns”，
 // 用户消息、最终回答、待处理请求、错误与计划保持可见（技术方案 T1.5 §4、需求 R01）。
 
-export interface TimelineItem { itemId: string; turnId: string | null; runId?: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string }
+export interface TimelineItem { itemId: string; turnId: string | null; runId?: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string; liked?: boolean }
 export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null; source_kind?: string; run_id?: string | null; native_turn_id?: string | null; native_wait_ms?: number; native_wait_since?: number }
 export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string; targetTaskTitle?: string }
 
@@ -52,7 +52,7 @@ export type Row =
   | { kind: 'work'; id: string; items: TimelineItem[]; running: boolean; seconds: number }
   | { kind: 'footer'; id: string; label: string; failed: boolean };
 
-export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[]; seconds: number; activeSeconds: number; waitingSeconds: number; failed: boolean; failureCode: string | null }
+export interface TurnGroup { key: string; turnId: string | null; status: string | null; completedAt: string | null; waitingForUser: boolean; rows: Row[]; seconds: number; activeSeconds: number; waitingSeconds: number; failed: boolean; failureCode: string | null }
 
 /** The foreground clock counts observed work once, with blocking waits reported separately. */
 function turnTiming(t: TurnInfo | undefined, now: number) {
@@ -170,7 +170,8 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
           : limited === 'output' ? '已达到输出长度上限' : limited ? '已暂停' : '已失败';
       rows.push({ kind: 'footer', id: `footer:${key}`, label: `${label} · 共工作 ${formatDuration(timing.seconds)}`, failed: !limited && turn.status !== 'interrupted' });
     }
-    groups.push({ key, turnId, status: turn?.status ?? null, rows, ...timing, failed: turn?.status === 'failed' && !limited, failureCode: turn?.error_code ?? null });
+    groups.push({ key, turnId, status: turn?.status ?? null, completedAt: turn?.ended_at ?? null,
+      waitingForUser: turn?.native_wait_since !== undefined, rows, ...timing, failed: turn?.status === 'failed' && !limited, failureCode: turn?.error_code ?? null });
   }
   return groups;
 }

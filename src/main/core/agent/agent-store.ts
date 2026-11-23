@@ -77,11 +77,15 @@ export interface StoredEvent { taskId: string; seq: number; type: string; itemId
 export type EventListener = (event: StoredEvent) => void;
 type EmitEvent = (taskId: string, type: string, payload: unknown, itemId?: string | null, revision?: number | null) => void;
 const TURN_TOOL_TYPES = ['command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'proposed_plan'];
-type TimelineRow = { item_id: string; turn_id: string | null; run_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string };
+type TimelineRow = { item_id: string; turn_id: string | null; run_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string; liked: 0 | 1 };
+
+export const BRANCH_HISTORY_KEY = 'branch-history:';
+
 function timelineItem(row: TimelineRow) {
   return {
     itemId: row.item_id, turnId: row.turn_id, runId: row.run_id, type: row.type, ordinal: row.ordinal, revision: row.revision,
     payload: JSON.parse(row.payload_ref), terminal: row.terminal_state, createdAt: row.created_at, updatedAt: row.updated_at,
+    ...(row.liked === 1 ? { liked: true } : {}),
   };
 }
 
@@ -198,6 +202,99 @@ export class AgentStore {
       emit(taskId, 'task.created', { selection: input.selection });
     });
     return taskId;
+  }
+
+  private completedReply(taskId: string, itemId: string) {
+    const reply = this.sqlite.prepare(`
+      SELECT i.ordinal, i.turn_id, i.updated_at, i.liked, t.ended_at, t.run_id, t.native_turn_id
+      FROM agent_items i JOIN agent_turns t ON t.turn_id=i.turn_id AND t.task_id=i.task_id
+      WHERE i.task_id=? AND i.item_id=? AND i.node_id IS NULL AND i.type='assistant_message'
+        AND i.terminal_state='completed' AND t.status='completed'
+        AND json_extract(i.payload_ref,'$.phase') IS NOT 'commentary'
+        AND NOT EXISTS (
+          SELECT 1 FROM agent_items later JOIN agent_turns lt ON lt.turn_id=later.turn_id
+          WHERE later.task_id=i.task_id AND later.ordinal>i.ordinal AND later.node_id IS NULL
+            AND later.type='assistant_message' AND later.terminal_state='completed'
+            AND json_extract(later.payload_ref,'$.phase') IS NOT 'commentary'
+            AND (later.turn_id=i.turn_id OR (lt.run_id=t.run_id AND lt.native_turn_id=t.native_turn_id))
+        )`).get(taskId, itemId) as {
+      ordinal: number; turn_id: string; updated_at: string; liked: 0 | 1; ended_at: string | null;
+      run_id: string | null; native_turn_id: string | null;
+    } | undefined;
+    if (!reply) throw new DriverError('REJECTED', '请从一条已完成的回复操作');
+    return reply;
+  }
+
+  setReplyLiked(taskId: string, itemId: string, liked: boolean) {
+    return this.tx(emit => {
+      const reply = this.completedReply(taskId, itemId);
+      if (Boolean(reply.liked) !== liked) {
+        this.sqlite.prepare('UPDATE agent_items SET liked=? WHERE task_id=? AND item_id=?').run(Number(liked), taskId, itemId);
+        emit(taskId, 'reply.liked', { liked }, itemId);
+      }
+      return { liked };
+    });
+  }
+
+  branchFromReply(sourceTaskId: string, sourceItemId: string, input: CreateTaskInput) {
+    return this.itemTx((written, _replaced, emit) => {
+      const reply = this.completedReply(sourceTaskId, sourceItemId);
+      const ended = reply.ended_at ?? reply.updated_at;
+      // A queued user message can have an earlier ordinal and still belong to a later turn.
+      const rows = this.sqlite.prepare(`
+        SELECT i.item_id, i.type, i.created_at, i.updated_at, t.turn_id, t.run_id, t.native_turn_id,
+          t.accepted_at, t.started_at, t.ended_at, t.status, t.error_code
+        FROM agent_items i JOIN agent_turns t ON t.turn_id=i.turn_id AND t.task_id=i.task_id
+        WHERE i.task_id=@taskId AND i.ordinal<=@ordinal AND i.node_id IS NULL
+          AND i.type IN ('user_message','assistant_message') AND i.terminal_state='completed'
+          AND (t.turn_id=@turnId OR (t.run_id=@runId AND t.native_turn_id=@nativeTurnId)
+            OR t.ended_at<@ended OR (t.ended_at=@ended AND t.started_at<@ended))
+        ORDER BY i.ordinal`).all({
+        taskId: sourceTaskId, ordinal: reply.ordinal, turnId: reply.turn_id, ended,
+        runId: reply.run_id, nativeTurnId: reply.native_turn_id,
+      }) as Array<{
+        item_id: string; type: 'user_message' | 'assistant_message'; created_at: string; updated_at: string;
+        turn_id: string; run_id: string | null; native_turn_id: string | null;
+        accepted_at: string; started_at: string | null; ended_at: string | null; status: string; error_code: string | null;
+      }>;
+      const taskId = this.createTask(input);
+      const insertTurn = this.sqlite.prepare(`
+        INSERT INTO agent_turns(turn_id,task_id,client_input_id,input_ref,source_kind,status,accepted_at,started_at,ended_at,error_code)
+        VALUES(?,?,?,'{}','system',?,?,?,?,?)`);
+      const insertItem = this.sqlite.prepare(`
+        INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,native_key,payload_ref,terminal_state,created_at,updated_at)
+        VALUES(?,?,?,?,?,?,?,'completed',?,?)`);
+      const groups = new Map<string, typeof rows>();
+      for (const row of rows) {
+        const key = row.run_id && row.native_turn_id ? JSON.stringify([row.run_id, row.native_turn_id]) : row.turn_id;
+        const group = groups.get(key);
+        if (group) group.push(row);
+        else groups.set(key, [row]);
+      }
+      const waits = new Map(this.turnsWithNativeWait(sourceTaskId).map(turn => [turn.turn_id, turn.native_wait_ms ?? 0]));
+      let ordinal = 0;
+      for (const group of groups.values()) {
+        const owner = group[0], turnId = randomUUID();
+        const startedAt = owner.started_at;
+        const waitingMs = waits.get(owner.turn_id) ?? 0;
+        // Copied turns have an elapsed work clock, independent of the source run's requests.
+        insertTurn.run(turnId, taskId, turnId, owner.status, owner.accepted_at,
+          waitingMs && startedAt ? new Date(Date.parse(startedAt) + waitingMs).toISOString() : startedAt,
+          owner.ended_at, owner.error_code);
+        const visibleAt = (row: typeof owner) => row.type === 'user_message' && row.turn_id !== owner.turn_id
+          ? row.started_at ?? row.created_at : row.created_at;
+        if (group.some(row => row.turn_id !== owner.turn_id)) group.sort((a, b) => visibleAt(a).localeCompare(visibleAt(b)));
+        for (const row of group) {
+          const saved = this.readItemBody(sourceTaskId, row.item_id);
+          if (!saved) throw new DriverError('REJECTED', '聊天历史原文不可用，无法创建分支');
+          const itemId = randomUUID();
+          const body = this.itemBody(taskId, itemId, 1, JSON.parse(saved.text), written);
+          insertItem.run(itemId, taskId, turnId, row.type, ++ordinal, BRANCH_HISTORY_KEY + row.item_id, body, visibleAt(row), row.updated_at);
+        }
+      }
+      emit(taskId, 'task.branched', { sourceTaskId, sourceItemId });
+      return taskId;
+    });
   }
 
   task(taskId: string) {
@@ -597,13 +694,13 @@ export class AgentStore {
   /** 最近的条目（renderer 每任务上限 2000 条，技术方案 §3.1）；beforeOrdinal 分页读更早的。 */
   items(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
     const limit = Math.min(opts.limit ?? 2000, 2000);
-    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
+    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at,liked FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
       .map(timelineItem);
   }
   historyItems(taskId: string, itemIds: string[]) {
     if (!itemIds.length) return [];
     const params = itemIds.map(() => '?').join(',');
-    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at
+    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at,liked
       FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND item_id IN (${params}) ORDER BY ordinal`)
       .all(taskId, ...itemIds) as TimelineRow[];
     return rows.map(timelineItem);

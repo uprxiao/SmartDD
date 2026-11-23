@@ -165,7 +165,7 @@ const KEEP_WHEN_FOLDED = ['notice', 'subagents', 'error', 'created', 'plan', 'co
 // 2. 连续的工作记录合成一组：一组只有 1 条工具记录时直接显示那一行；多条时显示汇总行（默认收起，可展开）。
 // 3. 末尾仍在进行的一组显示为“实时行”：最新一条带流光；组内有思考时，上方先显示思考标题。
 // 4. 没有任何实时行、也没有待审批时，末尾显示“思考中”；有子任务在跑则改为“等待 N 个子任务”。
-// 5. 正常结束：整轮折叠成“已工作 N 秒”，只露出最终回答；通知、子任务卡、待办、错误不进折叠。展开后与第 1–3 条相同。
+// 5. 正常结束：整轮折叠成“用时 N 秒”，只露出最终回答；通知、子任务卡、待办、错误不进折叠。展开后与第 1–3 条相同。
 // 6. 被停止或失败的轮次不折叠（T3：interrupted／failed 轮次跳过折叠），轮首显示“你在 N 秒后停止了”／“工作 N 秒后失败”。
 export function deriveRows(turn, ui = {}) {
   const rows = [];
@@ -182,7 +182,8 @@ export function deriveRows(turn, ui = {}) {
   else if (state === 'stopped') rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `你在 ${formatDuration(elapsed)}后停止了` });
   else if (state === 'failed') rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `工作 ${formatDuration(elapsed)}后失败`, failed: true });
   else if (state === 'limited') rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `额度用完，已暂停（工作 ${formatDuration(elapsed)}）`, warn: true });
-  else if (foldable && (entries.length || waitingSeconds > 0)) rows.push({ kind: 'turn-fold', id: turn.id + ':fold', turnId: turn.id, label: `已工作 ${formatDuration(elapsed)}`, expanded: !!unfolded });
+  else if (foldable && (entries.length || waitingSeconds > 0)) rows.push({ kind: 'turn-fold', id: turn.id + ':fold', turnId: turn.id, label: `用时 ${formatDuration(elapsed)}`, expanded: !!unfolded });
+  else if (foldable && turn.final) rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `用时 ${formatDuration(elapsed)}` });
   const visible = unfolded ? entries : entries.filter(e => (KEEP_WHEN_FOLDED.includes(e.kind) || e.keep) && !e.foldable);
   for (let i = 0; i < visible.length; i++) {
     const e = visible[i];
@@ -201,7 +202,7 @@ export function deriveRows(turn, ui = {}) {
   const footer = state === 'stopped' ? { kind: 'turn-footer', id: turn.id + ':f', label: `已停止 · 共工作 ${formatDuration(elapsed)}` } : state === 'failed' ? { kind: 'turn-footer', id: turn.id + ':f', failed: true, label: `已失败 · 共工作 ${formatDuration(elapsed)}` } : null;
   if (live && !tailLive && !pendingApproval && !turn.question && !turn.streaming && !turn.stopping) rows.push({ kind: 'thinking', id: turn.id + ':thinking', label: turn.waitingLabel ?? (turn.waitingOn ? `等待 ${turn.waitingOn} 个子任务` : '思考中') });
   if (unfolded && waitingSeconds > 0) rows.push({ kind: 'turn-footer', id: turn.id + ':user-wait', label: `用户处理耗时 ${formatDuration(waitingSeconds)}` });
-  if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent, showActions: state === 'done' });
+  if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent, table: turn.finalTable, time: turn.completedTime ?? '14:04', showActions: state === 'done' });
   if (!live && !turn.diffState && turn.changes?.length) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, turnId: turn.id });
   if (turn.length) rows.push({ kind: 'length', id: turn.id + ':len' });
   if (footer) rows.push(footer);
@@ -242,9 +243,19 @@ const DONE_TURN = { id: 't1', user: USER1, state: 'done', entries: [T.think1, T.
 const live = e => ({ ...e, live: true });
 
 export const SCENARIOS = [
-  { id: 'done', group: '基础', name: 'S02 一轮完成', desc: '整轮折叠成“已工作”，只露最终回答和改动；展开可逐条看', status: 'done', turns: [DONE_TURN] },
+  { id: 'done', group: '基础', name: 'S02 一轮完成', desc: '顶部显示一次“用时”，展开可查看过程。最终回答和改动仍可查看', status: 'done', turns: [DONE_TURN] },
   { id: 'starting', group: '基础', name: 'S02 刚开始（思考中）', desc: '“工作中”计时＋末尾“思考中”', status: 'running', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 0, entries: [] }] },
   { id: 'running', group: '基础', name: 'S02 工作中＋排队', desc: '思考、中间正文、已完成的一组和实时行；排队消息可“立即发送”', status: 'running', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 38, entries: [T.think1, T.msg1, T.read1, T.read2, T.read3, T.grep, T.msgMid, live({ id: 'e7t', kind: 'thought', at: [10, 12], text: '**跑基线测试**\n先确认现有发布测试全部通过，再动构建脚本。' }), live({ ...T.test1, output: undefined })] }], queued: [{ id: 'q1', text: '顺便把 Linux 的 deb 也检查一下', time: '14:03' }] },
+  { id: 'reply-table', group: '基础', name: '回复表格与操作（合成）', status: 'done', turns: [{
+    ...DONE_TURN, id: 'table-reply', user: { text: '把两种环境的检查结果列给我。', time: '14:03' },
+    elapsed: 35, completedTime: '14:04', openFold: false,
+    final: ['以下是项目环境的检查结果。'], changes: undefined,
+    finalTable: [
+      ['服务', '环境', '地址', '检查结果'],
+      ['主库', '生产', 'db.example.test:5432', '示例中的连接与只读查询通过。'],
+      ['任务队列', '开发', 'queue.example.test:6380', '示例中的服务已就绪，处理耗时与响应内容在详情中查看。'],
+    ],
+  }] },
   { id: 'streaming', group: '基础', name: 'S02 输出最终回答中', desc: '工作结束、回答流式输出时不折叠', status: 'running', turns: [{ ...DONE_TURN, state: 'live', elapsed: 136, streaming: true, final: FINAL1.slice(0, 2) }] },
   { id: 'approval', group: '请求', name: 'S03 命令审批', desc: '时间线显示待批准内容；批准／拒绝在输入框上方，发送文字即拒绝并说明原因（对齐 T3）', status: 'waiting', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 12, entries: [T.think1, T.msg1, T.read1, T.read2, { id: 'r1', kind: 'approval', title: '命令审批', command: 'pnpm package:release --platform mac --arch x64', cwd: '/workspace/SmartDD', reason: '需要在沙箱外写入 release/ 目录' }] }], pending: 'approval' },
   { id: 'question', group: '请求', name: 'S03 Agent 提问', desc: '问题出现在输入框位置，选项可用数字键选择', status: 'waiting', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 8, entries: [T.think1, T.read1, T.read2], question: true }], pending: 'question', question: { title: 'Windows 安装包要出哪几种格式？', options: [['只出 EXE', '最快，与旧版一致'], ['EXE＋MSI', '与现有发布流程一致'], ['暂不改 Windows', '本次只改 mac']] } },

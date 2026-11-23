@@ -3,8 +3,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { readFileSync } from 'node:fs';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -14,6 +15,7 @@ vi.mock('./agent-terminal', () => ({ AgentTerminalDrawer: ({ onClose }: { onClos
 vi.mock('sonner', () => ({ toast: { warning: mocks.toast, error: mocks.toast, message: mocks.toast, success: mocks.toast } }));
 import {agentComposerTargets} from './composer-target';
 import { AgentTaskView } from './agent-task-view';
+import { navigation } from '@renderer/core/navigation';
 import { AgentChildSummary, type Relations } from './agent-relations';
 
 function render(element: React.ReactElement) {
@@ -38,6 +40,110 @@ beforeEach(() => {
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
 
+it('shows one ended work entry above the final reply and opens the full process below it', async () => {
+  const turnId = 'multi-stage';
+  const started = '2026-11-23T00:00:00Z', ended = '2026-11-23T00:00:35Z';
+  const items = [
+    item('user_message', { text: '用户消息' }),
+    item('assistant_message', { text: '开始检查' }),
+    item('tool_call', { name: 'first' }),
+    item('assistant_message', { text: '再检查一项' }),
+    item('command_execution', { name: 'second', input: { command: 'date' } }),
+    item('assistant_message', { text: '这是最终回复' }),
+  ].map((entry, ordinal) => ({ ...entry, ordinal, turnId, itemId: `entry-${ordinal}`, updatedAt: '2026-11-23T00:01:00Z' }));
+  mocks.snapshot.mockResolvedValue(snapshot({ items, status: 'completed', turns: [
+    { turn_id: turnId, status: 'completed', accepted_at: started, started_at: started, ended_at: ended },
+  ] }));
+  render(<AgentTaskView taskId="task" />);
+  const reply = await screen.findByText('这是最终回复');
+  const fold = screen.getByRole('button', { name: '用时 35 秒' });
+  expect(screen.getAllByText(/用时 35 秒|已工作 35 秒/)).toHaveLength(1);
+  expect(fold.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(fold.getAttribute('aria-expanded')).toBe('false');
+  expect(screen.queryByText('开始检查')).toBeNull();
+  fireEvent.click(fold);
+  const intro = screen.getByText('开始检查'), next = screen.getByText('再检查一项');
+  expect(intro.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(next.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  const completedTime = reply.closest('.agent-assistant')?.querySelector('time');
+  expect(completedTime?.dateTime).toBe(new Date(ended).toISOString());
+  expect(completedTime?.textContent?.trim()).toMatch(/^\d{1,2}:\d{2}$/);
+});
+
+it('runs a single live clock for multiple process segments', async () => {
+  const turnId = 'active-clock';
+  const now = new Date(Date.now() - 5_000).toISOString();
+  const items = [
+    item('user_message', { text: '查一下两处' }),
+    item('command_execution', { command: 'first', status: 'completed' }),
+    item('assistant_message', { text: '继续检查第二处' }),
+    { ...item('command_execution', { command: 'second', status: 'running' }), terminal: null },
+  ].map((entry, ordinal) => ({ ...entry, ordinal, turnId, itemId: `working-${ordinal}` }));
+  mocks.snapshot.mockResolvedValue(snapshot({ items, status: 'working', turns: [
+    { turn_id: turnId, status: 'started', accepted_at: now, started_at: now, ended_at: null },
+  ] }));
+  render(<AgentTaskView taskId="task" />);
+  const clock = await screen.findByRole('button', { name: /^工作中 \d+ 秒$/ });
+  expect(screen.getAllByRole('button', { name: /^工作中 \d+ 秒$/ })).toHaveLength(1);
+  expect(screen.getByText('继续检查第二处')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: '分支到新聊天' })).toBeNull();
+  const initial = clock.textContent;
+  await waitFor(() => expect(clock.textContent).not.toBe(initial), { timeout: 2200 });
+});
+
+it('can like, undo the like, and open a branch from a completed reply', async () => {
+  const entry = { ...item('assistant_message', { text: '可操作的回复' }), itemId: 'reply-actions', turnId: 'completed' };
+  const time = '2026-11-23T00:00:35Z';
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [entry], status: 'completed', turns: [
+    { turn_id: entry.turnId, status: 'completed', accepted_at: time, started_at: time, ended_at: time },
+  ] }));
+  mocks.setReplyLiked.mockImplementation(async (_taskId, _replyId, liked) => ({ liked }));
+  mocks.branchFromReply.mockResolvedValue({ taskId: 'new-chat' });
+  render(<AgentTaskView taskId="task" />);
+  const like = await screen.findByRole('button', { name: '点赞' });
+  fireEvent.click(like);
+  await screen.findByRole('button', { name: '取消点赞', pressed: true });
+  expect(mocks.setReplyLiked).toHaveBeenCalledWith('task', entry.itemId, true);
+  fireEvent.click(screen.getByRole('button', { name: '取消点赞' }));
+  await screen.findByRole('button', { name: '点赞', pressed: false });
+  expect(mocks.setReplyLiked).toHaveBeenLastCalledWith('task', entry.itemId, false);
+  fireEvent.click(screen.getByRole('button', { name: '分支到新聊天' }));
+  await waitFor(() => expect(navigation.openAgentTask).toHaveBeenCalledWith('new-chat'));
+  expect(mocks.branchFromReply).toHaveBeenCalledWith('task', entry.itemId);
+  expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('shows the actions and completion time for each completed reply without hover or focus', async () => {
+  const times = ['2026-11-23T00:00:35.000Z', '2026-11-23T00:01:20.000Z'];
+  const replies = ['回复 1\n\n| 环境 | 结果 |\n| --- | --- |\n| 生产 | 正常 |', '回复 2'];
+  const items = times.map((time, index) => ({ ...item('assistant_message', { text: replies[index] }),
+    itemId: `reply-${index}`, turnId: `turn-${index}`, ordinal: index, updatedAt: time }));
+  const turns = times.map((time, index) => ({ turn_id: items[index].turnId, status: 'completed', accepted_at: time,
+    started_at: time, ended_at: time }));
+  mocks.snapshot.mockResolvedValue(snapshot({ items, turns, status: 'completed' }));
+  const style = document.createElement('style');
+  style.textContent = readFileSync('src/renderer/features/agent-tasks/agent-tasks.css', 'utf8');
+  document.head.append(style);
+  try {
+    render(<AgentTaskView taskId="task" />);
+    const groups = await screen.findAllByRole('group', { name: '回复操作' });
+    expect(groups).toHaveLength(2);
+    const table = screen.getByRole('region', { name: '回复表格' });
+    expect(within(table).getByRole('cell', { name: '生产' })).toBeTruthy();
+    expect(getComputedStyle(table).overflowX).toBe('auto');
+    for (const [index, group] of groups.entries()) {
+      expect(group.contains(document.activeElement)).toBe(false);
+      const computed = getComputedStyle(group);
+      expect(computed.display).toBe('flex');
+      expect(computed.opacity || '1').toBe('1');
+      expect([...group.children].map(node => node.getAttribute('aria-label') ?? node.getAttribute('datetime')))
+        .toEqual(['复制回复', '点赞', '分支到新聊天', times[index]]);
+    }
+  } finally {
+    style.remove();
+  }
+});
+
 it.each([true, false])('keeps completed request timing inside the work fold (has work items: %s)', async (hasWork) => {
   const turnId = 'wait-turn';
   const entries = [
@@ -55,7 +161,7 @@ it.each([true, false])('keeps completed request timing inside the work fold (has
   render(<AgentTaskView taskId="task" />);
   const reply = await screen.findByText('完成后的回复');
   expect(screen.queryByText(/等待用户处理|用户处理耗时/)).toBeNull();
-  const fold = screen.getByRole('button', { name: '已工作 35 秒' });
+  const fold = screen.getByRole('button', { name: '用时 35 秒' });
   expect(fold.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   fireEvent.click(fold);
   const wait = screen.getByText('用户处理耗时 7 秒');
@@ -590,7 +696,7 @@ describe('复核 2354：工作过程正文的完整性', () => {
   const open = async () => {
     mocks.snapshot.mockResolvedValue(snapshot({ items: [reasoning], turns }));
     render(<AgentTaskView taskId="task" />);
-    fireEvent.click(await screen.findByRole('button', { name: /已工作/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /用时/ }));
     fireEvent.click(await screen.findByRole('button', { name: /展开全文/ }));
   };
   it('U02：读回完整原文（artifact）后显示尾部、不显示不完整提示', async () => {
@@ -666,7 +772,7 @@ it('M14 A29/A74: the native child process drawer and family card open independen
     const family = await screen.findByRole('button',{name:'任务关系 · 1'});
     fireEvent.click(family);
     expect(screen.getByRole('region',{name:'任务关系'})).toBeTruthy();
-    fireEvent.click(screen.getByRole('button',{name:/已工作/}));
+    fireEvent.click(screen.getByRole('button',{name:/用时/}));
     fireEvent.click(screen.getByText(/子 Agent/));
     fireEvent.click(screen.getByRole('button',{name:'查看过程'}));
     expect(screen.getByRole('region',{name:'执行器原生子 Agent'})).toBeTruthy();

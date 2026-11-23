@@ -45,6 +45,8 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       history: (e, taskId: string, cursor: number | string) => run(e, w => w.tasks.history(taskId, cursor)),
       historyItems: (e, taskId: string, itemIds: string[]) => run(e, w => w.tasks.historyItems(taskId, itemIds)),
       nativeHistory: (e, taskId: string, itemId: string, beforeOrdinal?: number) => run(e, w => w.tasks.nativeHistory(taskId, itemId, beforeOrdinal)),
+      setReplyLiked: (e, taskId: string, itemId: string, liked: boolean) => run(e, w => w.tasks.setReplyLiked(taskId, itemId, liked)),
+      branchFromReply: (e, taskId: string, itemId: string) => run(e, w => w.tasks.branchFromReply(taskId, itemId)),
       itemBody: (e, taskId: string, itemId: string, offset: number, revision?: number) => run(e, w => w.tasks.itemBody(taskId, itemId, offset, revision)),
       saveProjectPlan: (e, taskId: string, itemId: string, revision: number) => run(e, async w => {
         if (!files) throw new Error('文件服务不可用');

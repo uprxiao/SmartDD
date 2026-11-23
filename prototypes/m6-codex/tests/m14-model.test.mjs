@@ -45,7 +45,7 @@ test('已结束的用户处理耗时随工作过程展开，最终回复独立�
   assert.deepEqual(kinds(example), ['turn-fold', 'final']);
   const rows = deriveRows(example, { expandedTurns: new Set([example.id]) });
   assert.deepEqual(rows.map(row => row.kind), ['turn-fold', 'turn-footer', 'final']);
-  assert.equal(rows[0].label, '已工作 35 秒');
+  assert.equal(rows[0].label, '用时 35 秒');
   assert.equal(rows[1].label, '用户处理耗时 7 秒');
 });
 test('T3 规则：运行中不折叠，轮首“工作中”，末尾实时行或“思考中”', () => {
@@ -98,9 +98,9 @@ test('P0.7：系统提示随整轮折叠；演示用 openFold 默认展开、点
   assert.deepEqual(deriveRows(t).filter(row => row.kind === 'sysnote').map(row => row.entry.id), ['n3']);
   assert.ok(!kinds(t, { expandedTurns: new Set([t.id]) }).includes('sysnote'));
 });
-test('A59：寒暄结束后直接显示回答，有实际文件变化或快照状态时才生成改动行', () => {
+test('A59：寒暄结束后显示一次用时和回答，有文件变化或快照状态时才生成改动行', () => {
   const t = { id: 'hello', state: 'done', entries: [{ id: 'mcp', kind: 'sysnote', diagnostic: true }], final: ['你好！'], changes: [] };
-  assert.deepEqual(kinds(t), ['final']);
+  assert.deepEqual(kinds(t), ['turn-header', 'final']);
   assert.ok(kinds({ ...t, changes: [{path:'notes.txt'}] }).includes('changes'));
   assert.ok(!kinds({ ...t, diffState: {kind:'reclaimed'} }).includes('changes'));
 });

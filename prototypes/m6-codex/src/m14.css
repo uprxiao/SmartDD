@@ -492,10 +492,8 @@ button.m14-log:hover { background: var(--hover); }
 .m14-code pre { margin: 0; padding: 10px 12px; overflow-x: auto; font: 12.5px/20px ui-monospace, "SF Mono", Menlo, monospace; white-space: pre; }
 .m14-code pre.wrap { white-space: pre-wrap; word-break: break-all; }
 .m14-code pre code { background: none; border: 0; padding: 0; }
-/* B1 回答下方复制与时间 */
-.m14-assistant-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: var(--muted); opacity: 0; transition: opacity .15s; }
-.m14-assistant:hover .m14-assistant-meta, .m14-assistant:focus-within .m14-assistant-meta { opacity: 1; }
-@media (hover:none) { .m14-assistant-meta { opacity: 1; } }
+/* B1 回复操作 */
+.m14-assistant-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: var(--muted); }
 .m14-assistant-meta button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: var(--muted); }
 .m14-assistant-meta button:hover { background: var(--hover); color: var(--text); }
 /* B3 用户消息 */
@@ -909,3 +907,11 @@ button.m14-log:hover { background: var(--hover); }
 .m14-queued { flex-direction:row; align-items:center; width:min(100%, 540px); padding:4px 7px; border:1px solid var(--border); border-radius:9px; }
 .m14-queued .m14-queued-bubble { flex:1; min-width:0; padding:2px 3px; background:transparent; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .m14-queued .m14-queued-meta { flex:none; }
+
+.m14-assistant-meta button[aria-pressed="true"] { background: var(--hover); color: var(--accent, #14756c); }
+.m14-assistant-meta time { margin-inline-start: 3px; white-space: nowrap; }
+.m14-reply-table { max-inline-size: 100%; overflow-x: auto; margin-block: 14px; }
+.m14-reply-table table { inline-size: 100%; border-collapse: collapse; font-size: .94em; }
+.m14-reply-table :is(th, td) { min-inline-size: 4.5em; padding: 9px 12px; text-align: start; vertical-align: top; overflow-wrap: break-word; }
+.m14-reply-table th { font-weight: 600; background: var(--hover); }
+.m14-reply-table :is(thead, tbody tr) { border-block-end: 1px solid var(--m14-line); }

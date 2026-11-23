@@ -11,7 +11,7 @@ import { revealBrowserTab } from '@renderer/features/browser/store';
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, Globe, Info, List, Loader2, Network, Send, SquareTerminal, Target, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, Send, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
 import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
@@ -22,7 +22,7 @@ import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { AgentDialog } from '@renderer/features/agents/ui';
-import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { MailSendReview } from '@shared/mail-execution';
 import { BrowserAccessReview, MailReviewCard, mailEdits, type MailEdits } from './agent-business-review';
@@ -61,7 +61,7 @@ async function changedHistoryIds(taskId: string, from: number, through: number, 
     for (const event of page) {
       if (event.taskId !== taskId || event.seq !== seq + 1 || event.seq > through) return null;
       seq = event.seq;
-      if (event.itemId && cached.has(event.itemId) && (event.type === 'item.updated' || event.type === 'item.deleted')) changed.add(event.itemId);
+      if (event.itemId && cached.has(event.itemId) && (event.type === 'item.updated' || event.type === 'item.deleted' || event.type === 'reply.liked')) changed.add(event.itemId);
     }
   }
   return seq === through ? [...changed] : null;
@@ -104,6 +104,8 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<
 const anchor=(href:string,label:string)=>`<a href="#" data-agent-link="${escapeHtml(encodeURIComponent(href))}">${label}</a>`;
 mdRules.link_open = (tokens,idx) => `<a href="#" data-agent-link="${escapeHtml(encodeURIComponent((tokens[idx] as any).attrGet('href')??''))}">`;
 mdRules.link_close = () => '</a>';
+mdRules.table_open = () => '<div class="agent-table-scroll" role="region" aria-label="回复表格" tabindex="0"><table>';
+mdRules.table_close = () => '</table></div>';
 mdRules.code_inline=(tokens,idx)=>{const text=tokens[idx].content,path=inlineCodeFilePathCandidate(text);return '<code>'+(path?anchor(path,escapeHtml(text)):escapeHtml(text))+'</code>';};
 mdRules.text=(tokens,idx)=>{const text=tokens[idx].content;if(tokens.slice(0,idx).reduce((n,t)=>n+((t as any).type==='link_open'?1:(t as any).type==='link_close'?-1:0),0)>0)return escapeHtml(text);const matches=absoluteFilePathMatches(text);let pos=0,out='';for(const m of matches){out+=escapeHtml(text.slice(pos,m.index))+anchor(m.path,escapeHtml(m.path));pos=m.index+m.path.length;}return out+escapeHtml(text.slice(pos));};
 // 代码块带“在终端运行”：把完整命令送入本任务手动终端的输入行，不自动执行（用例 A52）。
@@ -228,7 +230,43 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
   return <button type="button" className="agent-older" onClick={onClick}>内容较长，已截断显示 · 展开全文</button>;
 }
 
-function ItemRow({ item, finalReply }: { item: TimelineItem; finalReply?: boolean }) {
+function ReplyActions({ item, copy, stamp }: { item: TimelineItem; copy?: () => void; stamp: Date }) {
+  const taskId = useContext(TaskScope), archived = useContext(ArchivedScope);
+  const [liked, setLiked] = useState(!!item.liked);
+  const [busy, setBusy] = useState<'like' | 'branch'>();
+  useEffect(() => setLiked(!!item.liked), [item.liked]);
+
+  const toggleLike = async () => {
+    setBusy('like');
+    try {
+      const result = await rpc.agentTasks.setReplyLiked(taskId, item.itemId, !liked);
+      setLiked(result.liked);
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+    finally { setBusy(undefined); }
+  };
+  const branch = async () => {
+    setBusy('branch');
+    try {
+      const { taskId: branchId } = await rpc.agentTasks.branchFromReply(taskId, item.itemId);
+      void agentTasksStore.refresh();
+      navigation.openAgentTask(branchId);
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+    finally { setBusy(undefined); }
+  };
+  const likeLabel = liked ? '取消点赞' : '点赞';
+  return <div className="agent-reply-actions" role="group" aria-label="回复操作">
+    {copy && <button type="button" className="agent-head-btn" aria-label="复制回复" title="复制回复" onClick={copy}><Copy size={14} aria-hidden/></button>}
+    {!archived && <button type="button" className="agent-head-btn" aria-label={likeLabel} title={likeLabel} aria-pressed={liked}
+      disabled={!!busy} onClick={() => void toggleLike()}><ThumbsUp size={14} aria-hidden/></button>}
+    <button type="button" className="agent-head-btn" aria-label="分支到新聊天" title="分支到新聊天"
+      disabled={!!busy} onClick={() => void branch()}><GitBranch size={14} aria-hidden/></button>
+    {!Number.isNaN(stamp.getTime()) && <time dateTime={stamp.toISOString()} title={stamp.toLocaleString()}>
+      {stamp.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23' })}
+    </time>}
+  </div>;
+}
+
+function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalReply?: boolean; completedAt?: string | null }) {
   const useTaskId=useContext(TaskScope);
   const archived=useContext(ArchivedScope);
   const relations=useContext(RelationsScope);
@@ -274,8 +312,7 @@ function ItemRow({ item, finalReply }: { item: TimelineItem; finalReply?: boolea
     }
     case 'assistant_message': {
       const text = String(p.text ?? '');
-      const stamp = new Date(item.updatedAt || item.createdAt);
-      const hasTime = !Number.isNaN(stamp.getTime());
+      const stamp = new Date(completedAt || item.updatedAt || item.createdAt);
       const copy = async () => {
         const value = truncated ? await load() : p;
         if (!value) return;
@@ -285,10 +322,8 @@ function ItemRow({ item, finalReply }: { item: TimelineItem; finalReply?: boolea
         catch (e) { toast.error(`复制失败：${rpcErrorMessage(e)}`); }
       };
       return <div className="agent-assistant"><Markdown itemId={item.itemId} text={text} />{more}
-        {finalReply && (text.trim() || truncated) && <div className="agent-reply-actions">
-          {(truncated || !isIncomplete(p)) && <button type="button" className="agent-head-btn" aria-label="复制回复" title="复制回复" onClick={() => void copy()}><Copy size={14} aria-hidden/></button>}
-          {hasTime && <time dateTime={stamp.toISOString()} title={stamp.toLocaleString()}>{stamp.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</time>}
-        </div>}
+        {finalReply && (text.trim() || truncated) && <ReplyActions item={item} stamp={stamp}
+          copy={truncated || !isIncomplete(p) ? () => void copy() : undefined}/>}
       </div>;
     }
     case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划 · Claude Code 计划模式</div><Markdown itemId={item.itemId} text={String(p.plan ?? '')} />{more}
@@ -458,89 +493,78 @@ function WorkItem({ it }: { it: TimelineItem }) {
 }
 
 type WorkHeading = { text: string; tone: 'stop' | 'failed' };
-type TurnWorkFold = { heading?: WorkHeading; open: boolean; toggle(): void };
-
 function WorkHeadingLabel({ heading }: { heading: WorkHeading }) {
   const Icon = heading.tone === 'failed' ? CircleAlert : CircleStop;
   return <><Icon size={15} aria-hidden/>{heading.text}</>;
 }
 
-function WorkRow({ items, running, seconds, expanded, showTime, turnFold, waitDetail }: { items: TimelineItem[]; running: boolean; seconds: number; expanded: boolean; showTime: boolean; turnFold?: TurnWorkFold; waitDetail?: string }) {
-  const [choice, setChoice] = useState<boolean>();
-  const open = turnFold?.open ?? choice ?? expanded;
-  const heading = turnFold?.heading;
-  const tone = heading?.tone === 'failed' ? ' agent-turn-failed' : '';
-  return <div className="agent-work">
-    {(!turnFold || heading) && <button type="button" className={`agent-work-head${tone}${!heading && running ? ' shine' : ''}`} aria-expanded={open} onClick={turnFold?.toggle ?? (() => setChoice(!open))}>
-      {heading ? <WorkHeadingLabel heading={heading}/> : showTime ? `${running ? '工作中' : '已工作'} ${formatDuration(seconds)}` : '工作过程'}
-      <ChevronRight size={13} className={open ? 'open' : ''} aria-hidden/>
-    </button>}
-    {open && <div className="agent-work-rows">{workSegments(items).map(segment => {
-      if (segment.kind === 'single') return segment.item.type === 'assistant_message'
-        ? <ItemRow key={segment.item.itemId} item={segment.item}/>
-        : <WorkItem key={segment.item.itemId} it={segment.item}/>;
-      const [first] = segment.items;
-      if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first}/>;
-      return <details className="agent-work-row agent-work-group" key={first.itemId}>
-        <summary><Wrench size={14} aria-hidden/><span>{summarizeTools(segment.items)}</span><ChevronRight size={13} aria-hidden/></summary>
-        {segment.items.map(item => <WorkItem key={item.itemId} it={item}/>)}
-      </details>;
-    })}
-      {waitDetail && <div className="agent-turn-footer">{waitDetail}</div>}
-    </div>}
-  </div>;
+function WorkContents({ items }: { items: TimelineItem[] }) {
+  return <div className="agent-work-rows">{workSegments(items).map(segment => {
+    if (segment.kind === 'single') return segment.item.type === 'assistant_message'
+      ? <ItemRow key={segment.item.itemId} item={segment.item}/>
+      : <WorkItem key={segment.item.itemId} it={segment.item}/>;
+    const [first] = segment.items;
+    if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first}/>;
+    return <details className="agent-work-row agent-work-group" key={first.itemId}>
+      <summary><Wrench size={14} aria-hidden/><span>{summarizeTools(segment.items)}</span><ChevronRight size={13} aria-hidden/></summary>
+      {segment.items.map(item => <WorkItem key={item.itemId} it={item}/>)}
+    </details>;
+  })}</div>;
 }
 
 const countsAsActivity = (row: TurnGroup['rows'][number]) => row.kind !== 'item'
   || !['user_message', 'system_notice', 'files_changed', 'handoff'].includes(row.item.type);
 
 function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stopping: boolean; showActivity: boolean }) {
-  const [workOpen, setWorkOpen] = useState(true);
+  const completed = group.status === 'completed';
+  const running = showActivity || group.status === 'dispatching' || group.status === 'started';
+  const [choice, setChoice] = useState<{ completed: boolean; open: boolean }>();
+  const open = choice?.completed === completed ? choice.open : !completed;
   const duration = formatDuration(group.seconds);
   let heading: WorkHeading | undefined;
   if (stopping) heading = { text:'正在停止…', tone:'stop' };
   else if (group.status === 'interrupted') heading = { text:`你在 ${duration}后停止了`, tone:'stop' };
   else if (group.failed) heading = { text:`工作 ${duration}后失败`, tone:'failed' };
 
-  const firstWork = heading ? group.rows.findIndex(row => row.kind === 'work') : -1;
-  const lastSteer = group.rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'user_message'
-    && row.item.turnId !== group.turnId);
-  const lastWork = group.rows.findLastIndex(row => row.kind === 'work');
+  const isProcess = (row: TurnGroup['rows'][number]) => row.kind === 'work'
+    || ((completed || running) && row.kind === 'item' && row.item.type === 'assistant_message' && !row.finalReply);
   const waitDetail = !stopping && ['completed', 'interrupted', 'failed', 'unknown'].includes(group.status ?? '') && group.waitingSeconds > 0
     ? `用户处理耗时 ${formatDuration(group.waitingSeconds)}` : undefined;
-  const waitWork = heading ? firstWork : lastWork;
+  const hasDetails = !!waitDetail || group.rows.some(isProcess);
+  const footer = group.rows.find(row => row.kind === 'footer');
+  const firstUser = group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
+  const lastSteer = group.rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'user_message'
+    && row.item.turnId !== group.turnId);
   const showThinking = showActivity && !heading && !group.rows.slice(lastSteer + 1).some(countsAsActivity);
-  const toggle = () => setWorkOpen(open => !open);
+
+  const label = heading ? <WorkHeadingLabel heading={heading}/> : footer?.label
+    ?? (running ? `${group.waitingForUser ? '等待处理 · 已用' : '工作中'} ${formatDuration(group.activeSeconds)}`
+      : completed ? `用时 ${duration}` : '工作过程');
+  const tone = heading?.tone === 'failed' || footer?.failed ? ' agent-turn-failed' : '';
+  const headClass = `agent-work-head${tone}${running && !heading && !group.waitingForUser ? ' shine' : ''}`;
+  const summary = (heading || footer || hasDetails || running || completed) && <div className="agent-work">
+    {hasDetails ? <button type="button" className={headClass} aria-expanded={open}
+      onClick={() => setChoice({ completed, open: !open })}>
+      {label}<ChevronRight size={13} className={open ? 'open' : ''} aria-hidden/>
+    </button> : <div className={headClass}>{label}</div>}
+    {open && waitDetail && <div className="agent-turn-footer">{waitDetail}</div>}
+  </div>;
+  const thinking = showThinking && <div className="agent-starting-phase" role="status"><Brain size={14} aria-hidden/>思考中</div>;
   const rows = group.rows.map((row, index) => {
-    if (row.kind === 'item') return <ItemRow key={row.item.itemId} item={row.item} finalReply={row.finalReply}/>;
-    if (row.kind === 'footer') return <div key={row.id} className={`agent-turn-footer${row.failed ? ' failed' : ''}`}>{row.label}</div>;
-    return <WorkRow key={row.id} items={row.items} running={row.running} seconds={row.running ? group.activeSeconds : row.seconds}
-      showTime={lastSteer < 0 || (index === lastWork && !showThinking) || (index === waitWork && !!waitDetail)}
-      expanded={row.running || ['started','interrupted','failed'].includes(group.status ?? '')}
-      turnFold={heading ? { heading:index === firstWork ? heading : undefined, open:workOpen, toggle } : undefined}
-      waitDetail={index === waitWork ? waitDetail : undefined}/>;
+    if (row.kind === 'footer') return null;
+    const visible = open || !isProcess(row);
+    const content = !visible ? null : row.kind === 'work'
+      ? <WorkContents items={row.items}/>
+      : <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt}/>;
+    return <Fragment key={row.kind === 'item' ? row.item.itemId : row.id}>
+      {content}
+      {index === firstUser && summary}
+      {index === Math.max(firstUser, lastSteer) && thinking}
+    </Fragment>;
   });
-  if (waitDetail && waitWork < 0) {
-    const userRow = group.rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'user_message');
-    rows.splice(userRow + 1, 0, <WorkRow key="work-status" items={[]} running={false} seconds={group.seconds}
-      showTime expanded={false} waitDetail={waitDetail}
-      turnFold={heading ? { heading, open:workOpen, toggle } : undefined}/>);
-  } else if (heading && firstWork < 0) {
-    const userRow = group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
-    rows.splice(userRow + 1, 0, <div key="work-status" className={`agent-turn-start${heading.tone === 'failed' ? ' agent-turn-failed' : ''}`}>
-      <WorkHeadingLabel heading={heading}/>
-    </div>);
-  }
-  if (showThinking) {
-    const userRow = lastSteer >= 0 ? lastSteer : group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
-    rows.splice(userRow + 1, 0, <div key="work-status" className="agent-starting">
-      <div className="agent-work-head shine">工作中 {formatDuration(group.activeSeconds)}</div>
-      <div className="agent-starting-phase" role="status">
-        <Brain size={14} aria-hidden/>思考中
-      </div>
-    </div>);
-  }
   return <div className="agent-turn" data-turn-id={group.turnId ?? undefined} data-status={group.status ?? undefined}>
+    {firstUser < 0 && summary}
+    {firstUser < 0 && thinking}
     {rows}
     {group.failed && !group.rows.some(row => row.kind === 'item' && row.item.type === 'error') && <div className="agent-error agent-error-details"><details>
       <summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary><pre>{group.failureCode ?? '未提供错误详情'}</pre>
