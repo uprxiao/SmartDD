@@ -23,7 +23,7 @@ function Popup({ position, children, onClose, className = '' }) {
     }}>{children}</div></>, document.body);
 }
 
-export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onPinTask, onDeleteTask, onSettings, onInfo }) {
+export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onPinTask, onDeleteTask, onInfo }) {
   const treeId = useId();
   const [menu, setMenu] = useState(null);
   const [showArchived, setShowArchived] = useState(false), [showArchivedProjects, setShowArchivedProjects] = useState(false);
@@ -79,7 +79,6 @@ export function ReferenceSidebar({ agentMode = false, taskStatus = null, project
       {!agentMode && tasks.some(t => !projects.some(p => p.id === t.project) && !t.archived) && <div className="archived-tasks"><p className="sidebar-empty">未关联项目</p>{tasks.filter(t => !projects.some(p => p.id === t.project) && !t.archived).map(taskRow)}</div>}
       {!agentMode && tasks.some(t => t.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchived(!showArchived)}><Archive size={16} />已归档<ChevronDown size={13} /></button>{showArchived && tasks.filter(t => t.archived).map(taskRow)}</div>}
     </div>
-    <button className="reference-sidebar-settings" onClick={onSettings}><Settings size={16} />设置</button>
     {menu?.type === 'project' && <Popup className="project-detail-popup" position={menu} onClose={close}>
       <button role="menuitem" className="popup-project-title" onClick={() => { onEditProject(menu.item); close(); }}><Folder size={16} /><span>{menu.item.name}</span></button>
       <div className="popup-meta"><MessageCircle size={15} /><span>{tasks.filter(t => t.project === menu.item.id && !t.archived).length} 个任务</span></div>

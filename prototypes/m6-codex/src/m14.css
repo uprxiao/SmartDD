@@ -299,7 +299,7 @@ button.m14-log:hover { background: var(--hover); }
 .m14-pill-caption { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .m14-pill-separator { color: var(--muted); }
 /* 模型选择器（T3 ModelPickerContent） */
-.m14-picker { position: absolute; bottom: calc(100% + 10px); z-index: 60; width: 560px; max-width: calc(100vw - 40px); border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 32px #0004; overflow: hidden; text-align: left; }
+.m14-picker { position: absolute; bottom: calc(100% + 10px); z-index: 60; width: 480px; max-width: calc(100vw - 40px); border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 32px #0004; overflow: hidden; text-align: left; }
 :root[data-theme="dark"] .m14-picker { background: #252525; }
 .m14-picker.right { right: -40px; }
 .m14-picker.left { left: 0; }
@@ -318,18 +318,21 @@ button.m14-log:hover { background: var(--hover); }
 .m14-picker-head b { font-size: 13px; font-weight: 600; }
 .m14-picker-head small { font-size: 11px; color: var(--muted); }
 .m14-picker-search { display: flex; align-items: center; gap: 6px; height: 32px; margin: 0 2px 4px; padding: 0 6px; border-bottom: 1px solid var(--border-strong); color: var(--muted); }
-.m14-picker-search input { flex: 1; border: 0; background: transparent; outline: none; font-size: 13px; color: var(--text); }
+.m14-picker-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 13px; color: var(--text); }
 .m14-model-row { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 8px; border-radius: 7px; font-size: 13px; color: var(--text); }
 .m14-model-row:hover { background: var(--hover); }
 .m14-model-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m14-model-row small { font-size: 11px; color: var(--muted); }
+.m14-model-row > .m14-kbd, .m14-model-row > svg { flex-shrink: 0; }
 .m14-kbd { margin-left: auto; font: 11px ui-monospace, Menlo, monospace; color: var(--muted); padding: 1px 5px; border-radius: 4px; background: var(--hover); }
 .m14-model-row > svg:last-child { color: var(--text); }
 .m14-model-more { margin: 2px 0; min-height: 30px; padding: 0 8px; border-radius: 7px; text-align: left; font-size: 13px; color: var(--secondary); background: var(--hover); }
 .m14-picker-empty { padding: 12px 8px; font-size: 12px; color: var(--muted); }
-.m14-picker-traits { width: 180px; flex-shrink: 0; display: flex; flex-direction: column; padding: 6px; }
-.m14-traits-head { display: flex; align-items: center; justify-content: space-between; height: 32px; padding: 0 8px; border-bottom: 1px solid var(--m14-line); margin-bottom: 4px; font-size: 12px; font-weight: 500; color: var(--muted); }
-.m14-traits-head small { font-weight: 400; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m14-picker-traits { width: 128px; flex-shrink: 0; display: flex; flex-direction: column; padding: 6px; }
+@media (max-width: 640px) { .m14-picker-traits { width: 112px; } }
+.m14-traits-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; height: 32px; padding: 0 8px; border-bottom: 1px solid var(--m14-line); margin-bottom: 4px; font-size: 12px; font-weight: 500; color: var(--muted); }
+.m14-traits-head span { flex-shrink: 0; white-space: nowrap; }
+.m14-traits-head small { min-width: 0; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m14-picker-traits > button { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 8px; border-radius: 7px; font-size: 13px; color: var(--text); text-align: left; }
 .m14-picker-traits > button:hover { background: var(--hover); }
 .m14-picker-traits > button small { font-size: 11px; color: var(--muted); }

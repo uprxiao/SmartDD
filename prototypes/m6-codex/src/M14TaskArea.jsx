@@ -288,7 +288,7 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
         {!a.provider ? <label className="m14-ext-toggle" title="关闭后，从下一个新会话起不加载你在 Claude／Codex 里自己装的 MCP、hooks、插件和 Skill；WillYou 插件与项目 Skill 不受影响"><PlugZap size={13} /><span>沿用我的扩展<small>MCP · hooks · 插件 · Skill</small></span><input type="checkbox" role="switch" checked={ext} onChange={e => { setExt(e.target.checked); onToast(e.target.checked ? '已沿用你的扩展（下一个新会话起生效）' : '本任务不加载你的扩展（下一个新会话起生效）'); }} /><i className="m14-switch-ui" /></label>
           : <div className="m14-ext-toggle off"><Lock size={13} /><span>托管配置已隔离<small>不加载你的个人扩展</small></span></div>}
         {models.map((m, i) => { const on = preview?.model === m.id; return <button type="button" key={m.id} disabled={a.status?.kind === 'unavailable'} className={'m14-model-row' + (on ? ' on' : '')} onClick={() => pick(m.id, modelEffort(m.id))}>
-          {a.tool ? <AgentIcon tool={a.tool} size={16} /> : <SquareTerminal size={14} />}<span className="m14-model-name">{m.name}</span>{m.note && <small>{m.note}</small>}
+          {a.tool ? <AgentIcon tool={a.tool} size={16} /> : <SquareTerminal size={14} />}<span className="m14-model-name" title={m.name}>{m.name}</span>{m.note && <small>{m.note}</small>}
           <span className="m14-kbd">⌘{i + 1}</span>{on && <Check size={14} />}</button>; })}
         {!more && hidden > 0 && !q && <button type="button" className="m14-model-more" onClick={() => setMore(true)}>显示更多（{hidden}）</button>}
         {!models.length && <p className="m14-picker-empty">没有匹配的模型</p>}

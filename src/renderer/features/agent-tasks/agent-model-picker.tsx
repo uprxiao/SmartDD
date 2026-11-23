@@ -58,8 +58,8 @@ export function AgentModelPicker(p: Props) {
     if (!open) return;
     const place = () => {
       const r = root.current?.getBoundingClientRect();
-      const width = Math.min(560, window.innerWidth - 40);
-      if (r) setPosition({ left: Math.max(20, Math.min(r.right - width, window.innerWidth - width - 20)), bottom: Math.max(12, window.innerHeight - r.top + 10) });
+      const width = popup.current?.getBoundingClientRect().width;
+      if (r && width) setPosition({ left: Math.max(20, Math.min(r.right - width, window.innerWidth - width - 20)), bottom: Math.max(12, window.innerHeight - r.top + 10) });
     };
     place(); window.addEventListener('resize', place); window.addEventListener('scroll', place, true);
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
@@ -159,7 +159,7 @@ export function AgentModelPicker(p: Props) {
           {p.defaultNotice && target.profileId === p.profileId && <div className="agent-picker-note" role="status">{p.defaultNotice}</div>}
           {(status === 'loading' || status === 'refreshing') && <div className="agent-picker-note" role="status">{native.length ? '正在刷新模型目录…' : '正在读取模型目录…'}</div>}
           {status === 'unavailable' && <div className="agent-picker-note" role="status">{native.length ? '暂时无法刷新，显示上次读取的模型。' : '暂时无法读取模型目录。'}<button type="button" className="agent-catalog-retry" onClick={retry}>重新读取</button></div>}
-          {models.map((m, i) => <button type="button" aria-label={m.name} aria-pressed={!!applied && appliedModel === m.id} className="agent-model-row" key={m.id} disabled={!target.available || saving} onClick={() => pickModel(m.id)}><AgentIcon tool={target.kind} size={16} /><span>{m.name}</span>{i < 9 && <kbd aria-hidden>⌘{i + 1}</kbd>}{applied && appliedModel === m.id && <Check size={14} />}</button>)}
+          {models.map((m, i) => <button type="button" aria-label={m.name} aria-pressed={!!applied && appliedModel === m.id} className="agent-model-row" key={m.id} disabled={!target.available || saving} onClick={() => pickModel(m.id)}><AgentIcon tool={target.kind} size={16} /><span title={m.name}>{m.name}</span>{i < 9 && <kbd aria-hidden>⌘{i + 1}</kbd>}{applied && appliedModel === m.id && <Check size={14} />}</button>)}
           {!models.length && <p className="agent-picker-note">没有匹配的模型</p>}
         </div>
         <div className="agent-picker-traits"><div className="agent-traits-head">推理强度</div>{!!modelInfo?.efforts.length ? <>
