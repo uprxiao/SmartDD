@@ -17,13 +17,34 @@ function seedNewTask(d: Database.Database, task = 't1', binding = 'b1') {
 const insertRun = (d: Database.Database, run: string, task: string, binding: string | null, driver: string | null, generation: number | null) =>
   d.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,binding_id,driver_id,generation) VALUES(?,?,'p','claude','running',?,?,?,?)").run(run, task, at, binding, driver, generation);
 
+it('opens the installed reply-preview schema and preserves existing feedback', () => {
+  const d = db();
+  // The installed 0.1.6 preview recorded this SQL and timestamp before the trial merge.
+  runMigrations(d, [...bundledMigrations().slice(0, 40), {
+    idx: 40,
+    tag: '0040_agent_reply_like',
+    when: 1795392000000,
+    sql: 'ALTER TABLE agent_items ADD COLUMN liked INTEGER NOT NULL DEFAULT 0 CHECK(liked IN (0,1));\n',
+    hash: '3ca918fb9f6c92ebf7d59365a5c72674e18b4ba1c3854b02cd314296756c70fe',
+  }]);
+  seedNewTask(d);
+  d.prepare(`INSERT INTO agent_items(item_id, task_id, type, ordinal, payload_ref, created_at, updated_at, liked)
+             VALUES('reply-1', 't1', 'assistant_message', 1, 'original payload', ?, ?, 1)`).run(at, at);
+  const ledger = d.prepare('SELECT * FROM __drizzle_migrations ORDER BY id');
+  const recorded = ledger.all();
+  expect(runBundledMigrations(d)).toEqual([]);
+  expect(ledger.all()).toEqual(recorded);
+  expect(d.prepare('SELECT payload_ref, liked FROM agent_items').get()).toEqual({ payload_ref: 'original payload', liked: 1 });
+  expect(d.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+});
+
 it('keeps legacy run rows byte-for-byte and leaves foreign keys consistent', () => {
   const d = db(), all = bundledMigrations();
   runMigrations(d, all.slice(0, 37));
   d.exec("INSERT INTO capability_session_snapshots VALUES('old-task',2,'snapshot bytes','old-hash',?,'created','active')".replace('?', `'${at}'`));
   d.exec(`INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,pty_id,bindings_json) VALUES('old-run','old-task','p','codex','stopped','${at}','old-hash','pty-1','[{"x":1}]')`);
   const before = d.prepare('SELECT * FROM capability_runs').all() as object[];
-  expect(runBundledMigrations(d)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup','0039_agent_task_pin']);
+  expect(runBundledMigrations(d)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup','0039_agent_task_pin','0040_agent_reply_like']);
   expect(d.prepare('SELECT * FROM capability_runs').all()).toEqual(before.map(r => ({ ...r, binding_id: null, capability_session_id: null, generation: null, driver_id: null, launch_plan_hash: null })));
   expect(d.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
   // 子表仍引用 capability_runs（重建后名称不变）
@@ -36,7 +57,7 @@ it('replays without rebuilding twice when the watermark is lost after commit', (
   seedNewTask(d);
   insertRun(d, 'r1', 't1', 'b1', 'claude-sdk', 1);
   d.prepare('DELETE FROM __drizzle_migrations WHERE created_at>=?').run(bundledMigrations()[38].when);
-  expect(runBundledMigrations(d)).toEqual(['0038_agent_resource_cleanup','0039_agent_task_pin']);
+  expect(runBundledMigrations(d)).toEqual(['0038_agent_resource_cleanup','0039_agent_task_pin','0040_agent_reply_like']);
   expect(d.prepare('SELECT run_id,binding_id,generation FROM capability_runs').all()).toEqual([{ run_id: 'r1', binding_id: 'b1', generation: 1 }]);
 });
 
