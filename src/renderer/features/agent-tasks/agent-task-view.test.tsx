@@ -5,7 +5,7 @@ import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -32,6 +32,7 @@ beforeEach(() => {
   mocks.discardAttachment.mockResolvedValue(undefined);
   mocks.saveDraft.mockReset().mockResolvedValue({ ok: true, revision: 1 });
   mocks.holdDraftAttachments.mockReset().mockResolvedValue(undefined);
+  mocks.stop.mockReset().mockResolvedValue({ stopped: true });
   mocks.on.mockImplementation(() => () => {});
   mocks.prepareAttachment.mockResolvedValue({ id: 'prepared', kind: 'path', name: 'note.txt', mime: 'text/plain', size: 1, image: false, relativePath: 'note.txt' });
   (window as any).electronAPI = { pathForFile: () => '/w/note.txt' };
@@ -39,6 +40,76 @@ beforeEach(() => {
 });
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
+
+it('switches the single composer button between stop and queue, with a separate stop action in the task header', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', run: { runId: 'active', busy: true, steer: true } }));
+  mocks.submit.mockResolvedValue({ status: 'queued' });
+  const { container } = render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('继续输入，本轮结束后发送');
+  const bar = within(container.querySelector('.agent-composer-bar')! as HTMLElement);
+  const primary = bar.getByRole('button', { name: '停止本轮' });
+  expect(bar.queryByRole('button', { name: '发送' })).toBeNull();
+  fireEvent.change(input, { target: { value: '下一轮的草稿' } });
+  expect(bar.getByRole('button', { name: '加入队列' })).toBe(primary);
+  expect(within(screen.getByLabelText('当前任务')).getByRole('button', { name: '停止本轮' })).toBeTruthy();
+  fireEvent.click(primary);
+  await waitFor(() => expect(mocks.submit).toHaveBeenCalledWith('task', expect.objectContaining({ text: '下一轮的草稿', mode: 'queue' })));
+  expect(mocks.stop).not.toHaveBeenCalled();
+});
+
+it('handles Escape only once for the focused composer and leaves other controls and composition alone', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', run: { runId: 'active', busy: true } }));
+  let finishStop!: () => void;
+  mocks.stop.mockImplementationOnce(() => new Promise<void>(resolve => { finishStop = resolve; }));
+  const { container } = render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('继续输入，本轮结束后发送');
+  const primary = within(container.querySelector('.agent-composer-bar')! as HTMLElement).getByRole('button', { name: '停止本轮' });
+  expect(primary.getAttribute('aria-keyshortcuts')).toBe('Escape');
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+  fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
+  fireEvent.keyDown(input, { key: 'Escape', repeat: true });
+  expect(mocks.stop).not.toHaveBeenCalled();
+  fireEvent.keyDown(input, { key: 'Escape' });
+  fireEvent.keyDown(input, { key: 'Escape' });
+  expect(mocks.stop).toHaveBeenCalledTimes(1);
+  expect(mocks.stop).toHaveBeenCalledWith('task', false, 'active');
+  expect((screen.getByRole('button', { name: '正在停止…' }) as HTMLButtonElement).disabled).toBe(true);
+  await act(async () => finishStop());
+});
+
+it('resumes the first held queue entry on click and switches to sending when a draft is entered', async () => {
+  const first = { turnId: 'first', version: 'v1', text: '之前排队的消息', sourceKind: 'user', editable: true, attachmentCount: 0 };
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'stopped', queuedTotal: 1, queued: [first] }));
+  mocks.sendQueued.mockResolvedValue({ status: 'queued' });
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入');
+  const resume = screen.getByRole('button', { name: '继续排队消息' });
+  fireEvent.click(resume, { detail: 2 });
+  expect(mocks.sendQueued).not.toHaveBeenCalled();
+  fireEvent.click(resume);
+  await waitFor(() => expect(mocks.sendQueued).toHaveBeenCalledWith('task', 'first', 'v1', 1));
+  expect(mocks.submit).not.toHaveBeenCalled();
+  fireEvent.change(input, { target: { value: '新的草稿' } });
+  expect(screen.getByRole('button', { name: '发送' })).toBe(resume);
+});
+
+it('offers continuation for a supported paused goal through the existing goal operation', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'stopped', run: { goal: true, busy: false },
+    goal: { status: 'paused', objective: '检查依赖', pausedReason: 'user' } }));
+  mocks.goal.mockResolvedValue({ ok: true });
+  render(<AgentTaskView taskId="task" />);
+  fireEvent.click(await screen.findByRole('button', { name: '继续目标' }));
+  await waitFor(() => expect(mocks.goal).toHaveBeenCalledWith('task', { kind: 'resume' }));
+  expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('keeps a stopped conversation without a resumable action ready for the next draft', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'stopped' }));
+  render(<AgentTaskView taskId="task" />);
+  const send = await screen.findByRole('button', { name: '发送' }) as HTMLButtonElement;
+  expect(send.disabled).toBe(true);
+  expect(screen.queryByRole('button', { name: /^继续(排队消息|目标)$/ })).toBeNull();
+});
 
 it('shows one ended work entry above the final reply and opens the full process below it', async () => {
   const turnId = 'multi-stage';
@@ -826,9 +897,8 @@ it('M14 A29: the native lifecycle keeps the owning-run stop action after the lau
     items:[{...item('subagent',{name:'Agent',status:'completed',output:'Async agent launched'}),turnId}],
     turns:[{turn_id:turnId,status:'started',started_at:'2026-11-18T00:00:00Z'}],
   }));
-  const api = mocks as typeof mocks & {nativeHistory?: ReturnType<typeof vi.fn>; stop?: ReturnType<typeof vi.fn>};
+  const api = mocks as typeof mocks & {nativeHistory?: ReturnType<typeof vi.fn>};
   api.nativeHistory = vi.fn().mockResolvedValue({items:[],states:['running'],total:0,stopRunId:'original-run'});
-  api.stop = vi.fn().mockResolvedValue({stopped:true});
   try {
     render(<AgentTaskView taskId="task" />);
     fireEvent.click(await screen.findByText(/子 Agent/));
@@ -841,7 +911,6 @@ it('M14 A29: the native lifecycle keeps the owning-run stop action after the lau
     expect(api.stop).toHaveBeenCalledWith('task',false,'original-run');
   } finally {
     delete api.nativeHistory;
-    delete api.stop;
   }
 });
 

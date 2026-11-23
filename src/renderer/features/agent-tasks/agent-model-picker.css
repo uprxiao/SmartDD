@@ -7,6 +7,21 @@
 .agent-model-caption { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .agent-model-separator { color: var(--foreground-passive); }
 .agent-model-pill:hover,.agent-model-pill[aria-expanded=true] { background: var(--hover); }
+.agent-task-main .agent-composer-bar { flex-wrap: nowrap; }
+.agent-task-main .agent-composer-bar .agent-model-picker { flex: 0 1 auto; margin-inline-start: auto; }
+.agent-composer-bar .agent-model-pill .m13-agent-icon { flex: none; }
+.agent-task-main .agent-composer-bar > :is(.voice-button, .agent-stop, .agent-send) { flex: none; }
+
+@container agent-task-main (max-width: 480px) {
+  .agent-composer-bar .agent-model-detail, .agent-composer-bar .agent-model-name .agent-model-separator { display: none; }
+}
+
+@container agent-task-main (max-width: 330px) {
+  .agent-task-main .agent-composer-bar .agent-model-picker { flex: none; }
+  .agent-composer-bar .agent-model-pill { width: 26px; padding: 0; justify-content: center; flex: none; }
+  .agent-composer-bar .agent-model-caption,
+  .agent-composer-bar .agent-model-pill > svg:last-child { display: none; }
+}
 .agent-picker { position: fixed; z-index: 60; width: 560px; max-width: calc(100vw - 40px); border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); box-shadow: 0 10px 32px #0004; overflow: hidden; text-align: left; }
 .agent-picker-main { display: flex; height: 340px; }
 .agent-picker-rail { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; padding: 4px; background: color-mix(in srgb, var(--hover) 45%, transparent); overflow-y: auto; }

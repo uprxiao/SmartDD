@@ -11,9 +11,10 @@ import { revealBrowserTab } from '@renderer/features/browser/store';
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, Send, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
+import { ComposerPrimaryAction, ComposerStopIcon, QueuedSendIcon } from './composer-primary-action';
 import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
@@ -838,6 +839,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   }, [chips, isArchived, holdDraftAttachments]);
   const removedWhilePreparing = useRef(new Set<string>());
   const [sending, setSending] = useState(false);
+  const [stopRequested, setStopRequested] = useState(false);
+  const stopInFlight = useRef(false);
+  const resumeBlockedUntil = useRef(0);
   const [action, setAction] = useState<string | null>(null);
   const actionRef = useRef(false);
   const actionInputs = useRef(new Map<string, string>());
@@ -1374,7 +1378,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       await archiveAgentTask(taskId, snap.projectId);
     } catch (e) { toast.error(rpcErrorMessage(e)); }
   };
-  const stop = async () => { try { await rpc.agentTasks.stop(taskId); } catch (e) { toast.error(rpcErrorMessage(e)); } };
+  const stop = async () => {
+    if (stopInFlight.current || stopping) return;
+    stopInFlight.current = true;
+    setStopRequested(true);
+    try {
+      await rpc.agentTasks.stop(taskId, false, snap.run?.runId);
+      // The button can turn into Resume under the pointer when the stop lands.
+      resumeBlockedUntil.current = Date.now() + 500;
+      await reload();
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+    finally { stopInFlight.current = false; setStopRequested(false); }
+  };
   const actOnInput = async (name: string, callback: () => Promise<unknown>) => {
     if (actionRef.current) return;
     actionRef.current = true; setAction(name);
@@ -1430,10 +1445,28 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const panelTitle = panelOpen ? '收起右侧面板' : '打开右侧面板';
   const queueSendLabel = snap.run?.busy ? '插入当前轮' : '立即发送';
   const queueSteerUnavailable = !!snap.run?.busy && !snap.run.steer;
+  const composerStopping = !!stopping || stopRequested;
+  const hasDraftContent = !!text.trim() || chips.length > 0;
+  const canContinue = !working && !composerStopping && !snap.switching && !snap.selection.pendingSwitch
+    && !snap.preparingTurnId && !requests.length && !snap.requestsTotal && !snap.run?.busy;
+  const nextQueued = snap.queued[0];
+  const resumeQueue = canContinue && snap.status === 'stopped' && nextQueued?.editable ? nextQueued : null;
+  const resumeGoal = canContinue && snap.selection.driverId === 'codex-app-server' && snap.run?.goal !== false
+    && snap.goal?.status === 'paused' && snap.goal.pausedReason !== 'waiting_children';
+  const composerAction = composerStopping || (working && !hasDraftContent) ? 'stop'
+    : hasDraftContent ? working && !blocking ? 'queue' : 'send'
+    : resumeQueue || resumeGoal ? 'resume' : 'send';
+  const composerLabel = composerAction === 'stop' ? composerStopping ? '正在停止…' : '停止本轮'
+    : composerAction === 'resume' ? resumeQueue ? '继续排队消息' : '继续目标'
+    : composerAction === 'queue' ? '加入队列' : '发送';
+  const canEscapeStop = working && !composerStopping && !requests.length && !snap.requestsTotal
+    && !confirmFull && !diagnosticsOpen;
   const taskHeader = <header className="agent-task-head" aria-label="当前任务">
     {titlebarTarget && snap.projectId && <TaskProjectBreadcrumb projectId={snap.projectId} />}
     <h1 title={snap.title}>{snap.title}</h1>
-    {(archived || stopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : stopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}
+    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}
+    {!archived && working && composerAction !== 'stop' && <button type="button" className="agent-head-btn agent-header-stop"
+      title="停止本轮" aria-label="停止本轮" onClick={() => void stop()}><ComposerStopIcon /></button>}
     <span className="push" />
     {lineageToggle}
     {archived ? <>
@@ -1508,7 +1541,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
                 onClick={() => void actOnInput('send:' + q.turnId, async () => {
                 const result = await rpc.agentTasks.sendQueued(taskId, q.turnId, q.version, snap.selectionRevision);
                 if (result.status === 'unknown') toast.warning('无法确认消息是否已送达，请查看回答后再决定');
-              })}><Send size={13}/><span>{queueSendLabel}</span></button>
+              })}><QueuedSendIcon steer={!!snap.run?.busy}/><span>{queueSendLabel}</span></button>
               <button type="button" disabled={!!action} title="删除排队消息" onClick={() => void actOnInput('delete:' + q.turnId, () => rpc.agentTasks.cancelQueued(taskId, q.turnId))}><Trash2 size={13}/></button>
             </div>}
           </div>
@@ -1528,7 +1561,15 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       {archived ? <div className="agent-composer agent-archive-composer"><textarea rows={3} disabled aria-label="已归档任务输入" placeholder="恢复后可以继续此会话" /></div> : <>
         {/* 2026-11-20 对齐 T3：请求面板在输入框上方，输入框与模型／档位／执行器入口始终保留（A72）。 */}
         {requests.length > 0 && <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />}
-        <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
+        <form className="agent-composer" onSubmit={e => { e.preventDefault(); if (!composerStopping) void send(); }}
+          onKeyDown={e => {
+            if (e.key !== 'Escape' || !canEscapeStop || e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey
+              || e.nativeEvent.isComposing || e.keyCode === 229
+              || (e.target !== textarea.current && !(e.target instanceof HTMLElement && e.target.classList.contains('agent-composer-primary')))) return;
+            e.preventDefault();
+            e.stopPropagation();
+            void stop();
+          }}>
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
@@ -1541,7 +1582,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
                 if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pick(menuItems[Math.min(menuIndex, menuItems.length - 1)]); return; }
                 if (e.key === 'Escape') { e.preventDefault(); setTrigger(null); return; }
               }
-              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); } }} />
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!composerStopping) void send(); } }} />
           <div className="agent-composer-bar">
             <select aria-label="权限档位" value={snap.selection.tier} disabled={!!snap.parentTaskId} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined} onChange={e => { if (e.target.value === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true); else void setSelection({ tier: e.target.value }); }}>
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
@@ -1563,8 +1604,16 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
               }}
               onExtensions={async (id, enabled) => { try { const r = await rpc.agentTasks.setExtensions(taskId, id, enabled, snap.selectionRevision); if (!r.ok) toast.warning('选择已在别处变化，请重试'); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } }} />
             <VoiceButton compact disabled={sending} onClick={()=>void voiceStore.trigger(textareaVoiceTarget(textarea.current),'home')}/>
-            {working && <button type="button" className="agent-stop agent-stop-run" onClick={() => void stop()} title="停止本轮" disabled={!!stopping}><CircleStop size={15} /></button>}
-            <button type="submit" className="agent-send" disabled={sending || (!text.trim() && !chips.length)} title="发送"><Send size={15} /></button>
+            <ComposerPrimaryAction action={composerAction} label={composerLabel}
+              disabled={composerStopping || (composerAction === 'resume' ? !!action || sending : composerAction !== 'stop' && (sending || !hasDraftContent))}
+              escapeEnabled={composerAction === 'stop' && canEscapeStop}
+              onClick={e => {
+                if (composerAction === 'stop') { void stop(); return; }
+                if (composerAction !== 'resume' || e.detail > 1 || resumeBlockedUntil.current > Date.now()) return;
+                void actOnInput('composer-resume', () => resumeQueue
+                  ? rpc.agentTasks.sendQueued(taskId, resumeQueue.turnId, resumeQueue.version, snap.selectionRevision)
+                  : rpc.agentTasks.goal(taskId, { kind: 'resume' }));
+              }} />
           </div>
         </form></>}
     </div>

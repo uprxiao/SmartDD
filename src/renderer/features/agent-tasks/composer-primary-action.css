@@ -1,0 +1,19 @@
+.agent-task-main .agent-composer-bar > .agent-composer-primary {
+  position: relative;
+  width: 28px;
+  padding: 0;
+}
+
+.agent-task-main .agent-composer-primary[data-action="stop"] { background: #bb3038; color: white; }
+.agent-task-main .agent-composer-primary[data-action="stop"]:not(:disabled):hover { background: #a5212a; }
+.agent-task-main .agent-composer-primary:not([data-action="stop"]):not(:disabled):hover { opacity: .82; }
+.agent-task-main .agent-composer-primary:focus-visible,
+.agent-task-head .agent-header-stop:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.agent-composer-escape { position: absolute; display: none; font-size: 10px; font-weight: 600; line-height: 1; }
+.agent-composer-primary:has(.agent-composer-escape):not(:disabled):is(:hover, :focus-visible) > svg { visibility: hidden; }
+.agent-composer-primary:not(:disabled):is(:hover, :focus-visible) > .agent-composer-escape { display: block; }
+.agent-task-head .agent-header-stop { flex: none; }
+
+@container agent-task-main (max-width: 400px) {
+  .agent-task-main .agent-composer-bar > .agent-composer-primary { width: 26px; }
+}
