@@ -8,10 +8,10 @@ export function Mark({ id, name, size = 36, large = false }) {
   return <span className={'m10-appmark m13-mark tile' + (large ? ' large' : '')} style={{ width: px, height: px, flexBasis: px }} aria-hidden="true"><PluginIcon id={id} name={name} size={px} /></span>;
 }
 export const Btn = ({ icon: Icon, label, onClick, ...rest }) => <button type="button" className="m10-icon" aria-label={label} title={label} onClick={onClick} {...rest}><Icon size={16} /></button>;
-export function Dialog({ title, sub, onClose, children, footer, wide = false }) {
+export function Dialog({ title, sub, onClose, children, footer, wide = false, className }) {
   const ref = useRef(null);
   useEffect(() => { const prev = document.activeElement; ref.current?.querySelector('button, input, select, textarea')?.focus(); const key = e => { if (e.key === 'Escape') onClose(); }; window.addEventListener('keydown', key); return () => { window.removeEventListener('keydown', key); prev?.focus?.(); }; }, []);
-  return <div className="m13-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}><div ref={ref} className={'m13-dialog' + (wide ? ' wide' : '')} role="dialog" aria-modal="true" aria-label={title}>
+  return <div className="m13-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}><div ref={ref} className={['m13-dialog', wide && 'wide', className].filter(Boolean).join(' ')} role="dialog" aria-modal="true" aria-label={title}>
     <div className="m13-dialog-head"><div><h2>{title}</h2>{sub && <p>{sub}</p>}</div><Btn icon={X} label="关闭" onClick={onClose} /></div>
     <div className="m13-dialog-body">{children}</div>{footer && <div className="m13-dialog-foot">{footer}</div>}</div></div>;
 }

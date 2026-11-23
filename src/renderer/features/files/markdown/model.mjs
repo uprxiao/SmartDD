@@ -1,5 +1,5 @@
 import { parseMarkdown, renderMarkdownBlock, markdownMathRanges, markdownInlinePlan, highlightedCode, codeBody, parseFrontmatter } from './file-markdown-model.mjs';
-export const blockTypes = ['blank', 'definition', 'frontmatter', 'heading', 'paragraph', 'quote', 'list', 'table', 'rule', 'math', 'mermaid', 'code', 'image'];
+export const blockTypes = ['blank', 'definition', 'frontmatter', 'heading', 'paragraph', 'quote', 'list', 'table', 'rule', 'math', 'mermaid', 'code', 'image', 'html'];
 export function analyze(source) {
   const parsed = parseMarkdown(source), index = new Uint32Array(parsed.blocks.length * 4);
   let cursor = 0;

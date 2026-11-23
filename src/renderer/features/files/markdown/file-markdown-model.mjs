@@ -2,6 +2,7 @@
 // Markdown interaction model. markdown-it supplies the CommonMark tokens and line maps; source text stays authoritative
 // and each top-level block keeps exact UTF-16 offsets, so an edit replaces only that block's bytes.
 import MarkdownIt from 'markdown-it';
+import { renderReadmeHtml } from './readme-html.mjs';
 import { installDollarMath } from '../../../../shared/markdown-dollar-math.mjs';
 import yaml from 'js-yaml';
 import { highlightCode } from './file-highlight.mjs';
@@ -14,53 +15,61 @@ export const safeImageSrc = () => '';
 
 // markdown-it percent-encodes non-ASCII targets; the model keeps the author's text (e.g. 需求.md) for path resolution.
 const decodeRef = value => { try { return decodeURI(value); } catch { return value; } };
-const md = new MarkdownIt({ html: false, linkify: false, typographer: false });
-installDollarMath(md);
-installImageReferenceWindow(md);
-installInlineSourceTracking(md);
-md.core.ruler.after('inline', 'source_positions', state => {
-  if (typeof state.env.originalSource === 'string') attachInlineSource(state.tokens, state.env.originalSource, state.env.lineBase || 0);
-});
-const wrapSource = (html, source) => source && html ? `<span${sourceAttrs(source)}>${html}</span>` : html;
-for (const type of ['text', 'code_inline', ...Object.keys(md.renderer.rules).filter(type => type.startsWith('math_'))]) {
-  const render = md.renderer.rules[type] || ((tokens, i) => md.utils.escapeHtml(tokens[i].content));
-  md.renderer.rules[type] = (tokens, i, options, env, renderer) => wrapSource(render(tokens, i, options, env, renderer), tokens[i].meta?.source);
-}
-md.options.highlight = (source, language) => highlightCode(source, language).html || '';
-// Task markers: only the list item's own first text; the source line is carried so a toggle edits that exact line.
-md.core.ruler.after('text_join', 'task_lists', state => {
-  const t = state.tokens;
-  for (let i = 2; i < t.length; i++) {
-    if (t[i].type !== 'inline' || t[i - 1].type !== 'paragraph_open' || t[i - 2].type !== 'list_item_open') continue;
-    const m = t[i].content.match(/^\[([ xX])\][ \t]+/), first = t[i].children?.[0];
-    if (!m || !first || first.type !== 'text') continue;
-    const removed = first.content.match(/^\[[ xX]\][ \t]+/)?.[0].length || 0;
-    first.content = first.content.slice(removed);
-    if (first.meta?.source?.mode === 'linear') first.meta.source.from += removed;
-    t[i].content = t[i].content.slice(m[0].length);
-    const box = new state.Token('task_checkbox', 'input', 0);
-    box.meta = { checked: m[1] !== ' ', line: (t[i].map?.[0] ?? 0) + (state.env.lineBase || 0) };
-    t[i].children.unshift(box);
-    t[i - 2].attrJoin('class', 'fw-md-task-item');
+function createMarkdown(html) {
+  const md = new MarkdownIt({ html, linkify: false, typographer: false });
+  installDollarMath(md);
+  installImageReferenceWindow(md);
+  installInlineSourceTracking(md);
+  md.core.ruler.after('inline', 'source_positions', state => {
+    if (typeof state.env.originalSource === 'string') attachInlineSource(state.tokens, state.env.originalSource, state.env.lineBase || 0);
+  });
+  const wrapSource = (html, source) => source && html ? `<span${sourceAttrs(source)}>${html}</span>` : html;
+  for (const type of ['text', 'code_inline', ...Object.keys(md.renderer.rules).filter(type => type.startsWith('math_'))]) {
+    const render = md.renderer.rules[type] || ((tokens, i) => md.utils.escapeHtml(tokens[i].content));
+    md.renderer.rules[type] = (tokens, i, options, env, renderer) => wrapSource(render(tokens, i, options, env, renderer), tokens[i].meta?.source);
   }
-});
-md.renderer.rules.task_checkbox = (tokens, i, options, env) => `<input type="checkbox" class="fw-md-task-box" data-md-task-line="${tokens[i].meta.line}"${tokens[i].meta.checked ? ' checked' : ''}${env?.readOnly ? ' disabled' : ''}>`;
-const defaultImage = md.renderer.rules.image;
-md.renderer.rules.image = (tokens, idx, options, env, self) => {
-  const token = tokens[idx];
-  if (token.attrGet('data-md-src') === null) { const raw = decodeRef(token.attrGet('src')); token.attrSet('data-md-src', raw); token.attrSet('src', safeImageSrc(raw)); }
-  return defaultImage(tokens, idx, options, env, self);
-};
-md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
-  const token = tokens[idx];
-  if (token.attrGet('data-md-href') === null) { token.attrSet('data-md-href', decodeRef(token.attrGet('href'))); token.attrSet('href', '#'); }
-  return self.renderToken(tokens, idx, options);
-};
+  md.options.highlight = (source, language) => highlightCode(source, language).html || '';
+  // Task markers: only the list item's own first text; the source line is carried so a toggle edits that exact line.
+  md.core.ruler.after('text_join', 'task_lists', state => {
+    const t = state.tokens;
+    for (let i = 2; i < t.length; i++) {
+      if (t[i].type !== 'inline' || t[i - 1].type !== 'paragraph_open' || t[i - 2].type !== 'list_item_open') continue;
+      const m = t[i].content.match(/^\[([ xX])\][ \t]+/), first = t[i].children?.[0];
+      if (!m || !first || first.type !== 'text') continue;
+      const removed = first.content.match(/^\[[ xX]\][ \t]+/)?.[0].length || 0;
+      first.content = first.content.slice(removed);
+      if (first.meta?.source?.mode === 'linear') first.meta.source.from += removed;
+      t[i].content = t[i].content.slice(m[0].length);
+      const box = new state.Token('task_checkbox', 'input', 0);
+      box.meta = { checked: m[1] !== ' ', line: (t[i].map?.[0] ?? 0) + (state.env.lineBase || 0) };
+      t[i].children.unshift(box);
+      t[i - 2].attrJoin('class', 'fw-md-task-item');
+    }
+  });
+  md.renderer.rules.task_checkbox = (tokens, i, options, env) => `<input type="checkbox" class="fw-md-task-box" data-md-task-line="${tokens[i].meta.line}"${tokens[i].meta.checked ? ' checked' : ''}${env?.readOnly ? ' disabled' : ''}>`;
+  const defaultImage = md.renderer.rules.image;
+  md.renderer.rules.image = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    if (token.attrGet('data-md-src') === null) { const raw = decodeRef(token.attrGet('src')); token.attrSet('data-md-src', raw); token.attrSet('src', safeImageSrc(raw)); }
+    return defaultImage(tokens, idx, options, env, self);
+  };
+  md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    if (token.attrGet('data-md-href') === null) { token.attrSet('data-md-href', decodeRef(token.attrGet('href'))); token.attrSet('href', '#'); }
+    return self.renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.html_block = (tokens, i) => renderReadmeHtml(tokens[i].content);
+  md.renderer.rules.html_inline = (tokens, i) => /^<br\s*\/?>$/i.test(tokens[i].content) ? '<br>' : md.utils.escapeHtml(tokens[i].content);
+  return md;
+}
+const md = createMarkdown(true);
+const readonlyMarkdown = createMarkdown(false);
 
 const NEWLINE = /[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$/g;
 const blankLine = line => !line.trim();
 function blockType(tokens) {
   const open = tokens[0];
+  if (open.type === 'html_block') return 'html';
   if (open.type === 'heading_open') return 'heading';
   if (open.type === 'blockquote_open') return 'quote';
   if (open.type === 'bullet_list_open' || open.type === 'ordered_list_open') return 'list';
@@ -109,7 +118,7 @@ export function parseMarkdown(text) {
   return { blocks, env };
 }
 // 只读场景（Notebook 等）：整段 Markdown 渲染为安全 HTML（原始 HTML 已转义，链接 href 改为 #，图片只允许白名单来源）。
-export const renderMarkdownReadOnly = (text, mathRender) => md.render(text, { lineBase: 0, readOnly: true, mathRender });
+export const renderMarkdownReadOnly = (text, mathRender) => readonlyMarkdown.render(text, { lineBase: 0, readOnly: true, mathRender });
 export const markdownBlocks = text => parseMarkdown(text).blocks;
 export const renderMarkdownBlock = (block, env) => {
   if (block.type === 'math') block.tokens[0].meta = { ...block.tokens[0].meta, source: { from: block.from, to: block.to, mode: 'atomic' } };

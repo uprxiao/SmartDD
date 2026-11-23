@@ -26,6 +26,7 @@ class Inst implements DriverInstance {
   histories: string[] = [];
   async injectHistory(text: string) { this.histories.push(text); }
   async startTurn(t: TurnInput) { this.turns.push(t); const id = `nt-${this.turns.length}`; this.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
+  setTurnTier?: (current: TurnInput['tier'], next: TurnInput['tier']) => Promise<boolean>;
   finish(status: 'completed' | 'interrupted' = 'completed') { this.emit({ type: 'turn.completed', nativeTurnId: `nt-${this.turns.length}`, status }); }
   async respond(k: string, r: unknown) { this.responses.push([k, r]); }
   async interrupt() { this.interrupts++; this.finish('interrupted'); }
@@ -781,7 +782,30 @@ describe('复核 1620 回归', () => {
     expect(JSON.parse(body).text).toBe(big);
     await expect(svc.submit(taskId, { clientInputId: id(2), text: 'x'.repeat(256 * 1024 + 1), expectedSelectionRevision: 1 })).rejects.toThrow('超过 256 KB');
   });
-  it('CR12：Claude 档位跨越完全访问时重开并恢复原会话', async () => {
+  it.each([
+    ['cc', 'full', true], ['cd', 'auto', true], ['cd', 'full', false],
+  ] as const)('applies or defers the selected permission for %s to %s', async (profileId, tier, applied) => {
+    const { svc, insts, runs } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId, tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'first', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1 && !svc.isDispatching(taskId));
+    const driver = insts[0];
+    driver.setTurnTier = vi.fn(async () => applied);
+    expect(svc.setSelection(taskId, { tier }, 0).ok).toBe(false);
+    expect(driver.setTurnTier).not.toHaveBeenCalled();
+    expect(svc.setSelection(taskId, { tier }, 1).ok).toBe(true);
+    await until(() => !!vi.mocked(driver.setTurnTier!).mock.calls.length);
+    await until(() => !svc.snapshot(taskId).run?.tierChanging);
+    expect(driver.setTurnTier).toHaveBeenCalledWith('ask', tier);
+    expect(svc.snapshot(taskId).run?.tier).toBe(applied ? tier : 'ask');
+    expect(svc.snapshot(taskId).selection.tier).toBe(tier);
+    driver.finish();
+    await svc.submit(taskId, { clientInputId: id(2), text: 'second', expectedSelectionRevision: 2 });
+    await until(() => insts[0]?.turns.length === 2 && !svc.isDispatching(taskId));
+    expect(insts[0].turns[1].tier).toBe(tier);
+    await runs.closeAll();
+  });
+  it('CR12：Claude 未切换生效时，下一轮重开并恢复原会话', async () => {
     const { svc, insts } = setup();
     const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
     await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });

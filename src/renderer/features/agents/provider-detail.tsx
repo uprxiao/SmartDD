@@ -9,6 +9,7 @@ import { ProviderIcon, ToolIcon } from './icons';
 import { agentLabels, providerFits } from './agent-editor';
 import { contextLabel, protocolLabels, modelCheckDescription, configuredModelCheckKinds, untestedModelChecks } from './provider-catalog';
 import { ProviderModelCandidates, type ModelCatalogFilters } from './provider-model-picker';
+import { ProviderAvailabilityCell, ProviderAvailabilityLegend, ProviderAvailabilityTable, RecommendedModelMark } from './provider-availability';
 
 export function ProviderDetail({provider:p,configs,onClose,onRefresh,onNewAgent,renderAgentEditor}:{
   provider:ProviderView;configs:RunConfigView[];onClose:()=>void;onRefresh:()=>Promise<void>;
@@ -59,6 +60,7 @@ export function ProviderDetail({provider:p,configs,onClose,onRefresh,onNewAgent,
   };
   const possible=configuredModelCheckKinds(p);
   const columns=codeAgentKindSchema.options.filter(kind=>kind!=='antigravity'||p.endpoints.gemini);
+  const showContext=p.models.some(model=>model.contextWindow!=null);
   const manualModels=p.models.length>0&&p.models.every(m=>m.catalogSource==='manual');
   const input=(changes:Partial<ProviderInput>={}):ProviderInput=>({name:p.name,preset:p.preset,endpoints:p.endpoints,authType:p.authType,...changes});
   const perform=async(label:string,fn:()=>Promise<unknown>)=>{if(busy)return;setBusy(label);setError('');try{await fn();await onRefresh();}catch(e){setError(rpcErrorMessage(e));}finally{setBusy(null);}};
@@ -88,7 +90,7 @@ export function ProviderDetail({provider:p,configs,onClose,onRefresh,onNewAgent,
     {refs.length?<><p className="m13-desc">使用它的 {refs.length} 个智能体会一起删除：</p><ul className="m13-gen-list">{refs.map(c=><li key={c.id}><ToolIcon tool={c.kind} size={16}/><b>{c.name}</b>{c.isDefault&&<Pill tone="ok"><Star size={11}/>默认</Pill>}</li>)}</ul>{refs.some(c=>c.isDefault)&&<p className="m13-hint">默认智能体删除后，默认改为首页显示中的下一个。</p>}<p className="m13-hint">使用过这些智能体的历史任务恢复时会提示重新选择，不会悄悄换成别的账号。</p></>:<p className="m13-desc">还没有智能体使用它。</p>}
     {error&&<div className="m13-alert danger" role="alert">{error}</div>}
   </AgentDialog>;
-  return <AgentDialog title={p.name} sub={p.preset?'目录':'自定义'} wide onClose={onClose} footer={changed?<>
+  return <AgentDialog title={p.name} sub={p.preset?'目录':'自定义'} className="m13-provider-detail" onClose={onClose} footer={changed?<>
     <span className="m13-foot-left m13-model-edit-summary" role="status">{[added?`待接入 ${added} 个`:'',removed?`待移除 ${removed} 个`:''].filter(Boolean).join(' · ')}</span>
     <button className="m10-button secondary" disabled={Boolean(busy)} onClick={()=>{setDraft(null);setError('');setBlockedModel(null);}}>取消修改</button>
     <button className="m10-button primary" disabled={Boolean(busy)} onClick={()=>void saveModels()}>{busy==='models'?'正在保存…':'保存模型'}</button>
@@ -114,11 +116,34 @@ export function ProviderDetail({provider:p,configs,onClose,onRefresh,onNewAgent,
           <button className="m13-link" aria-label={`编辑智能体 ${config.name}`} onClick={()=>setEditingAgent(config.id)}>编辑智能体</button>}</div>)}
       </div></div>}
       <h3 className="m13-sub m13-sub-row">模型在各工具中的可用性{untested.length>0&&<button className="m13-link" disabled={Boolean(busy)||!p.hasKey} onClick={()=>void perform('batch',async()=>{for(const pair of untested)await rpc.agents.checkProviderModel(p.id,pair.kind,pair.model);})}>测试全部未测试（{untested.length}）</button>}</h3>
-      <div className={'m13-table matrix'+(columns.length===3?' three-tools':'')} role="table" aria-label="模型可用性"><div role="row" className="m13-th"><span>模型</span><span>上下文</span>{columns.map(k=><span key={k} className="m13-th-tool"><ToolIcon tool={k} size={14}/>{agentLabels[k]}</span>)}</div>{p.models.map(m=><div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name m13-model-name"><label title={m.id}><input type="checkbox" checked={picked.has(m.id)} disabled={Boolean(busy)} onChange={e=>toggle(m.id,e.target.checked)}/><span>{m.name}</span></label>{!picked.has(m.id)?<Pill tone="warn">待移除</Pill>:<>{Object.values(p.recommended).includes(m.id)&&<Pill tone="info">推荐</Pill>}{m.offline&&<Pill tone="warn">已下线</Pill>}</>}</span><span>{contextLabel(m.contextWindow)}</span>{columns.map(k=>{
-        if(!possible.includes(k))return <span className="m13-cell-na" key={k} title="供应商没有这个工具所需的协议">—</span>;
-        const status=m.availability[k],testing=busy===m.id+':'+k;
-        return <span className="m13-cell" key={k} data-tool={k} data-avail={status} title={modelCheckDescription(m,k)}><Pill tone={status==='available'?'ok':status==='unavailable'?'warn':'muted'}>{testing?'测试中…':status==='available'?'可用':status==='unavailable'?'不可用':'未测试'}</Pill>{refs.some(c=>c.kind===k&&c.defaultModel===m.id)&&<Star size={12} className="m13-star" aria-label="默认模型"/>}{status!=='available'&&!testing&&<button className="m13-link" disabled={Boolean(busy)||!p.hasKey||m.offline} onClick={()=>void check(m.id,k)}>{status==='unavailable'?'重测':'测试'}</button>}</span>;
-      })}</div>)}</div><p className="m13-hint">★ 是对应智能体的默认模型；“—”表示供应商没有这个工具需要的接口。测试会发起最小的流式＋工具调用，可能产生少量费用，结果按工具分别保留。能列出的模型不一定能调用。</p>
+      <ProviderAvailabilityTable showContext={showContext}
+        tools={columns.map(kind=>({kind,label:<><ToolIcon tool={kind} size={14}/>{agentLabels[kind]}</>}))}>
+        {p.models.map(model=>{
+          const selected=picked.has(model.id);
+          return <tr key={model.id} data-model={model.id}>
+            <td><span className="m13-availability-model">
+              <label title={model.name===model.id ? model.name : `${model.name} (${model.id})`}>
+                <input type="checkbox" checked={selected} disabled={Boolean(busy)} onChange={e=>toggle(model.id,e.target.checked)}/>
+                <span className="m13-availability-name">{model.name}</span>
+              </label>
+              {selected ? <>
+                {Object.values(p.recommended).includes(model.id)&&<RecommendedModelMark/>}
+                {model.offline&&<Pill tone="warn">已下线</Pill>}
+              </> : <Pill tone="warn">待移除</Pill>}
+            </span></td>
+            {showContext&&<td>{model.contextWindow!=null ? contextLabel(model.contextWindow) : null}</td>}
+            {columns.map(kind=>{
+              if(!possible.includes(kind))return <ProviderAvailabilityCell key={kind} tool={kind} state="unsupported"/>;
+              const state=busy===model.id+':'+kind ? 'testing' : model.availability[kind]??'untested';
+              return <ProviderAvailabilityCell key={kind} tool={kind} state={state} detail={modelCheckDescription(model,kind)}
+                isDefault={refs.some(config=>config.kind===kind&&config.defaultModel===model.id)}
+                disabled={Boolean(busy)||!p.hasKey||model.offline} retry={()=>void check(model.id,kind)}/>;
+            })}
+          </tr>;
+        })}
+      </ProviderAvailabilityTable>
+      <ProviderAvailabilityLegend/>
+      <p className="m13-hint">测试会发起最小的流式＋工具调用，可能产生少量费用。结果按工具分别保留。</p>
       </>}
     </>}
     {tab==='agents'&&<>{refs.length?<ul className="m13-gen-list">{refs.map(c=><li key={c.id}><ToolIcon tool={c.kind} size={16}/><b>{c.name}</b><small>{p.models.find(m=>m.id===c.defaultModel)?.name??c.defaultModel}{c.homeVisible?'':' · 不在首页显示'}</small>{c.isDefault&&<Pill tone="ok"><Star size={11}/>默认</Pill>}</li>)}</ul>:<p className="m13-hint">还没有智能体使用这个供应商。</p>}{supported.filter(k=>!refs.some(c=>c.kind===k)).map(k=><button key={k} className="m10-button secondary m13-regen" disabled={!p.hasKey} onClick={()=>onNewAgent(p,k)}><Plus size={14}/>用它创建 {agentLabels[k]} 智能体</button>)}{supported.length>0&&supported.every(k=>refs.some(c=>c.kind===k))&&<p className="m13-hint">适用的 Code Agent 都已经有智能体了，想用更多模型请编辑对应的智能体。</p>}</>}

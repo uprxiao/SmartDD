@@ -8,11 +8,14 @@ import { AgentIcon, ProviderIcon, ToolIcon } from './m13-icons.jsx';
 import { Dialog, Menu, Pill } from './m13-ui.jsx';
 import { clearLiveKey, getLiveKey, isLive, liveClaudeTest, liveModels, liveProbe, setLiveKey } from './m13-live.mjs';
 import { ProviderModelPicker } from '../../../src/renderer/features/agents/provider-model-picker';
+import { ProviderAvailabilityCell, ProviderAvailabilityLegend, ProviderAvailabilityTable, RecommendedModelMark } from '../../../src/renderer/features/agents/provider-availability';
 import { providerModelMetadata } from '@shared/provider-model-metadata';
 
 const TOOL_IDS = Object.keys(AGENTS);
 const providerKind = p => p.type === 'custom' ? '自定义' : '目录';
 const availTone = s => s === 'ok' ? 'ok' : s === 'bad' ? 'warn' : 'muted';
+const availabilityStates = { ok: 'available', bad: 'unavailable', untested: 'untested', testing: 'testing' };
+const knownContext = model => model.ctx && model.ctx !== '—' ? model.ctx : null;
 const modelName = (p, id) => p?.models?.find(m => m.id === id)?.name || id;
 const withDetail = (p, modelId, r) => ({ ...p, models: p.models.map(m => m.id === modelId ? { ...m, detail: r.result === 'bad' ? r.detail : undefined, lastTest: r.detail } : m) });
 const recOf = (p, t) => typeof p?.recommended === 'object' ? p.recommended?.[t] : p?.recommended;
@@ -336,12 +339,13 @@ export function ProviderDialog({ provider: p, store, scene, onClose, notify, onR
     setRefreshing(true); setTimeout(() => { setRefreshing(false); const extra = p.catalog === 'deepseek' && !p.models.some(m => m.id === 'deepseek-v4-lite') ? [{ id: 'deepseek-v4-lite', name: 'DeepSeek V4 Lite', ctx: '64K', avail: {} }] : []; patch(x => ({ ...x, refreshed: '刚刚', models: [...x.models, ...extra] })); notify(extra.length ? `模型列表已刷新：新增 ${extra.map(e => e.name).join('、')}（未测试）` : '模型列表已刷新：没有变化'); }, 700); };
   const isDefaultOf = (m, t) => refs.some(r => r.tool === t && r.model === m.id);
   const recs = typeof p.recommended === 'object' ? Object.values(p.recommended || {}) : [p.recommended];
+  const showContext = p.models.some(knownContext);
   const def = refs.find(r => r.default);
   if (confirmDel) return <Dialog title={`删除 ${p.name}？`} sub="供应商与它的 Key 会一并删除" onClose={() => setConfirmDel(false)} footer={<><button className="m10-button secondary" onClick={() => setConfirmDel(false)}>取消</button><button className="m10-button primary m13-danger-btn" onClick={onRemove}>删除</button></>}>
     {refs.length ? <><p className="m13-desc">使用它的 {refs.length} 个智能体会一起删除：</p><ul className="m13-gen-list">{refs.map(r => <li key={r.id}><ToolIcon tool={r.tool} size={16} /><b>{r.name}</b>{r.default && <Pill tone="ok"><Star size={11} />默认</Pill>}</li>)}</ul>
       {def && <p className="m13-hint">“{def.name}”是默认智能体，删除后默认改为首页显示中的下一个。</p>}<p className="m13-hint">使用过这些智能体的历史任务恢复时会提示重新选择，不会悄悄换成别的账号。</p></> : <p className="m13-desc">还没有智能体使用它。</p>}
   </Dialog>;
-  return <Dialog title={p.name} sub={providerKind(p) + (cat?.verified === false ? ' · 占位数据，待核实' : '')} wide onClose={onClose}
+  return <Dialog title={p.name} sub={providerKind(p) + (cat?.verified === false ? ' · 占位数据，待核实' : '')} className="m13-provider-detail" onClose={onClose}
     footer={<><button className="m10-button secondary m13-danger-text m13-foot-left" onClick={() => setConfirmDel(true)}>删除</button><button className="m10-button primary" onClick={onClose}>完成</button></>}>
     <div className="m13-right-head"><ProviderIcon catalog={p.catalog} name={p.name} size={44} /><div><b>{p.name}</b><small>{pairingNote(p)}</small></div></div>
     <div className="m10-tabs m13-ptabs" role="tablist">{[['overview', '概览'], ['agents', '智能体', refs.length]].map(([v, t, n]) => <button key={v} role="tab" aria-selected={ptab === v} onClick={() => setPtab(v)}>{t}{n !== undefined && <span className="m13-count">{n}</span>}</button>)}</div>
@@ -354,10 +358,25 @@ export function ProviderDialog({ provider: p, store, scene, onClose, notify, onR
       <dt>Key</dt><dd>{keyEdit === null ? <><code>{p.key || '未填写'}</code><button className="m13-link" onClick={() => setKeyEdit('')}>{p.key ? '更换' : '填写'}</button></> : <span className="m13-inline-edit"><input type="password" aria-label="新的 Key" value={keyEdit} onChange={e => setKeyEdit(e.target.value)} placeholder="加密保存，只在启动时注入" /><button className="m10-button secondary m13-row-btn" disabled={!keyEdit.trim()} onClick={() => { if (live) setLiveKey(p.id, keyEdit.trim()); patch(x => applyProviderKey(x, keyEdit)); setKeyEdit(null); notify('Key 已更新（原型只保留脱敏后四位）'); }}>保存</button>{!p.needKey && <button className="m13-link" onClick={() => setKeyEdit(null)}>取消</button>}</span>}</dd>
       <dt>模型目录</dt><dd>{p.models.length>0&&p.models.every(m=>m.catalogSource==='manual')?'手填模型 · 启动前检查服务可达性':`${p.refreshed} 刷新 · 每次启动任务前自动比对`}<button className="m13-link" disabled={refreshing || down} onClick={refresh}>{refreshing ? '刷新中…' : '刷新模型'}</button></dd></dl>
     <h3 className="m13-sub m13-sub-row">模型在各工具中的可用性{untested.length > 0 && <button className="m13-link" disabled={down || p.needKey} onClick={() => untested.forEach(([m, t]) => test(m, t))}>测试全部未测试（{untested.length}）</button>}</h3>
-    <div className="m13-table matrix" role="table" aria-label="模型可用性"><div role="row" className="m13-th"><span>模型</span><span>上下文</span>{TOOL_IDS.map(t => <span key={t} className="m13-th-tool"><ToolIcon tool={t} size={14} />{AGENTS[t]}</span>)}</div>
-      {p.models.map(m => <div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}{recs.includes(m.id) && <Pill tone="info">推荐</Pill>}</span><span>{m.ctx}</span>
-        {TOOL_IDS.map(t => { if (!ts.includes(t)) return <span key={t} className="m13-cell-na" title={compatible(t, p).reason}>—</span>; const a = availOf(m, t); return <span key={t} className="m13-cell" data-tool={t} data-avail={a} title={m.lastTest || (a === 'bad' ? m.detail || '' : '')}><Pill tone={availTone(a)}>{AVAIL_LABEL[a]}</Pill>{isDefaultOf(m, t) && <Star size={12} className="m13-star" aria-label="默认模型" />}{a !== 'ok' && a !== 'testing' && <button className="m13-link" disabled={down || p.needKey} onClick={() => test(m, t)}>{a === 'bad' ? '重测' : '测试'}</button>}</span>; })}</div>)}</div>
-    <p className="m13-hint">★ 是对应智能体的默认模型；“—”表示供应商没有这个工具需要的接口。测试会发起一次最小的流式＋工具调用，可能产生少量费用，结果按工具分别保留。能列出的模型不一定能调用。</p>
+    <ProviderAvailabilityTable showContext={showContext}
+      tools={TOOL_IDS.map(kind => ({ kind, label: <><ToolIcon tool={kind} size={14} />{AGENTS[kind]}</> }))}>
+      {p.models.map(model => <tr key={model.id} data-model={model.id}>
+        <td><span className="m13-availability-model">
+          <span className="m13-availability-name" title={model.name}>{model.name}</span>
+          {recs.includes(model.id) && <RecommendedModelMark/>}
+        </span></td>
+        {showContext && <td>{knownContext(model)}</td>}
+        {TOOL_IDS.map(kind => {
+          if (!ts.includes(kind)) return <ProviderAvailabilityCell key={kind} tool={kind} state="unsupported" detail={compatible(kind,p).reason}/>;
+          const state = availabilityStates[availOf(model, kind)];
+          return <ProviderAvailabilityCell key={kind} tool={kind} state={state}
+            detail={model.lastTest || (state === 'unavailable' ? model.detail : undefined)}
+            isDefault={isDefaultOf(model,kind)} disabled={down || p.needKey} retry={() => test(model,kind)}/>;
+        })}
+      </tr>)}
+    </ProviderAvailabilityTable>
+    <ProviderAvailabilityLegend/>
+    <p className="m13-hint">正式应用的测试会发起最小的流式＋工具调用，可能产生少量费用。结果按工具分别保留。</p>
     </>}
     {ptab === 'agents' && <>
       {refs.length ? <ul className="m13-gen-list">{refs.map(r => <li key={r.id}><ToolIcon tool={r.tool} size={16} /><b>{r.name}</b><small>{modelName(p, r.model)}{r.visible ? '' : ' · 不在首页显示'}</small>{r.default && <Pill tone="ok"><Star size={11} />默认</Pill>}</li>)}</ul> : <p className="m13-hint">还没有智能体使用这个供应商。</p>}

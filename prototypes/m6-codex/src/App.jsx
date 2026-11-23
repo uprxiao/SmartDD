@@ -293,6 +293,7 @@ export function App() {
   const [m14PanelHeader, setM14PanelHeader] = useState(null);
   const [taskHeaderLayout, setTaskHeaderLayout] = useState('default');
   const [fileAvailable, setFileAvailable] = useState(1000), [filePreference, setFilePreference] = useState(() => readFilePanelWidthPreference(localStorage.getItem('willyou-m9-prototype-panel-width')));
+  const [directoryPreference, setDirectoryPreference] = useState(() => readFilePanelWidthPreference(localStorage.getItem('willyou-m14-prototype-directory-width'), true));
   const [theme, setTheme] = useState(new URLSearchParams(location.search).get('theme') === 'light' || ['m9', 'm10', 'm12', 'm13'].includes(new URLSearchParams(location.search).get('preview')) ? 'light' : 'dark'), [fontSize, setFontSize] = useState(13), [collapsed, setCollapsed] = useState(false), [sidebarWidth, setSidebarWidth] = useState(240);
   const [integrationReference, setIntegrationReference] = useState(null);
   const [settingsSearch, setSettingsSearch] = useState('');
@@ -333,13 +334,21 @@ export function App() {
   // M13 P0.7：智能体在“设置 › 智能体”（替代 AI 配置），设置中的“Skill 与 MCP”移除、统一到“自定义 › 技能”；旧地址自动跳转。
   const settingsItems = m14Preview ? [['archived-tasks', Archive, '已归档任务', '个人'], ...SETTINGS.filter(s => s[0] !== 'skills').map(s => s[0] === 'about' ? ['about', Info, '关于 WillYou', 'WillYou'] : s)] : m13Active ? SETTINGS.filter(s => s[0] !== 'skills').map(s => s[0] === 'ai' ? ['ai', Bot, '智能体', '个人'] : s[0] === 'about' ? ['about', Info, '关于 WillYou', 'WillYou'] : s) : SETTINGS;
   useEffect(() => { if (!m13Active) return; if (route.startsWith('m13/ai')) nav(route.replace('m13/ai', 'settings/ai')); else if (route.startsWith('settings/skills')) nav('m13/capabilities'); else if (/^project\/[^/]+\/skills/.test(route)) nav(route.replace(/\/skills.*$/, '')); }, [route, m13Active]);
-  const storeFileWidth = (width, available = fileAvailable) => { const next = normalizedFilePanelWidth(width, available); if (!next) return; setFilePreference(next); localStorage.setItem('willyou-m9-prototype-panel-width', String(next.value)); };
+  const storeFileWidth = (width, available = fileAvailable, directoryOnly = false) => {
+    const next = normalizedFilePanelWidth(width, available, directoryOnly);
+    if (!next) return;
+    if (directoryOnly) setDirectoryPreference(next);
+    else setFilePreference(next);
+    localStorage.setItem(directoryOnly ? 'willyou-m14-prototype-directory-width' : 'willyou-m9-prototype-panel-width', String(next.value));
+  };
+  const directoryOnlyShown = () => Boolean(fileFrame.current?.querySelector('.m14-rp-surface:not([hidden]) .fw-directory-only'));
   useEffect(() => {
     const frame = fileFrame.current, area = fileArea.current; if (!frame || !area) return;
     const measure = () => { const available = frame.getBoundingClientRect().right - parseFloat(getComputedStyle(frame).paddingRight || '0') - area.getBoundingClientRect().left; if (available > 0) { setFileAvailable(available); if (task && fileWorkspace && filePreference.unit === 'pixels') storeFileWidth(filePreference.value, available); } };
     measure(); const observer = new ResizeObserver(measure); observer.observe(frame); observer.observe(area); return () => observer.disconnect();
   }, [task?.id, fileWorkspace, collapsed, sidebarWidth, filePreference.unit]);
   const fileWidth = resolveFilePanelWidth(filePreference, fileAvailable), fileBounds = filePanelBounds(fileAvailable);
+  const directoryWidth = resolveFilePanelWidth(directoryPreference, fileAvailable, true);
   const lastIntegrationTask = useRef(null);
   useEffect(() => { if (taskId) lastIntegrationTask.current = taskId; }, [taskId]);
   const activeProject = projects.find(p => p.id === route.split('/')[1]) ?? project, taskProject = projects.find(p => p.id === task?.project) ?? { name: '未关联项目', path: task?.cwd || '/workspace', capabilities: {} };
@@ -470,7 +479,7 @@ export function App() {
   useEffect(() => { if (webVisitProject && webVisitedUrl) setWebVisits(all => ({ ...all, [webVisitProject]: recordWebVisit(all[webVisitProject], webVisitedUrl, Date.now()) })); }, [webVisitProject, webVisitedUrl]);
   const webTabs = webAllowed ? taskBrowser.tabs.map(item => ({ id: item.id, url: webUrl(item), title: item.invalid ? '无效地址' : webTitle(item), marked: agentMarked(taskBrowser, item.id, Date.now()) || (taskBrowser.paused && taskBrowser.agent?.tabId === item.id), paused: taskBrowser.paused })) : [];
   const m14PanelShown = !!(panelTask && fileWorkspace && m14Preview && (!task?.archived || m14ActiveEff === 'diff'));
-  return <div ref={fileFrame} className={'app codex-frame ' + (m14Preview ? 'm14-preview ' : '') + (m14PanelShown ? 'm14-docked ' : '') + (isApps || isM13 ? 'apps-mode ' : isSettings ? 'settings-mode ' : route === 'scheduled' ? 'scheduled-mode ' : route === 'home' ? 'home-mode ' : '') + (collapsed ? 'sidebar-collapsed ' : '') + (m14Preview && fileWorkspace && m14Max && panelTask ? 'm14-panel-maximized ' : '') + ((task || m14Home) && fileWorkspace ? 'm9-active' : '')} style={{ '--sidebar-width': sidebarWidth + 'px', '--prototype-file-width': fileWidth + 'px' }}>
+  return <div ref={fileFrame} className={'app codex-frame ' + (m14Preview ? 'm14-preview ' : '') + (m14PanelShown ? 'm14-docked ' : '') + (isApps || isM13 ? 'apps-mode ' : isSettings ? 'settings-mode ' : route === 'scheduled' ? 'scheduled-mode ' : route === 'home' ? 'home-mode ' : '') + (collapsed ? 'sidebar-collapsed ' : '') + (m14Preview && fileWorkspace && m14Max && panelTask ? 'm14-panel-maximized ' : '') + ((task || m14Home) && fileWorkspace ? 'm9-active' : '')} style={{ '--sidebar-width': sidebarWidth + 'px', '--prototype-file-width': fileWidth + 'px', '--prototype-directory-width': directoryWidth + 'px' }}>
     <div className="window-navigation"><IconButton icon={ArrowLeft} label="返回工作台" onClick={() => nav('home')} /><IconButton icon={ArrowRight} label="前进" onClick={() => history.forward()} />{!isSettings && <IconButton icon={PanelLeft} label={collapsed ? '展开侧栏' : '收起侧栏'} onClick={() => setCollapsed(!collapsed)} />}{!task && <><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); nav("task/build"); }}><FolderOpen size={13} />M9 · 文件工作区</button><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); setBrowserByTask(all => (all.build?.tabs.length ? all : { ...all, build: openWebTab(emptyTaskBrowser(), "https://qa.example.test/") })); setWebShown(shown => ({ ...shown, build: true })); nav("task/build"); }}><M12Globe size={13} />M12 · 浏览器</button><button className="m7-preview-entry" onClick={() => { location.href = '?preview=m14'; }}><MessageSquare size={13} />M14 · 统一任务区</button><button className="m7-preview-entry" onClick={() => nav('m13/plugins')}><M13Puzzle size={13} />M13 · 插件与能力</button><button className="m7-preview-entry" onClick={() => setModal({ type: 'project-transfer', mode: 'import' })}><Folder size={13} />M8 · 项目迁移</button><button className="m7-preview-entry" onClick={() => { voice.clear(); setModal({ type: 'voice-demo' }); }}><Mic size={13} />M7 · 语音预览</button>{voice.notice?.kind === 'sent' && <button className="m7-preview-entry" onPointerDown={e => e.preventDefault()} onClick={voice.fillExample}>演示文字回填</button>}</>}</div>
     {m14PanelShown && <div className="m14-rp-titlebar" ref={setM14PanelHeader}/>}
     {m14Home && !m14PanelShown && <div className="m14-home-controls"><IconButton icon={FolderOpen} label="打开右侧面板" onClick={() => { setM14Max(false); m14Show('files'); }} /><IconButton icon={PanelBottom} label="底部终端抽屉（⌃`）" onClick={() => { setM14Max(false); setM14Terminal(!m14Terminal); }} /></div>}
@@ -569,7 +578,21 @@ export function App() {
       {isProject && <ProjectWorkspace key={activeProject.id} project={activeProject} tab={projectTab} profiles={profiles} tasks={tasks} onNavigate={tab => nav('project/' + activeProject.id + '/' + tab)} onUpdate={updateProject} onDelete={deleteProject} renderDelete={m14Preview ? (close => <M14ProjectDeleteDialog project={activeProject} tasks={tasks.filter(t => t.project === activeProject.id)} onClose={close} onConfirm={() => { close(); deleteProject(activeProject.id); }} />) : undefined} onNewTask={() => { setProjectId(activeProject.id); nav('home'); }} onOpenTask={key => nav('task/' + key)} onExport={() => setModal({ type: 'project-transfer', mode: 'export', project: activeProject })} appsLabel={m13Active ? '插件' : undefined} skillsTab={!m13Active} applications={m13Active ? <ProjectPlugins project={activeProject} store={m13} nav={nav} notify={notify} tasks={tasks} /> : <ProjectApplications project={activeProject} integration={integration} nav={next => { setIntegrationProjectId(activeProject.id); nav(next); }} tasks={tasks} onStopTasks={stopApplicationTasks} onUse={useApplicationPrompt} onNewTask={() => newApplicationTask(activeProject.id)} />} bundledApplications={projectPackages(integration.data, activeProject.id).map(p => ({ ...APP_DEFINITIONS.find(a => a.id === p.id), version: p.version }))} />}
       {route !== 'home' && route !== 'scheduled' && !isApps && !isM13 && !isSettings && !isProject && !task && <div className="empty-state"><h2>任务暂不可用</h2><button className="button secondary" onClick={() => nav('home')}>返回工作台</button></div>}
     </main>
-    {m14PanelShown && <><div className="m9-panel-resizer" role="separator" aria-label="调整右侧面板宽度" aria-orientation="vertical" tabIndex={0} onPointerDown={e => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); }} onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) storeFileWidth(fileFrame.current.getBoundingClientRect().right - parseFloat(getComputedStyle(fileFrame.current).paddingRight || '0') - e.clientX); }} onPointerUp={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); }} />
+    {m14PanelShown && <><div className="m9-panel-resizer" role="separator" aria-label="调整右侧面板宽度" aria-orientation="vertical" tabIndex={0}
+      onPointerDown={e => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); }}
+      onPointerMove={e => {
+        const frame = fileFrame.current;
+        if (frame && e.currentTarget.hasPointerCapture(e.pointerId)) {
+          storeFileWidth(frame.getBoundingClientRect().right - parseFloat(getComputedStyle(frame).paddingRight || '0') - e.clientX, fileAvailable, directoryOnlyShown());
+        }
+      }}
+      onPointerUp={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); }}
+      onKeyDown={e => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        const directoryOnly = directoryOnlyShown();
+        storeFileWidth((directoryOnly ? directoryWidth : fileWidth) + (e.key === 'ArrowLeft' ? 10 : -10), fileAvailable, directoryOnly);
+      }} />
       <M14RightPanel headerTarget={m14PanelHeader} terminalOpen={m14Terminal} onTerminal={task?.archived ? undefined : () => { setM14Max(false); setM14Terminal(!m14Terminal); }} onCollapse={() => { setM14Max(false); setFileWorkspace(false); }} open={m14Visible} active={m14ActiveEff} webTabs={webTabs.length ? {
         tabs: webTabs, activeId: taskBrowser.active,
         onSelect: tabId => updateTaskBrowser(current => ({ ...current, active: tabId })),

@@ -17,6 +17,79 @@ it('keeps Antigravity effort fallback in the diagnostics for the affected turn',
 
 // M14-A59 时间线（投影层）、A71 计划卡来源、A76 待办只在执行器提供时出现。
 describe('Claude 投影', () => {
+  function claudeStream(model = 'claude-sonnet-5-5') {
+    const projector = new TimelineProjector('claude-sdk');
+    const stream = (event: object, parent?: string) => projector.project({ type: 'native', name: 'stream_event',
+      payload: { type: 'stream_event', event, parent_tool_use_id: parent ?? null } });
+    const messageStart = (id: string) => stream({ type: 'message_start', message: { id, model } });
+    const thinkingStart = (index: number, parent?: string) => stream({ type: 'content_block_start', index,
+      content_block: { type: 'thinking', thinking: '', signature: '' } }, parent);
+    const thinking = (index: number, text: string, parent?: string) => stream({ type: 'content_block_delta', index,
+      delta: { type: 'thinking_delta', thinking: text } }, parent);
+    const signature = (index: number) => stream({ type: 'content_block_delta', index,
+      delta: { type: 'signature_delta', signature: 'opaque-signature' } });
+    const stop = (index: number) => stream({ type: 'content_block_stop', index });
+    const snapshot = (id: string, uuid: string, content: object[]) => projector.project({ type: 'item.completed',
+      nativeItemId: uuid, itemType: 'assistant', payload: { id, model, content } });
+    return { projector, messageStart, thinkingStart, thinking, signature, stop, snapshot };
+  }
+
+  it('在工具前实时显示 Claude 进度，空快照和重复快照保留同一条完整记录', () => {
+    const f = claudeStream();
+    f.messageStart('msg1');
+    expect(f.thinkingStart(0)).toEqual([]);
+    expect(f.thinking(0, '')).toEqual([]);
+    expect(f.signature(0)).toEqual([]);
+    expect(f.snapshot('msg1', 'reasoning1', [{ type: 'thinking', thinking: '', signature: 'opaque-signature' }])).toEqual([]);
+    expect(f.stop(0)).toEqual([]);
+    expect(f.thinkingStart(1)).toEqual([]);
+    const [preview] = f.thinking(1, '已取得结果');
+    expect(preview).toMatchObject({ type: 'assistant_message', terminal: null,
+      payload: { phase: 'commentary', text: '已取得结果' } });
+    f.thinking(1, '，正在核对。');
+    f.signature(1);
+    const empty = [{ type: 'thinking', thinking: '', signature: 'opaque-signature' }];
+    const [saved] = f.snapshot('msg1', 'update1', empty);
+    expect(saved).toMatchObject({ key: preview.key, type: 'assistant_message', terminal: 'completed',
+      payload: { phase: 'commentary', text: '已取得结果，正在核对。' } });
+    expect(f.stop(1)).toEqual([]);
+    expect(f.snapshot('msg1', 'update1', empty)).toEqual([]);
+    const tools = f.snapshot('msg1', 'tool1', [{ type: 'tool_use', id: 'tool1', name: 'Bash', input: { command: 'printf fixture' } }]);
+    expect(tools).toMatchObject([{ type: 'command_execution', payload: { status: 'running' } }]);
+  });
+
+  it('单个可读思考块实时保留在思考详情，子 Agent 增量不会串入主任务', () => {
+    const f = claudeStream('claude-sonnet-4-6');
+    f.messageStart('msg1');
+    expect(f.thinkingStart(0)).toEqual([]);
+    const [preview] = f.thinking(0, '已公开的思考摘要');
+    expect(preview).toMatchObject({ type: 'reasoning', terminal: null, payload: { text: '已公开的思考摘要' } });
+    expect(f.thinking(0, '子 Agent 内容', 'agent1')).toEqual([]);
+    f.thinking(0, '，更多文字');
+    const [saved] = f.stop(0);
+    expect(saved).toMatchObject({ key: preview.key, terminal: 'completed', payload: { text: '已公开的思考摘要，更多文字' } });
+    expect(f.snapshot('msg1', 'update1', [{ type: 'thinking', thinking: '' }])).toEqual([]);
+    f.messageStart('msg2');
+    f.thinkingStart(0);
+    const [next] = f.thinking(0, '下一段');
+    expect(next.key).not.toBe(preview.key);
+    expect(next.payload.text).toBe('下一段');
+  });
+
+  it('中断时保存最后已收到的文字，并在下一轮清空块关联', () => {
+    const f = claudeStream();
+    f.messageStart('msg1');
+    f.thinkingStart(0);
+    const [preview] = f.thinking(0, '已经收到');
+    f.thinking(0, '另一段文字');
+    expect(f.projector.project({ type: 'turn.completed', nativeTurnId: 'turn1', status: 'interrupted' }))
+      .toMatchObject([{ key: preview.key, terminal: 'completed', payload: { text: '已经收到另一段文字' } }]);
+    expect(f.thinking(0, '迟到文字')).toEqual([]);
+    f.messageStart('msg2');
+    f.thinkingStart(0);
+    expect(f.thinking(0, '下一轮')).toMatchObject([{ type: 'reasoning', payload: { text: '下一轮' } }]);
+  });
+
   it('文本、思考、工具调用与结果配对；结果失败标失败', () => {
     const p = new TimelineProjector('claude-sdk');
     const a = p.project({ type: 'item.completed', nativeItemId: 'u1', itemType: 'assistant', payload: { model: 'm', content: [

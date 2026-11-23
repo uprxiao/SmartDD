@@ -47,10 +47,43 @@ it('SMG upstream errors remain unavailable with the original message and an expl
  const cell=document.querySelector('[data-model="a"] [data-tool="claude"]') as HTMLElement;
  expect(cell.dataset.avail).toBe('unavailable');
  expect(cell.title).toBe(message);
- expect(within(cell).getByText('不可用')).toBeTruthy();
+ expect(within(cell).getByRole('img',{name:'不可用'})).toBeTruthy();
  expect(within(cell).getByRole('button',{name:'重测'})).toBeTruthy();
  expect(document.querySelector('[data-model="a"] [data-tool="codex"]')).toBeNull();
  expect(api.check).not.toHaveBeenCalled();
+});
+
+it('keeps unknown model checks blank and shows actions only for failing checks',()=>{
+ const longName='claude-sonnet-5-5-extended-thinking';
+ detail(provider({
+   models:[
+     {...model('a'),name:longName,contextWindow:null,availability:{claude:'unavailable',codex:'available'}},
+     {...model('b'),contextWindow:null,availability:{claude:'untested',codex:'untested'}},
+   ],
+   recommended:{claude:'a',codex:'a'},
+ }),[config()]);
+ const table=screen.getByRole('table',{name:'模型可用性'});
+ expect(within(table).getAllByRole('columnheader').map(header=>header.textContent)).toEqual(['模型','Claude Code','Codex']);
+ const tested=within(table).getByRole('checkbox',{name:longName}).closest('tr')!;
+ expect(within(tested).getByText(longName).closest('label')?.title).toContain(longName);
+ expect(within(tested).getByRole('img',{name:'推荐'})).toBeTruthy();
+ expect(within(tested).getByRole('img',{name:'不可用'})).toBeTruthy();
+ expect(within(tested).getByRole('button',{name:'重测'})).toBeTruthy();
+ expect(within(tested).getByRole('img',{name:'可用'})).toBeTruthy();
+ expect(within(tested).getByRole('img',{name:'默认模型'})).toBeTruthy();
+ const waiting=within(table).getByRole('checkbox',{name:'Model B'}).closest('tr')!;
+ const blanks=within(waiting).getAllByRole('cell',{name:'未测试'});
+ expect(blanks).toHaveLength(2);
+ expect(blanks.every(cell=>cell.textContent==='' && !cell.querySelector('svg, button'))).toBe(true);
+ expect(screen.getByRole('button',{name:'测试全部未测试（2）'})).toBeTruthy();
+});
+
+it('keeps context values visible when at least one selected model has a known size',()=>{
+ detail(provider({models:[model('a'),{...model('b'),contextWindow:null}]}));
+ const table=within(screen.getByRole('table',{name:'模型可用性'}));
+ expect(table.getByRole('columnheader',{name:'上下文'})).toBeTruthy();
+ expect(table.getByRole('cell',{name:'128K'})).toBeTruthy();
+ expect(table.queryByText('—')).toBeNull();
 });
 const footer=()=>document.querySelector('.m13-dialog-foot') as HTMLElement;
 function custom(){fireEvent.click(screen.getByRole('button',{name:/^自定义供应商/}));fireEvent.change(screen.getByLabelText('名称'),{target:{value:'Custom Provider'}});fireEvent.change(screen.getByLabelText('服务地址'),{target:{value:'https://custom.example.invalid/v1'}});fireEvent.change(screen.getByLabelText('API 密钥'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});}
@@ -366,7 +399,7 @@ it('marks successful retries in the per-tool model tooltip while retaining the o
  const p=provider({models:[{...model('a'),checks:{claude:check}}]});
  detail(p);
  const cell=document.querySelector('[data-model="a"] [data-tool="claude"]')!;
- expect(cell.textContent).toContain('可用');
+ expect(within(cell as HTMLElement).getByRole('img',{name:'可用'})).toBeTruthy();
  expect(cell.getAttribute('title')).toContain('首次失败后重试成功');
  expect(check.failures).toEqual([{status:503,message:'Synthetic temporary failure'}]);
  expect(document.querySelector('[data-model="a"] [data-tool="codex"]')?.getAttribute('title')).not.toContain('重试');

@@ -333,7 +333,19 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
   const a = AGENTS.find(x => x.id === sel.agent);
   const ba = AGENTS.find(x => x.id === (running ? (bound?.agent ?? sel.agent) : sel.agent)); // 本轮实际执行器：插话按它判断（评审 RV09）
   const perms = PERMISSIONS.filter(p => !(p.id === 'auto' && a.tool !== 'codex')); // Claude 等没有“帮我批准”（评审 RV08）
-  const pickPerm = p => { setMenu(null); if (p.id === 'full' && !fullConfirmed) { requestFullAccess?.(() => setPermission(p)); return; } setPermission(p); };
+  const activeRound = running || scenario.status === 'waiting';
+  const [roundPermission, setRoundPermission] = useState(permission);
+  useEffect(() => { if (!activeRound) setRoundPermission(permission); }, [activeRound, permission]);
+  const effectivePermission = activeRound ? roundPermission : permission;
+  const choosePermission = p => {
+    setPermission(p);
+    if (!activeRound || ba.tool !== 'codex' || (effectivePermission.id !== 'full' && p.id !== 'full')) setRoundPermission(p);
+  };
+  const pickPerm = p => {
+    setMenu(null);
+    if (p.id === 'full' && !fullConfirmed) { requestFullAccess?.(() => choosePermission(p)); return; }
+    choosePermission(p);
+  };
   useEffect(() => { if (!perms.some(p => p.id === permission.id)) setPermission(PERMISSIONS[0]); }, [a.id]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { const el = box.current; if (!el) return; el.style.height = '0px'; el.style.height = Math.max(42, Math.min(el.scrollHeight, 220)) + 'px'; }, [text]);
   const lastScenario = useRef(null); // 只在演示状态真的切换时重置附件；StrictMode 下重复执行挂载副作用不清空任务草稿
@@ -387,8 +399,8 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
       <div className="reference-composer-toolbar">
         <div className="reference-home-picker"><button type="button" className="composer-add" aria-label="添加" aria-expanded={menu === 'add'} onClick={() => setMenu(menu === 'add' ? null : 'add')}><Plus size={20} /></button>
           {menu === 'add' && <div className="reference-home-menu" role="menu"><button role="menuitem" type="button" onClick={() => { setText(t => t + '@'); setMenu(null); }}><FileText size={15} />引用文件（@）</button><button role="menuitem" type="button" onClick={() => { setText(t => t + '$'); setMenu(null); }}><Zap size={15} />选用 Skill（$）</button><button role="menuitem" type="button" onClick={() => { setMenu(null); const id = 'img' + Date.now(); setChips(cs => [...cs, { id, kind: 'image', name: '启动崩溃截图.png', state: 'preparing' }]); setTimeout(() => setChips(cs => cs.map(c => c.id === id ? { ...c, state: null } : c)), 1200); }}><ImageIcon size={15} />添加图片（演示：准备中→完成）</button><button role="menuitem" type="button" onClick={() => { setMenu(null); addChip({ kind: 'file', name: 'fixtures/不可读.txt', state: 'failed', note: '读取失败' }); }}><Plus size={15} />添加附件（演示：失败可重试）</button><div className="popup-divider" /><button role="menuitem" type="button" onClick={() => { setMenu(null); addChip({ kind: 'ref', name: '禅道 Bug #1234 · x64 启动崩溃' }); onToast('已从禅道插入引用到输入框，未发送'); }}><Link2 size={15} />（演示）从插件插入引用</button><p className="m14-menu-note">也可从右侧文件树把文件拖进输入框</p></div>}</div>
-        <div className="reference-home-picker m13-perm-picker"><button type="button" className={'m13-perm-trigger' + (permission.danger ? ' danger' : '')} aria-expanded={menu === 'perm'} onClick={() => setMenu(menu === 'perm' ? null : 'perm')}><PermIcon icon={permission.icon} size={16} />{permission.name}</button>
-          {menu === 'perm' && <div className="m13-perm-menu" role="menu"><div className="m13-perm-head"><span>应如何批准 {a.name} 的操作？</span><span className="m14-perm-note">每轮发送时显式下发</span></div>{perms.map(p => <button key={p.id} type="button" role="menuitemradio" aria-checked={permission.id === p.id} className={p.danger ? 'danger' : undefined} onClick={() => pickPerm(p)}><PermIcon icon={p.icon} size={16} /><span className="m13-perm-text"><b>{p.name}</b><small>{p.desc}</small></span>{permission.id === p.id && <Check size={16} className="m13-perm-check" />}</button>)}</div>}</div>
+        <div className="reference-home-picker m13-perm-picker"><button type="button" className={'m13-perm-trigger' + (effectivePermission.danger ? ' danger' : '')} aria-label="权限档位" aria-expanded={menu === 'perm'} onClick={() => setMenu(menu === 'perm' ? null : 'perm')}><PermIcon icon={effectivePermission.icon} size={15} />{effectivePermission.name}<ChevronDown size={12} /></button>{activeRound && permission.id !== effectivePermission.id && <small className="m14-perm-note" role="status">下轮生效 · {permission.name}</small>}
+          {menu === 'perm' && <div className="m13-perm-menu" role="menu" aria-label="权限">{perms.map(p => <button key={p.id} type="button" role="menuitemradio" aria-checked={permission.id === p.id} className={p.danger ? 'danger' : undefined} onClick={() => pickPerm(p)}><PermIcon icon={p.icon} size={16} /><span className="m13-perm-text"><b>{p.name}</b><small>{a.tool === 'codex' ? p.desc : p.otherDesc ?? p.desc}</small></span>{permission.id === p.id && <Check size={16} className="m13-perm-check" />}</button>)}</div>}</div>
         {<button type="button" className={'m14-deleg' + (delegation ? ' on' : '')} aria-pressed={delegation} title={delegation ? '允许 Agent 委派子任务（点击关闭）' : '不允许新委派，单 Agent 工作（点击开启）'} onClick={() => { const next = !delegation; setDelegation(next); onToast(next ? '已允许委派子任务' : scenario.id === 'team' ? '已关闭新委派：现有 3 个子任务完成后回到单 Agent' : '已关闭新委派，本任务以单 Agent 工作'); }}><Network size={14} />{delegation ? '可委派' : '单 Agent'}</button>}
         <>
           <div className="reference-home-picker composer-profile"><ModelPill agent={sel.agent} model={sel.model} effort={sel.effort} open={menu === 'model'} onClick={() => setMenu(menu === 'model' ? null : 'model')} />

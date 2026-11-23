@@ -326,7 +326,7 @@ export class AgentTaskService {
     return { model: nextModel ?? undefined, effort: choices[key], modelEfforts: choices, initialCodexDefault: undefined };
   }
 
-  /** 模型／档位在下一轮生效；扩展开关只影响此后新建绑定。 */
+  /** 保存选择，符合执行器能力的权限切换应用到当前轮。 */
   setSelection(taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) {
     this.requireStableSelection(taskId);
     const { task, selection } = this.selection(taskId);
@@ -352,7 +352,12 @@ export class AgentTaskService {
       next.carryExtensions = patch.carryExtensions;
       next.extensionPreferences = { ...selection.extensionPreferences, [selection.profileId]: patch.carryExtensions };
     }
-    return this.d.store.updateSelection(taskId, next, expectedRevision);
+    const result = this.d.store.updateSelection(taskId, next, expectedRevision);
+    const run = this.d.runs.runForTask(taskId);
+    if (result.ok && patch.tier !== undefined && run && !this.dispatching.has(taskId)) {
+      void this.d.runs.changeTurnTier(run.runId, result.selection.tier as Tier);
+    }
+    return result;
   }
 
   /** 同任务切换：目标锁与空闲边界由服务强制，不依赖界面置灰。 */
@@ -745,6 +750,7 @@ export class AgentTaskService {
     const stoppedSince = () => (this.stopSeq.get(taskId) ?? 0) !== seq || this.paused.has(taskId);
     let transfer: Transfer | null = null;
     try {
+      if (existing?.tierChange) await existing.tierChange;
       let { selection } = this.selection(taskId);
       if (this.coordination && !await this.coordination.beforeDispatch(taskId)) return;
       if (stoppedSince()) return;
@@ -753,8 +759,8 @@ export class AgentTaskService {
         this.d.store.tx(emit => emit(taskId, 'turn.preparing', { turnId: next.turn_id }));
       }
       selection = this.selection(taskId).selection;
-      // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
-      if (existing && existing.driverId === 'claude-sdk' && existing.tier !== selection.tier) await this.d.runs.close(existing.runId);
+      // 空闲时改档或原生未确认切换时，按新权限恢复原会话。
+      if (existing && existing.driverId === 'claude-sdk' && existing.appliedTier !== selection.tier) await this.d.runs.close(existing.runId);
       if (stoppedSince()) return;
       const run = await this.ensureRun(taskId);
       await this.business?.bindPending(taskId,run);
@@ -812,6 +818,8 @@ export class AgentTaskService {
       if (!run.readOnly) await this.diffs?.before(taskId, next.turn_id, run.runId, this.d.runs.nativeBusy(run.runId));
       if(stoppedSince())return;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
+      const savedTier = this.selection(taskId, true).selection.tier as Tier;
+      if (!stoppedSince() && savedTier !== selection.tier) void this.d.runs.changeTurnTier(run.runId, savedTier);
       if (selection.initialCodexDefault) {
         const current = this.selection(taskId);
         if (current.selection.initialCodexDefault) this.d.store.updateSelection(taskId, { initialCodexDefault: undefined }, current.revision);
@@ -1165,7 +1173,7 @@ export class AgentTaskService {
         ...requestsForSnapshot(pending, level),
         queued: queuedAll.slice(0, [10, 10, 5, 3][level]).map(q => queuedPreview(q, [1000, 1000, 400, 200][level])),
         queuedTotal: queuedAll.length, preparingTurnId,
-        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: !this.d.runs.stopProgress(taskId) && this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
+        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.turnTier ?? run.appliedTier ?? run.tier, tierChanging: !!run.tierChange, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: !this.d.runs.stopProgress(taskId) && this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
         goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null, goalUnknown: this.goalUnknown.get(taskId) ?? null,
         status: this.status(taskId), seq: this.d.store.watermark(taskId),
       };

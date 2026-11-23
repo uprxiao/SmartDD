@@ -319,6 +319,17 @@ export class CodexAppServerInstance implements DriverInstance {
     return { nativeTurnId };
   }
 
+  async setTurnTier(current: TurnInput['tier'], next: TurnInput['tier']) {
+    const turn = this.activeTurn;
+    if (!turn || turn.interrupted || !this.rpc || !this.threadId || this.readOnly || current === 'full' || next === 'full') return false;
+    const result = await this.rpc.call<{ status: string }>('turn/settings/update', {
+      threadId: this.threadId,
+      turnId: turn.nativeTurnId,
+      approvalsReviewer: CODEX_TIERS[next].approvalsReviewer,
+    });
+    return result?.status === 'applied';
+  }
+
   private markStarted(nativeTurnId: string, clientInputId: string) {
     if (this.startedTurns.has(nativeTurnId)) return;
     this.startedTurns.add(nativeTurnId);

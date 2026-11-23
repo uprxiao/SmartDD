@@ -1,5 +1,6 @@
 // 统一时间线投影（技术方案 T1.5 §4）：把两种执行器的原生条目映射为同一组规范条目类型。
 // 只做映射与配对，不推断执行器没提供的内容（待办只在执行器提供结构化清单时出现）。
+import type { SDKPartialAssistantMessage } from '@anthropic-ai/claude-agent-sdk';
 import type { DriverEvent } from './driver';
 import type { DriverId } from './capabilities';
 
@@ -32,8 +33,44 @@ function planFields(input: unknown) {
   return { input: rest, plan: text(plan) };
 }
 
+const CLAUDE_PROGRESS_MODELS = new Set([
+  'claude-sonnet-5-5', 'claude-opus-5-5', 'claude-fable-5', 'claude-fable-5-1', 'claude-fable-5-2',
+  'claude-mythos-5-1', 'claude-mythos-5-2',
+]);
+const CLAUDE_THINKING_UPDATE_MS = 100;
+
+interface ClaudeThinkingBlock {
+  key: string;
+  text: string;
+  signed: boolean;
+  stopped: boolean;
+  progress: boolean;
+  published?: { text: string; terminal: ItemUpsert['terminal']; at: number };
+}
+interface ClaudeThinkingMessage {
+  id: string;
+  model: string;
+  byIndex: Map<number, ClaudeThinkingBlock>;
+  pendingSnapshots: ClaudeThinkingBlock[];
+  snapshots: Set<string>;
+}
+
+function publishClaudeThinking(block: ClaudeThinkingBlock): ItemUpsert[] {
+  if (!block.text.trim()) return [];
+  const terminal = block.stopped ? 'completed' : null;
+  if (block.published?.text === block.text && block.published.terminal === terminal) return [];
+  const at = performance.now();
+  // The first chunk establishes the row's position. Coalesce intermediate writes until completion.
+  if (!terminal && block.published && at - block.published.at < CLAUDE_THINKING_UPDATE_MS) return [];
+  block.published = { text: block.text, terminal, at };
+  return [{ key: block.key, terminal, type: block.progress ? 'assistant_message' : 'reasoning',
+    payload: { text: block.text, ...(block.progress ? { phase: 'commentary' } : {}) } }];
+}
+
 export class TimelineProjector {
   private readonly claudeTools = new Map<string, { type: ItemType; name: string; input: unknown }>();
+  private readonly claudeThinkingMessages = new Map<string, ClaudeThinkingMessage>();
+  private claudeThinkingMessage?: ClaudeThinkingMessage;
   private readonly todos = new Map<string, { id: string; subject: string; status: string }>();
   private readonly childLogs = new Map<string, string[]>();
   private readonly finals = new Map<string, { payload: Record<string, unknown>; terminal: 'completed' | 'failed' }>();
@@ -79,9 +116,61 @@ export class TimelineProjector {
     return [{ key, type: 'system_notice', payload: { severity, title, detail: detail.slice(0, 4000), ...lifecycle }, terminal }];
   }
 
+  private claudeThinkingFrame(frame: SDKPartialAssistantMessage): ItemUpsert[] {
+    if (frame?.parent_tool_use_id || !frame?.event) return [];
+    const event = frame.event;
+    if (event.type === 'message_start') {
+      const { id, model } = event.message ?? {};
+      if (typeof id !== 'string' || !id || typeof model !== 'string') { this.claudeThinkingMessage = undefined; return []; }
+      const existing = this.claudeThinkingMessages.get(id);
+      this.claudeThinkingMessage = existing ?? { id, model, byIndex: new Map(), pendingSnapshots: [], snapshots: new Set() };
+      if (!existing) this.claudeThinkingMessages.set(id, this.claudeThinkingMessage);
+      return [];
+    }
+    const message = this.claudeThinkingMessage;
+    if (!message || !('index' in event)) return [];
+    if (event.type === 'content_block_start' && event.content_block?.type === 'thinking') {
+      if (message.byIndex.has(event.index)) return [];
+      const previous = message.byIndex.get(event.index - 1);
+      const model = message.model.replace(/\.(?=\d)/g, '-').replace(/-\d{8}$/, '');
+      // In updates mode a signed, empty reasoning block can precede a separate progress block.
+      // A lone thinking block may be a reasoning summary, so keep it in the thinking details.
+      const progress = CLAUDE_PROGRESS_MODELS.has(model) && !!(previous?.stopped && previous.signed && previous.text === '');
+      const block: ClaudeThinkingBlock = {
+        key: `thinking:${message.id}:${event.index}`,
+        text: typeof event.content_block.thinking === 'string' ? event.content_block.thinking : '',
+        signed: !!event.content_block.signature, stopped: false, progress,
+      };
+      message.byIndex.set(event.index, block);
+      message.pendingSnapshots.push(block);
+      return publishClaudeThinking(block);
+    }
+    const block = message.byIndex.get(event.index);
+    if (!block || block.stopped) return [];
+    if (event.type === 'content_block_delta') {
+      if (event.delta?.type === 'signature_delta') block.signed ||= !!event.delta.signature;
+      if (event.delta?.type !== 'thinking_delta' || typeof event.delta.thinking !== 'string') return [];
+      block.text += event.delta.thinking;
+    } else if (event.type === 'content_block_stop') {
+      block.stopped = true;
+    } else return [];
+    return publishClaudeThinking(block);
+  }
+
   private claude(e: DriverEvent): ItemUpsert[] {
+    if (e.type === 'native' && e.name === 'stream_event') return this.claudeThinkingFrame(e.payload as SDKPartialAssistantMessage);
+    if (e.type === 'turn.completed' || e.type === 'exit' || e.type === 'unusable') {
+      const out: ItemUpsert[] = [];
+      for (const message of this.claudeThinkingMessages.values()) for (const block of message.byIndex.values()) {
+        block.stopped = true;
+        out.push(...publishClaudeThinking(block));
+      }
+      this.claudeThinkingMessages.clear();
+      this.claudeThinkingMessage = undefined;
+      return out;
+    }
     if (e.type === 'item.completed' && e.itemType === 'assistant') {
-      const msg = e.payload as { content?: any[]; model?: string; parentToolUseId?: string | null };
+      const msg = e.payload as { id?: string; content?: any[]; model?: string; parentToolUseId?: string | null };
       // 原生子 Agent 的内部消息归子节点，不登记为主任务回答（复核 CR13，技术方案 §4）。
       if (msg.parentToolUseId) {
         const parent = this.claudeTools.get(msg.parentToolUseId);
@@ -97,10 +186,23 @@ export class TimelineProjector {
         return parent ? [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { name: parent.name, input: parent.input, status: 'running', nativeNodeIds: [msg.parentToolUseId], childLog: log.slice(-50), childLogPreviewOnly: true }, terminal: null }] : [];
       }
       const out: ItemUpsert[] = [];
+      const thinking = msg.id ? this.claudeThinkingMessages.get(msg.id) : undefined;
+      const repeated = thinking?.snapshots.has(e.nativeItemId);
+      if (msg.content?.some(block => block?.type === 'thinking')) thinking?.snapshots.add(e.nativeItemId);
       (msg.content ?? []).forEach((block: any, idx: number) => {
         const key = `${e.nativeItemId}:${idx}`;
         if (block?.type === 'text' && block.text) out.push({ key, type: 'assistant_message', payload: { text: block.text, model: msg.model ?? null }, terminal: 'completed' });
-        else if (block?.type === 'thinking' && block.thinking) out.push({ key, type: 'reasoning', payload: { text: block.thinking }, terminal: 'completed' });
+        else if (block?.type === 'thinking' && !repeated) {
+          const streamed = thinking?.pendingSnapshots.shift();
+          if (streamed) {
+            if (typeof block.thinking === 'string' && block.thinking.trim()) streamed.text = block.thinking;
+            streamed.signed ||= !!block.signature;
+            streamed.stopped = true;
+            out.push(...publishClaudeThinking(streamed));
+          } else if (block.thinking) {
+            out.push({ key, type: 'reasoning', payload: { text: block.thinking }, terminal: 'completed' });
+          }
+        }
         else if (block?.type === 'tool_use') {
           const type = claudeToolType(block.name);
           this.claudeTools.set(block.id, { type, name: block.name, input: block.input });

@@ -1,7 +1,7 @@
 import type {IpcMainInvokeEvent} from 'electron';
 import {z} from 'zod';
 import {createScopedRPCController} from '@shared/ipc/rpc';
-import {browserTaskInput,browserTabInput,browserNavigationInput,browserActionInput,browserPlacementInput} from '@shared/browser-workspace';
+import {browserTaskInput,browserCreateInput,browserTabInput,browserNavigationInput,browserActionInput,browserPlacementInput} from '@shared/browser-workspace';
 import type {BrowserService} from './service';
 import {BrowserError} from './errors';
 import {browserSettingsSchema} from '@shared/browser-settings';
@@ -14,7 +14,7 @@ export function createBrowserController(service:BrowserService|undefined,trusted
   return createScopedRPCController({
     focusChrome:event=>{ui(event);event.sender.focus();},
     snapshot:(event,input:{taskId:string})=>ui(event).snapshot(browserTaskInput.parse(input).taskId),
-    create:(event,input:{taskId:string})=>ui(event).create(browserTaskInput.parse(input).taskId),
+    create:(event,input:{taskId:string;address?:string})=>{const w=ui(event),v=browserCreateInput.parse(input);return w.create(v.taskId,v.address);},
     select:(event,input:{taskId:string;tabId:string|null})=>{const w=ui(event),v=browserTaskInput.extend({tabId:z.string().uuid().nullable()}).strict().parse(input);return w.select(v.taskId,v.tabId);},
     navigate:(event,input:{taskId:string;tabId:string;address:string})=>{const w=ui(event),v=browserNavigationInput.parse(input);return w.navigate(v.taskId,v.tabId,v.address);},
     action:(event,input:{taskId:string;tabId:string;action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'})=>{const w=ui(event),v=browserActionInput.parse(input);return w.action(v.taskId,v.tabId,v.action);},

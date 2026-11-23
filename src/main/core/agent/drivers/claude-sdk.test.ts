@@ -257,7 +257,7 @@ describe('Claude SDK 驱动', () => {
     expect(r.confirmed).toBe(false);
     expect(r.nativeId).toMatch(/^[0-9a-f-]{36}$/);
     expect(sdk.state.options).toMatchObject({ pathToClaudeCodeExecutable: exe.path, cwd: '/w', env: { HOME: '/h' }, model: 'opus', permissionMode: 'default', settingSources: ['project', 'local'], includePartialMessages: true, sessionId: r.nativeId });
-    expect(sdk.state.options.allowDangerouslySkipPermissions).toBeUndefined();
+    expect(sdk.state.options.allowDangerouslySkipPermissions).toBe(true);
     expect(events.some(e => e.type === 'session')).toBe(false);
     const t = await inst.startTurn({ clientInputId: 'in-1', text: '你好', tier: 'ask', model: 'opus' });
     expect(t.nativeTurnId).toBe(`${r.nativeId}:1`);
@@ -338,6 +338,28 @@ describe('Claude SDK 驱动', () => {
     expect(answer).toEqual({ behavior: 'deny', message: '先别改 b' });
     expect(events).not.toContainEqual({ type: 'request.resolved', requestKey: req.requestKey });
     await expect(inst.respond(req.requestKey, { behavior: 'allow' })).rejects.toThrow('请求已结束');
+  });
+
+  it('acknowledges a live mode switch while leaving the pending approval open', async () => {
+    let answer: unknown;
+    const { inst, sdk, events } = make([async ({ emit, ask }) => {
+      emit({ type: 'assistant', uuid: 'a0', message: { content: [] } });
+      answer = await ask('Bash', { command: 'printf marker' });
+      emit({ type: 'result', subtype: 'success', is_error: false });
+    }, ok('next')]);
+    try {
+      await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+      await inst.startTurn({ clientInputId: '1', text: 'first', tier: 'ask' });
+      await until(() => events.some(event => event.type === 'request'));
+      const request = events.find(event => event.type === 'request')!;
+      if (request.type !== 'request') throw new Error('Missing pending approval');
+      expect(await inst.setTurnTier('ask', 'full')).toBe(true);
+      expect(sdk.state.modes).toEqual(['bypassPermissions']);
+      expect(answer).toBeUndefined();
+      await inst.respond(request.requestKey, { behavior: 'allow' });
+      await until(() => events.some(event => event.type === 'turn.completed'));
+      await inst.startTurn({ clientInputId: '2', text: 'next', tier: 'full' });
+    } finally { await inst.close(); }
   });
 
   it('批准时未改输入则沿用原输入', async () => {

@@ -43,6 +43,20 @@ it('shows an initial failed navigation rather than hiding it behind the blank st
 it('offers no certificate approval for an ordinary failed navigation',()=>{
   f.value.state.tabs[0].certificate=null;render(<AgentBrowserSurface taskId="t1"/>);expect(screen.queryByRole('button',{name:'我了解风险，继续访问'})).toBeNull();expect(screen.getByRole('button',{name:'重试'})).toBeTruthy();
 });
+it('shows the requested URL and loading feedback on the new tab before the page commits', () => {
+  const url = 'https://fixture.example/slow';
+  f.value.state.tabs[0] = { ...f.value.state.tabs[0], pendingUrl: url, loading: true, failure: null, certificate: null };
+  render(<AgentBrowserSurface taskId="t1" />);
+  expect((screen.getByRole('textbox', { name: '网页地址' }) as HTMLInputElement).value).toBe(url);
+  expect(screen.getByRole('status', { name: '网页正在加载' })).toBeTruthy();
+  expect(screen.queryByLabelText('新标签页')).toBeNull();
+});
+it('retains the failed destination in the address bar when the new tab has no committed page', () => {
+  f.value.state.tabs[0].certificate = null;
+  render(<AgentBrowserSurface taskId="t1" />);
+  expect((screen.getByRole('textbox', { name: '网页地址' }) as HTMLInputElement).value).toBe('https://outside.example.test/');
+  expect(screen.getByRole('button', { name: '重试' })).toBeTruthy();
+});
 it('restores the last committed address after an ordinary failed navigation, while retaining the failure explanation',()=>{
   f.value.state.tabs[0].certificate=null;f.value.state.tabs[0].url='https://previous.example.test/committed';
   render(<AgentBrowserSurface taskId="t1"/>);

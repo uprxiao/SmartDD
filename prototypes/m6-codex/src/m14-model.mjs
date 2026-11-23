@@ -25,9 +25,9 @@ export const AGENTS = [
   { id: 'oc', name: 'OpenCode', placeholder: '后续接入', models: [] },
 ];
 export const PERMISSIONS = [
-  { id: 'ask', name: '请求批准', icon: 'hand', desc: '编辑外部文件和使用互联网时始终询问' },
-  { id: 'auto', name: '帮我批准', icon: 'shield', desc: '由执行器自动审核；插件写操作仍由 WillYou 询问' },
-  { id: 'full', name: '完全访问', icon: 'alert', danger: true, desc: '不再询问（发送邮件除外），首次使用需确认' },
+  { id: 'ask', name: '请求批准', icon: 'hand', desc: '编辑外部文件和使用互联网时询问', otherDesc: '执行器请求工具权限时询问' },
+  { id: 'auto', name: '帮我批准', icon: 'shield-prompt', desc: '由 Codex 审查需要批准的操作' },
+  { id: 'full', name: '完全访问权限', icon: 'alert', danger: true, desc: '允许访问电脑文件和互联网', otherDesc: '允许执行器自动批准工具操作' },
 ];
 
 // ---------- 链接识别与路由（D2：按 T3 规则；只有文件名不做链接） ----------

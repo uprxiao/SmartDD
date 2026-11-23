@@ -117,6 +117,8 @@ export interface DriverInstance {
   }>;
   /** 等原生开始信号后才 resolve。 */
   startTurn(input: TurnInput): Promise<{ nativeTurnId: string }>;
+  /** Applies to subsequent work in the active turn. False defers to the next dispatch. */
+  setTurnTier?(current: Tier, next: Tier): Promise<boolean>;
   /** 原样回传原生选项或结构化回答，不压成布尔值。 */
   respond(requestKey: string, result: unknown): Promise<void>;
   interrupt(): Promise<void>;

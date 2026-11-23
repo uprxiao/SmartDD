@@ -15,7 +15,9 @@ import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronR
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
 import { ComposerPrimaryAction, ComposerStopIcon, QueuedSendIcon } from './composer-primary-action';
-import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
+import { ANTIGRAVITY_FULL_ACCESS_WARNING, FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
+import { PermissionPicker } from '@renderer/features/agents/permission-picker';
+import { agentPermissionSchema } from '@shared/agent-permissions';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
@@ -37,7 +39,6 @@ import './agent-tasks.css';
 
 type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
 type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
-const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示', settingSkipped: '所选推理强度未应用' };
 /** Host inputs are written for the Agent; the queue shows a short status instead of their wording. */
 function hostQueueLabel(q: { sourceKind?: string; text: string }) {
@@ -1428,6 +1429,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     catch (e) { toast.error(rpcErrorMessage(e)); }
   };
 
+  const selectedPermission = agentPermissionSchema.safeParse(snap.selection.tier).data ?? 'ask';
+  const effectivePermission = snap.run?.busy
+    ? agentPermissionSchema.safeParse(snap.run.tier).data ?? selectedPermission
+    : selectedPermission;
   const archived = !!snap.archivedAt;
   const parentId=relations?.parentTaskId ?? taskId;
   const family=relations?.parentTaskId ? parentRelations : relations;
@@ -1584,9 +1589,15 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
               }
               if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!composerStopping) void send(); } }} />
           <div className="agent-composer-bar">
-            <select aria-label="权限档位" value={snap.selection.tier} disabled={!!snap.parentTaskId} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined} onChange={e => { if (e.target.value === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true); else void setSelection({ tier: e.target.value }); }}>
-              {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
-            </select>
+            <PermissionPicker task testId="task-permission" selected={selectedPermission}
+              effective={effectivePermission} allowAuto={profile?.tiers.includes('auto') ?? snap.selection.driverId === 'codex-app-server'}
+              changing={snap.run?.tierChanging} deferred={!!snap.run?.busy && selectedPermission !== effectivePermission}
+              disabled={!!snap.parentTaskId || snap.switching} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined}
+              onPick={tier => {
+                if (tier === selectedPermission) return;
+                if (tier === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true);
+                else void setSelection({ tier });
+              }}/>
             <span className="push" />
             <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
               onPick={async (id, model, effort) => {
@@ -1635,7 +1646,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     </AgentDialog>}
     {!archived&&pluginsOpen&&<AgentDialog title='项目插件' sub='业务操作仍按当前档位和插件最高档位裁定；等待中的请求会重新核对版本与账号。' onClose={()=>setPluginsOpen(false)} footer={<button type='button' className='m10-button' onClick={()=>{setPluginsOpen(false);if(snap.projectId)navigation.openProject(snap.projectId,'applications');else toast.message('先关联项目以配置插件');}}>管理项目插件</button>}>{plugins.length?<ul>{plugins.map(p=><li key={p.id}>{p.name}</li>)}</ul>:<p>当前任务没有可用的项目插件</p>}</AgentDialog>}
     {!archived && confirmFull && <AgentDialog title="使用完全访问权限？" onClose={() => setConfirmFull(false)} footer={<><button className="m10-button" onClick={() => setConfirmFull(false)}>取消</button><button className="m10-button primary" data-testid="agent-confirm-full" onClick={() => { void permissionPref.update({ fullConfirmed: true }); setConfirmFull(false); void setSelection({ tier: 'full' }); }}>继续使用完全访问</button></>}>
-      <p className="m13-perm-warn">{FULL_ACCESS_WARNING}</p>
+      <p className="m13-perm-warn">{snap.selection.driverId === 'antigravity-acp' ? ANTIGRAVITY_FULL_ACCESS_WARNING : FULL_ACCESS_WARNING}</p>
       <div className="m13-note">{FULL_ACCESS_NOTE}</div>
     </AgentDialog>}
     </div>

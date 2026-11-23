@@ -11,6 +11,71 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
     f.workspace.create('t1');f.workspace.create('t1');f.workspace.create('t2');const original=f.workspace.snapshot('t1');f.workspace.select('t1',original.tabs[0].id);f.workspace.dispose();
     const restored=new BrowserWorkspace(f.options);expect(restored.snapshot('t1').tabs.map(t=>t.id)).toEqual(original.tabs.map(t=>t.id));expect(restored.snapshot('t1').activeId).toBe(original.tabs[0].id);expect(restored.snapshot('t2').tabs).toHaveLength(1);expect(f.create).not.toHaveBeenCalled();expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('fileWorkspace.v1:task:t1')).toEqual({value:file});restored.dispose();
   });
+  it('returns the new tab and its pending address before the browser engine finishes opening', async () => {
+    const f = fixture(), url = 'https://example.test/slow';
+    let finish!: (page: BrowserPage) => void;
+    f.create.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const navigate = vi.spyOn(f.pages, 'navigate').mockResolvedValue();
+    const state = f.workspace.create('t1', url);
+    const id = state.activeId!;
+    try {
+      expect(state.tabs).toMatchObject([{ id, url: 'about:blank', pendingUrl: url, loading: true }]);
+      const { value } = f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1') as {value: string};
+      expect(JSON.parse(value).tabs[0]).not.toHaveProperty('pendingUrl');
+      expect(JSON.parse(value).tabs[0].url).toBe('about:blank');
+      await vi.waitFor(() => expect(f.create).toHaveBeenCalledOnce());
+      expect(navigate).not.toHaveBeenCalled();
+      const page = { id, taskId: 't1', closed: false } as BrowserPage;
+      finish(page);
+      await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith(page, url));
+      await vi.waitFor(() => expect(f.workspace.snapshot('t1').tabs[0].loading).toBe(false));
+    } finally { await f.workspace.dispose(); }
+  });
+  it('keeps an initial engine failure on its own tab and retries the requested address', async () => {
+    const f = fixture(), url = 'https://example.test/retry';
+    f.create.mockRejectedValueOnce(new Error('synthetic engine failure'));
+    const navigate = vi.spyOn(f.pages, 'navigate').mockResolvedValue();
+    const id = f.workspace.create('t1', url).activeId!;
+    try {
+      await vi.waitFor(() => expect(f.workspace.snapshot('t1').tabs[0]).toMatchObject({ id, loading: false, failure: { url } }));
+      const page = { id, taskId: 't1', closed: false, contents: { reload: vi.fn() } } as unknown as BrowserPage;
+      f.create.mockResolvedValueOnce(page);
+      const retry = f.workspace.action('t1', id, 'reload');
+      expect(f.workspace.snapshot('t1').tabs[0]).toMatchObject({ id, pendingUrl: url, loading: true, failure: null });
+      await retry;
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(page, url);
+      expect(page.contents.reload).not.toHaveBeenCalled();
+    } finally { await f.workspace.dispose(); }
+  });
+  it('stops a pending tab without loading the address after the engine becomes ready', async () => {
+    const f = fixture(), url = 'https://example.test/cancel';
+    let finish!: (page: BrowserPage) => void;
+    f.create.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const navigate = vi.spyOn(f.pages, 'navigate').mockResolvedValue();
+    const id = f.workspace.create('t1', url).activeId!;
+    try {
+      await vi.waitFor(() => expect(f.create).toHaveBeenCalledOnce());
+      await f.workspace.action('t1', id, 'stop');
+      expect(f.workspace.snapshot('t1').tabs[0]).toMatchObject({ id, url: 'about:blank', loading: false });
+      expect(f.workspace.snapshot('t1').tabs[0]).not.toHaveProperty('pendingUrl');
+      finish({ id, taskId: 't1', closed: false } as BrowserPage);
+      await new Promise<void>(resolve => setImmediate(resolve));
+      expect(navigate).not.toHaveBeenCalled();
+    } finally { await f.workspace.dispose(); }
+  });
+  it('closes a pending tab even if native startup fails while it is closing', async () => {
+    const f = fixture();
+    let fail!: (reason: Error) => void;
+    f.create.mockReturnValue(new Promise((_, reject) => { fail = reject; }));
+    const id = f.workspace.create('t1', 'https://example.test/close').activeId!;
+    try {
+      await vi.waitFor(() => expect(f.create).toHaveBeenCalledOnce());
+      const close = f.workspace.close('t1', id);
+      fail(new Error('synthetic engine failure'));
+      expect(await close).toMatchObject({ tabs: [], activeId: null });
+      expect(f.workspace.snapshot('t1').tabs).toEqual([]);
+    } finally { await f.workspace.dispose(); }
+  });
   it('retains exactly the last ten closed tabs and refuses tasks without projects',async()=>{
     const f=fixture();for(let i=0;i<12;i++)f.workspace.create('t1');const ids=f.workspace.snapshot('t1').tabs.map(t=>t.id);for(const id of ids)await f.workspace.close('t1',id);for(let i=0;i<11;i++)f.workspace.reopen('t1');expect(f.workspace.snapshot('t1').tabs).toHaveLength(10);expect(f.create).not.toHaveBeenCalled();expect(()=>f.workspace.create('no-project')).toThrow('项目');f.workspace.dispose();
   });

@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { expect, test } from 'vitest';
 import { antigravityAcpDriver, antigravityArgs, inspectAntigravity, previewAntigravityModels } from './antigravity-acp';
 import type { DriverEvent, DriverInstance, TurnStatus } from '../driver';
+import { until } from '../test-doubles';
 
 const executable = process.env.SMARTDD_F35_AGY_BIN;
 const carbon = 'gemini-4-carbon';
@@ -31,15 +32,30 @@ function finished(driver: DriverInstance) {
 test.skipIf(!executable)('real agy negotiates ACP, applies model options, resumes and distinguishes a native failure from ordinary text', async () => {
   const home = await mkdtemp(join(tmpdir(), 'willyou-f35-native-test-'));
   const requests: { model: string; history: string }[] = [];
+  let permissionStep = 0;
+  let restoreManual: (() => Promise<void>) | undefined;
   const server = createServer(async (req, res) => {
     const model = /^\/v1beta\/models\/(gemini-4-(?:carbon|argon)):streamGenerateContent$/.exec(new URL(req.url!, 'http://localhost').pathname)?.[1];
     if (!model || req.headers['x-goog-api-key'] !== 'F35-LOCAL-ONLY') { res.writeHead(403).end(); return; }
     let body = '';
     for await (const bytes of req) body += bytes;
-    const contents = JSON.parse(body).contents;
+    const { contents, tools } = JSON.parse(body);
     const history = JSON.stringify(contents);
     requests.push({ model, history });
     const latest = JSON.stringify(contents.at(-1));
+    if (history.includes('TEST-WY-LIVE-PERMISSION') && tools?.some((tool: { functionDeclarations?: { name: string }[] }) =>
+      tool.functionDeclarations?.some(decl => decl.name === 'run_command'))) {
+      if (permissionStep === 2) await restoreManual?.();
+      const marker = ['first', 'second', 'third'][permissionStep++];
+      const part = marker ? {
+        functionCall: { name: 'run_command', args: { CommandLine: `/usr/bin/awk 'BEGIN { print "${marker}-permission-marker" }'`,
+          toolSummary: 'Print permission marker', WaitMsBeforeAsync: 1000 } },
+        thoughtSignature: 'cGVybWlzc2lvbi1maXh0dXJl',
+      } : { text: 'Three commands completed' };
+      const result = { candidates: [{ index: 0, content: { role: 'model', parts: [part] }, finishReason: 'STOP' }], modelVersion: model };
+      res.writeHead(200, { 'content-type': 'text/event-stream' }).end(`data: ${JSON.stringify(result)}\n\n`);
+      return;
+    }
     if (latest.includes('TEST-WY-GEMINI-HEADERS')) {
       res.writeHead(200, { 'content-type': 'text/event-stream' });
       const firstChunk = {
@@ -122,6 +138,29 @@ test.skipIf(!executable)('real agy negotiates ACP, applies model options, resume
       answer: expect.stringContaining('WY-PARTIAL-OUTPUT'), limitNotice: { limited: { kind: 'output' } } });
     expect(await send('TEST-WY-CONTROL-PHRASE')).toMatchObject({ status: 'completed',
       answer: expect.stringContaining('Output retries exhausted'), limitNotice: undefined });
+    const approvals: Extract<DriverEvent, { type: 'request' }>[] = [];
+    const toolResults: string[] = [];
+    const release = driver.on(event => {
+      if (event.type === 'request' && event.kind === 'tool_approval') approvals.push(event);
+      if (event.type === 'item.completed' && event.itemType === 'acpToolCall') {
+        const result = (event.payload as { rawOutput?: { exit_code?: number; output?: string } }).rawOutput;
+        if (result?.exit_code === 0 && result.output) toolResults.push(result.output);
+      }
+    });
+    try {
+      restoreManual = async () => { await driver!.setTurnTier!('full', 'ask'); };
+      const done = send('TEST-WY-LIVE-PERMISSION');
+      void done.catch(() => {});
+      await until(() => approvals.length === 1, 8000);
+      expect(await driver.setTurnTier!('ask', 'full')).toBe(true);
+      expect(toolResults).toHaveLength(0);
+      await driver.respond(approvals[0].requestKey, { behavior: 'allow' });
+      await until(() => approvals.length === 2, 8000);
+      expect(JSON.stringify(approvals[1].payload)).toContain('third-permission-marker');
+      await driver.respond(approvals[1].requestKey, { behavior: 'allow' });
+      expect(await done).toMatchObject({ status: 'completed', answer: expect.stringContaining('Three commands completed') });
+      expect(toolResults).toEqual(['first', 'second', 'third'].map(marker => expect.stringContaining(`${marker}-permission-marker`)));
+    } finally { release(); }
   } finally {
     await driver?.close();
     if (server.listening) await new Promise<void>((resolve) => { server.close(() => resolve()); server.closeAllConnections(); });

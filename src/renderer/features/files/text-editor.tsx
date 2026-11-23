@@ -17,6 +17,7 @@ import { hydratedEditorTarget, applyHydratedEditorReading, attachEditorReading, 
 import { markdownEditor } from './markdown/editor';
 import { useMarkdownImages } from './markdown/image-host';
 import { loadMarkdownDiagram } from './markdown/diagrams';
+import { createRemoteImageLoader } from './markdown/remote-images';
 import { codeHighlight } from './code/editor';
 import { BlameCard, gitBlameExtension, type BlameSelection } from './git-blame';
 import { FileSelectionActions } from './terminal-context/selection';
@@ -46,6 +47,7 @@ export function FileTextEditor({ buffer, wrap, markdown = false, onLink, onOpenI
   const syntax = useMemo(() => codeHighlight(buffer.file.name, setCodeStatus), [buffer.file.name]);
   const rich = useMemo(() => richDocument && buffer.source ? markdownEditor(buffer, {
     status: setPreviewStatus, link: (href) => link.current?.(href), image: images.load,
+    remoteImage: createRemoteImageLoader(buffer),
     diagram: (element, source, signal) => loadMarkdownDiagram(buffer, element, source, signal),
   }) : [], [buffer, buffer.source, richDocument]);
   const search = buffer.editor?.field(fileFindState, false), matches = finding && search?.query === query ? search.matches : [], match = Math.min(search?.current ?? 0, Math.max(0, matches.length - 1));

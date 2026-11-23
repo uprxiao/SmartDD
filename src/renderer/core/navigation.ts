@@ -44,6 +44,7 @@ class NavigationStore {
     return this.currentViewId === 'home' ? this.homeFilePanelOpen : this.savedFilePanelOpen;
   }
   filePanelWidthPreference = readFilePanelWidthPreference(typeof localStorage === 'undefined' ? null : localStorage.getItem('willyou-file-panel-width'));
+  directoryPanelWidthPreference = readFilePanelWidthPreference(typeof localStorage === 'undefined' ? null : localStorage.getItem('willyou-directory-panel-width'), true);
   sidebarWidth = typeof localStorage === 'undefined' ? 240 : Math.max(240, Math.min(420, Number(localStorage.getItem('smartdd-sidebar-width')) || 240));
   collapsedSidebarProjects = new Set<string>();
 
@@ -102,11 +103,12 @@ class NavigationStore {
     this.savedFilePanelOpen = !this.savedFilePanelOpen;
     if (typeof localStorage !== 'undefined') localStorage.setItem('willyou-file-panel-open', String(this.savedFilePanelOpen));
   }
-  setFilePanelWidth(width: number, available: number): void {
-    const preference = normalizedFilePanelWidth(width, available);
+  setFilePanelWidth(width: number, available: number, directoryOnly = false): void {
+    const preference = normalizedFilePanelWidth(width, available, directoryOnly);
     if (!preference) return;
-    this.filePanelWidthPreference = preference;
-    if (typeof localStorage !== 'undefined') localStorage.setItem('willyou-file-panel-width', String(preference.value));
+    if (directoryOnly) this.directoryPanelWidthPreference = preference;
+    else this.filePanelWidthPreference = preference;
+    if (typeof localStorage !== 'undefined') localStorage.setItem(directoryOnly ? 'willyou-directory-panel-width' : 'willyou-file-panel-width', String(preference.value));
   }
   migrateFilePanelWidth(available: number): void {
     if (this.filePanelWidthPreference.unit === 'pixels') this.setFilePanelWidth(this.filePanelWidthPreference.value, available);

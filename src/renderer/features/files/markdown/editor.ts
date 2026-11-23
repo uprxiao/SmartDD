@@ -9,12 +9,15 @@ import { markdownFindKey, paintMarkdownFind, type RenderedFileFind } from './fin
 import { createMarkdownMathBudget, createMarkdownMathSession, hydrateMarkdownMath, type MarkdownMathBudget, type MarkdownMathSession } from '@shared/markdown-math-session.mjs';
 import { createMarkdownMathFragments } from '@shared/markdown-math-fragments.mjs';
 import { markdownMarkerRevealed, markdownNodeRevealed } from '@shared/markdown-inline-plan.mjs';
+import { markdownRemoteImageUrl } from '@shared/markdown-remote-image';
+import { addRemoteImageControl } from './remote-images';
 
 interface Item extends MarkdownItem { cmFrom: number; cmTo: number; revision: number; mathBudget?: MarkdownMathBudget; fragmentMath?: MarkdownMathSession; inlineWidget?: boolean; ownerFrom?: number; ownerTo?: number }
 export interface MarkdownHost {
   status(message: string): void;
   link(href: string): void;
   image(element: HTMLImageElement, source: string, signal: AbortSignal): Promise<void>;
+  remoteImage?(element: HTMLImageElement, source: string, signal: AbortSignal): Promise<void>;
   diagram?(element: HTMLElement, source: string, signal: AbortSignal): void | (() => void);
 }
 
@@ -24,9 +27,11 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
   const source = buffer.source!;
   const setItems = StateEffect.define<Item[]>();
   const setFocused = StateEffect.define<boolean>();
+  const setDark = StateEffect.define<boolean>();
   const mathSessions = new WeakMap<EditorView, MarkdownMathSession>();
   const gestures = new WeakMap<EditorView, () => void>();
   const linkDown = new WeakMap<EditorView, boolean>();
+  const loadedRemoteImages = new Set<string>();
   const mathFor = (view: EditorView) => { let session = mathSessions.get(view); if (!session) { session = createMarkdownMathSession(); mathSessions.set(view, session); } return session; };
   type DiagramRecord = { key: string; id: string; code: string; active: boolean; owner: Block | null };
   const diagrams = new Map<string, DiagramRecord>(), diagramKey = (item: Item) => `${item.from}:${item.to}`;
@@ -38,8 +43,8 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
   const alive = (view: EditorView, item: Item) => Boolean(view.state.field(field, false)?.items.some((current) => current.from === (item.ownerFrom ?? item.from) && current.to === (item.ownerTo ?? item.to) && (item.type === 'mermaid' ? current.type === 'mermaid' && current.source === item.source : current.revision === item.revision)));
   class Block extends WidgetType {
     abort: AbortController | null = null;
-    constructor(readonly item: Item, readonly findKey: string, public record?: DiagramRecord) { super(); }
-    eq(other: Block) { return this.record || other.record ? this.record === other.record && this.record?.active === true : this.findKey === other.findKey && this.item.revision === other.item.revision && this.item.from === other.item.from && this.item.to === other.item.to && this.item.mathBudget === other.item.mathBudget; }
+    constructor(readonly item: Item, readonly findKey: string, public record?: DiagramRecord, readonly dark = false) { super(); }
+    eq(other: Block) { return this.record || other.record ? this.record === other.record && this.record?.active === true : this.findKey === other.findKey && this.item.revision === other.item.revision && this.item.from === other.item.from && this.item.to === other.item.to && this.item.mathBudget === other.item.mathBudget && this.dark === other.dark; }
     get estimatedHeight() { return this.item.type === 'rule' ? 20 : this.item.type === 'heading' ? 42 : 64; }
     toDOM(view: EditorView): HTMLElement {
       // CodeMirror may recreate viewport DOM for the same WidgetType object.
@@ -79,10 +84,15 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
         },
         error: () => { if (!abort.signal.aborted && alive(view, item)) host.status('公式预览暂不可用，源码和修改仍保留'); },
       });
+      const remoteImages: { image: HTMLImageElement; href: string }[] = [];
       for (const image of element.querySelectorAll<HTMLImageElement>('img[data-md-src]')) {
-        const source = image.dataset.mdSrc ?? ''; image.removeAttribute('src');
-        void host.image(image, source, abort.signal).catch(() => { if (!abort.signal.aborted) { image.alt = `${image.alt || '图片'}（无法加载）`; image.classList.add('fw-md-image-error'); } });
+        const href = this.dark && image.dataset.mdSrcDark || image.dataset.mdSrc || '';
+        image.removeAttribute('src');
+        const remote = host.remoteImage && markdownRemoteImageUrl(href);
+        if (remote) remoteImages.push({ image, href: remote.href });
+        else void host.image(image, href, abort.signal).catch(() => { if (!abort.signal.aborted) { image.alt = `${image.alt || '图片'}（无法加载）`; image.classList.add('fw-md-image-error'); } });
       }
+      if (host.remoteImage) addRemoteImageControl(element, remoteImages, host.remoteImage, loadedRemoteImages, abort.signal, () => view.requestMeasure());
       for (const image of element.querySelectorAll('img')) image.addEventListener('load', () => { if (!abort.signal.aborted) view.requestMeasure(); });
       const reveal = (position: number, extend = false) => {
         if (abort.signal.aborted || !alive(view, item)) return;
@@ -142,7 +152,7 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
     ignoreEvent() { return true; }
     destroy() { this.abort?.abort(); if (this.record?.owner === this) { this.record.owner = null; this.record.active = false; if (diagrams.get(this.record.key) === this.record) diagrams.delete(this.record.key); } }
   }
-  const decorate = (items: Item[], selection: EditorSelection, focused: boolean, find: RenderedFileFind | undefined, map: { rawToCm(raw: number): number; cmToRaw(position: number): number }) => {
+  const decorate = (items: Item[], selection: EditorSelection, focused: boolean, dark: boolean, find: RenderedFileFind | undefined, map: { rawToCm(raw: number): number; cmToRaw(position: number): number }) => {
     for (const [key, record] of diagrams) if (!items.some(item => item.type === 'mermaid' && diagramKey(item) === key && item.source === record.code)) { record.active = false; diagrams.delete(key); }
     const ranges: Range<Decoration>[] = [], atomic: Range<Decoration>[] = [], rawRanges = selection.ranges.map(range => ({ from: map.cmToRaw(range.from), to: map.cmToRaw(range.to) }));
     const replace = (from: number, to: number, widget?: Block, block = false) => { if (to <= from) return; const range = Decoration.replace({ widget, block }).range(from, to); ranges.push(range); atomic.push(range); };
@@ -150,7 +160,8 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
       if (item.cmTo <= item.cmFrom || item.sourceOnly || item.metadata?.error || item.type === 'blank' || item.type === 'definition' || item.type === 'mermaid' && typeof host.diagram !== 'function') continue;
       const intersects = (from: number, to: number) => selection.ranges.some(range => range.from <= to && range.to >= from);
       const retainsSource = item.inline?.some(node => node.sourceOnly);
-      if (!intersects(item.cmFrom, item.cmTo) && !retainsSource) replace(item.cmFrom, item.cmTo, new Block(item, markdownFindKey(item.cmFrom, item.cmTo, find), item.type === 'mermaid' ? diagramRecord(item) : undefined), true);
+      const sourceSelected = intersects(item.cmFrom, item.cmTo) && !(item.type === 'html' && !focused && selection.main.empty);
+      if (!sourceSelected && !retainsSource) replace(item.cmFrom, item.cmTo, new Block(item, markdownFindKey(item.cmFrom, item.cmTo, find), item.type === 'mermaid' ? diagramRecord(item) : undefined, dark && Boolean(item.html?.includes('data-md-src-dark='))), true);
       else {
       for (const node of item.inline ?? []) {
         const revealed = markdownNodeRevealed(node, rawRanges, focused);
@@ -181,8 +192,8 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
     }
     return { decorations: Decoration.set(ranges, true), atomic: Decoration.set(atomic, true) };
   };
-  const field = StateField.define<{ items: Item[]; focused: boolean; decorations: DecorationSet; atomic: DecorationSet }>({
-    create: () => ({ items: [], focused: false, decorations: Decoration.none, atomic: Decoration.none }),
+  const field = StateField.define<{ items: Item[]; focused: boolean; dark: boolean; decorations: DecorationSet; atomic: DecorationSet }>({
+    create: () => ({ items: [], focused: false, dark: false, decorations: Decoration.none, atomic: Decoration.none }),
     update(value, transaction) {
       let items = value.items;
       if (transaction.docChanged) {
@@ -193,8 +204,9 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
       }
       for (const effect of transaction.effects) if (effect.is(setItems)) items = effect.value;
       let focused = value.focused; for (const effect of transaction.effects) if (effect.is(setFocused)) focused = effect.value;
+      let dark = value.dark; for (const effect of transaction.effects) if (effect.is(setDark)) dark = effect.value;
       const find = transaction.state.field(fileFindState, false), oldFind = transaction.startState.field(fileFindState, false);
-      return transaction.docChanged || transaction.selection || items !== value.items || find !== oldFind || focused !== value.focused ? { items, focused, ...decorate(items, transaction.newSelection, focused, find, transaction.state.field(source.field).map) } : value;
+      return transaction.docChanged || transaction.selection || items !== value.items || find !== oldFind || focused !== value.focused || dark !== value.dark ? { items, focused, dark, ...decorate(items, transaction.newSelection, focused, dark, find, transaction.state.field(source.field).map) } : value;
     },
     provide: (state) => [EditorView.decorations.from(state, (value) => value.decorations), EditorView.atomicRanges.of((view) => view.state.field(state).atomic)],
   });
@@ -223,7 +235,19 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
     queued = true; disposed = false; index: Uint32Array | null = null; windowStart = -1;
     timer?: ReturnType<typeof setTimeout>; deadline?: ReturnType<typeof setTimeout>;
     readonly math: MarkdownMathSession;
-    constructor(readonly view: EditorView) { this.math = mathFor(view); this.schedule(); }
+    readonly themeObserver: MutationObserver;
+    constructor(readonly view: EditorView) {
+      this.math = mathFor(view);
+      const root = view.dom.ownerDocument.documentElement;
+      const syncTheme = () => {
+        const dark = root.classList.contains('ydark');
+        if (!this.disposed && dark !== view.state.field(field).dark) view.dispatch({ effects: setDark.of(dark), annotations: Transaction.addToHistory.of(false) });
+      };
+      this.themeObserver = new MutationObserver(syncTheme);
+      this.themeObserver.observe(root, { attributes: true, attributeFilter: ['class'] });
+      queueMicrotask(syncTheme);
+      this.schedule();
+    }
     update(update: ViewUpdate) {
       if (update.focusChanged) queueMicrotask(() => { if (!this.disposed && this.view.state.field(field).focused !== this.view.hasFocus) this.view.dispatch({ effects: setFocused.of(this.view.hasFocus), annotations: Transaction.addToHistory.of(false) }); });
       if (update.docChanged) { gestures.get(this.view)?.(); gestures.delete(this.view); this.revision++; this.index = null; this.windowStart = -1; this.queued = true; this.schedule(); }
@@ -270,6 +294,6 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
       } else return;
       this.deadline = setTimeout(() => this.stop('文档预览超过 15 秒，已停止解析；源码和修改仍保留'), 15000);
     }
-    destroy() { this.disposed = true; gestures.get(this.view)?.(); gestures.delete(this.view); linkDown.delete(this.view); clearTimeout(this.timer); this.stop(); this.math.dispose(); if (mathSessions.get(this.view) === this.math) mathSessions.delete(this.view); for (const record of [...diagrams.values()]) { record.owner?.destroy(); record.active = false; } diagrams.clear(); }
+    destroy() { this.disposed = true; this.themeObserver.disconnect(); gestures.get(this.view)?.(); gestures.delete(this.view); linkDown.delete(this.view); clearTimeout(this.timer); this.stop(); this.math.dispose(); if (mathSessions.get(this.view) === this.math) mathSessions.delete(this.view); for (const record of [...diagrams.values()]) { record.owner?.destroy(); record.active = false; } diagrams.clear(); }
   })];
 }

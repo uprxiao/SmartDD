@@ -59,6 +59,8 @@ const LIFECYCLE_NOTICES = new Set([
   'system/hook_started', 'system/hook_progress', 'system/hook_response',
 ]);
 interface ActiveRun {
+  turnTier?: Tier;
+  tierChange?: Promise<void>;
   prewarmNativeId?: string;
   pendingNotices?: NativeNotice[];
   mcpFailures?: Map<string, ItemUpsert>;
@@ -297,6 +299,8 @@ export class AgentRunService {
         }
         return;
       }
+      // Partial Claude blocks belong only to the turn that dispatched the query.
+      if (run.driverId === 'claude-sdk' && !run.turnId && e.type === 'native' && e.name === 'stream_event') return;
       for (const item of run.projector.project(e)) {
         store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:${item.key}`, type: item.type, payload: item.payload, terminalState: item.terminal ?? null });
         if (item.type === 'subagent' && item.payload.nativeNodeIds && run.instance.nativeChildHistory) for (const nodeId of item.payload.nativeNodeIds as string[]) this.captureNode(run, nodeId);
@@ -381,6 +385,7 @@ export class AgentRunService {
           for (const turn of turns) store.endTurn(turn.turn_id, e.status, e.error ? e.error.slice(0, 200) : null);
           if (run.turnId && turns.some(t => t.turn_id === run.turnId)) {
             run.turnId = null;
+            run.turnTier = undefined;
             if (run.userStop?.turnId) {
               // Claude's foreground interrupt and SDK stopTask are separate operations.
               if (run.nativeNodes?.size && run.driverId !== 'claude-sdk') run.userStop.turnId = null;
@@ -453,18 +458,51 @@ export class AgentRunService {
     if (!tier.ok) { store.endTurn(turnId, 'canceled', 'TIER'); throw new DriverError('REJECTED', '不支持的权限档位'); }
     store.dispatchTurn(turnId, runId);
     run.turnId = turnId;
+    run.turnTier = tier.tier;
     try {
       const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
       run.appliedTier = tier.tier; run.appliedModel = input.model; run.appliedEffort = input.effort; if (input.model) run.sentModel = true;
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };
     } catch (e) {
-      if (run.turnId === turnId) run.turnId = null;
+      if (run.turnId === turnId) {
+        run.turnId = null;
+        run.turnTier = undefined;
+      }
       // STATE：驱动在写出前拒绝（如原生仍有回合在跑），输入未发出，放回排队；REJECTED：协议明确拒绝记失败；其余记未知。
       if (e instanceof DriverError && e.code === 'STATE') store.requeueTurn(turnId);
       else store.endTurn(turnId, e instanceof DriverError && e.code === 'REJECTED' ? 'failed' : 'unknown', e instanceof DriverError ? e.code : 'START_FAILED');
       throw e;
     }
+  }
+
+  /** Serialize native acknowledgements so rapid picks cannot leave the engine on an older choice. */
+  changeTurnTier(runId: string, tier: Tier) {
+    const run = this.runs.get(runId);
+    const turnId = run?.turnId;
+    if (!run || !turnId || run.readOnly || run.userStop || !run.instance.setTurnTier) return;
+    const previous = run.tierChange;
+    const apply = async () => {
+      await previous;
+      if (this.runs.get(runId) !== run || run.closing || run.userStop || run.turnId !== turnId) return;
+      const current = run.turnTier ?? run.appliedTier ?? run.tier;
+      if (current === tier || !await run.instance.setTurnTier!(current, tier)) return;
+      if (run.turnId === turnId) run.turnTier = tier;
+      // Claude updates the SDK session. Codex's reviewer update is scoped to one turn.
+      if (run.driverId === 'claude-sdk') run.appliedTier = tier;
+    };
+    const change = apply().catch(() => {
+      // A refused or unsupported update leaves the saved choice for the next dispatch.
+    }).finally(() => {
+      if (run.tierChange === change) {
+        run.tierChange = undefined;
+        if (this.runs.get(runId) === run && !run.closing) {
+          this.deps.store.tx(emit => emit(run.taskId, 'run.permission_updated', { runId }));
+        }
+      }
+    });
+    run.tierChange = change;
+    return change;
   }
 
   private assertIdleRunCurrent(run: ActiveRun) {
@@ -483,7 +521,7 @@ export class AgentRunService {
     if (!run.instance.steer) throw new DriverError('UNSUPPORTED', '该执行器不支持插话');
     const current = this.deps.store.turn(run.turnId);
     if (!current?.native_turn_id) throw new DriverError('STATE', '回合尚未开始');
-    await run.instance.steer({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: run.tier });
+    await run.instance.steer({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: run.turnTier ?? run.appliedTier ?? run.tier });
     this.deps.store.attachSteer(turnId, runId, current.native_turn_id);
     // A native completion may arrive before the steer acknowledgement.
     const finished = this.deps.store.turn(current.turn_id)?.status;

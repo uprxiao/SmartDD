@@ -23,6 +23,24 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it('updates only the active reviewer and defers sandbox changes', async () => {
+    const { inst, server } = setup((message, peer) => {
+      if (message.method !== 'turn/settings/update') return false;
+      peer.reply(message.id, { status: 'applied' });
+      return true;
+    });
+    try {
+      await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+      await inst.startTurn({ clientInputId: 'first', text: 'ok', tier: 'ask' });
+      expect(await inst.setTurnTier('ask', 'auto')).toBe(true);
+      expect(await inst.setTurnTier('auto', 'full')).toBe(false);
+      expect(await inst.setTurnTier('auto', 'ask')).toBe(true);
+      expect(server.calls('turn/settings/update').map(call => call.params)).toEqual([
+        { threadId: 'thr-1', turnId: 'turn-1', approvalsReviewer: 'auto_review' },
+        { threadId: 'thr-1', turnId: 'turn-1', approvalsReviewer: 'user' },
+      ]);
+    } finally { await inst.close(); }
+  });
   it.each(['ready', 'failed', 'unsupported'] as const)('starts a usable turn when optional project MCP is %s', async status => {
     const name = 'smartdd_project_fixture';
     const f = setup((message, peer) => {

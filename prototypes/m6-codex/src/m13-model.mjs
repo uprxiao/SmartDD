@@ -631,9 +631,9 @@ export function reconcileModels(oldModels, fresh) {
 // ================= P0.17：智能体权限（需求补记 8，用户 2026-11-11 决定；参数依据补验 E） =================
 /** 首页权限档位，名称与说明照搬 Codex。tools 缺省表示两个 Code Agent 都提供；Claude 暂不提供“帮我批准”（订阅未实测、第三方不完整）。两个 Code Agent 都不提供“自定义”（用户 2026-11-11 原型评审：太专业，去掉）。 */
 export const PERMISSIONS = [
-  { id: 'ask', name: '请求批准', desc: '编辑外部文件和使用互联网时始终询问', icon: 'hand' },
-  { id: 'auto', name: '帮我批准', desc: '仅对检测到的风险操作请求批准', icon: 'shield-prompt', tools: ['codex'] },
-  { id: 'full', name: '完全访问权限', desc: '可不受限制地访问互联网和你电脑上的任何文件', icon: 'alert', danger: true },
+  { id: 'ask', name: '请求批准', desc: '编辑外部文件和使用互联网时询问', otherDesc: '执行器请求工具权限时询问', icon: 'hand' },
+  { id: 'auto', name: '帮我批准', desc: '由 Codex 审查需要批准的操作', icon: 'shield-prompt', tools: ['codex'] },
+  { id: 'full', name: '完全访问权限', desc: '允许访问电脑文件和互联网', otherDesc: '允许执行器自动批准工具操作', icon: 'alert', danger: true },
 ];
 export const DEFAULT_PERMISSION = 'ask';
 /** 启动参数（补验 E 实测）：Codex 的“请求批准”必须指定由用户审批，否则用户 config.toml 里的自动审查会代批。 */

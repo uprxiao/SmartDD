@@ -228,6 +228,12 @@ class AntigravityInstance implements DriverInstance {
     return { nativeTurnId: turn.id };
   }
 
+  async setTurnTier(_current: TurnInput['tier'], next: TurnInput['tier']) {
+    if (!this.turn || this.turn.cancelling || next === 'auto') return false;
+    this.tier = next;
+    return true;
+  }
+
   private finish(turn: ActiveTurn, reason?: string, error?: Error) {
     if (this.turn !== turn) return;
     if (turn.text) this.events.emit({ type: 'item.completed', nativeItemId: turn.id, itemType: 'agentMessage', payload: { text: turn.text, model: turn.model } });

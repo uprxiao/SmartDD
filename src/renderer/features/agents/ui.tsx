@@ -4,11 +4,11 @@ import type { ReactNode } from 'react';
 
 /** Keep the approved prototype geometry; the existing Base UI primitive adds
  * production focus trapping, Escape handling and focus return. */
-export function AgentDialog({title,sub,onClose,children,footer,wide=false}:{title:string;sub?:string;onClose:()=>void;children:ReactNode;footer?:ReactNode;wide?:boolean}){
+export function AgentDialog({title,sub,onClose,children,footer,wide=false,className}:{title:string;sub?:string;onClose:()=>void;children:ReactNode;footer?:ReactNode;wide?:boolean;className?:string}){
   return <Primitive.Root open onOpenChange={open=>{if(!open)onClose();}}>
     <Primitive.Portal><div className="m13-shell">
       <Primitive.Backdrop className="m13-overlay" />
-      <Primitive.Popup className={'m13-dialog'+(wide?' wide':'')} style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:61}}>
+      <Primitive.Popup className={['m13-dialog',wide&&'wide',className].filter(Boolean).join(' ')} style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:61}}>
         <div className="m13-dialog-head"><div><Primitive.Title render={<h2/>}>{title}</Primitive.Title>{sub&&<Primitive.Description render={<p/>}>{sub}</Primitive.Description>}</div>
           <Primitive.Close className="m10-icon" aria-label="关闭" title="关闭"><X size={16}/></Primitive.Close></div>
         <div className="m13-dialog-body">{children}</div>{footer&&<div className="m13-dialog-foot">{footer}</div>}

@@ -321,6 +321,33 @@ it('A26 shows the delegated child’s inherited tier without opening another per
   expect(tier).toHaveProperty('title', '跟随主任务的权限档位');
 });
 
+it('shows the actual current tier and the saved tier when the switch is deferred', async () => {
+  const selection = { driverId: 'codex-app-server', profileId: 'p', tier: 'full' };
+  mocks.snapshot.mockResolvedValue(snapshot({ selection, run: { busy: true, tier: 'ask' }, status: 'running' }));
+  render(<AgentTaskView taskId="task" />);
+  const trigger = await screen.findByLabelText('权限档位');
+  expect(trigger.textContent).toBe('请求批准');
+  expect(screen.getByText('下轮生效 · 完全访问权限')).toBeTruthy();
+  fireEvent.click(trigger);
+  const menu = await screen.findByRole('menu', { name: '权限' });
+  expect(within(menu).getAllByRole('menuitemradio')).toHaveLength(3);
+  expect(within(menu).getByRole('menuitemradio', { name: /完全访问权限/ }).getAttribute('aria-checked')).toBe('true');
+  expect(within(menu).queryByText('了解更多')).toBeNull();
+});
+
+it.each(['claude-sdk', 'antigravity-acp'])('shows only manual and full tiers for %s', async driverId => {
+  mocks.snapshot.mockResolvedValue(snapshot({ selection: { driverId, profileId: 'p', tier: 'full' }, run: { busy: true, tier: 'full' } }));
+  render(<AgentTaskView taskId="task" />);
+  const trigger = await screen.findByLabelText('权限档位');
+  expect(trigger.textContent).toBe('完全访问权限');
+  expect(trigger.classList.contains('danger')).toBe(true);
+  expect(screen.queryByText(/下轮生效/)).toBeNull();
+  fireEvent.click(trigger);
+  const menu = await screen.findByRole('menu', { name: '权限' });
+  expect(within(menu).getAllByRole('menuitemradio')).toHaveLength(2);
+  expect(within(menu).queryByText('帮我批准')).toBeNull();
+});
+
 it('A59 shows the recorded target and model in one creation card and keeps old delegation rows readable', async () => {
   const created = { ...item('thread_created', { childTaskId: 'child', title: 'New child', target: { name: 'Codex review' }, model: 'review-model', workspaceMode: 'shared', access: 'write' }), itemId: 'creation' };
   const historical = { ...item('subtask', { childTaskId: 'old-child', title: 'Old child', workspaceMode: 'shared', access: 'write' }), itemId: 'old' };

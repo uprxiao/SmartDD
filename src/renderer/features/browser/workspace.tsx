@@ -5,7 +5,7 @@ import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 're
 import {createPortal} from 'react-dom';
 import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,AlertTriangle,WifiOff,UserRound,Download,KeyRound,Pause,Play,Bot,ExternalLink} from 'lucide-react';
 import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
-import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-workspace';
+import type {BrowserWorkspaceState,BrowserTabState,BrowserShortcut} from '@shared/browser-workspace';
 import type {BrowserProfile} from '@shared/browser-profiles';
 import {BROWSER_BLANK_URL,normalizeBrowserNavigationUrl} from '@shared/browser-navigation';
 import {events,rpc} from '@renderer/lib/ipc';
@@ -53,6 +53,9 @@ interface BrowserHeader {
   onActivate: () => void;
   onClose: () => void;
 }
+function tabAddress(tab:BrowserTabState){
+  return tab.url===BROWSER_BLANK_URL?tab.pendingUrl??tab.failure?.url??'':tab.url;
+}
 
 export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: string; workspaceHeader?: BrowserHeader }) {
   const store = browserWorkspaceFor(taskId);
@@ -75,10 +78,13 @@ export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: strin
     }
   }, [state, openingTab, onCloseSurface, store]);
   const tabs = state?.tabs.map(tab => {
-    const title = tab.title || '新标签页';
+    const address = tabAddress(tab);
+    const pendingHost = tab.pendingUrl ? URL.parse(tab.pendingUrl)?.host : undefined;
+    const failedHost = tab.url === BROWSER_BLANK_URL ? tab.failure?.host : undefined;
+    const title = pendingHost || failedHost || tab.title || '新标签页';
     const selected = (workspaceHeader?.active ?? true) && tab.id === state.activeId;
     return <div key={tab.id} className={`agent-surface-tab ${selected ? 'on' : ''}`}>
-      <button type="button" role="tab" aria-selected={selected} title={tab.url} onClick={() => {
+      <button type="button" role="tab" aria-selected={selected} title={address || tab.url} onClick={() => {
         workspaceHeader?.onActivate();
         if (tab.id !== state.activeId) void store.select(tab.id);
       }}>
@@ -101,10 +107,13 @@ export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: strin
 }
 function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null}){
   const access=useSyncExternalStore(browserAccess.subscribe,browserAccess.snapshot),accessOpen=!!access.state.requests.length||access.grantsOpen,[accessReady,setAccessReady]=useState(false);
-  const tab=state.tabs.find(t=>t.id===state.activeId)!,[address,setAddress]=useState(tab.url===BROWSER_BLANK_URL?'':tab.url),[find,setFind]=useState(false),[menu,setMenu]=useState(false);
+  const tab=state.tabs.find(t=>t.id===state.activeId)!;
+  const taskId=state.taskId,tabId=tab.id;
+  const authAddress=state.auth?.pageId===tabId?state.auth.url:state.authCancelled?.pageId===tabId?state.authCancelled.url:undefined;
+  const displayedAddress=authAddress??(tab.certificate?.challengeId?tab.failure?.url:undefined)??tabAddress(tab);
+  const [address,setAddress]=useState(displayedAddress),[find,setFind]=useState(false),[menu,setMenu]=useState(false);
   const input=useRef<HTMLInputElement>(null),searchInput=useRef<HTMLInputElement>(null),viewport=useRef<HTMLDivElement>(null),[query,setQuery]=useState('');
   const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[pageImage,setPageImage]=useState<string|null>(null),[initialImport,setInitialImport]=useState(false),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),[authOpenId,setAuthOpenId]=useState<string|null>(null),[javascriptOpenId,setJavascriptOpenId]=useState<string|null>(null),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
-  const taskId=state.taskId,tabId=tab.id;
   const [addressIssue,setAddressIssue]=useState<{taskId:string;tabId:string;committedUrl:string;input:string;shown:boolean}|null>(null);
   const invalidAddress=addressIssue?.taskId===taskId&&addressIssue.tabId===tabId&&addressIssue.committedUrl===tab.url&&addressIssue.shown&&tab.importState!=='importing'&&tab.importState!=='needs-attention'?addressIssue:null;
   const invalidMessage='请输入有效的 http(s) 或 localhost 地址';
@@ -126,7 +135,7 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
   const activeBadge=badgeProfile?.id===tab.profileId?badgeProfile:null;
   const badgeLabel=activeBadge?(activeBadge.scope==='project'?'项目登录态':'独立登录态'):'登录态';
   const badgeTitle=activeBadge?'当前页面的登录态：'+activeBadge.label:badgeLoading?'正在读取当前页面的登录态':'无法读取当前登录态，点击管理';
-  useEffect(()=>{setAddress((state.auth?.pageId===tabId?state.auth.url:state.authCancelled?.pageId===tabId?state.authCancelled.url:undefined)??(tab.certificate?.challengeId?tab.failure?.url:undefined)??(tab.url===BROWSER_BLANK_URL?'':tab.url));},[tabId,tab.url,tab.failure,tab.certificate?.challengeId,state.auth?.url,state.authCancelled?.url]);
+  useEffect(()=>{setAddress(displayedAddress);},[tabId,displayedAddress,tab.failure]);
   const run=(work:()=>Promise<unknown>)=>void store.run(work);
   const action=(value:'reload'|'hard-reload'|'stop'|'back'|'forward')=>{
     if(value!=='stop')setAddressIssue(issue=>issue?.taskId===taskId&&issue.tabId===tabId?{...issue,shown:false}:issue);
@@ -145,7 +154,8 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
     else if(value==='address'){void rpc.browser.focusChrome().then(()=>{input.current?.focus();input.current?.select();});}else if(value==='find')setFind(true);else action(value);
   };
   useEffect(()=>events.on(browserShortcutEvent,event=>{if(event.taskId===taskId)shortcut(event.action);}),[taskId,tabId]);
-  const blank=tab.url===BROWSER_BLANK_URL&&!tab.failure&&!state.auth&&!state.authCancelled&&!state.javascriptDialog;
+  const hasCommittedPage=tab.url!==BROWSER_BLANK_URL;
+  const blank=!hasCommittedPage&&!tab.pendingUrl&&!tab.failure&&!state.auth&&!state.authCancelled&&!state.javascriptDialog;
   const surfaceOpen=accessOpen||!!state.auth||!!state.authCancelled||!!state.javascriptDialog||preferences!==null||profileRecords!==null||menu||downloadsOpen;
   const pageBlocked=surfaceOpen||!!invalidAddress||tab.importState==='importing'||tab.importState==='needs-attention'||blank||!!tab.failure;
   const titleOverlay=useBrowserTabTooltip({taskId,tabId,tooltip:titleTooltip,pageBlocked,surfaceOpen});
@@ -197,11 +207,11 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
   const search=(text:string,next=false,forward=true)=>run(()=>rpc.browser.find({taskId,tabId,text,forward,next}));
   const closeFind=()=>{setFind(false);run(async()=>{await rpc.browser.find({taskId,tabId,text:'',forward:true,next:false});await rpc.browser.action({taskId,tabId,action:'focus'});});};
   useEffect(()=>{
-    const node=viewport.current;if(!node||blocked)return;
+    const node=viewport.current;if(!node||blocked||!hasCommittedPage)return;
     let active=true,frame=0;const place=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(!active)return;const r=node.getBoundingClientRect(),edge=2;if(r.width>2*edge&&r.height>2*edge)void rpc.browser.placement({taskId,tabId,rect:{x:Math.round(r.x)+edge,y:Math.round(r.y)+edge,width:Math.round(r.width)-2*edge,height:Math.round(r.height)-2*edge}}).catch(()=>{});});};
     const observer=new ResizeObserver(place);observer.observe(node);window.addEventListener('resize',place);place();
     return()=>{active=false;cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',place);void rpc.browser.placement({taskId,tabId,rect:null}).catch(()=>{});};
-  },[taskId,tabId,blocked,find,titleOverlay.revision]);
+  },[taskId,tabId,blocked,hasCommittedPage,find,titleOverlay.revision]);
   return <div className="bw-workspace" data-browser-task={taskId} onKeyDown={event=>{
     if(downloadsOpen&&event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSettings();return;}
     if(menu&&event.key==='Escape'){event.preventDefault();event.stopPropagation();closeMenu();return;}
@@ -211,7 +221,7 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
     if(command){event.preventDefault();event.stopPropagation();shortcut(command);}
   }}>
     <div className="fw-toolbar bw-toolbar"><div className="bw-nav"><button className="fw-icon" aria-label="后退" disabled={!tab.canGoBack} onClick={()=>action('back')}><ArrowLeft size={17} strokeWidth={1.65}/></button><button className="fw-icon" aria-label="前进" disabled={!tab.canGoForward} onClick={()=>action('forward')}><ArrowRight size={17} strokeWidth={1.65}/></button><button className="fw-icon" aria-label={tab.loading?'停止加载':invalidAddress?'重试':'刷新网页'} onClick={()=>action(tab.loading?'stop':'reload')}>{tab.loading?<X size={17} strokeWidth={1.65}/>:<RotateCw size={17} strokeWidth={1.65}/>}</button></div>
-      <form className="fw-breadcrumb bw-address" onSubmit={event=>{event.preventDefault();submitAddress();}}><span className={tab.certificate&&!invalidAddress?'bw-security bw-certificate':'bw-security'} title={tab.certificate&&!invalidAddress?'证书不受信任':undefined}>{tab.certificate&&!invalidAddress?<ShieldAlert size={13} aria-label="证书不受信任"/>:<Globe size={13}/>}</span><input ref={input} aria-label="网页地址" value={address} placeholder="输入网址或搜索内容" spellCheck={false} onChange={event=>setAddress(event.target.value)} onFocus={event=>event.currentTarget.select()} onKeyDown={event=>{if(event.key==='Escape'){setAddress(blank?'':tab.url);event.currentTarget.blur();}}}/><button type="button" className="bw-profile" title={badgeTitle} aria-busy={badgeLoading} onClick={()=>showProfiles(false,true)}><UserRound size={12}/>{badgeLabel}</button></form>
+      <form className="fw-breadcrumb bw-address" onSubmit={event=>{event.preventDefault();submitAddress();}}><span className={tab.certificate&&!invalidAddress?'bw-security bw-certificate':'bw-security'} title={tab.certificate&&!invalidAddress?'证书不受信任':undefined}>{tab.certificate&&!invalidAddress?<ShieldAlert size={13} aria-label="证书不受信任"/>:<Globe size={13}/>}</span><input ref={input} aria-label="网页地址" value={address} placeholder="输入网址或搜索内容" spellCheck={false} onChange={event=>setAddress(event.target.value)} onFocus={event=>event.currentTarget.select()} onKeyDown={event=>{if(event.key==='Escape'){setAddress(displayedAddress);event.currentTarget.blur();}}}/><button type="button" className="bw-profile" title={badgeTitle} aria-busy={badgeLoading} onClick={()=>showProfiles(false,true)}><UserRound size={12}/>{badgeLabel}</button></form>
       {state.paused?<button type="button" className="fw-pill bw-resume" onClick={()=>run(()=>rpc.browser.pause({taskId,paused:false}))}><Play size={13}/>恢复 Agent</button>:state.tabs.some(item=>item.agentActive)&&<button type="button" className="fw-pill bw-pause" onClick={()=>run(()=>rpc.browser.pause({taskId,paused:true}))}><Pause size={13}/>暂停 Agent</button>}
       <>{!!state.downloads?.length&&<button className={'fw-icon bw-download-trigger'+(downloadsOpen?' active':'')} aria-label="下载" aria-expanded={downloadsOpen} onClick={showDownloads}><Download size={17} strokeWidth={1.65}/>{state.downloads.some(item=>item.state==='progress')&&<i aria-label="下载进行中"/>}</button>}</><button className="fw-icon" aria-label="浏览器菜单" aria-expanded={menu} onClick={toggleMenu}><MoreHorizontal size={17} strokeWidth={1.65}/></button>
     </div>

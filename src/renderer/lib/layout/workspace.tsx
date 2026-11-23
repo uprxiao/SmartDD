@@ -5,7 +5,7 @@ import {agentTasksStore} from '@renderer/core/agent-tasks-store';
 // M6 shell follows the approved local prototype; the Agent workspace hosts the task views.
 import { ArrowLeft, FolderOpen, PanelBottom, Moon, PanelLeft, Plus, Sun } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { menuToggleLeftSidebarEvent } from '@shared/events';
 import { filePanelBounds, resolveFilePanelWidth } from '@shared/file-panel-layout.mjs';
@@ -22,6 +22,7 @@ import { useApplicationEvents } from '@renderer/features/applications/api';
 import { SettingsView } from '@renderer/views/settings-view';
 import { AgentTaskView } from '@renderer/features/agent-tasks/agent-task-view';
 import { FileWorkspacePanel } from '@renderer/features/files/workspace-panel';
+import { fileWorkspaceFor } from '@renderer/features/files/workspace-store';
 import {useBrowserShortcuts} from '@renderer/features/browser/workspace';
 
 export const Workspace = observer(function Workspace() {
@@ -87,6 +88,7 @@ const HomeTitlebarActions = observer(function HomeTitlebarActions() {
   </div>;
 });
 
+const noFileSubscription = () => () => {};
 const MainContent = observer(function MainContent({ taskTitlebar, panelTitlebar }: { taskTitlebar: HTMLDivElement | null; panelTitlebar: HTMLDivElement | null }) {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
@@ -97,7 +99,12 @@ const MainContent = observer(function MainContent({ taskTitlebar, panelTitlebar 
   const agentPanel=view==='agentTask'||view==='home';
   const fileScope = view==='agentTask'&&navigation.currentAgentTaskId?{kind:'task' as const,taskId:navigation.currentAgentTaskId}:view==='home'?{kind:'project' as const,projectId:homeWorkspace.projectId??'m14-home-unselected'}:view === 'project' && navigation.currentProjectId ? { kind: 'project' as const, projectId: navigation.currentProjectId } : null;
   const homePanels=panelsFor({kind:'project',projectId:homeWorkspace.projectId??'m14-home-unselected'});
-  const maximized = !!(agentPanel && navigation.filePanelOpen && fileScope && panelsFor(fileScope).maximized);
+  const agentPanels = agentPanel && navigation.filePanelOpen && fileScope ? panelsFor(fileScope) : null;
+  const filesActive = !readOnlyAgent && agentPanels?.active === 'files' && agentPanels.tabs.includes('files');
+  const fileStore = filesActive && fileScope && !(view === 'home' && !homeWorkspace.projectId) ? fileWorkspaceFor(fileScope) : null;
+  const hasOpenFile = useSyncExternalStore(fileStore?.subscribe ?? noFileSubscription, () => !!fileStore?.active);
+  const directoryOnly = filesActive && !hasOpenFile;
+  const maximized = !!agentPanels?.maximized;
   useEffect(()=>{const key=(e:KeyboardEvent)=>{if(!agentPanel||readOnlyAgent||e.isComposing||e.defaultPrevented||!e.ctrlKey||e.metaKey||e.altKey||!['`','Backquote'].includes(e.code==='Backquote'?'Backquote':e.key)||e.target instanceof Element&&e.target.closest('dialog,[role=dialog]'))return;const scope=view==='agentTask'&&navigation.currentAgentTaskId?{kind:'task' as const,taskId:navigation.currentAgentTaskId}:{kind:'project' as const,projectId:homeWorkspace.projectId??'m14-home-unselected'};if(scope.kind==='project'&&!homeWorkspace.cwd)return;e.preventDefault();panelsFor(scope).terminalDrawer();};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[view,agentPanel,readOnlyAgent,homeWorkspace.projectId,homeWorkspace.cwd]);
   const split = useRef<HTMLDivElement>(null), [available, setAvailable] = useState(1000);
   useEffect(() => {
@@ -105,8 +112,9 @@ const MainContent = observer(function MainContent({ taskTitlebar, panelTitlebar 
     const measure = () => { const size = node.clientWidth; if (size > 0) { setAvailable(size); if (fileScope && navigation.filePanelOpen) navigation.migrateFilePanelWidth(size); } };
     measure(); const observer = new ResizeObserver(measure); observer.observe(node); return () => observer.disconnect();
   }, [view, navigation.currentAgentTaskId, navigation.currentProjectId, navigation.filePanelOpen]);
-  const { minimum, maximum } = filePanelBounds(available);
-  const fileWidth = resolveFilePanelWidth(navigation.filePanelWidthPreference, available);
+  const { minimum, maximum } = filePanelBounds(available, directoryOnly);
+  const preference = directoryOnly ? navigation.directoryPanelWidthPreference : navigation.filePanelWidthPreference;
+  const fileWidth = resolveFilePanelWidth(preference, available, directoryOnly);
   useEffect(() => { split.current?.closest<HTMLElement>('.codex-frame')?.style.setProperty('--m9-panel-measured', `${fileWidth}px`); }, [fileWidth]);
   return <main className={`workspace ${fileScope ? `m9-${fileScope.kind}-scope` : ''}`}>
     {view === 'project' && <header className="topbar"><div className="breadcrumbs"><button onClick={() => navigation.newTask()}>{t('nav.home')}</button><span>›</span><span>{project?.name}</span></div><div className="topbar-actions"><button type="button" className="m9-file-entry" data-testid="project-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button><button className="icon-button" title={t('settings.theme')} onClick={() => setTheme((theme ?? (document.documentElement.classList.contains('ydark') ? 'ydark' : 'ylight')) === 'ydark' ? 'ylight' : 'ydark')} >{theme === 'ydark' ? <Sun size={17} /> : <Moon size={17} />}</button></div></header>}
@@ -119,8 +127,8 @@ const MainContent = observer(function MainContent({ taskTitlebar, panelTitlebar 
       <ViewSlot active={view === 'scheduled'}><div className="scheduled-placeholder"><div className="scheduled-clock">🕘</div><h1>{t('m6.arrangeTasks')}</h1><p>{t('m6.scheduleDescription')}</p><span className="scheduled-planned">{t('m6.planned')}</span><p className="scheduled-note">{t('m6.scheduleNote')}</p></div></ViewSlot>
     </div>
     {navigation.filePanelOpen && fileScope && <>{!maximized && <div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
-      onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) navigation.setFilePanelWidth((split.current?.getBoundingClientRect().right ?? 0) - event.clientX, available); }}
-      onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />}
+      onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId) && split.current) navigation.setFilePanelWidth(split.current.getBoundingClientRect().right - event.clientX, available, directoryOnly); }}
+      onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available, directoryOnly); } }} />}
       {agentPanel?<AgentWorkspacePanels key={fileScope.kind==='task'?fileScope.taskId:fileScope.projectId} scope={fileScope} titlebarTarget={panelTitlebar} readOnly={readOnlyAgent} projectId={view==='home'?homeWorkspace.projectId:agentTask?.projectId??null}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
     </div>
   </main>;

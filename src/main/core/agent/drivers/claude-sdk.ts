@@ -126,7 +126,8 @@ export class ClaudeSdkInstance implements DriverInstance {
       ...(o.model ? { model: o.model } : {}),
       ...(Object.keys(settings).length ? { settings } : {}),
       permissionMode: params.permissionMode,
-      ...(params.permissionMode === 'bypassPermissions' ? { allowDangerouslySkipPermissions: true } : {}),
+      // Keep the initial mode explicit. This only makes a later user-requested switch available.
+      ...(!o.readOnly ? { allowDangerouslySkipPermissions: true } : {}),
       settingSources: [...(o.settingSources ?? ['user', 'project', 'local'])],
       ...(Object.keys(mcpServers).length ? { mcpServers } : {}),
       ...(allowedTools.length ? { allowedTools } : {}),
@@ -315,6 +316,15 @@ export class ClaudeSdkInstance implements DriverInstance {
     });
   };
 
+  async setTurnTier(_current: Tier, next: Tier) {
+    if (!this.query || !this.activeTurn || this.activeTurn.interrupted || this.openOptions?.readOnly) return false;
+    const mode = CLAUDE_TIERS[next]?.permissionMode;
+    if (!mode) return false;
+    await this.query.setPermissionMode(mode);
+    this.tier = next;
+    return true;
+  }
+
   async startTurn(input: TurnInput) {
     if (!this.query || !this.input) throw new DriverError('STATE', '会话尚未打开');
     // 已结束的会话不能再派发；输入尚未写出，按未发出处理（复核 NR04）。
@@ -323,7 +333,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (this.activeTurn || this.configuringTurn) throw new DriverError('STATE', '上一轮尚未结束');
     const params = CLAUDE_TIERS[input.tier];
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
-    // 跨越完全访问须在启动时声明；同一会话不切换，由调用方重开并恢复（复核 CR12，CLI 实测拒绝）。
+    // An idle change or a refused live update is applied by opening a session at the chosen tier.
     if (input.tier !== this.tier) throw new DriverError('UNSUPPORTED', '权限档位变化需要重开会话');
     this.stopPending = false;
     this.configuringTurn = true;

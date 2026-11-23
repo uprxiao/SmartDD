@@ -26,6 +26,7 @@ import type { PptxEditInput,PptxHistoryInput,PptxCheckpointInput,PptxSaveInput,P
 import type { FileTerminalService } from './terminal-context';
 import { discoverLanguageServers } from './lsp/discovery';
 import type { TerminalBindingInput, TerminalPrepareInput, TerminalInsertionInput } from '@shared/file-terminal';
+import type { MarkdownRemoteImageRequest } from '@shared/markdown-remote-image';
 
 export function createFileController(service: FileService, trusted: (event: IpcMainInvokeEvent) => boolean, workspace?: FileWorkspacePersistence, terminal?: FileTerminalService) {
   const owners = new Map<number, Set<string>>();
@@ -211,6 +212,8 @@ export function createFileController(service: FileService, trusted: (event: IpcM
       } finally { copying.delete(id); }
     },
     related: (event: IpcMainInvokeEvent, ref: FileRef, href: string) => service.related(owner(event), ref, href),
+    markdownRemoteImage: (event: IpcMainInvokeEvent, ref: FileRef, input: MarkdownRemoteImageRequest) => service.markdownRemoteImage(owner(event), ref, input),
+    cancelMarkdownRemoteImage: (event: IpcMainInvokeEvent, id: string) => service.cancelMarkdownRemoteImage(owner(event), id),
     diagram: (event: IpcMainInvokeEvent, ref: FileRef, request: FileDiagramRequest) => service.diagram(owner(event), ref, request),
     cancelDiagram: (event: IpcMainInvokeEvent, id: string) => service.cancelDiagram(owner(event), id),
     raster: (event: IpcMainInvokeEvent, ref: FileRef, request: FileRasterRequest) => service.raster(owner(event), ref, request),

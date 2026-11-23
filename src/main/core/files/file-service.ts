@@ -43,6 +43,8 @@ import { FileOfficeService } from './office/service';
 import { OfficeCalculationEngine, type OfficeEngineConfiguration } from './office/engine';
 import { TERMINAL_IMAGE_LIMITS } from '@shared/terminal-image';
 import { validatePptxImageContainer } from './office/pptx-image-container';
+import { markdownRemoteImageRequest, type MarkdownRemoteImageRequest } from '@shared/markdown-remote-image';
+import { fetchMarkdownRemoteImage } from './markdown-remote-image';
 
 interface DocumentRecord { owner: string; scopeKey: string; lease: string; issuedRoot: RootLease; generation: number; relativePath: string; documentKey: string; revision: FileRevision; content: FileDocument['content']; writable:boolean; readOnly:boolean; attachment?: FileDocument['attachment']; abort: AbortController; missingIdentity?: FileIdentity }
 interface Operation { fingerprint: string; filePath: string; result: Promise<FileSaveReceipt> }
@@ -58,6 +60,7 @@ export class FileService {
   private readonly installationId = randomUUID();
   private readonly diagrams = new Map<string, AbortController>();
   private readonly rasters = new Map<string, AbortController>();
+  private readonly markdownImages = new Map<string, AbortController>();
   private readonly resourceReads = new Map<string, AbortController>();
   private readonly cancelledReads = new Map<string, number>();
   private readonly recoveryReads = new Set<string>();
@@ -300,6 +303,23 @@ export class FileService {
     } finally { this.rasters.delete(key); }
   }
   cancelRaster(owner: string, id: string): void { this.rasters.get(`${owner}/${id}`)?.abort(); }
+
+  async markdownRemoteImage(owner: string, ref: FileRef, input: MarkdownRemoteImageRequest) {
+    const { id, href } = markdownRemoteImageRequest.parse(input);
+    const { record, lease } = this.requireDocument(owner, ref);
+    if (!/\.(?:md|markdown|mdown|mdx|mkd)$/i.test(record.relativePath)) throw new FileError('UNTRUSTED', '外链图片仅用于 Markdown 预览');
+    const key = `${owner}/${id}`;
+    if (this.markdownImages.has(key)) throw new FileError('IDEMPOTENCY', '外链图片请求编号已使用');
+    if (this.markdownImages.size >= 12) throw new FileError('TOO_LARGE', '外链图片队列已满，请稍后重试');
+    const cancel = new AbortController();
+    this.markdownImages.set(key, cancel);
+    try {
+      const result = await fetchMarkdownRemoteImage(href, AbortSignal.any([cancel.signal, record.abort.signal, lease.abort.signal]));
+      this.requireDocument(owner, ref);
+      return result;
+    } finally { this.markdownImages.delete(key); }
+  }
+  cancelMarkdownRemoteImage(owner: string, id: string): void { this.markdownImages.get(`${owner}/${id}`)?.abort(); }
 
   async watch(owner: string, input: RootRequest, directories: string[], refs: FileRef[], emit: (event: FileWatchUpdate) => void, id?: string) {
     await this.recovery.ready();

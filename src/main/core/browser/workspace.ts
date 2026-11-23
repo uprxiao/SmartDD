@@ -14,12 +14,14 @@ import type {BrowserAuthPrompt,BrowserAuthCancelled} from '@shared/browser-auth'
 import type {BrowserJavascriptDialog} from '@shared/browser-javascript-dialog';
 
 type Runtime=Pick<BrowserTabState,'loading'|'canGoBack'|'canGoForward'|'failure'>;
+type PendingNavigation={url:string};
 const idle=():Runtime=>({loading:false,canGoBack:false,canGoForward:false,failure:null});
 /** UI tab state has its own database keys. Live views remain owned by the registry. */
 export class BrowserWorkspace {
   private readonly tasks=new Map<string,SavedBrowserWorkspace>();
   private readonly runtime=new Map<string,Runtime>();
   private readonly opening=new Map<string,Promise<BrowserPage>>();
+  private readonly pendingNavigations=new Map<string,PendingNavigation>();
   private readonly navigations=new Map<string,{stopped:boolean}>();
   private readonly closingTabs=new Set<string>();
   private readonly recovering=new Map<string,ReturnType<typeof setTimeout>>();
@@ -37,7 +39,7 @@ export class BrowserWorkspace {
     this.unobserve=options.pages.observe(event=>{
       if(event.type==='created')this.attached(event.page);
       else if(!this.shuttingDown){
-        const id=event.page.id;this.runtime.delete(id);this.finds.delete(id);this.navigations.delete(id);this.overlays.delete(id);this.cancelRecovery(id);
+        const id=event.page.id;this.runtime.delete(id);this.finds.delete(id);this.navigations.delete(id);this.pendingNavigations.delete(id);this.overlays.delete(id);this.cancelRecovery(id);
         if(this.agentActive.get(event.page.taskId)===id)this.agentActive.delete(event.page.taskId);
         if(event.page.kind!=='tab'||this.closingTabs.has(id))return;
         const state=this.tasks.get(event.page.taskId);if(state){state.tabs=state.tabs.filter(t=>t.id!==event.page.id);if(state.activeId===event.page.id)state.activeId=state.tabs.at(-1)?.id??null;this.save(event.page.taskId);}
@@ -67,14 +69,60 @@ export class BrowserWorkspace {
     let recent:BrowserWorkspaceState['recent']=[];
     if(row)try{const values:unknown=JSON.parse(row.value);if(Array.isArray(values))recent=values.filter((r):r is BrowserWorkspaceState['recent'][number]=>!!r&&typeof r==='object'&&typeof r.url==='string'&&typeof r.title==='string'&&typeof r.host==='string'&&typeof r.visitedAt==='number').slice(0,8);}catch{/* A bad recent list must not destroy valid tabs. */}
     const found=state.activeId?this.finds.get(state.activeId):undefined,auth=state.activeId?this.options.authentication?.(taskId,state.activeId):undefined;
-    return{taskId,projectId,tabs:state.tabs.map(tab=>{const activity=this.options.activity?.(tab.id);return({...tab,...(this.runtime.get(tab.id)??idle()),...(activity?{agentActive:activity.active,agentRunning:activity.running,agentHoldUntil:activity.holdUntil??null}:{}),...(this.options.profileState?{importState:this.options.profileState(tab.profileId)}:{}),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})});}),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.paused?{paused:this.options.paused(taskId)}:{}),...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{}),...(this.options.downloads?{downloads:this.options.downloads(taskId)}:{}),...(this.options.authentication?{auth:auth?.prompt??null,authCancelled:auth?.cancelled??null}:{}),...(this.options.javascriptDialog?{javascriptDialog:state.activeId?this.options.javascriptDialog(taskId,state.activeId):null}:{})};
+    const tabs=state.tabs.map(tab=>{
+      const runtime=this.runtime.get(tab.id)??idle(),activity=this.options.activity?.(tab.id);
+      const pending=tab.url===BROWSER_BLANK_URL&&!runtime.failure?this.pendingNavigations.get(tab.id):undefined;
+      return {...tab,...runtime,
+        ...(pending?{pendingUrl:pending.url,loading:true}:{}),
+        ...(activity?{agentActive:activity.active,agentRunning:activity.running,agentHoldUntil:activity.holdUntil??null}:{}),
+        ...(this.options.profileState?{importState:this.options.profileState(tab.profileId)}:{}),
+        ...(this.options.certificate?{certificate:this.options.certificate(tab.id,runtime.failure?.url??tab.url)}:{})};
+    });
+    return{taskId,projectId,tabs,activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.paused?{paused:this.options.paused(taskId)}:{}),...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{}),...(this.options.downloads?{downloads:this.options.downloads(taskId)}:{}),...(this.options.authentication?{auth:auth?.prompt??null,authCancelled:auth?.cancelled??null}:{}),...(this.options.javascriptDialog?{javascriptDialog:state.activeId?this.options.javascriptDialog(taskId,state.activeId):null}:{})};
   }
   certificateFailed(page:BrowserPage,url:string,error:string):void{
     if(page.closed||page.importPaused||this.shuttingDown)return;
     const runtime=this.runtime.get(page.id)??idle();runtime.loading=false;runtime.failure=describeBrowserLoadFailure(-202,error,url);this.runtime.set(page.id,runtime);this.cancelRecovery(page.id);this.changed(page.taskId);
   }
-  create(taskId:string):BrowserWorkspaceState{
-    const state=this.load(taskId),id=randomUUID();state.tabs.push({id,url:BROWSER_BLANK_URL,title:'新标签页',favicon:null,profileId:browserProjectProfile(this.project(taskId))});state.activeId=id;this.save(taskId);return this.snapshot(taskId);
+  create(taskId:string,address?:string):BrowserWorkspaceState{
+    let request:PendingNavigation|undefined;
+    if(address!==undefined){
+      const url=/^https?:\/\//i.test(address)?normalizeBrowserNavigationUrl(address):null;
+      if(!url)throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s) 地址');
+      const parsed=new URL(url);
+      if(parsed.username||parsed.password)throw new BrowserError('BROWSER_ERROR','网页链接不能包含账号或密码');
+      request={url};
+    }
+    const state=this.load(taskId),id=randomUUID();
+    state.tabs.push({id,url:BROWSER_BLANK_URL,title:'新标签页',favicon:null,profileId:browserProjectProfile(this.project(taskId))});
+    state.activeId=id;
+    if(request){
+      this.notices.delete(taskId);
+      this.pendingNavigations.set(id,request);
+    }
+    this.save(taskId);
+    const snapshot=this.snapshot(taskId),initial=request;
+    if(initial){
+      // Respond with the tab before allocating its native view or loading the URL.
+      setImmediate(()=>void this.loadPendingNavigation(taskId,id,initial));
+    }
+    return snapshot;
+  }
+  private async loadPendingNavigation(taskId:string,id:string,request:PendingNavigation):Promise<void>{
+    if(this.pendingNavigations.get(id)!==request)return;
+    try{
+      const page=await this.ensure(taskId,id);
+      if(this.pendingNavigations.get(id)===request&&!page.closed)await this.loadUrl(page,request.url);
+    }catch{
+      if(this.pendingNavigations.get(id)===request){
+        this.runtime.set(id,{...idle(),failure:describeBrowserLoadFailure(-2,'ERR_FAILED',request.url)});
+      }
+    }finally{
+      if(this.pendingNavigations.get(id)===request){
+        this.pendingNavigations.delete(id);
+        this.changed(taskId);
+      }
+    }
   }
   select(taskId:string,id:string|null):BrowserWorkspaceState{
     const state=this.load(taskId);if(id&&!state.tabs.some(t=>t.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
@@ -115,6 +163,7 @@ export class BrowserWorkspace {
   async navigate(taskId:string,id:string,address:string,engine:BrowserSearchEngine=this.options.searchEngine?.()??'bing'):Promise<BrowserWorkspaceState>{
     const url=normalizeBrowserNavigationUrl(address,engine);if(url===null){this.notices.set(taskId,'请输入有效的 http(s) 或 localhost 地址');this.changed(taskId);return this.snapshot(taskId);}
     this.notices.delete(taskId);const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
+    if(this.pendingNavigations.delete(id))this.changed(taskId);
     if(url===BROWSER_BLANK_URL){const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live){this.closingTabs.add(id);try{await this.options.pages.close(taskId,id);}finally{this.closingTabs.delete(id);}}tab.url=url;tab.title='新标签页';tab.favicon=null;this.runtime.delete(id);this.save(taskId);}
     else{const page=await this.ensure(taskId,id);await this.loadUrl(page,url);}
     return this.snapshot(taskId);
@@ -126,12 +175,35 @@ export class BrowserWorkspace {
     finally{if(this.navigations.get(page.id)===request)this.navigations.delete(page.id);}
   }
   async action(taskId:string,id:string,action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'):Promise<void>{
+    const tab=this.load(taskId).tabs.find(tab=>tab.id===id);
+    if(action==='stop'&&tab&&this.pendingNavigations.delete(id)){
+      const page=this.options.pages.list(taskId).find(page=>page.id===id);
+      if(page)this.stopLoading(page);
+      this.changed(taskId);
+      return;
+    }
+    const retry=action==='reload'||action==='hard-reload';
+    const runtime=this.runtime.get(id);
+    if(retry&&tab?.url===BROWSER_BLANK_URL&&runtime?.failure){
+      const request={url:runtime.failure.url};
+      this.pendingNavigations.set(id,request);
+      runtime.failure=null;
+      this.changed(taskId);
+      await this.loadPendingNavigation(taskId,id,request);
+      return;
+    }
     const page=await this.target(taskId,id),wc=page.contents;
-    if(action==='focus'){wc.focus();return;}if(action==='stop'){const request=this.navigations.get(id);if(request)request.stopped=true;wc.stop();this.cancelRecovery(id);return;}
+    if(action==='focus'){wc.focus();return;}if(action==='stop'){this.stopLoading(page);return;}
     const failure=this.runtime.get(id)?.failure;
-    if(failure&&(action==='reload'||action==='hard-reload')){await this.loadUrl(page,failure.url);return;}
+    if(failure&&retry){await this.loadUrl(page,failure.url);return;}
     if(action==='reload')wc.reload();else if(action==='hard-reload')wc.reloadIgnoringCache();
     else if(action==='back'&&wc.navigationHistory.canGoBack())wc.navigationHistory.goBack();else if(action==='forward'&&wc.navigationHistory.canGoForward())wc.navigationHistory.goForward();
+  }
+  private stopLoading(page:BrowserPage){
+    const request=this.navigations.get(page.id);
+    if(request)request.stopped=true;
+    page.contents.stop();
+    this.cancelRecovery(page.id);
   }
   async placement(taskId:string,id:string,rect:Electron.Rectangle|null):Promise<void>{
     const version=++this.placementVersion;
@@ -166,7 +238,7 @@ export class BrowserWorkspace {
   async close(taskId:string,id:string,fromPageQueue=false):Promise<BrowserWorkspaceState>{
     const changing=this.profileChanges.get(id);if(changing)await changing;
     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return this.snapshot(taskId);
-    this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending;
+    this.pendingNavigations.delete(id);this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending.catch(()=>undefined);
     this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id,fromPageQueue);}finally{this.closingTabs.delete(id);}
     state.closed=[...state.closed,tab].slice(-10);state.tabs=state.tabs.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.tabs.at(-1)?.id??null;this.runtime.delete(id);this.save(taskId);return this.snapshot(taskId);
   }
@@ -270,9 +342,10 @@ export class BrowserWorkspace {
       const rows=this.options.sqlite.prepare('SELECT key FROM app_settings WHERE key LIKE ?').all('browserWorkspace.v1:%') as {key:string}[];
       const taskIds=new Set([...this.tasks.keys(),...rows.map(row=>row.key.slice('browserWorkspace.v1:'.length))]);
       for(const taskId of taskIds)if(!this.options.taskProject(taskId)){
+      for(const tab of this.tasks.get(taskId)?.tabs??[])this.pendingNavigations.delete(tab.id);
       for(const page of this.options.pages.list(taskId))if(this.options.pages.list(taskId).some(p=>p.id===page.id)){this.cancelRecovery(page.id);await this.options.pages.close(taskId,page.id);this.runtime.delete(page.id);}
       this.tasks.delete(taskId);this.external.delete(taskId);this.notices.delete(taskId);this.options.sqlite.prepare('DELETE FROM app_settings WHERE key=?').run(this.key(taskId));this.changed(taskId);
     }})().finally(()=>{this.reconciling=undefined;});return this.reconciling;
   }
-  async dispose(){this.shuttingDown=true;this.unobserve();for(const id of this.recovering.keys())this.cancelRecovery(id);await this.reconciling;}
+  async dispose(){this.shuttingDown=true;this.pendingNavigations.clear();this.unobserve();for(const id of this.recovering.keys())this.cancelRecovery(id);await this.reconciling;}
 }
