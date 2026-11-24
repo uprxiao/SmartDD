@@ -65,7 +65,7 @@ export function registeredProjectCwd(sqlite: BetterSqlite3.Database, projectId: 
 export interface AgentWorkspaceDeps {
   sqlite: BetterSqlite3.Database;
   agents: AgentService;
-  agentTools?: Pick<AgentToolService, 'whenIdle' | 'claudeCatalogAccount'>;
+  agentTools?: Pick<AgentToolService, 'claudeCatalogCheck'>;
   providers: ProviderService;
   capabilities: CapabilityService;
   userData: string;
@@ -334,11 +334,11 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (!recoveryAbort.signal.aborted) void readSubscriptionCatalog(profile, tool, d.baseEnv().HOME ?? homedir()).catch(() => {});
   };
   const modelCatalog = async (scope: AgentModelScope, profileId: string, mode?: CatalogReadMode): Promise<AgentModelCatalog> => {
-    let profile = config(profileId);
-    if (profile.kind === 'claude' && profile.source === 'login' && d.agentTools) {
-      await d.agentTools.whenIdle();
-      profile = config(profileId);
-    }
+    const initialProfile = config(profileId);
+    const checkingClaude = initialProfile.kind === 'claude' && initialProfile.source === 'login' && !!d.agentTools;
+    const checked = checkingClaude ? await d.agentTools?.claudeCatalogCheck(initialProfile.toolId) : undefined;
+    const profile = checkingClaude ? config(profileId) : initialProfile;
+    if (checkingClaude && checked?.tool.id !== profile.toolId) return { status: 'unavailable', models: [] };
     const antigravity = profile.kind === 'antigravity' && profile.source === 'provider';
     const nativeLogin = profile.source === 'login' && (profile.kind === 'codex' || profile.kind === 'claude');
     if (!antigravity && !nativeLogin) return { status: 'ready', models: [] };
@@ -346,14 +346,14 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const task = scope.kind === 'task' ? store.task(scope.taskId) : undefined;
     if (scope.kind !== 'project' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
     const cwd = scope.kind === 'project' ? registeredProjectCwd(d.sqlite, scope.projectId, scope.dirId) : canonicalPath(task!.cwd);
-    const tool = d.agents.tools().find(item => item.id === profile.toolId);
+    const tool = checked?.tool ?? d.agents.tools().find(item => item.id === profile.toolId);
     if (!tool) throw new DriverError('REJECTED', '执行器不可用');
     if (profile.kind === 'claude') {
-      if (!isClaudeSubscription(profile, tool.login)) return { status: 'unavailable', models: [] };
-      const account = d.agentTools?.claudeCatalogAccount(tool.id);
+      if (!tool.installed || !isClaudeSubscription(profile, tool.login)) return { status: 'unavailable', models: [] };
+      const account = checked?.catalogAccount;
       const baseEnv = d.baseEnv();
       const launch = resolveProfileLaunch({ config: profile, tool, cwd, userData: d.userData, runId: randomUUID(), baseEnv });
-      const key = claudeCatalogScope(profile.id, launch, tool, cwd);
+      const { key, previousKey } = claudeCatalogScope(profile.id, launch, tool, cwd);
       return modelCatalogs.read(key, async observer => {
         const native = await probeDriver('claude-sdk', { env: baseEnv, executable: launch.command, detect });
         if (!native.realpath || native.state === 'unsupported') throw new DriverError('UNSUPPORTED', native.reason ?? 'Claude Code 不可用');
@@ -363,13 +363,17 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const models = await previewClaudeModels({ executable: { path: native.realpath, version: native.version ?? 'unknown' },
           cwd, env, settingSources: launch.settingSources, onAccount: account
             ? active => { activeSignature = claudeAccountSignature(active); } : undefined }, signal);
+        const current = await d.agentTools?.claudeCatalogCheck(tool.id);
         if ((activeSignature && activeSignature !== account?.signature)
-          || account?.key !== d.agentTools?.claudeCatalogAccount(tool.id)?.key || key !== claudeCatalogScope(profile.id, launch, tool, cwd)) {
+          || (checked && (!current?.tool.installed || current.tool.login !== tool.login
+            || (current.tool.customPath || current.tool.executable) !== launch.command
+            || current.tool.version !== tool.version || current.catalogAccount?.key !== account?.key))
+          || key !== claudeCatalogScope(profile.id, launch, tool, cwd).key) {
           throw new DriverError('STATE', 'Claude Code 登录或配置已变化，请重新读取模型目录');
         }
         if (account && activeSignature) observer.account?.(account.key);
         return { confirmed: true, models };
-      }, mode, account?.key);
+      }, mode, account?.key, previousKey);
     }
     if (antigravity) {
       const provider = d.agents.providers().find(item => item.id === profile.providerId);

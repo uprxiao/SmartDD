@@ -91,6 +91,37 @@ describe('Tool discovery publishes data but never creates an agent automatically
     expect(failing.mock.calls).toHaveLength(2); expect(JSON.stringify(results)).not.toContain('PUBLIC_TEST_FAILURE');
   });
 
+  it('makes the fresh Claude account available while an unrelated tool is still being detected', async () => {
+    agents.recordTool({ id:'tool-codex', kind:'codex', executable:'/test/codex', customPath:null, version:'9.9.9', installed:true, login:'subscription' });
+    let finishCodex!: () => void;
+    const codexPending = new Promise<void>(resolve => { finishCodex = resolve; });
+    const auth = async (path: string, args: string[], env: Record<string, string>) => {
+      if (path.endsWith('/codex')) await codexPending;
+      if (args[0] !== '--version' && path.endsWith('/claude')) {
+        return { code: 0, stderr: '', stdout: JSON.stringify({ loggedIn: true, authMethod: 'claude.ai', apiProvider: 'firstParty',
+          subscriptionType: 'pro', email: 'reader@example.test', orgId: 'org-id', orgName: 'Example' }) };
+      }
+      return probe(path, args, env);
+    };
+    const tools = new AgentToolService(agents, { env: () => ({}), discover, probe: auth, executable: async () => true });
+    const refresh = tools.refresh();
+    try {
+      const checked = await Promise.race([
+        tools.claudeCatalogCheck('tool-claude').then(value => ({ value })),
+        new Promise<{ value: undefined }>(resolve => setTimeout(() => resolve({ value: undefined }), 400)),
+      ]);
+      expect(checked.value).toMatchObject({
+        tool: { login: 'subscription', executable: '/test/claude' },
+        catalogAccount: { key: expect.any(String) },
+      });
+      expect(agents.tools().map(tool => tool.id)).toEqual(['tool-codex']);
+    } finally {
+      finishCodex();
+      await refresh;
+    }
+    expect(agents.tools().find(tool => tool.id === 'tool-claude')?.login).toBe('subscription');
+  });
+
   it('retains the previous good path if a new custom selection is not executable', async () => {
     const tools = new AgentToolService(agents, { env: () => ({}), discover, probe, executable: async (path) => path !== '/bad' });
     await tools.refresh(); const before = agents.tools();

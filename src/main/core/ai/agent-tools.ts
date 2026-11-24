@@ -92,22 +92,45 @@ type Dependencies = {
 
 export class AgentToolService {
   private tail: Promise<unknown> = Promise.resolve();
-  private readonly catalogAccounts = new Map<string, ClaudeCatalogAccount>();
+  private claudeReady: Promise<unknown> = Promise.resolve();
+  private readonly claudeChecks = new Map<string, InspectedTool>();
   constructor(private readonly agents: AgentService, private readonly dependencies: Dependencies) {}
 
-  refresh(): Promise<ToolDetection[]> { return this.serialize(() => this.refreshNow()); }
-  whenIdle(): Promise<unknown> { return this.tail; }
-  claudeCatalogAccount(toolId: string): ClaudeCatalogAccount | undefined { return this.catalogAccounts.get(toolId); }
+  refresh(): Promise<ToolDetection[]> {
+    const claude = this.tail.then(async () => {
+      this.claudeChecks.clear();
+      const stored = this.agents.tools(), requests = stored.filter(tool => codeAgentKindSchema.safeParse(tool.kind).success);
+      for (const kind of codeAgentKindSchema.options) {
+        if (!requests.some(tool => tool.kind === kind)) requests.push({ id: `tool-${kind}`, kind, executable: RUNNERS[kind].command, customPath: null, version: null, installed: false, login: 'none' });
+      }
+      const env = this.detectEnv();
+      for (const tool of requests.filter(tool => tool.kind === 'claude')) this.claudeChecks.set(tool.id, await this.inspect(tool, env));
+      return { requests, env };
+    });
+    this.claudeReady = claude.then(() => undefined, () => undefined);
+    return this.serialize(async () => {
+      const { requests, env } = await claude;
+      const results: InspectedTool[] = [];
+      for (const tool of requests) results.push(this.claudeChecks.get(tool.id) ?? await this.inspect(tool, env));
+      // Publish the scan as a batch so default-profile selection sees every tool's final state.
+      this.record(results);
+      return results.map(({ tool, error }) => ({ tool, error }));
+    });
+  }
 
-  customPath(kind: string, path: string | null,toolId?:string): Promise<ToolDetection> { return this.serialize(() => this.customPathNow(kind, path,toolId)); }
+  async claudeCatalogCheck(toolId: string): Promise<InspectedTool | undefined> {
+    let ready: Promise<unknown>;
+    do {
+      ready = this.claudeReady;
+      await ready;
+    } while (ready !== this.claudeReady);
+    return this.claudeChecks.get(toolId);
+  }
 
-  private async refreshNow(): Promise<ToolDetection[]> {
-    const stored = this.agents.tools(), requests = [...stored.filter((tool) => codeAgentKindSchema.safeParse(tool.kind).success)];
-    for (const kind of codeAgentKindSchema.options) if (!requests.some((tool) => tool.kind === kind)) requests.push({ id: `tool-${kind}`, kind, executable: RUNNERS[kind].command, customPath: null, version: null, installed: false, login: 'none' });
-    const env = this.detectEnv(), results: InspectedTool[] = [];
-    for (const request of requests) results.push(await this.inspect(request, env));
-    this.record(results);
-    return results.map(({ tool, error }) => ({ tool, error }));
+  customPath(kind: string, path: string | null,toolId?:string): Promise<ToolDetection> {
+    const result = this.serialize(() => this.customPathNow(kind, path, toolId));
+    if (kind === 'claude') this.claudeReady = result.then(() => undefined, () => undefined);
+    return result;
   }
 
   private async customPathNow(kindInput: string, path: string | null,toolId?:string): Promise<ToolDetection> {
@@ -118,16 +141,15 @@ export class AgentToolService {
     const request: CodeAgentTool = { ...(existing ?? { id: `tool-${kind}`, kind, version: null, installed: false, login: 'none' }), executable: path ?? RUNNERS[kind].command, customPath: path };
     const result = await this.inspect(request, this.detectEnv());
     // A rejected file selection must not discard the user's last working tool.
-    if (result.tool.installed || path === null) this.record([result]);
+    if (result.tool.installed || path === null) {
+      this.record([result]);
+      if (kind === 'claude') this.claudeChecks.set(result.tool.id, result);
+    }
     return { tool: result.tool, error: result.error };
   }
 
   private record(results: InspectedTool[]) {
     this.agents.recordTools(results.map(({ tool }) => tool));
-    for (const { tool, catalogAccount } of results) {
-      if (catalogAccount) this.catalogAccounts.set(tool.id, catalogAccount);
-      else this.catalogAccounts.delete(tool.id);
-    }
     this.dependencies.onChanged?.();
   }
 
