@@ -1,7 +1,7 @@
 // Read-only discovery, drawing on Yoda's realpath/source scanning (Apache-2.0).
 // Parse errors stay visible. No MCP command, auth helper or model is executed here.
-import { accessSync, constants, existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
-import { delimiter, dirname, isAbsolute, join, resolve } from 'node:path';
+import { accessSync, constants, existsSync, lstatSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
+import { basename, delimiter, dirname, isAbsolute, join, resolve } from 'node:path';
 import { parse as parseToml } from 'smol-toml';
 import { parse as parseYaml } from 'yaml';
 import type { DiscoveredCapability } from '@shared/capabilities';
@@ -196,10 +196,22 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     }
     catch { badFile('mcp', path, 'configuration', 'config_parse_failed'); return null; }
   };
-  const plugin = (root: string) => {
-    const manifest = readConfig(join(root, '.claude-plugin', 'plugin.json'));
-    if (typeof manifest?.name !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(manifest.name)) { c.details?.issues.push('plugin_namespace_unverified'); return; }
-    c.details?.plugins.push({ name: manifest.name, path: root });
+  const plugin = (root: string, fallbackName: string | undefined) => {
+    const path = join(root, '.claude-plugin', 'plugin.json');
+    let name: unknown;
+    try {
+      lstatSync(path);
+      name = readConfig(path)?.name;
+    } catch (error) {
+      // Claude allows an absent manifest. An unreadable or malformed manifest still requires verification.
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        try {
+          if (statSync(root).isDirectory()) name = fallbackName;
+        } catch { /* The plugin root itself is unavailable. */ }
+      }
+    }
+    if (typeof name !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(name)) { c.details?.issues.push('plugin_namespace_unverified'); return; }
+    c.details?.plugins.push({ name, path: root });
   };
   const addMcp = (servers: unknown, path: string, source: string, enabled: boolean | null = null) => {
     if (servers === undefined) return;
@@ -268,7 +280,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       for (const entry of Array.isArray(entries) ? entries : [entries]) {
         const p = object(entry);
         if (typeof p.installPath !== 'string' || (typeof p.projectPath === 'string' && !layers.includes(p.projectPath))) continue;
-        plugin(p.installPath);
+        plugin(p.installPath, /^([A-Za-z0-9_-]{1,128})@[A-Za-z0-9_-]+$/.exec(name)?.[1]);
         const enabled = typeof enabledPlugins[name] === 'boolean' ? enabledPlugins[name] as boolean : null;
         const version = typeof p.version === 'string' ? p.version : null;
         scanDir(join(p.installPath, 'skills'), `plugin:${name}`, false, enabled, version);
@@ -291,7 +303,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       const policyFlag={'--allowedTools':'allow','--allowed-tools':'allow','--disallowedTools':'deny','--disallowed-tools':'deny'}[args[i]] as 'allow'|'deny'|undefined;
       if(policyFlag){while(args[i+1]&&!args[i+1].startsWith('-'))mcpPolicy[policyFlag].push(...args[++i].split(',').filter(Boolean));continue;}
       if(/^--(?:settings|setting-sources|settings-sources)(?:=|$)/.test(args[i]))mcpPolicy.unverified=true;
-      if (args[i] === '--plugin-dir' && args[i + 1]) { const root = resolve(c.cwd, args[++i]); plugin(root); scanDir(join(root, 'skills'), 'profile plugin', false, true); }
+      if (args[i] === '--plugin-dir' && args[i + 1]) { const root = resolve(c.cwd, args[++i]); plugin(root, basename(root)); scanDir(join(root, 'skills'), 'profile plugin', false, true); }
       else if (/^--(?:settings|setting-sources|settings-sources|plugin-dir|mcp-config)=|^--(?:settings|setting-sources|settings-sources)$/.test(args[i])) c.details?.issues.push('profile_configuration_unverified');
       else if (args[i] === '--mcp-config' && args[i + 1]) {
         const value = args[++i];

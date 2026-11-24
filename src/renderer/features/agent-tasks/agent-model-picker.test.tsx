@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render as renderView, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render as renderView, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -138,6 +138,18 @@ it('reads the Claude catalog before opening a native session and applies the off
   expect(choose).not.toHaveBeenCalled();
   fireEvent.click(opus);
   await waitFor(() => expect(choose).toHaveBeenCalledExactlyOnceWith('b','opus','medium'));
+});
+
+it('dismisses the task picker as soon as a different executor is chosen', async () => {
+  let complete!: (result: boolean) => void;
+  const onPick = vi.fn(() => new Promise<boolean>(resolve => { complete = resolve; }));
+  render(<AgentModelPicker profiles={profiles} profileId="a" scope={{ kind: 'task', taskId: 'switch-while-closing' }} onPick={onPick} onExtensions={() => {}} />);
+  open();
+  fireEvent.click(screen.getByRole('button', { name: 'Claude account' }));
+  fireEvent.click(screen.getByRole('button', { name: 'm2' }));
+  expect(onPick).toHaveBeenCalledWith('b', 'm2', undefined);
+  expect(screen.queryByRole('dialog', { name: '选择智能体与模型' })).toBeNull();
+  await act(async () => complete(true));
 });
 
 it('leaves Claude on executor default when the current catalog excludes medium on Opus', async () => {

@@ -61,6 +61,35 @@ async function visitClaude(s: ReturnType<typeof setup>) {
   return original;
 }
 
+it('commits an idle executor switch before native exit and sends new input only to the selected executor', async () => {
+  const s = setup();
+  const previous = await s.send('first');
+  previous.finish('done');
+  await until(() => s.service.status(s.taskId) === 'completed');
+  previous.delayedExit = true;
+  try {
+    const changed = await s.change('b');
+    expect(changed).toMatchObject({ ok: true, selection: { profileId: 'b' } });
+    await until(() => !!s.runs.closingForTask(s.taskId));
+    expect(s.service.saveDraft(s.taskId, { text: 'while closing' }, 0).ok).toBe(true);
+    const { turnId } = await s.service.submit(s.taskId, {
+      clientInputId: randomUUID(), text: 'next', expectedSelectionRevision: changed.revision,
+    });
+    expect(s.store.turn(turnId)?.status).toBe('accepted');
+    expect(previous.turns.map(turn => turn.text)).toEqual(['first']);
+    expect(s.instances).toHaveLength(1);
+    previous.events.emit({ type: 'exit', code: 0, signal: null });
+    await until(() => s.store.turn(turnId)?.status === 'started');
+    expect(s.instances[1].driverId).toBe('claude-sdk');
+    expect(s.instances[1].turns.map(turn => turn.text)).toEqual(['next']);
+    const states = s.db.prepare("SELECT json_extract(payload,'$.switching') FROM agent_events WHERE task_id=? AND event_type='selection.switching' ORDER BY seq").pluck().all(s.taskId);
+    expect(states).toEqual([1, 0]);
+  } finally {
+    previous.delayedExit = false;
+    if (s.runs.closingForTask(s.taskId)) previous.events.emit({ type: 'exit', code: 0, signal: null });
+  }
+});
+
 it('restores the existing Codex thread in the background and sends no input until the user continues', async () => {
   const s = setup();
   const original = await visitClaude(s);
@@ -98,6 +127,7 @@ it('retries an unsuccessful background resume on send without losing or replayin
   const s = setup(undefined, async () => { if (++attempts === 1) throw new DriverError('REJECTED', 'resume failed'); });
   const original = await visitClaude(s);
   await s.change('a');
+  await until(() => s.db.prepare("SELECT 1 FROM agent_events WHERE task_id=? AND event_type='run.prewarm_failed'").get(s.taskId) !== undefined);
   const resumed = await s.send('send after speculative failure');
   expect(resumed.opened.resumeNativeId).toBe(original.nativeId);
   expect(attempts).toBe(2);
@@ -120,6 +150,7 @@ it.each(['switch again', 'stop', 'archive'] as const)('closes an in-flight backg
   if (action === 'switch again') await s.change('b');
   if (action === 'stop') await s.service.stop(s.taskId);
   if (action === 'archive') await s.service.archive(s.taskId);
+  await until(() => !s.runs.runForTask(s.taskId) && !s.runs.closingForTask(s.taskId));
   expect(s.runs.runForTask(s.taskId)).toBeUndefined();
   expect(s.runs.closingForTask(s.taskId)).toBeUndefined();
   expect(s.instances[2].turns).toEqual([]);
@@ -241,12 +272,20 @@ it('A14 saves each profile selection on switch, including an explicit executor d
   expect(snapshot().selection.effort).toBeUndefined();
 });
 
-it('A14: the old native owner must actually exit before selection changes', async () => {
+it('A14: changing the selection again during shutdown keeps the latest target and does not open a second owner', async () => {
   const s = setup(), a = await s.send('work'); a.finish('done'); a.delayedExit = true;
-  await expect(s.change('b')).rejects.toThrow('仍在退出');
-  expect(s.service.snapshot(s.taskId).selection.profileId).toBe('a');
-  a.events.emit({ type: 'exit', code: 0, signal: null });
-  await expect(s.change('b')).resolves.toMatchObject({ ok: true });
+  try {
+    await expect(s.change('b')).resolves.toMatchObject({ ok: true, selection: { profileId: 'b' } });
+    await expect(s.change('a')).resolves.toMatchObject({ ok: true, selection: { profileId: 'a' } });
+    expect(s.instances).toHaveLength(1);
+    a.events.emit({ type: 'exit', code: 0, signal: null });
+    await until(() => s.instances.length === 2);
+    expect(s.instances[1].driverId).toBe('codex-app-server');
+    expect(s.instances[1].turns).toEqual([]);
+  } finally {
+    a.delayedExit = false;
+    if (s.runs.closingForTask(s.taskId)) a.events.emit({ type: 'exit', code: 0, signal: null });
+  }
 });
 
 it('A07: extension preferences belong to task/profile, not the last selected executor', async () => {
@@ -316,20 +355,23 @@ it('A14: stop cancels an unapplied switch', async () => {
   expect(s.service.snapshot(s.taskId).selection.pendingSwitch).toBeUndefined();
 });
 
-it('A14: stopping during asynchronous target preflight cancels the switch and retry still returns the original input receipt', async () => {
+it('A14: stopping cancels background recovery and keeps the selected executor and original input receipt', async () => {
+  let hold = false;
   let release!: () => void;
   const s = setup(async i => {
-    if (i.profileId === 'b') await new Promise<void>(r => { release = r; });
+    if (hold && i.profileId === 'a') await new Promise<void>(r => { release = r; });
     return { driverId: i.profileId === 'a' ? 'codex-app-server' : 'claude-sdk', executable: { path: '/synthetic', version: i.profileId === 'a' ? '0.169.0' : '2.1.326' }, env: {}, stateRoot: '/state', compatibility: {}, extraArgs: [] };
   });
-  const a = await s.send('first'); a.finish('done');
+  await visitClaude(s);
   const turn = s.store.turns(s.taskId)[0];
-  const switching = s.change('b');
+  hold = true;
+  await expect(s.change('a')).resolves.toMatchObject({ ok: true, selection: { profileId: 'a' } });
   await until(() => !!release);
   await expect(s.service.submit(s.taskId, { clientInputId: turn.client_input_id, text: 'different', expectedSelectionRevision: -1 })).resolves.toMatchObject({ duplicate: true, turnId: turn.turn_id });
   await s.service.stop(s.taskId); release();
-  await expect(switching).rejects.toThrow('切换已被停止');
+  await until(() => !s.service.snapshot(s.taskId).switching);
   expect(s.service.snapshot(s.taskId).selection.profileId).toBe('a');
+  expect(s.instances).toHaveLength(2);
 });
 
 it('A14: a restored idle pending selection is applied before accepting a new input under the old selection', async () => {

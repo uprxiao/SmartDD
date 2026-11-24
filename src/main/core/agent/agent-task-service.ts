@@ -305,7 +305,7 @@ export class AgentTaskService {
   private requireStableSelection(taskId: string) { if (this.switching.has(taskId)) throw new DriverError('STATE', '正在切换执行器，请稍后'); }
 
   private applyModelChoice(taskId: string, previous: AgentSelection, profileId: string, model?: string | null, effort?: string | null): Partial<AgentSelection> {
-    const run = this.d.runs.runForTask(taskId);
+    const run = this.switching.has(taskId) ? undefined : this.d.runs.runForTask(taskId);
     const previousDefault = run?.defaultModel ?? this.d.profileModelSettings?.(previous.profileId)?.defaultModel;
     const previousKey = modelEffortKey(previous.profileId, previous.model ?? previousDefault);
     const choices = { ...previous.modelEfforts };
@@ -328,7 +328,6 @@ export class AgentTaskService {
 
   /** 保存选择，符合执行器能力的权限切换应用到当前轮。 */
   setSelection(taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) {
-    this.requireStableSelection(taskId);
     const { task, selection } = this.selection(taskId);
     const next: Partial<AgentSelection> = {};
     if (patch.tier !== undefined) {
@@ -354,7 +353,7 @@ export class AgentTaskService {
     }
     const result = this.d.store.updateSelection(taskId, next, expectedRevision);
     const run = this.d.runs.runForTask(taskId);
-    if (result.ok && patch.tier !== undefined && run && !this.dispatching.has(taskId)) {
+    if (result.ok && patch.tier !== undefined && run && !this.dispatching.has(taskId) && !this.switching.has(taskId)) {
       void this.d.runs.changeTurnTier(run.runId, result.selection.tier as Tier);
     }
     return result;
@@ -362,7 +361,6 @@ export class AgentTaskService {
 
   /** 同任务切换：目标锁与空闲边界由服务强制，不依赖界面置灰。 */
   async switchProfile(taskId: string, profileId: string, expectedRevision: number, model?: string | null, effort?: string | null) {
-    this.requireStableSelection(taskId);
     const before = this.selection(taskId);
     if (before.revision !== expectedRevision) return { ok: false as const, revision: before.revision, selection: before.selection };
     if (model !== undefined && model !== null && (!model.trim() || model.length > 256 || /[\x00-\x1f]/.test(model))) throw new DriverError('REJECTED', '模型无效');
@@ -373,54 +371,60 @@ export class AgentTaskService {
       return this.d.store.updateSelection(taskId, next, expectedRevision);
     }
     const driverId = this.d.profileDriver(profileId);
-    const goalLock = () => {
-      const goal = this.d.store.goal(taskId);
-      if (goal && goal.status !== 'complete') throw new DriverError('STATE', '清除目标后才能切换');
-    };
-    const busy = () => {
-      const run = this.d.runs.runForTask(taskId);
-      return !!this.coordination?.blocked(taskId) || this.dispatching.has(taskId) || this.openingRuns.has(taskId) || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
-    };
-    goalLock();
-    if (busy()) return this.d.store.updateSelection(taskId, { pendingSwitch: { profileId, model, effort } }, expectedRevision);
-    if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一执行器仍在退出，请等待');
+    const goal = this.d.store.goal(taskId);
+    if (goal && goal.status !== 'complete') throw new DriverError('STATE', '清除目标后才能切换');
+    const run = this.d.runs.runForTask(taskId);
+    const busy = !!this.coordination?.blocked(taskId) || this.dispatching.has(taskId) || this.openingRuns.has(taskId)
+      || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
+    if (busy) return this.d.store.updateSelection(taskId, { pendingSwitch: { profileId, model, effort } }, expectedRevision);
+    const tier = resolveTier(driverId, before.selection.tier as Tier);
+    if (!tier.ok) throw new DriverError('REJECTED', '目标不支持当前档位');
+    const previous = before.selection;
     const modelChoice = this.applyModelChoice(taskId, before.selection, profileId, model, effort);
+    const changed = this.d.store.updateSelection(taskId, {
+      ...modelChoice, driverId, profileId, tier: tier.tier, pendingSwitch: undefined,
+      profileChoices: { ...previous.profileChoices, [previous.profileId]: { model: previous.model, effort: previous.effort } },
+      carryExtensions: previous.extensionPreferences?.[profileId] ?? true,
+      extensionPreferences: { ...previous.extensionPreferences, [previous.profileId]: previous.carryExtensions !== false },
+    }, expectedRevision, { from: this.d.profileName?.(previous.profileId) ?? previous.profileId, to: this.d.profileName?.(profileId) ?? profileId });
+    if (changed.ok && !this.switching.has(taskId)) void this.finishSwitch(taskId);
+    return changed;
+  }
+
+  private async finishSwitch(taskId: string) {
     this.switching.add(taskId);
     const seq = this.stopSeq.get(taskId) ?? 0;
     this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: true }));
-    let prewarmLaunch: ResolvedLaunch | undefined;
     try {
-      const launch = await this.d.resolveLaunch({ taskId, profileId, cwd: before.task.cwd, runId: randomUUID(), carryExtensions: before.selection.extensionPreferences?.[profileId] ?? true });
-      if (launch.driverId !== driverId) throw new DriverError('REJECTED', '目标配置的执行器已变化');
-      if ((this.stopSeq.get(taskId) ?? 0) !== seq) throw new DriverError('STATE', '切换已被停止');
-      goalLock();
-      if (busy()) throw new DriverError('STATE', '切换预检已过期，请在空闲边界重试');
       if (this.prewarmingRuns.has(taskId)) await this.cancelPrewarm(taskId);
       const run = this.d.runs.runForTask(taskId);
       if (run) await this.d.runs.close(run.runId);
-      if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一执行器仍在退出，确认退出后可再次切换');
-      if ((this.stopSeq.get(taskId) ?? 0) !== seq) throw new DriverError('STATE', '切换已被停止');
+      await this.d.runs.closingForTask(taskId)?.ended;
+      if ((this.stopSeq.get(taskId) ?? 0) !== seq || this.prewarmingClosed) return;
+      const { task, selection } = this.selection(taskId);
+      // Existing Codex threads can resume while idle. A new session starts with the first input.
+      if (selection.driverId !== 'codex-app-server' || this.d.store.queuedTurns(taskId).length) return;
+      const launch = await this.d.resolveLaunch({ taskId, profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), carryExtensions: selection.carryExtensions });
       launch.assertCurrent?.();
-      const tier = resolveTier(driverId, before.selection.tier as Tier);
-      if (!tier.ok) throw new DriverError('REJECTED', '目标不支持当前档位');
-      const previous = before.selection;
-      const changed = this.d.store.updateSelection(taskId, {
-        ...modelChoice, driverId, profileId, tier: tier.tier, pendingSwitch: undefined,
-        profileChoices: { ...previous.profileChoices, [previous.profileId]: { model: previous.model, effort: previous.effort } },
-        carryExtensions: previous.extensionPreferences?.[profileId] ?? true,
-        extensionPreferences: { ...previous.extensionPreferences, [previous.profileId]: previous.carryExtensions !== false },
-      }, expectedRevision, { from: this.d.profileName?.(previous.profileId) ?? previous.profileId, to: this.d.profileName?.(profileId) ?? profileId });
-      if (changed.ok && driverId === 'codex-app-server') prewarmLaunch = launch;
-      return changed;
+      const current = this.selection(taskId).selection;
+      if ((this.stopSeq.get(taskId) ?? 0) === seq && current.profileId === selection.profileId
+          && current.carryExtensions === selection.carryExtensions && current.driverId === launch.driverId) this.prewarm(taskId, launch);
+    } catch (e) {
+      if ((this.stopSeq.get(taskId) ?? 0) === seq && !this.prewarmingClosed) {
+        this.d.store.addHostItem(taskId, null, 'system_notice', {
+          severity: 'warning', code: 'switchPreparationFailed', detail: `执行器后台准备失败：${(e as Error).message.slice(0, 500)}`,
+        });
+      }
     } finally {
       this.switching.delete(taskId);
-      this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: false }));
-      if (prewarmLaunch) this.prewarm(taskId, prewarmLaunch);
+      if (!this.prewarmingClosed) {
+        this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: false }));
+        this.kick(taskId);
+      }
     }
   }
 
   setExtensions(taskId: string, profileId: string, enabled: boolean, expectedRevision: number) {
-    this.requireStableSelection(taskId);
     if (typeof enabled !== 'boolean') throw new DriverError('REJECTED', '扩展选择无效');
     this.d.profileDriver(profileId);
     const { selection } = this.selection(taskId);
@@ -473,13 +477,11 @@ export class AgentTaskService {
     // 幂等命中直接返回原收据，不再核对选择修订、准备或冻结附件（复核 NR01、FR06）。
     const existing = this.d.store.turnByClientInput(taskId, input.clientInputId);
     if (existing) return { turnId: existing.turn_id, duplicate: true, status: existing.status };
-    this.requireStableSelection(taskId);
     // 重启后遗留的待切换先在空闲边界处理，再让用户确认新选择；不能把新输入送给旧目标。
     const pending = (JSON.parse(task.selection_json) as AgentSelection).pendingSwitch;
     if (pending && !this.paused.has(taskId)) {
       await this.advance(taskId);
       ({ revision, task } = this.selection(taskId));
-      this.requireStableSelection(taskId);
     }
     if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
     if (Buffer.byteLength(input.text) > 256 * 1024) throw new DriverError('REJECTED', '输入超过 256 KB，请拆分或改用附件');
@@ -496,7 +498,7 @@ export class AgentTaskService {
     this.coordination?.userContinued(taskId);
     this.d.runs.hold(taskId, this.coordination?.blocked(taskId) ?? false);
     const run = this.d.runs.runForTask(taskId);
-    if (input.mode === 'steer' && run && this.d.runs.busy(run.runId) && !this.dispatching.has(taskId)) {
+    if (input.mode === 'steer' && run && this.d.runs.busy(run.runId) && !this.dispatching.has(taskId) && !this.switching.has(taskId)) {
       if (!this.steerable(run)) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: '该执行器版本没有插话的验证证据，已排队' };
       this.dispatching.add(taskId);
       this.queuedSteers.add(accepted.turn.turn_id);
@@ -519,7 +521,7 @@ export class AgentTaskService {
         if (this.missedPump.delete(taskId)) this.kick(taskId);
       }
     }
-    const queued = !!run && this.d.runs.busy(run.runId) || this.d.store.queuedTurns(taskId).length > 1 || this.dispatching.has(taskId);
+    const queued = !!run && this.d.runs.busy(run.runId) || this.d.store.queuedTurns(taskId).length > 1 || this.dispatching.has(taskId) || this.switching.has(taskId);
     void this.pump(taskId);
     return { turnId: accepted.turn.turn_id, duplicate: false, status: queued ? 'queued' : 'accepted' };
   }
@@ -1190,7 +1192,7 @@ export class AgentTaskService {
   /** 一致快照与已提交水位；订阅方先订阅再读快照，随后补拉 (seq, …]（技术方案 §3.1）。 */
   snapshot(taskId: string) {
     const { task, selection, revision } = this.selection(taskId, true);
-    const run = this.d.runs.runForTask(taskId);
+    const run = this.switching.has(taskId) ? undefined : this.d.runs.runForTask(taskId);
     const draft = this.d.store.draft(taskId);
     const pending = this.d.store.pendingRequests(taskId, true);
     const preparingTurnId = this.paused.has(taskId) ? null : this.preparingTurns.get(taskId) ?? null;

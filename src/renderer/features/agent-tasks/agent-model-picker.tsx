@@ -119,6 +119,7 @@ export function AgentModelPicker(p: Props) {
   const defaultEffort = resolveModelEffort(modelInfo, undefined, target?.kind === 'codex');
   const pick = async (model: string, effort?: string | null, keep = false) => {
     if (!targetId || saving) return;
+    if (p.scope?.kind === 'task' && targetId !== p.profileId) setOpen(false);
     setSaving(true);
     try {
       const ok = await p.onPick(targetId, model || null, effort);
@@ -187,7 +188,7 @@ export function AgentModelPicker(p: Props) {
           <button type="button" aria-pressed={!!applied && !appliedEffort} disabled={saving || !target.available} onClick={() => void pick(appliedModel, null, true)}>{target.source === 'provider' && defaultEffort ? `默认（${effortLabel(defaultEffort)}）` : '默认'}{applied && !appliedEffort && <Check size={14} />}</button>
           {modelInfo.efforts.map(e => <button type="button" key={e} aria-pressed={appliedEffort === e} disabled={saving || !target.available} onClick={() => void pick(appliedModel, e, true)}>{effortLabel(e)}{appliedEffort === e && <Check size={14} />}</button>)}</> : (!status || status === 'ready') && <p>{target.source === 'provider' ? '由供应商决定' : native.some(m => m.efforts.length) ? '选择模型后查看推理强度' : '执行器尚未公布可用选项'}</p>}</div>
       </div>
-      <div className="agent-picker-foot"><span>{saving ? '正在应用选择…' : p.busy ? '本轮和已有排队输入结束后切换' : '切换后新建或恢复该执行器的会话'}</span><button type="button" onClick={() => navigation.openSettings('aiProfiles')}><Settings size={13} />管理智能体</button></div>
+      <div className="agent-picker-foot"><span>{p.busy ? '本轮和已有排队输入结束后切换' : '切换后新建或恢复该执行器的会话'}</span><button type="button" onClick={() => navigation.openSettings('aiProfiles')}><Settings size={13} />管理智能体</button></div>
     </div>, document.body)}
   </div>;
 }

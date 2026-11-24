@@ -268,7 +268,11 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     };
   };
   const tasks = new AgentTaskService({
-    store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind),
+    store, runs, resolveLaunch, profileDriver: id => {
+      const profile = config(id);
+      if (!profile.available) throw new DriverError('REJECTED', '智能体当前不可用，请重新检测或登录');
+      return driverForKind(profile.kind);
+    },
     profileName: id => d.agents.configs().find(c => c.id === id)?.name ?? '已删除的配置',
     profileModelSettings: id => {
       const profile = d.agents.configs().find(c => c.id === id);

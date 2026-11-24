@@ -1541,7 +1541,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
       {!archived && !snap.goal && !snap.goalPending && snap.goalUnknown && <div className="agent-goal" data-testid="agent-goal-unknown"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalUnknown.kind === 'set' ? snap.goalUnknown.objective : '清除目标'}</b><small>状态未知 · 执行器的回复无法识别</small></div><div className="agent-goal-actions"><button type="button" onClick={() => void goalOp('clear')}>清除</button></div></div>}
       {snap.selection.pendingSwitch && <div className="agent-limited">本轮和已有排队输入结束后切换到 {profiles.find(p => p.profileId === snap.selection.pendingSwitch?.profileId)?.name ?? snap.selection.pendingSwitch.profileId}</div>}
-      {snap.switching && <div className="agent-limited">正在切换执行器，等待原运行退出…</div>}
       <div ref={setMailSlot} className="agent-mail-slot"/>
     </TimelineActionScope.Provider></div></div>
     <div className="agent-bottom">
@@ -1616,23 +1615,25 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
             <PermissionPicker task testId="task-permission" selected={selectedPermission}
               effective={effectivePermission} allowAuto={profile?.tiers.includes('auto') ?? snap.selection.driverId === 'codex-app-server'}
               changing={snap.run?.tierChanging} deferred={!!snap.run?.busy && selectedPermission !== effectivePermission}
-              disabled={!!snap.parentTaskId || snap.switching} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined}
+              disabled={!!snap.parentTaskId} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined}
               onPick={tier => {
                 if (tier === selectedPermission) return;
                 if (tier === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true);
                 else void setSelection({ tier });
               }}/>
             <span className="push" />
-            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
+            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
               onPick={async (id, model, effort) => {
                 const scope = timelineScope.current;
                 try {
                   const result = await rpc.agentTasks.switchProfile(taskId, id, snap.selectionRevision, model, effort);
                   if (scope !== timelineScope.current) return false;
                   setSnap(current => !current || current.selectionRevision >= result.revision
-                    ? current : { ...current, selection: result.selection, selectionRevision: result.revision });
+                    ? current : { ...current, selection: result.selection, selectionRevision: result.revision,
+                      run: current.selection.profileId === result.selection.profileId ? current.run : null });
                   if (!result.ok) toast.warning('选择已在别处变化，请重试');
                   else if (result.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换');
+                  if (result.ok && id !== snap.selection.profileId) textarea.current?.focus();
                   void reload();
                   return result.ok;
                 } catch (e) { toast.error(rpcErrorMessage(e)); return false; }
