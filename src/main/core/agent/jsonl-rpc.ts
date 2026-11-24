@@ -3,7 +3,7 @@ import { createInterface } from 'node:readline';
 import type { Readable, Writable } from 'node:stream';
 import { DriverError } from './driver';
 
-interface Pending { resolve(v: unknown): void; reject(e: unknown): void; timer: ReturnType<typeof setTimeout>; method: string }
+interface Pending { resolve(v: unknown): void; reject(e: unknown): void; timer: ReturnType<typeof setTimeout> | undefined; method: string }
 export interface RpcHandlers {
   notification(method: string, params: unknown): void;
   request(id: string | number, method: string, params: unknown): void;
@@ -49,11 +49,11 @@ export class JsonlRpcPeer {
     this.output.write(JSON.stringify(this.protocol ? { jsonrpc: this.protocol, ...obj } : obj) + '\n');
   }
 
-  call<T = unknown>(method: string, params: unknown, timeoutMs = this.defaultTimeoutMs): Promise<T> {
+  call<T = unknown>(method: string, params: unknown, timeoutMs: number | null = this.defaultTimeoutMs): Promise<T> {
     if (this.closedError) return Promise.reject(this.closedError);
     const id = ++this.serial;
     return new Promise<T>((resolve, reject) => {
-      const timer = setTimeout(() => { this.pending.delete(id); reject(new DriverError('TIMEOUT', `${method} 超时`)); }, timeoutMs);
+      const timer = timeoutMs === null ? undefined : setTimeout(() => { this.pending.delete(id); reject(new DriverError('TIMEOUT', `${method} 超时`)); }, timeoutMs);
       this.pending.set(id, { resolve: v => resolve(v as T), reject, timer, method });
       try { this.write({ id, method, params }); } catch (e) { clearTimeout(timer); this.pending.delete(id); reject(e); }
     });

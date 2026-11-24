@@ -1,3 +1,4 @@
+import { canConfigureGoal, type GoalInput } from '@shared/agent-goal';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { lstatSync, realpathSync } from 'node:fs';
@@ -13,6 +14,9 @@ import { startGeminiResponseRelay } from './gemini-response-relay';
 const protocolVersion = 1;
 const appDataDirectory = 'antigravity-acp';
 const authMethod = 'gemini-api-key';
+const goalComplete = '<!-- GOAL_COMPLETE -->';
+const goalCancelled = '<!-- GOAL_CANCELLED -->';
+const cancelGoalPrompt = 'The user explicitly requested to cancel the current goal. Cancel it now and emit ' + goalCancelled;
 const initializeOptions = { protocolVersion, clientInfo: { name: 'WillYou', version: '1' }, clientCapabilities: {} };
 const sessionIdSchema = z.string().regex(/^[a-zA-Z0-9_-]{1,256}$/);
 const capabilitiesSchema = z.object({
@@ -35,7 +39,7 @@ const permissionSchema = z.object({
 });
 type ConfigOption = z.infer<typeof optionSchema>;
 type Permission = z.infer<typeof permissionSchema>;
-type ActiveTurn = { id: string; text: string; thoughts: string; model?: string; cancelling: boolean; nativeLogOffset: number };
+type ActiveTurn = { id: string; text: string; thoughts: string; model?: string; cancelling: boolean; nativeLogOffset: number; goal?: GoalInput; goalStarted?: boolean };
 
 export function antigravityArgs(configDir: string) {
   return ['acp', '--gemini-dir', configDir, '--app-data-dir', appDataDirectory,
@@ -111,6 +115,10 @@ class AntigravityInstance implements DriverInstance {
   private process?: ReturnType<typeof acpProcess>;
   private session?: string;
   private turn?: ActiveTurn;
+  private activeGoal?: string;
+  private goalSupported = false;
+  private openingCatalogs = new Map<string, boolean>();
+  private catalogueReady?: () => void;
   private config: ConfigOption[] = [];
   private history?: string;
   private geminiDirectory?: string;
@@ -181,6 +189,16 @@ class AntigravityInstance implements DriverInstance {
       );
       this.session = sessionIdSchema.parse(reply.sessionId ?? previous);
       if (previous && previous !== this.session) throw new DriverError('PROTOCOL', 'Antigravity 恢复返回了其他会话');
+      this.activeGoal = previous ? options.resumedGoal : undefined;
+      const initialGoal = this.openingCatalogs.get(this.session);
+      this.openingCatalogs.clear();
+      if (initialGoal !== undefined) this.publishCatalogue(initialGoal);
+      else if (canConfigureGoal('antigravity', options.executable.version)) {
+        // agy may advertise commands in the message following session/new or session/resume.
+        const catalogue = new Promise<void>(resolve => { this.catalogueReady = resolve; });
+        await Promise.race([catalogue, wait(1000, undefined, { ref: false, signal: opening.signal })]);
+        this.catalogueReady = undefined;
+      }
       this.updateConfig(reply.configOptions);
       const model = this.option('model');
       if (options.model) await this.selectModel(options.model);
@@ -215,13 +233,19 @@ class AntigravityInstance implements DriverInstance {
 
   async startTurn(input: TurnInput) {
     if (!this.process || !this.session || this.turn) throw new DriverError('STATE', 'Antigravity 会话尚未就绪');
+    const goal = input.goal;
+    if (goal && !this.goalSupported) throw new DriverError('UNSUPPORTED', '当前 Gemini 会话未公布 /goal');
+    if (goal && input.images?.length) throw new DriverError('REJECTED', '目标命令不能带附件');
     if (input.model) await this.selectModel(input.model);
     const effort = this.option('thought_level');
     const availableEfforts = effort ? configValues(effort) : [];
     const requestedEffort = input.effort;
     const effortUnavailable = !!requestedEffort && !availableEfforts.includes(requestedEffort);
     if (effort && requestedEffort && !effortUnavailable) await this.select(effort, requestedEffort);
-    const text = this.history ? `${this.history}\n\n${input.text}` : input.text;
+    // agy concatenates all prompt blocks before extracting the objective.
+    const text = goal?.kind === 'set' ? `/goal ${goal.objective}`
+      : goal?.kind === 'clear' ? cancelGoalPrompt
+      : this.history ? `${this.history}\n\n${input.text}` : input.text;
     const prompt: Record<string, string>[] = [{ type: 'text', text }];
     for (const image of input.images ?? []) {
       prompt.push({ type: 'image', mimeType: image.mime, data: (await readFile(image.path)).toString('base64') });
@@ -229,7 +253,7 @@ class AntigravityInstance implements DriverInstance {
     this.history = undefined;
     this.tier = input.tier;
     const turn = this.turn = { id: randomUUID(), model: this.option('model')?.currentValue ?? input.model, text: '', thoughts: '', cancelling: false,
-      nativeLogOffset: this.latestNativeStep()?.idx ?? -1 };
+      nativeLogOffset: this.latestNativeStep()?.idx ?? -1, goal };
     this.events.emit({ type: 'turn.started', nativeTurnId: turn.id, clientInputId: input.clientInputId });
     if (effortUnavailable) {
       const nativeEffort = effort && availableEfforts.includes(effort.currentValue) ? effort.currentValue : undefined;
@@ -238,7 +262,8 @@ class AntigravityInstance implements DriverInstance {
         : `当前模型未公布所选档位 ${requestedEffort}，也没有可用的原生默认档位，本轮未设置推理档位。`;
       this.events.emit({ type: 'item.completed', nativeItemId: `${turn.id}:effort`, itemType: 'acpEffortFallback', payload: { detail } });
     }
-    void this.process.peer.call<{ stopReason?: string }>('session/prompt', { sessionId: this.session, prompt }, 15 * 60_000)
+    const timeout = goal?.kind === 'set' || (this.activeGoal && !goal) ? null : 15 * 60_000;
+    void this.process.peer.call<{ stopReason?: string }>('session/prompt', { sessionId: this.session, prompt }, timeout)
       .then(reply => this.finish(turn, reply.stopReason), error => this.finish(turn, undefined, error));
     return { nativeTurnId: turn.id };
   }
@@ -269,6 +294,15 @@ class AntigravityInstance implements DriverInstance {
     const status = reason === 'cancelled' ? 'interrupted' : reason === 'end_turn' && !nativeFailure ? 'completed' : unknown ? 'unknown' : 'failed';
     if (limited && status === 'failed') this.events.emit({ type: 'item.completed', nativeItemId: `${turn.id}:limit`, itemType: 'acpError',
       payload: { code: limited === 'output' ? 'max_output_tokens' : 'rate_limit_rejected', message: failureMessage, limited: { kind: limited } } });
+    if (status === 'completed' && (this.activeGoal || turn.goal?.kind === 'clear')) {
+      if (turn.text.includes(goalCancelled)) {
+        this.activeGoal = undefined;
+        this.events.emit({ type: 'goal', objective: null, status: 'cleared' });
+      } else if (this.activeGoal && turn.goal?.kind !== 'clear' && turn.text.includes(goalComplete)) {
+        this.events.emit({ type: 'goal', objective: this.activeGoal, status: 'complete' });
+        this.activeGoal = undefined;
+      }
+    }
     this.events.emit({ type: 'turn.completed', nativeTurnId: turn.id, status, error: status === 'failed' || status === 'unknown' ? failureMessage : undefined });
     if (error instanceof DriverError && error.code === 'TIMEOUT') this.events.emit({ type: 'unusable', reason: 'Antigravity 回合未返回终态' });
   }
@@ -314,21 +348,42 @@ class AntigravityInstance implements DriverInstance {
     this.updateConfig(reply.configOptions);
     if (this.config.find(item => item.id === option.id)?.currentValue !== value) throw new DriverError('PROTOCOL', 'Antigravity 未确认所选模型或档位');
   }
+  private publishCatalogue(goal: boolean) {
+    this.goalSupported = goal;
+    this.events.emit({ type: 'catalog', commands: goal ? ['goal'] : [], skills: [] });
+    this.catalogueReady?.();
+  }
+  private confirmGoalActivity(turn: ActiveTurn) {
+    if (turn.goal?.kind !== 'set' || turn.goalStarted || turn.cancelling) return;
+    turn.goalStarted = true;
+    this.activeGoal = turn.goal.objective;
+    this.events.emit({ type: 'goal', objective: this.activeGoal, status: 'active' });
+  }
   private notification(method: string, params: unknown) {
     if (method !== 'session/update') return;
     const payload = params as { sessionId?: string; update?: Record<string, unknown> } | null;
     const update = payload?.update;
-    if (!update || payload?.sessionId !== this.session) return;
+    if (!update || !payload?.sessionId) return;
+    if (update.sessionUpdate === 'available_commands_update' && Array.isArray(update.availableCommands)) {
+      const goal = update.availableCommands.some(item => item?.name === 'goal');
+      if (payload.sessionId === this.session) this.publishCatalogue(goal);
+      else if (!this.session && this.openingCatalogs.size < 8) this.openingCatalogs.set(payload.sessionId, goal);
+      return;
+    }
+    if (payload.sessionId !== this.session) return;
     if (update.sessionUpdate === 'config_option_update') this.updateConfig(update.configOptions as unknown[]);
     const turn = this.turn;
     if (!turn) return;
     const content = update.content as { type?: string; text?: string } | undefined;
     if (update.sessionUpdate === 'agent_message_chunk' && content?.type === 'text' && typeof content.text === 'string') {
+      if (content.text) this.confirmGoalActivity(turn);
       turn.text += content.text;
       this.events.emit({ type: 'message.delta', nativeItemId: turn.id, text: content.text });
     } else if (update.sessionUpdate === 'agent_thought_chunk' && typeof content?.text === 'string') {
+      if (content.text) this.confirmGoalActivity(turn);
       turn.thoughts += content.text;
     } else if ((update.sessionUpdate === 'tool_call' || update.sessionUpdate === 'tool_call_update') && typeof update.toolCallId === 'string') {
+      this.confirmGoalActivity(turn);
       this.events.emit({ type: 'item.completed', nativeItemId: `${turn.id}:tool:${update.toolCallId}`, itemType: 'acpToolCall', payload: update });
     }
   }
@@ -344,6 +399,7 @@ class AntigravityInstance implements DriverInstance {
       peer.reply(id, { outcome: { outcome: 'cancelled' } });
       return;
     }
+    this.confirmGoalActivity(this.turn!);
     const { toolCall, options } = result.data;
     const allow = options.find(option => option.kind === 'allow_once');
     if (this.tier === 'full' && allow) {

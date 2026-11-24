@@ -44,6 +44,75 @@ beforeEach(() => {
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
 
+it('starts a goal from the task composer, keeps its draft on cancellation and rejection, and sends one native goal', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ run: { runId: 'run', goal: true } }));
+  mocks.goal.mockRejectedValueOnce(new Error('goal rejected')).mockResolvedValueOnce({ ok: true });
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByRole('textbox');
+  const openGoal = async () => {
+    fireEvent.click(screen.getByTestId('composer-add'));
+    expect(await screen.findByRole('menuitem', { name: '图片和文件' })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('menuitem', { name: /目标/ }));
+    expect(screen.getByPlaceholderText('描述目标和可验证的完成条件')).toBe(input);
+  };
+  fireEvent.change(input, { target: { value: '所有回归测试通过' } });
+  await openGoal();
+  expect(mocks.goal).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: '退出目标模式' }));
+  expect(input).toHaveProperty('value', '所有回归测试通过');
+  await waitFor(() => expect(document.activeElement).toBe(input));
+  await openGoal();
+  fireEvent.keyDown(input, { key: 'Enter' });
+  await waitFor(() => expect(mocks.toast).toHaveBeenCalled());
+  expect(screen.getByTestId('composer-goal-mode')).toBeTruthy();
+  expect(input).toHaveProperty('value', '所有回归测试通过');
+  fireEvent.keyDown(input, { key: 'Enter' });
+  await waitFor(() => expect(mocks.goal).toHaveBeenCalledTimes(2));
+  expect(mocks.goal).toHaveBeenLastCalledWith('task', expect.objectContaining({ kind: 'set', objective: '所有回归测试通过' }));
+  expect(mocks.submit).not.toHaveBeenCalled();
+  await waitFor(() => expect(screen.queryByTestId('composer-goal-mode')).toBeNull());
+});
+
+it('shows only the attachment entry for a session without goal support', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ selection: { driverId: 'antigravity-acp', profileId: 'p', tier: 'ask' }, run: { runId: 'run', goal: false } }));
+  render(<AgentTaskView taskId="task" />);
+  fireEvent.click(await screen.findByTestId('composer-add'));
+  expect(await screen.findByRole('menuitem', { name: '图片和文件' })).toBeTruthy();
+  expect(screen.queryByRole('menuitem', { name: /目标/ })).toBeNull();
+  const input = screen.getByRole('textbox');
+  fireEvent.change(input, { target: { value: '/goal 核对所有结果' } });
+  fireEvent.keyDown(input, { key: 'Enter' });
+  expect(mocks.toast).toHaveBeenCalledWith('当前执行器的目标不可用');
+  expect(input).toHaveProperty('value', '/goal 核对所有结果');
+  expect(mocks.goal).not.toHaveBeenCalled();
+  expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('distinguishes a configured idle goal from an actively running goal and reveals its full objective', async () => {
+  const objective = '长目标 '.repeat(45);
+  mocks.snapshot.mockResolvedValue(snapshot({ goal: { objective, status: 'active', timeUsedSeconds: 90, turns: 2 }, status: 'completed' }));
+  render(<AgentTaskView taskId="task" />);
+  const goal = await screen.findByTestId('agent-goal');
+  expect(within(goal).getByText(/已设定.*1 分 30 秒.*2 轮/)).toBeTruthy();
+  fireEvent.click(within(goal).getByRole('button', { name: '查看完整目标' }));
+  expect(await screen.findByRole('dialog', { name: '目标全文' })).toBeTruthy();
+});
+
+it('includes real elapsed time during a Gemini goal turn and marks the task as pursuing the goal', async () => {
+  const started = new Date(Date.now() - 10_000).toISOString();
+  mocks.snapshot.mockResolvedValue(snapshot({
+    selection: { driverId: 'antigravity-acp', profileId: 'p', tier: 'ask' },
+    run: { runId: 'run', goal: true, busy: true },
+    turns: [{ turn_id: 'goal-turn', status: 'started', started_at: started }],
+    goal: { status: 'active', objective: '验证结果', timeUsedSeconds: 0, turns: 1 },
+    status: 'working',
+  }));
+  render(<AgentTaskView taskId="task" />);
+  expect(await screen.findByText('目标进行中')).toBeTruthy();
+  const card = screen.getByTestId('agent-goal');
+  expect(within(card).getByText(/进行中 · [1-9]\d* 秒 · 1 轮/)).toBeTruthy();
+});
+
 it('shows real heartbeat liveness and command output before the Bash tool finishes', async () => {
   const nativeOutput = new Set<(frame: AgentLiveFrame) => void>();
   const now = Date.now();

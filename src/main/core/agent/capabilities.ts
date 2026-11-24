@@ -1,3 +1,4 @@
+import { GOAL_CLI_MIN_VERSION } from '@shared/agent-goal';
 // M14 能力协商（技术方案 T1.5 §7.1）：最低已验证版本＋已知不兼容列表＋启动探测，不以精确版本相等判定可用性。
 // minVersion 指本期研究实测通过的最低版本，不声称是厂商最初引入该能力的版本。
 
@@ -32,6 +33,7 @@ export const CAPABILITY_TABLE: Record<DriverId, Partial<Record<CapabilityName, C
     resume: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 原生恢复', core: false },
     mcp: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 宿主桥', core: false },
     skills: { minVersion: '1.5.14', knownIncompatible: [], evidence: '隔离 ACP 技能加载及续聊验证', core: false },
+    goal: { minVersion: GOAL_CLI_MIN_VERSION.antigravity, knownIncompatible: [], evidence: 'agy ACP 公布 goal；原生 Stop hook 回环验证', core: false },
   },
   'claude-sdk': {
     basic: { minVersion: '2.1.321', knownIncompatible: [], evidence: '验证账 Q01–Q05；SDK 0.3.321', core: true },
@@ -40,7 +42,7 @@ export const CAPABILITY_TABLE: Record<DriverId, Partial<Record<CapabilityName, C
     skills: { minVersion: '2.1.322', knownIncompatible: [], evidence: 'M13 业务下限 2.1.322', core: false },
     nativeSubagents: { minVersion: '2.1.321', knownIncompatible: [], evidence: '按方法与事件探测', core: false },
     steer: { minVersion: '2.1.325', knownIncompatible: [], evidence: 'CLI 2.1.325／SDK 0.3.321 实测中途输入', core: false },
-    goal: { minVersion: '2.1.326', knownIncompatible: [], evidence: 'V17 Claude 目标（2.1.326）', core: false },
+    goal: { minVersion: GOAL_CLI_MIN_VERSION.claude, knownIncompatible: [], evidence: 'V17 Claude 目标（2.1.326）', core: false },
     plan: { minVersion: '2.1.326', knownIncompatible: [], evidence: 'V18 计划截获（2.1.326＋canUseTool）', core: false },
   },
   'codex-app-server': {
@@ -51,7 +53,7 @@ export const CAPABILITY_TABLE: Record<DriverId, Partial<Record<CapabilityName, C
     nativeSubagents: { minVersion: '0.167.1', knownIncompatible: [], evidence: '按协议方法探测', core: false },
     steer: { minVersion: '0.169.0', knownIncompatible: [], evidence: '0.169.0 实测 turn/steer', core: false },
     approvalsReviewer: { minVersion: '0.169.0', knownIncompatible: [], evidence: 'V08／V09 继承 auto_review 的覆盖', core: false },
-    goal: { minVersion: '0.169.0', knownIncompatible: [], evidence: 'V14／V16／V17 thread/goal', core: false },
+    goal: { minVersion: GOAL_CLI_MIN_VERSION.codex, knownIncompatible: [], evidence: 'V14／V16／V17 thread/goal', core: false },
   },
 };
 
@@ -77,7 +79,7 @@ export function evaluateCapabilities(driverId: DriverId, versionText: string | n
     const decl = table[name];
     if (!decl) { capabilities[name] = { state: 'disabled', reason: 'not-declared' }; continue; }
     const min = parseVersion(decl.minVersion)!;
-    if (driverId === 'antigravity-acp') capabilities[name] = probe(name) ? { state: 'enabled' } : { state: 'disabled', reason: 'probe-unavailable' };
+    if (driverId === 'antigravity-acp' && name !== 'goal') capabilities[name] = probe(name) ? { state: 'enabled' } : { state: 'disabled', reason: 'probe-unavailable' };
     else if (!parsed) capabilities[name] = { state: 'disabled', reason: 'unparsed-version', minVersion: decl.minVersion };
     else if (compareVersions(parsed, min) < 0) capabilities[name] = { state: 'disabled', reason: 'below-minimum', minVersion: decl.minVersion };
     else if (decl.knownIncompatible.includes(fmt(parsed))) capabilities[name] = { state: 'disabled', reason: 'known-incompatible', minVersion: decl.minVersion };

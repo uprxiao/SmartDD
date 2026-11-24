@@ -31,6 +31,7 @@ import { createNativeCliDetector, probeAndRecord, probeDriver } from './discover
 import { resolveProfileLaunch } from './profile-launch';
 import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
+import { canConfigureGoal } from '@shared/agent-goal';
 import { DriverError, type DriverOpenOptions } from './driver';
 import { previewCodexModels } from './drivers/codex-app-server';
 import { previewClaudeModels } from './drivers/claude-sdk';
@@ -353,7 +354,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const driverId = driverForKind(c.kind);
     const provider = c.providerId ? d.agents.providers().find(p => p.id === c.providerId) : undefined;
     const tool = d.agents.tools().find(t => t.id === c.toolId);
-    return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const,
+    return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), goalSupported: c.available && canConfigureGoal(c.kind, tool?.version), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const,
       claudeSubscription: isClaudeSubscription(c, tool?.login),
       provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, c),
     };

@@ -28,6 +28,8 @@ import { attachmentImageBlob, MessageWithAttachments } from './attachment-images
 import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
 import { ComposerMenu, useComposerSkills } from './composer-menu-view';
+import { ComposerAddMenu, ComposerGoalMode, GOAL_PLACEHOLDER } from './composer-add-menu';
+import { composerGoal } from '@shared/agent-goal';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
@@ -860,16 +862,24 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
 }
 
 const GOAL_STATUS: Record<string, string> = { active: '进行中', paused: '已暂停', complete: '已完成' };
-/** 目标条目（照 T3 goal 条目）：目标、状态、时长与轮次，不显示 token；Codex 可暂停／继续，Claude 只能清除。 */
-function GoalRow({ goal, driverId, onOp }: { goal: NonNullable<Snapshot['goal']>; driverId: string; onOp: (op: 'pause' | 'resume' | 'clear') => void }) {
-  const reason = goal.status === 'paused' ? (goal.pausedReason === 'waiting_children' ? '等子任务，已自动暂停' : goal.pausedReason === 'limit' ? '额度受限，已暂停' : '已暂停') : GOAL_STATUS[goal.status] ?? goal.status;
+/** 目标条目（照 T3 goal 条目）：目标、状态、时长与轮次，不显示 token；Codex 可暂停和继续，Claude 和 Gemini 提供清除。 */
+function GoalRow({ goal, driverId, working, liveSeconds, pending, onOp }: {
+  goal: NonNullable<Snapshot['goal']>; driverId: string; working: boolean; liveSeconds: number; pending: boolean; onOp: (op: 'pause' | 'resume' | 'clear') => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const reason = goal.status === 'paused' ? (goal.pausedReason === 'waiting_children' ? '等子任务，已自动暂停' : goal.pausedReason === 'limit' ? '额度受限，已暂停' : '已暂停') : goal.status === 'active' && !working ? '已设定' : GOAL_STATUS[goal.status] ?? goal.status;
   return <div className="agent-goal" data-testid="agent-goal">
-    <Target size={14} /><div className="agent-goal-body"><b>{goal.objective}</b><small>{reason} · {formatDuration(goal.timeUsedSeconds ?? 0)} · {goal.turns} 轮</small></div>
+    <Target size={14} /><div className="agent-goal-body">
+      <button type="button" className="agent-goal-objective" title={goal.objective} aria-label="查看完整目标" onClick={() => setExpanded(true)}>{goal.objective}</button>
+      <small>{reason} · {formatDuration((goal.timeUsedSeconds ?? 0) + liveSeconds)} · {goal.turns} 轮</small></div>
     <div className="agent-goal-actions">
-      {driverId === 'codex-app-server' && goal.status === 'active' && <button type="button" onClick={() => onOp('pause')}>暂停</button>}
-      {driverId === 'codex-app-server' && goal.status === 'paused' && goal.pausedReason !== 'waiting_children' && <button type="button" onClick={() => onOp('resume')}>继续</button>}
-      <button type="button" onClick={() => onOp('clear')}>清除</button>
+      {driverId === 'codex-app-server' && goal.status === 'active' && <button type="button" disabled={pending} onClick={() => onOp('pause')}>暂停</button>}
+      {driverId === 'codex-app-server' && goal.status === 'paused' && goal.pausedReason !== 'waiting_children' && <button type="button" disabled={pending} onClick={() => onOp('resume')}>继续</button>}
+      <button type="button" disabled={pending} onClick={() => onOp('clear')}>清除</button>
     </div>
+    {expanded && <AgentDialog title="目标全文" onClose={() => setExpanded(false)} footer={<button className="button secondary" onClick={() => setExpanded(false)}>关闭</button>}>
+      <p className="agent-goal-full-text">{goal.objective}</p>
+    </AgentDialog>}
   </div>;
 }
 
@@ -899,6 +909,12 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   useEffect(()=>{let alive=true;const load=()=>void rpc.agentTasks.plugins?.(taskId)?.then(v=>{if(alive)setPlugins(v);}).catch(()=>{});load();const off=events.on(applicationsChangedEvent,load);return()=>{alive=false;off();};},[taskId]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
+  const [goalMode, setGoalMode] = useState(false);
+  const goalModeRef = useRef(false);
+  const restoreGoalMode = useCallback((active: boolean) => {
+    goalModeRef.current = active;
+    setGoalMode(active);
+  }, []);
   const [chips, setChips] = useState<Chip[]>([]);
   const [draftEditorId] = useState(() => crypto.randomUUID());
   const draftLeaseActive = useRef(false);
@@ -933,7 +949,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const actionRef = useRef(false);
   const actionInputs = useRef(new Map<string, string>());
   const sendingRef = useRef(false);
-  const pendingInput = useRef<{ text: string; chips: string; clientInputId: string } | null>(null);
+  const pendingInput = useRef<{ text: string; chips: string; goalMode: boolean; clientInputId: string } | null>(null);
   const [live, setLive] = useState(emptyLive);
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
@@ -1019,9 +1035,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       if (editedRef.current || !draftLeaseActive.current) return;
       if (bodyRevision !== undefined) draftRev.current = bodyRevision;
       setText(String(draft?.text ?? ''));
+      restoreGoalMode(draft?.goalMode === true);
       setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
     } finally { setDraftReady(true); }
-  }, [taskId, holdDraftAttachments]);
+  }, [taskId, holdDraftAttachments, restoreGoalMode]);
 
   const applySnapshot = useCallback((s: Snapshot) => {
     seqRef.current = s.seq;
@@ -1181,7 +1198,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     const write = (async () => {
       const attachments = chipsRef.current.filter(c => c.status === 'ready' && c.data).map(c => c.data!);
       try {
-        const r = await rpc.agentTasks.saveDraft(taskId, { text: value, attachments }, chooseLocalAt ?? draftRev.current);
+        const r = await rpc.agentTasks.saveDraft(taskId, { text: value, attachments, ...(goalModeRef.current ? { goalMode: true } : {}) }, chooseLocalAt ?? draftRev.current);
         draftError.current = null;
         if (!r.ok) { updateDraftConflict(r.revision); return false; }
         draftRev.current = r.revision;
@@ -1250,6 +1267,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
         if (chip.status === 'preparing') removedWhilePreparing.current.add(chip.localId);
       }
       textRef.current = nextText; setText(nextText);
+      restoreGoalMode(draft.value?.goalMode === true);
       chipsRef.current = nextChips; setChips(nextChips);
       draftRev.current = revision;
       draftDirty.current = false;
@@ -1290,9 +1308,13 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   },[taskId,composerProject,composerReady]);
 
   if (!snap) return <div className="agent-task-view loading"><Loader2 className="spin" size={18} /></div>;
-  const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
+  const profile = profiles.find(p => p.profileId === snap.selection.profileId);
+  const canGoal = !snap.parentTaskId && (snap.run?.goal ?? profile?.goalSupported ?? false);
+  const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? [], skills: [] };
   // 目标命令只在运行冻结的能力允许时出现（复核 CR15）。
-  const catalog: Catalog = snap.run && !snap.run.goal ? { ...rawCatalog, commands: rawCatalog.commands.filter(c => c.replace(/^\//, '') !== 'goal') } : rawCatalog;
+  const catalog: Catalog = { ...rawCatalog, commands: [
+    ...(canGoal ? ['goal'] : []), ...rawCatalog.commands.filter(c => c.replace(/^\//, '') !== 'goal'),
+  ] };
   const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query, skillCatalog.managed) : fileItems(fileHits);
   const activeMenuIndex = Math.min(menuIndex, Math.max(0, menuItems.length - 1));
   const refreshTrigger = (value: string, caret: number) => { const t = findTrigger(value, caret); setTrigger(t); setMenuIndex(0); };
@@ -1305,7 +1327,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     setText(r.text); saveDraft(r.text); setTrigger(null);
     requestAnimationFrame(() => { textarea.current?.focus(); textarea.current?.setSelectionRange(r.caret, r.caret); });
   };
-  const profile = profiles.find(p => p.profileId === snap.selection.profileId);
   const turns = [...olderTurns, ...snap.turns] as TurnInfo[];
   const turnById = new Map(turns.map(t => [t.turn_id, t]));
   const currentItems = snap.items as TimelineItem[];
@@ -1421,8 +1442,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     } catch (e) { toast.error(rpcErrorMessage(e)); }
     finally { sendingRef.current = false; setSending(false); }
   };
+  const changeGoalMode = (active: boolean) => {
+    restoreGoalMode(active);
+    saveDraft(textRef.current);
+    setTrigger(null);
+    requestAnimationFrame(() => textarea.current?.focus());
+  };
   const send = async () => {
     const value = text.trim();
+    const goalCmd = composerGoal(value, goalMode);
+    if (goalCmd && !canGoal) { toast.warning('当前执行器的目标不可用'); return; }
+    if (goalCmd && blocking) { toast.warning('请先处理上方请求，目标草稿已保留'); return; }
+    if (goalCmd?.kind === 'set' && !goalCmd.objective) { toast.warning('请输入目标和可验证的完成条件'); return; }
     // 对齐 T3：本任务原生请求等待时，发送文字＝拒绝该请求并说明原因（计划审批＝继续修改）；宿主业务请求与子任务请求不拦截正常发送。
     if (blocking) { if (value && !chips.length) await redirect(blocking, value); else if (chips.length) toast.warning('请先处理上方请求，附件已保留'); return; }
     // 准备中或失败的附件不能发送也不能排队，给出原因且不清空输入（用例 A75）。
@@ -1434,13 +1465,11 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     if (sendingRef.current) return;
     const frozenChipIds = new Set(chips.map(c => c.localId));
     const prior = pendingInput.current;
-    const clientInputId = prior && prior.text === value && prior.chips === [...frozenChipIds].join(',') ? prior.clientInputId : newClientInputId();
-    rememberBrowserPresentation(taskId,clientInputId);
-    pendingInput.current = { text: value, chips: [...frozenChipIds].join(','), clientInputId };
+    const clientInputId = prior && prior.text === value && prior.goalMode === goalMode && prior.chips === [...frozenChipIds].join(',') ? prior.clientInputId : newClientInputId();
+    if (!goalCmd) rememberBrowserPresentation(taskId,clientInputId);
+    pendingInput.current = { text: value, chips: [...frozenChipIds].join(','), goalMode, clientInputId };
     sendingRef.current = true; setSending(true);
     try {
-      // /goal 命令：只对声明支持的执行器开放（需求 R02）；/goal clear 清除。
-      const goalCmd = /^\/goal(?:\s+([\s\S]*))?$/.exec(value);
       const nativeCmd = !goalCmd && /^\/([A-Za-z0-9_:.-]+)(?:\s+([\s\S]*))?$/.exec(value);
       // 命令不支持附件：提示并完整保留，不能成功后把附件丢掉（复核 NR10）。
       if ((goalCmd || (nativeCmd && catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1]))) && attachments.length) { toast.warning('命令不能带附件，附件已保留；请去掉命令或附件后再发送'); return; }
@@ -1449,9 +1478,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       if (nativeCmd && catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1])) {
         await rpc.agentTasks.command(taskId, nativeCmd[1], (nativeCmd[2] ?? '').trim() || undefined);
       } else if (goalCmd) {
-        const arg = (goalCmd[1] ?? '').trim();
-        if (!arg) { toast.warning('在 /goal 后写目标，或用 /goal clear 清除'); return; }
-        await rpc.agentTasks.goal(taskId, arg === 'clear' ? { kind: 'clear' } : { kind: 'set', objective: arg });
+        await rpc.agentTasks.goal(taskId, goalCmd);
       } else {
         await rpc.agentTasks.submit(taskId, { clientInputId, text: value, expectedSelectionRevision: snap.selectionRevision, mode: 'queue', attachments });
       }
@@ -1459,7 +1486,11 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       // 只清除这次发出的内容：回执期间新写的文字与新加的附件保留。
       const rest = chipsRef.current.filter(c => !frozenChipIds.has(c.localId));
       setChips(rest); chipsRef.current = rest;
-      if (textRef.current.trim() === value) { setText(''); saveDraft(''); } else saveDraft(textRef.current);
+      if (textRef.current.trim() === value && goalModeRef.current === goalMode) {
+        if (goalMode) restoreGoalMode(false);
+        setText('');
+        saveDraft('');
+      } else saveDraft(textRef.current);
       void reload();
     } catch (e) { toast.error(rpcErrorMessage(e)); void reload(); }
     finally { sendingRef.current = false; setSending(false); }
@@ -1552,6 +1583,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const queueSendLabel = snap.run?.busy ? '插入当前轮' : '立即发送';
   const queueSteerUnavailable = !!snap.run?.busy && !snap.run.steer;
   const composerStopping = !!stopping || stopRequested;
+  const goalWorking = snap.status === 'working' && snap.goal?.status === 'active';
+  const goalStart = goalWorking && !backgroundOnly && snap.selection.driverId !== 'codex-app-server'
+    ? Date.parse(snap.turns.findLast(turn => turn.status === 'started')?.started_at ?? '') : NaN;
+  const goalLiveSeconds = Number.isFinite(goalStart) ? Math.max(0, Math.floor((now - goalStart) / 1000)) : 0;
   const hasDraftContent = !!text.trim() || chips.length > 0;
   const canContinue = !working && !composerStopping && !snap.switching && !snap.selection.pendingSwitch
     && !snap.preparingTurnId && !requests.length && !snap.requestsTotal && !snap.run?.busy;
@@ -1571,7 +1606,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const taskHeader = <header className="agent-task-head" aria-label="当前任务">
     {titlebarTarget && snap.projectId && <TaskProjectBreadcrumb projectId={snap.projectId} />}
     <h1 title={snap.title}>{snap.title}</h1>
-    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : backgroundOnly && snap.status === 'working' ? '后台运行中' : STATUS_LABEL[snap.status]}</span>}
+    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : backgroundOnly && snap.status === 'working' ? '后台运行中' : goalWorking ? '目标进行中' : STATUS_LABEL[snap.status]}</span>}
     {!archived && working && composerAction !== 'stop' && <button type="button" className="agent-head-btn agent-header-stop"
       title={stopLabel} aria-label={stopLabel} onClick={() => void stop()}><ComposerStopIcon /></button>}
     <span className="push" />
@@ -1620,9 +1655,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
           <WorkItem key={item.itemId} it={byItemId.get(item.itemId) ?? item} now={now}/>)}
       </section>}
       {!!relations?.childrenTotal && <AgentChildSummary taskId={taskId} value={relations} readOnly={archived} reload={() => void reload()} />}
-      {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
-      {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
-      {!archived && !snap.goal && !snap.goalPending && snap.goalUnknown && <div className="agent-goal" data-testid="agent-goal-unknown"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalUnknown.kind === 'set' ? snap.goalUnknown.objective : '清除目标'}</b><small>状态未知 · 执行器的回复无法识别</small></div><div className="agent-goal-actions"><button type="button" onClick={() => void goalOp('clear')}>清除</button></div></div>}
+      {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} working={goalWorking} liveSeconds={goalLiveSeconds} pending={!!snap.goalPending} onOp={op => void goalOp(op)} />}
+      {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>{snap.goalPending.queued ? '目标命令排队中' : '已发给执行器，等待确认'}</small></div></div>}
+      {!archived && !snap.goalPending && snap.goalUnknown && <div className="agent-goal" data-testid="agent-goal-unknown"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalUnknown.kind === 'set' ? snap.goalUnknown.objective : '清除目标'}</b><small>状态未知 · 执行器的回复无法识别</small></div><div className="agent-goal-actions"><button type="button" onClick={() => void goalOp('clear')}>清除</button></div></div>}
       {snap.selection.pendingSwitch && <div className="agent-limited">本轮和已有排队输入结束后切换到 {profiles.find(p => p.profileId === snap.selection.pendingSwitch?.profileId)?.name ?? snap.selection.pendingSwitch.profileId}</div>}
       <div ref={setMailSlot} className="agent-mail-slot"/>
     </TimelineActionScope.Provider></div></div>
@@ -1685,7 +1720,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
           <AttachmentChips chips={chips} taskId={taskId} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={skillCatalog.empty} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
-            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && !backgroundOnly && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working && !backgroundOnly ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
+            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : goalMode ? GOAL_PLACEHOLDER : working && !backgroundOnly && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working && !backgroundOnly ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
               if (e.key === 'Escape' && (menuItems.length || selectingSkill) && !e.nativeEvent.isComposing) {
@@ -1698,6 +1733,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
               }
               if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!composerStopping) void send(); } }} />
           <div className="agent-composer-bar">
+            <ComposerAddMenu onFiles={addFiles} disabled={sending || !draftReady}
+              onGoal={canGoal && !blocking ? () => changeGoalMode(true) : undefined} />
             <PermissionPicker task testId="task-permission" selected={selectedPermission}
               effective={effectivePermission} allowAuto={profile?.tiers.includes('auto') ?? snap.selection.driverId === 'codex-app-server'}
               changing={snap.run?.tierChanging} deferred={!!snap.run?.busy && selectedPermission !== effectivePermission}
@@ -1707,6 +1744,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
                 if (tier === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true);
                 else void setSelection({ tier });
               }}/>
+            {goalMode && <ComposerGoalMode onExit={() => changeGoalMode(false)} disabled={sending} />}
             <span className="push" />
             <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
               onPick={async (id, model, effort) => {
