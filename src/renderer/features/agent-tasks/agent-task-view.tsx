@@ -17,6 +17,7 @@ import MarkdownIt from 'markdown-it';
 import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, WifiOff, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentCommandDetails } from './agent-command-details';
+import { NativeChildTimeline } from './native-child-timeline';
 import { AgentModelPicker } from './agent-model-picker';
 import { ComposerPrimaryAction, ComposerStopIcon, QueuedSendIcon } from './composer-primary-action';
 import { ANTIGRAVITY_FULL_ACCESS_WARNING, FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
@@ -163,19 +164,21 @@ const ArchivedScope = createContext(false);
 const NativeProcessScope = createContext<(item: TimelineItem) => void>(() => {});
 const RelationsScope = createContext<Relations|null>(null);
 const RunInTerminal = createContext<null|((code:string)=>void)>(null);
-function Markdown({ text,itemId }: { text: string;itemId?:string }) {
+function Markdown({ text, itemId, readOnly = false }: { text: string; itemId?: string; readOnly?: boolean }) {
   const archived=useContext(ArchivedScope),taskId=useContext(TaskScope),terminal=useContext(RunInTerminal);const [menu,setMenu]=useState<{href:string;x:number;y:number}|null>(null);
+  const passive = archived || readOnly;
   const route=(href:string,external=false)=>{if(!itemId){toast.message('这条内容仍在生成，完成后再打开链接');return;}void openMessageLink(taskId,itemId,href,external).catch(e=>toast.error(rpcErrorMessage(e)));};
   const html = useMemo(() => {
     const rendered = md.render(text);
-    return archived ? rendered.replace(/<button[^>]*class="agent-run-in-terminal"[^>]*>[\s\S]*?<\/button>/g,'') : rendered;
-  }, [text,archived]);
-  return <><div className="agent-md" onContextMenu={e=>{if(archived)return; const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();setMenu({href:decodeURIComponent(link.dataset.agentLink),x:Math.min(e.clientX,window.innerWidth-210),y:Math.min(e.clientY,window.innerHeight-180)});}}} dangerouslySetInnerHTML={{ __html: html }} onClick={e => {
-    if (archived) { e.preventDefault(); return; }
+    const body = passive ? rendered.replace(/<button[^>]*class="agent-run-in-terminal"[^>]*>[\s\S]*?<\/button>/g,'') : rendered;
+    return readOnly ? body.replace(/<a href="#" data-agent-link="[^"]*">([\s\S]*?)<\/a>/g, '$1') : body;
+  }, [text,passive,readOnly]);
+  return <><div className="agent-md" onContextMenu={e=>{if(passive)return; const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();setMenu({href:decodeURIComponent(link.dataset.agentLink),x:Math.min(e.clientX,window.innerWidth-210),y:Math.min(e.clientY,window.innerHeight-180)});}}} dangerouslySetInnerHTML={{ __html: html }} onClick={e => {
+    if (passive) { e.preventDefault(); return; }
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.agent-run-in-terminal');
     if (btn?.dataset.code) terminal?.(decodeURIComponent(btn.dataset.code));
     const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();route(decodeURIComponent(link.dataset.agentLink),e.metaKey||e.ctrlKey);}
-  }} />{!archived&&menu&&<><button type='button' className='agent-context-scrim' aria-label='关闭链接菜单' onClick={()=>setMenu(null)}/><div className='agent-link-menu' style={{left:menu.x,top:menu.y}}><button type='button' onClick={()=>{route(menu.href);setMenu(null);}}>打开</button><button type='button' onClick={()=>{route(menu.href,true);setMenu(null);}}>在外部编辑器打开</button><button type='button' onClick={()=>{if(itemId)void resolveMessageLink(taskId,itemId,menu.href).then(r=>navigator.clipboard.writeText(r.kind==='file'?r.absolutePath:r.url)).then(()=>toast.success('已复制完整路径')).catch(e=>toast.error(rpcErrorMessage(e)));setMenu(null);}}>复制完整路径</button></div></>}</>;
+  }} />{!passive&&menu&&<><button type='button' className='agent-context-scrim' aria-label='关闭链接菜单' onClick={()=>setMenu(null)}/><div className='agent-link-menu' style={{left:menu.x,top:menu.y}}><button type='button' onClick={()=>{route(menu.href);setMenu(null);}}>打开</button><button type='button' onClick={()=>{route(menu.href,true);setMenu(null);}}>在外部编辑器打开</button><button type='button' onClick={()=>{if(itemId)void resolveMessageLink(taskId,itemId,menu.href).then(r=>navigator.clipboard.writeText(r.kind==='file'?r.absolutePath:r.url)).then(()=>toast.success('已复制完整路径')).catch(e=>toast.error(rpcErrorMessage(e)));setMenu(null);}}>复制完整路径</button></div></>}</>;
 }
 
 const DEFAULT_COMMANDS: Record<string, string[]> = { 'codex-app-server': ['goal', 'compact', 'review'], 'claude-sdk': ['goal', 'compact', 'init'] };
@@ -477,35 +480,60 @@ function ChangeCard({ payload }: { payload: {turnId:string; fileCount:number; fi
 }
 
 
-function NativeMessage({ item }: { item: TimelineItem }) {
-  const { payload: p, truncated, load } = useFullPayload(item);
-  const content = p.message?.content ?? p.content;
-  const text = p.text ?? p.summary ?? (Array.isArray(content) ? content.map((b: any) => b.text ?? (b.type === 'tool_use' ? `调用 ${b.name}\n${JSON.stringify(b.input)}` : b.content ?? '')).join('\n') : typeof content === 'string' ? content : JSON.stringify(p));
-  return <div className="agent-native-message"><pre>{String(text)}</pre><Completeness truncated={truncated} payload={p} onExpand={() => void load()} /></div>;
-}
 function NativeProcess({ item, onClose }: { item: TimelineItem; onClose(): void }) {
   const {payload:p,truncated,load}=useFullPayload(item);
   const taskId=useContext(TaskScope), archived=useContext(ArchivedScope);
   const [value, setValue] = useState<Awaited<ReturnType<typeof rpc.agentTasks.nativeHistory>> | null>(null);
   const [error, setError] = useState('');
   const epoch = useRef(0), reading = useRef(false), pendingRefresh = useRef(false);
+  const bodyRead = useRef<AbortController | null>(null);
+  const bodiesInFlight = useRef(new Set<string>());
   const read = async (before?: number) => {
+    if (before !== undefined && reading.current) return;
     const mine = ++epoch.current; reading.current = true;
     try {
       const r = await rpc.agentTasks.nativeHistory(taskId, item.itemId, before);
       if (mine !== epoch.current) return;
       setValue(v => {
         const map = new Map((v?.items ?? []).map(i => [i.itemId, i]));
-        for (const i of r.items) if (!map.has(i.itemId) || map.get(i.itemId)!.revision <= i.revision) map.set(i.itemId, i);
-        return { ...r, hasMore: map.size < r.total, items: [...map.values()].sort((a,b) => a.ordinal - b.ordinal) };
+        for (const i of r.items) {
+          const previous = map.get(i.itemId);
+          if (!previous || previous.revision < i.revision) map.set(i.itemId, i);
+        }
+        const items = [...map.values()].sort((a, b) => a.ordinal - b.ordinal);
+        return { ...r, hasMore: items.length < r.total, nextOrdinal: items[0]?.ordinal ?? null, items };
       }); setError('');
     } catch (e) { if (mine === epoch.current) setError(rpcErrorMessage(e)); }
     finally { if (mine === epoch.current) { reading.current = false; if (pendingRefresh.current) { pendingRefresh.current = false; void read(); } } }
   };
+  const readBody = async (source: TimelineItem) => {
+    const signal = bodyRead.current?.signal;
+    const key = source.itemId + ':' + source.revision;
+    const inFlight = bodiesInFlight.current;
+    if (!signal || signal.aborted || inFlight.has(key)) return;
+    inFlight.add(key);
+    try {
+      const { value: payload } = await readRange(off => rpc.agentTasks.itemBody(taskId, source.itemId, off, source.revision), signal);
+      if (signal.aborted) return;
+      if (isLegacyTruncated(payload)) {
+        toast.error('历史只保留了开头部分，无法读取全文');
+        return;
+      }
+      setValue(current => current && {
+        ...current,
+        items: current.items.map(old => old.itemId === source.itemId && old.revision === source.revision ? { ...old, payload } : old),
+      });
+    } catch (e) {
+      if (!signal.aborted) toast.error('读取完整内容失败：' + rpcErrorMessage(e));
+    } finally { inFlight.delete(key); }
+  };
   useEffect(() => {
+    const controller = new AbortController();
+    bodyRead.current = controller;
+    bodiesInFlight.current = new Set();
     setValue(null); void read();
     const off = events.on(agentTaskEvent, e => { if (e.taskId === taskId) { if (reading.current) pendingRefresh.current = true; else void read(); } });
-    return () => { ++epoch.current; pendingRefresh.current = false; off(); };
+    return () => { controller.abort(); ++epoch.current; pendingRefresh.current = false; off(); };
   }, [taskId, item.itemId]);
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -517,25 +545,34 @@ function NativeProcess({ item, onClose }: { item: TimelineItem; onClose(): void 
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [onClose]);
-  const stateLabels: Record<string,string> = {running:'工作中',needs_attention:'需要你处理',completed:'已完成',interrupted:'已停止',failed:'失败'};
-  const states = value?.states.length ? value.states : typeof p.status === 'string' ? [p.status] : [];
+  const stateLabels: Record<string,string> = {running:'工作中',needs_attention:'需要你处理',completed:'已完成',interrupted:'已停止',failed:'失败',unconfirmed:'结果未确认'};
+  const status = item.terminal === 'unconfirmed' ? item.terminal : p.status ?? item.terminal;
+  const states = value?.states.length ? value.states : typeof status === 'string' ? [status] : [];
   const state = states.length ? states.map(status => stateLabels[status] ?? status).join('、') : '状态未知';
   const stopRunId = value?.stopRunId;
+  const title = String(p.input?.description ?? p.tool ?? p.name ?? '子 Agent');
+  const childLog = (value || error) && !value?.items.length && Array.isArray(p.childLog) ? p.childLog as string[] : [];
+  const output = typeof p.output === 'string' ? p.output : undefined;
   return <section className="agent-native-process" aria-label="执行器原生子 Agent">
-    <header><b><Network size={15}/> 执行器原生子 Agent</b><button type="button" aria-label="关闭过程" onClick={onClose}><X size={14}/></button></header>
+    <header className="agent-native-heading">
+      <Network size={16} aria-hidden />
+      <div><h2 title={title}>{title}</h2><small>{state}</small></div>
+      <button type="button" aria-label="关闭过程" onClick={onClose}><X size={14}/></button>
+    </header>
     <div className="agent-native-process-body">
-    <p>{p.input?.description ?? p.tool ?? p.name} · {state}</p>
-    {p.prompt && <pre>{p.prompt}</pre>}
-    {p.childLog?.length > 0 && <ol className="agent-native-steps">{p.childLog.map((line: string, i: number) => <li key={i}><Info size={13}/><pre>{line}</pre></li>)}</ol>}
-    {p.childLogPreviewOnly && <small>以上为最近消息预览；完整记录如下。</small>}
-    <div className="agent-native-messages">
+      {p.prompt && <details className="agent-native-prompt"><summary>委派指令</summary><pre tabIndex={0}>{p.prompt}</pre></details>}
       {error && <p role="alert">子消息读取失败：{error}<button type="button" onClick={() => void read()}>重试</button></p>}
+      {!value && !error && <p role="status">正在读取子消息…</p>}
       {value?.hasMore && <button type="button" className="agent-older" onClick={() => void read(value.nextOrdinal ?? undefined)}>加载更早的子消息</button>}
-      {value?.items.map(item => <NativeMessage item={item} key={item.itemId} />)}
-      {value && !value.items.length && <p>{value.partial ? '这份旧记录仅保留了子消息预览，没有可恢复的完整记录。' : '执行器尚未返回子消息。'}</p>}
-    </div>
-    {p.output && <pre>{String(p.output)}</pre>}
-    <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
+      {childLog.length > 0 && <>
+        <p role="note">{error ? '当前显示最近消息预览。' : '这份旧记录仅保留了子消息预览，没有可恢复的完整记录。'}</p>
+        <ol className="agent-native-timeline">{childLog.map((line, index) => <li className="agent-native-entry legacy" key={index}>{line}</li>)}</ol>
+      </>}
+      {value && !value.items.length && !childLog.length && !output && <p>执行器尚未返回子消息。</p>}
+      <NativeChildTimeline items={value?.items ?? []} summary={output} markdown={text => <Markdown text={text} readOnly />}
+        completeness={source => <Completeness truncated={source.payload?.truncated === true && !isLegacyTruncated(source.payload)}
+          payload={source.payload} onExpand={() => void readBody(source)} />} />
+      <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
     </div>
     {!archived && stopRunId && <footer><button type="button" className="agent-stop agent-stop-run" onClick={() => void rpc.agentTasks.stop(taskId,false,stopRunId).then(onClose).catch(e=>toast.error(rpcErrorMessage(e)))}><CircleStop size={14}/>停止所属运行</button></footer>}
   </section>;
@@ -550,25 +587,49 @@ function WorkItem({ it, now, inGroup = false }: { it: TimelineItem; now: number;
   const { payload: p, truncated, load } = useFullPayload(it);
   const viewProcess = useContext(NativeProcessScope);
   const taskId = useContext(TaskScope);
-  const [commandOpen, setCommandOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const trackOpen = (event: React.SyntheticEvent<HTMLDetailsElement>) => {
+    if (event.target === event.currentTarget) setOpen(event.currentTarget.open);
+  };
   const Icon = WORK_ICONS[it.type] ?? Info;
   const isCommand = it.type === 'command_execution';
-  const subagentStatus = it.type === 'subagent' && (it.terminal === 'unconfirmed' ? '结果未确认'
-    : p.status === 'running' && !it.terminal ? '运行中' : p.status === 'completed' ? '已完成'
-      : p.status === 'interrupted' ? '已停止' : p.status === 'failed' ? '失败' : '');
   const entry = { ...it, payload: p };
   const completeness = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
+  if (it.type === 'subagent') {
+    const status = it.terminal === 'unconfirmed' ? it.terminal : (it.terminal && p.status === 'running' ? it.terminal : p.status ?? it.terminal);
+    const label = ({ running: '运行中', needs_attention: '需要你处理', completed: '已完成', interrupted: '已停止', failed: '失败', unconfirmed: '结果未确认' } as Record<string, string>)[status];
+    const title = workLabel(entry);
+    const result: string = typeof p.output === 'string' ? p.output : '';
+    const preview = result.slice(0, 600).split(/\r?\n/).map(line => line.trim())
+      .find(line => line && !/^(?:#{1,6}\s|```|---+$)/.test(line))
+      ?.replace(/^(?:[-+*>]|\d+\.)\s+/, '').replace(/[`*]/g, '').slice(0, 180);
+    return <details className="agent-work-row agent-subagent-card" data-status={status} onToggle={trackOpen}>
+      <summary>
+        <Network size={15} aria-hidden />
+        <div className="agent-subagent-caption">
+          <span title={title}>{title}</span>
+          {!open && preview && <small className="agent-subagent-excerpt">{preview}</small>}
+        </div>
+        {label && <small className="agent-subagent-status">{label}</small>}
+        <ChevronRight size={14} className="agent-native-chevron" aria-hidden />
+      </summary>
+      <div className="agent-subagent-body">
+        {open && result && <Markdown text={result} readOnly />}
+        {completeness}
+        <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程 <ChevronRight size={12} aria-hidden /></button>
+      </div>
+    </details>;
+  }
   return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${isCommand ? ' agent-work-command-row' : ''}`}
-    onToggle={isCommand ? event => { if (event.target === event.currentTarget) setCommandOpen(event.currentTarget.open); } : undefined}>
-    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, isCommand && !inGroup)}</span>{subagentStatus && <small>{subagentStatus}</small>}{isCommand && <ChevronRight size={13} aria-hidden/>}</summary>
-    {isCommand ? commandOpen && <>
+    onToggle={isCommand ? trackOpen : undefined}>
+    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, isCommand && !inGroup)}</span>{isCommand && <ChevronRight size={13} aria-hidden/>}</summary>
+    {isCommand ? open && <>
       <AgentCommandDetails command={String(p.command ?? p.input?.command ?? '')} output={String(p.output ?? '')}
         outputTruncated={p.outputTruncated} exitCode={typeof p.exitCode === 'number' ? p.exitCode : undefined} running={p.status === 'running' && !it.terminal}
         taskId={taskId} runId={it.runId} itemKey={p.outputKey} startedAt={it.createdAt} heartbeatAt={p.heartbeatAt} elapsedSeconds={p.elapsedSeconds} now={now}/>
       {completeness}
     </> : <>
       {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
-      {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}
       {completeness}
     </>}
   </details>;

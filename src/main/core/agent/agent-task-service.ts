@@ -12,6 +12,7 @@ import { AgentRunService, type OpenRunInput, type RunHandle } from './agent-run-
 import { isTier, resolveTier, type Tier } from './permissions';
 import { attachmentNote, freezeImages, prepareAttachment, readAttachmentImage, resolveAttachmentFile, verifyAttachments, type Attachment } from './attachments';
 import type { AttachmentImageSource } from '@shared/agent-attachment-image';
+import { nativeChildBlocks, type NativeChildBlock } from '@shared/agent-native-history';
 import type { CapabilityName, CapabilityResult } from './capabilities';
 import { searchProjectFiles } from './file-search';
 import { HandoffService, type Transfer } from './handoff';
@@ -87,6 +88,30 @@ function previewItem<T extends { payload: any }>(it: T, limit = ITEM_PREVIEW): T
   const marker = { truncated: true, bytes: artifact?.bytes ?? bytes };
   const preview = { ...boundedPreview(fields, limit), ...marker };
   return { ...it, payload: jsonBytes(preview) <= limit ? preview : marker };
+}
+
+function nativeHistoryPayload(ref: string) {
+  const payload = JSON.parse(ref), bytes = Buffer.byteLength(ref);
+  const limit = 4096;
+  if (bytes <= limit && !payload?.artifact) return payload;
+  const nativePreview: NativeChildBlock[] = [];
+  const preview = { truncated: true, bytes: payload?.artifact?.bytes ?? bytes, nativePreview };
+  // Keep the tool identifiers and type when hiding a long body so the caller can
+  // still associate each output with its command before an explicit detail read.
+  for (const block of nativeChildBlocks(payload).slice(0, 8)) {
+    if (block.kind === 'raw') continue;
+    const shortened = block.kind === 'tool_call'
+      ? { ...block, name: block.name.slice(0, 96), command: block.command?.slice(0, 400), input: block.input?.slice(0, 400) }
+      : block.kind === 'tool_result'
+        ? { ...block, output: block.output.slice(0, 500) }
+        : { ...block, text: block.text.slice(0, 500) };
+    nativePreview.push(shortened);
+    if (jsonBytes(preview) > limit) {
+      nativePreview.pop();
+      break;
+    }
+  }
+  return preview;
 }
 function previewRequest<T extends { payload: any }>(r: T, limit = REQUEST_PREVIEW): T & { detailTruncated?: boolean; bytes?: number } {
   const bytes = jsonBytes(r.payload);
@@ -1227,10 +1252,14 @@ export class AgentTaskService {
     const ids = Array.isArray(payload.nativeNodeIds) ? payload.nativeNodeIds.filter((x: unknown) => typeof x === 'string' && x.length <= 256).slice(0, 128) : [];
     if (!ids.length) return { items: [], hasMore: false, total: 0, nextOrdinal: null as number | null, states: [] as string[], partial: true, stopRunId: parent.terminal_state ? null : ownerRunId };
     const params = ids.map(() => '?').join(',');
-    const rows = this.d.store.sqlite.prepare(`SELECT * FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message' AND ordinal<? ORDER BY ordinal DESC LIMIT 51`).all(taskId, parent.run_id, ...ids, beforeOrdinal) as { item_id: string; turn_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string }[];
+    const rows = this.d.store.sqlite.prepare(`SELECT * FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message' AND ordinal<? ORDER BY ordinal DESC LIMIT 51`).all(taskId, parent.run_id, ...ids, beforeOrdinal) as { item_id: string; turn_id: string | null; node_id: string; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string }[];
     const total = (this.d.store.sqlite.prepare(`SELECT COUNT(*) AS n FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message'`).get(taskId, parent.run_id, ...ids) as { n: number }).n;
     const states = (this.d.store.sqlite.prepare(`SELECT payload_ref FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_status'`).all(taskId, parent.run_id, ...ids) as { payload_ref: string }[]).map(r => String(JSON.parse(r.payload_ref).state));
-    const items = rows.slice(0, 50).reverse().map(r => { const p = JSON.parse(r.payload_ref); return { itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at, payload: Buffer.byteLength(r.payload_ref) <= 4096 && !p.artifact ? p : { truncated: true, bytes: p.artifact?.bytes ?? Buffer.byteLength(r.payload_ref) } }; });
+    const items = rows.slice(0, 50).reverse().map(r => ({
+      itemId: r.item_id, turnId: r.turn_id, nodeId: r.node_id, type: r.type,
+      ordinal: r.ordinal, revision: r.revision, terminal: r.terminal_state,
+      createdAt: r.created_at, updatedAt: r.updated_at, payload: nativeHistoryPayload(r.payload_ref),
+    }));
     const stoppable = states.some(state => state === 'running' || state === 'needs_attention') || (!states.length && !parent.terminal_state);
     return { items, hasMore: rows.length > 50, total, nextOrdinal: (items[0]?.ordinal ?? null) as number | null, states, partial: !items.length && !!payload.childLog?.length, stopRunId: stoppable ? ownerRunId : null };
   }

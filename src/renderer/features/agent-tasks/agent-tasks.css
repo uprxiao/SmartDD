@@ -122,6 +122,24 @@
 .agent-work-row.failed > summary { color: #d14343; }
 .agent-work-row:is(.declined, .unconfirmed) > summary { color: #c98a12; }
 .agent-work-row pre { margin: 4px 0 6px; padding: 8px 10px; border-radius: 6px; background: rgba(127,127,127,.08); max-height: 240px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
+.agent-subagent-card { min-width: 0; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.agent-subagent-card > summary { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; color: var(--text); }
+.agent-subagent-card > summary:hover { background: var(--hover); }
+.agent-subagent-card > summary > svg { flex: none; color: var(--secondary); }
+.agent-subagent-caption { display: grid; flex: 1; min-width: 0; gap: 2px; }
+.agent-subagent-caption > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.agent-subagent-caption > span { font-weight: 550; }
+.agent-subagent-excerpt, .agent-subagent-status { color: var(--secondary); font-size: 11px; }
+.agent-subagent-status { flex: none; }
+.agent-subagent-card[data-status="running"] .agent-subagent-status { color: var(--accent, var(--text)); }
+.agent-subagent-card[data-status="failed"] .agent-subagent-status { color: light-dark(#a52834, #ff9aa3); }
+.agent-subagent-body { display: grid; gap: 10px; padding: 11px; border-top: 1px solid var(--border); }
+.agent-subagent-body > .agent-md { font-size: 13px; line-height: 1.65; }
+.agent-subagent-body .agent-md pre { white-space: pre; overflow-wrap: normal; }
+.agent-subagent-body > .agent-older { display: inline-flex; align-items: center; gap: 4px; justify-self: start; color: var(--text); }
+.agent-native-chevron { flex: none; transition: transform 150ms ease-out; }
+.agent-subagent-card[open] > summary > .agent-native-chevron,
+.agent-native-tool-row > details[open] > summary > .agent-native-chevron { transform: rotate(90deg); }
 .agent-work-command-row > summary > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .agent-command-detail { min-width: 0; margin: 5px 0 8px 22px; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--surface); }
 .agent-command-detail header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 9px 2px; font-size: 11px; font-weight: 550; color: var(--secondary); }
@@ -351,9 +369,10 @@ button.agent-file-attachment-main:hover { background: var(--hover); }
 .agent-task-layout { flex-direction: row; min-width: 0; container: agent-task-layout / inline-size; }
 .agent-task-main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; container: agent-task-main / inline-size; }
 .agent-task-aux { width: min(298px, 46%); flex: none; overflow: auto; padding: 10px; border-left: 1px solid var(--border); }
+.agent-task-aux:has(> .agent-native-process) { width: min(336px, 46%); }
 .agent-lineage, .agent-native-process { border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 12px; }
 .agent-lineage + .agent-native-process { margin-top: 8px; }
-.agent-lineage header, .agent-native-process header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; }
+.agent-lineage header, .agent-native-process > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; }
 .agent-lineage-toggle, .agent-child-request-link { white-space: nowrap; }
 .agent-head-btn.agent-lineage-toggle { width: auto; flex: none; gap: 5px; padding-inline: 8px; }
 .agent-child-request-link { color: var(--foreground-passive); text-align: left; white-space: normal; }
@@ -399,7 +418,6 @@ button.agent-file-attachment-main:hover { background: var(--hover); }
   .agent-composer-agent { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 }
 .agent-native-process { animation: agent-process-enter 150ms ease-out; }
-.agent-native-process pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 @keyframes agent-process-enter { from { opacity: 0; transform: translateX(8px); } }
 
 /* M14 S1/S2 · timelines, request choices and queued input. */
@@ -495,14 +513,41 @@ button.agent-file-attachment-main:hover { background: var(--hover); }
 .agent-lineage-section small { color: var(--text-secondary); }
 .agent-native-process { display: flex; flex-direction: column; max-height: 100%; background: var(--bg-primary); }
 .agent-native-process:only-child { height: 100%; }
-.agent-native-process header b { display: flex; align-items: center; gap: 6px; }
-.agent-native-process-body { overflow: auto; min-height: 0; flex: 1; }
-.agent-native-process-body pre { padding: 6px; border-radius: 6px; background: var(--bg-secondary); }
+.agent-native-process > .agent-native-heading { gap: 8px; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+.agent-native-heading > svg { flex: none; color: var(--secondary); }
+.agent-native-heading > div { flex: 1; min-width: 0; }
+.agent-native-heading h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
+.agent-native-heading small { color: var(--secondary); font-size: 11px; }
+.agent-native-heading > button { display: grid; flex: none; place-items: center; width: 25px; height: 25px; border-radius: 5px; }
+.agent-native-heading > button:hover { background: var(--hover); }
+.agent-native-process-body { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-height: 0; flex: 1; overflow: auto; padding-top: 9px; scrollbar-width: thin; }
+.agent-native-process-body > p { color: var(--secondary); line-height: 1.5; }
+.agent-native-prompt { padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; color: var(--secondary); }
+.agent-native-prompt > summary, .agent-native-entry.raw summary { cursor: pointer; }
+.agent-native-timeline { display: flex; flex-direction: column; gap: 6px; min-width: 0; margin: 0; padding: 0 1px 0 7px; border-inline-start: 1px solid var(--border); list-style: none; }
+.agent-native-entry { min-width: 0; overflow-wrap: anywhere; line-height: 1.55; }
+.agent-native-entry > p { white-space: pre-wrap; }
+.agent-native-entry.notice > p { display: flex; align-items: center; gap: 5px; color: var(--secondary); }
+.agent-native-entry.notice svg { flex: none; }
+.agent-native-entry.text, .agent-native-entry.legacy { padding: 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); }
+.agent-native-entry.legacy { white-space: pre-wrap; }
+.agent-native-entry .agent-md :is(h1, h2, h3) { font-size: 14px; }
+.agent-native-entry > .agent-older { margin-top: 5px; }
+.agent-native-tool-row { min-width: 0; border: 1px solid var(--border); border-radius: 7px; }
+.agent-native-tool-row summary { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 6px; border-radius: 6px; cursor: pointer; list-style: none; }
+.agent-native-tool-row summary:hover { background: var(--hover); }
+.agent-native-tool-row summary > svg { flex: none; color: var(--secondary); }
+.agent-native-tool-row summary > b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 550; }
+.agent-native-tool-row summary > code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 11px var(--mono, monospace); }
+.agent-native-tool-row summary > small { margin-inline-start: auto; flex: none; color: var(--secondary); font-size: 10px; }
+.agent-native-tool-row summary > .failed { color: light-dark(#a52834, #ff9aa3); }
+.agent-native-tool-body { display: grid; gap: 5px; min-width: 0; padding: 5px 6px 7px; border-top: 1px solid var(--border); }
+.agent-native-tool-body > small { color: var(--secondary); }
+.agent-native-tool-body > .agent-older { justify-self: start; }
+.agent-native-tool-body .agent-command-detail { margin: 0; }
+.agent-native-prompt > pre, .agent-native-entry.raw pre, .agent-native-tool-body pre { max-height: min(34vh, 300px); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; overscroll-behavior: contain; }
+.agent-native-prompt > pre, .agent-native-entry.raw pre, .agent-native-tool-body > pre { padding: 6px; border-radius: 5px; color: var(--text); background: var(--surface); }
 .agent-native-process footer { padding-top: 8px; border-top: 1px solid var(--border); }
-.agent-native-steps { padding: 0; list-style: none; }
-.agent-native-steps li { display: flex; align-items: flex-start; gap: 6px; border-top: 1px solid var(--border); padding-top: 5px; }
-.agent-native-steps svg { flex: none; margin-top: 5px; color: var(--text-secondary); }
-.agent-native-steps pre { margin: 0 0 5px; }
 
 /* V23 · the preview and draft editor belong to the timeline. */
 .agent-mail-slot:empty { display: none; }

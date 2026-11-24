@@ -47,8 +47,8 @@ function CommandScript({ command }: { command: string }) {
   </pre>;
 }
 
-export function AgentCommandDetails({ command, output, outputTruncated, exitCode, running, taskId, runId, itemKey, startedAt, heartbeatAt, elapsedSeconds, now }: {
-  command: string; output: string; outputTruncated?: boolean; exitCode?: number; running: boolean;
+export function AgentCommandDetails({ command, output, outputAvailable = true, outputTruncated, exitCode, running, taskId, runId, itemKey, startedAt, heartbeatAt, elapsedSeconds, now }: {
+  command: string; output: string; outputAvailable?: boolean; outputTruncated?: boolean; exitCode?: number; running: boolean;
   taskId?: string; runId?: string | null; itemKey?: string; startedAt: string; heartbeatAt?: number; elapsedSeconds?: number; now: number;
 }) {
   const preview = useCommandPreview(taskId, runId ?? undefined, running ? itemKey : undefined);
@@ -73,6 +73,6 @@ export function AgentCommandDetails({ command, output, outputTruncated, exitCode
     {shown ? <pre ref={outputRef} aria-label="命令输出" tabIndex={0} onScroll={event => {
       const element = event.currentTarget;
       follow.current = element.scrollHeight - element.scrollTop - element.clientHeight <= 8;
-    }}>{shown}</pre> : <p>{running ? '等待输出' : '无输出'}</p>}
+    }}>{shown}</pre> : <p>{running ? '等待输出' : outputAvailable ? '无输出' : '暂无工具结果'}</p>}
   </section>;
 }
