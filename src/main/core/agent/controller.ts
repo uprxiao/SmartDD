@@ -1,4 +1,5 @@
 import type { AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
+import type { AttachmentImageSource } from '@shared/agent-attachment-image';
 // M14 任务命令 IPC（技术方案 T1.5 §3）。发送方由 Electron 提供并核对，渲染进程参数不能指定来源、PID 或运行身份。
 import type { IpcMainInvokeEvent, WebContents } from 'electron';
 import { randomUUID } from 'node:crypto';
@@ -71,6 +72,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       draftBody: (e, taskId: string, offset: number, revision?: number) => run(e, w => w.tasks.draftBody(taskId, offset, revision)),
       submit: (e, taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) => run(e, w => w.tasks.submit(taskId, input,e)),
       prepareAttachment: (e, taskId: string | null, cwd: string | null, file: { name: string; mime?: string; sourcePath?: string; dataBase64?: string }) => run(e, w => w.tasks.prepareAttachment(taskId, cwd, file)),
+      attachmentImage: (e, taskId: string, source: AttachmentImageSource, offset: number, revision?: string) => run(e, w => w.tasks.attachmentImage(taskId, source, offset, revision)),
       discardAttachment: (e, taskId: string | null, attachment: unknown) => run(e, w => w.tasks.discardPreparedAttachment(taskId, attachment)),
       holdDraftAttachments: (e, taskId: string, editorId: string, paths: string[]) => run(e, w => {
         const sender = e.sender, ownerId = sender.id;

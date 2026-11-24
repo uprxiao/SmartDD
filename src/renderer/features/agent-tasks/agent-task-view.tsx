@@ -16,6 +16,7 @@ import { BrowserCheckpointCard } from '@renderer/features/browser/checkpoint-car
 import MarkdownIt from 'markdown-it';
 import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
+import { AgentCommandDetails } from './agent-command-details';
 import { AgentModelPicker } from './agent-model-picker';
 import { ComposerPrimaryAction, ComposerStopIcon, QueuedSendIcon } from './composer-primary-action';
 import { ANTIGRAVITY_FULL_ACCESS_WARNING, FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
@@ -23,6 +24,8 @@ import { PermissionPicker } from '@renderer/features/agents/permission-picker';
 import { agentPermissionSchema } from '@shared/agent-permissions';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
+import { attachmentImageBlob, MessageAttachments } from './attachment-images';
+import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
 import { ComposerMenu, useComposerSkills } from './composer-menu-view';
 import { navigation } from '@renderer/core/navigation';
@@ -302,7 +305,8 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       return <div className="agent-user"><div className="agent-user-bubble">{fold && !showMessage ? preview + '…' : message}
         {fold && <button type="button" className="agent-inline-action agent-fold" aria-expanded={showMessage} onClick={() => setShowMessage(!showMessage)}>{showMessage ? '收起全文' : '显示全文'}</button>}
         <Completeness truncated={truncated} payload={p} onExpand={() => { setShowMessage(true); void load(); }}/>
-        {p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}
+        {Array.isArray(p.attachments) && p.attachments.length > 0 &&
+          <MessageAttachments attachments={p.attachments} taskId={useTaskId} turnId={item.turnId} />}
         {!archived && item.turnId && actions?.unsent(item.turnId) && <div className="agent-inline-actions"><span>发送失败</span>
           <button type="button" disabled={actions.busy} onClick={() => actions.retry(item.turnId!)}>重试</button>
           <button type="button" disabled={actions.busy} onClick={() => actions.restore(item.turnId!)}>放回输入框</button>
@@ -490,15 +494,22 @@ const WORK_ICONS: Record<string, typeof Brain> = {
 function WorkItem({ it, inGroup = false }: { it: TimelineItem; inGroup?: boolean }) {
   const { payload: p, truncated, load } = useFullPayload(it);
   const viewProcess = useContext(NativeProcessScope);
+  const [commandOpen, setCommandOpen] = useState(false);
   const Icon = WORK_ICONS[it.type] ?? Info;
-  const standaloneCommand = it.type === 'command_execution' && !inGroup;
+  const isCommand = it.type === 'command_execution';
   const entry = { ...it, payload: p };
-  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${standaloneCommand ? ' agent-work-command-row' : ''}`}>
-    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, standaloneCommand)}</span>{standaloneCommand && <ChevronRight size={13} aria-hidden/>}</summary>
-    {standaloneCommand && <div className="agent-work-command">{workLabel(entry)}</div>}
-    {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
-    {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}
-    <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
+  const completeness = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
+  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${isCommand ? ' agent-work-command-row' : ''}`}
+    onToggle={isCommand ? event => { if (event.target === event.currentTarget) setCommandOpen(event.currentTarget.open); } : undefined}>
+    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, isCommand && !inGroup)}</span>{isCommand && <ChevronRight size={13} aria-hidden/>}</summary>
+    {isCommand ? commandOpen && <>
+      <AgentCommandDetails command={String(p.command ?? p.input?.command ?? '')} output={String(p.output ?? '')} exitCode={typeof p.exitCode === 'number' ? p.exitCode : undefined} running={p.status === 'running' && !it.terminal}/>
+      {completeness}
+    </> : <>
+      {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
+      {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}
+      {completeness}
+    </>}
   </details>;
 }
 
@@ -1176,7 +1187,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       const nextChips: Chip[] = attachments.map(a => ({ localId:a.id, name:a.name, status:'ready', data:a }));
       for (const chip of currentChips) {
         if (chip.status === 'preparing') removedWhilePreparing.current.add(chip.localId);
-        if (chip.preview) URL.revokeObjectURL(chip.preview);
       }
       textRef.current = nextText; setText(nextText);
       chipsRef.current = nextChips; setChips(nextChips);
@@ -1211,7 +1221,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     if (!composerReady) return;
     const target={taskId,projectId:composerProject,insert:(value:string)=>insertDraftRef.current(value),focus:()=>textarea.current?.focus(),attachFile:async(file:import('@shared/files').FileDocument,baseHash:string,signal:AbortSignal)=>{
       const original=await rpc.files.read(file.ref);signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');if(original.document.revision.hash!==baseHash)throw Error('图片内容已变化，请重新打开后附加');
-      const data=await rpc.agentTasks.prepareAttachment(taskId,null,{name:file.name,mime:file.content?.kind==='image'?file.content.mime:undefined,dataBase64:original.base64});signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');editedRef.current=true;setChips(value=>[...value,{localId:data.id,name:data.name,status:'ready',data}]);saveDraft(textRef.current);
+      const data=await rpc.agentTasks.prepareAttachment(taskId,null,{name:file.name,mime:file.content?.kind==='image'?file.content.mime:undefined,dataBase64:original.base64});signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');
+      const mime = attachmentImageMime(data.name, data.mime);
+      const previewBlob = mime ? attachmentImageBlob(original.base64, mime) : undefined;
+      editedRef.current=true;setChips(value=>[...value,{localId:data.id,name:data.name,status:'ready',data,previewBlob}]);saveDraft(textRef.current);
     }};return agentComposerTargets.register(target);
   },[taskId,composerProject,composerReady]);
 
@@ -1296,9 +1309,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const addFiles = (files: File[]) => {
     for (const file of files) {
       const localId = crypto.randomUUID();
-      const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
       editedRef.current = true;
-      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
+      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', file }]);
       void prepareChip(file, f => rpc.agentTasks.prepareAttachment(taskId, null, f))
         .then(data => {
           if (removedWhilePreparing.current.delete(localId)) {
@@ -1320,7 +1332,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const removeChip = (localId: string) => {
     const chip=chipsRef.current.find(item=>item.localId===localId);
     if(chip?.status==='preparing')removedWhilePreparing.current.add(localId);
-    if(chip?.preview)URL.revokeObjectURL(chip.preview);
     if(chip?.data?.storedPath)void rpc.agentTasks.discardAttachment(taskId,chip.data).catch(e=>toast.error(rpcErrorMessage(e)));
     setChips(cs=>cs.filter(c=>c.localId!==localId));
     setTimeout(()=>saveDraft(textRef.current),0);
@@ -1437,7 +1448,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       if (sendingRef.current || textRef.current || chipsRef.current.length) { toast.warning('请先处理输入框里的草稿'); return; }
       const { value } = await readInput(turnId, null);
       if (sendingRef.current || textRef.current || chipsRef.current.length) { toast.warning('请先处理输入框里的草稿'); return; }
-      const restored: Chip[] = value.attachments.map((attachment: PreparedAttachment) => ({ localId: attachment.id, data: attachment, name: attachment.name, status: 'ready' }));
+      const restored: Chip[] = value.attachments.map((attachment: PreparedAttachment, index: number) => ({
+        localId: attachment.id, data: attachment, name: attachment.name, status: 'ready', previewSource: { kind: 'message', turnId, index },
+      }));
       textRef.current = value.text; setText(value.text);
       chipsRef.current = restored; setChips(restored);
       saveDraft(value.text); textarea.current?.focus();
@@ -1595,7 +1608,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
             e.stopPropagation();
             void stop();
           }}>
-          <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
+          <AttachmentChips chips={chips} taskId={taskId} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={skillCatalog.empty} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
             onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}

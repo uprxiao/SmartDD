@@ -714,6 +714,39 @@ describe('输入框命令', () => {
   });
 });
 
+it('previews a saved draft and reads the original image from its own message after the project file changes', async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-image-preview-')));
+  const cwd = join(root, 'project'), userData = join(root, 'data');
+  mkdirSync(cwd); mkdirSync(userData);
+  const { svc, runs } = setup({ userData });
+  const create = (title: string) => svc.create({ projectId: null, dirId: null, cwd, title, profileId: 'cx', tier: 'ask' }).taskId;
+  const taskId = create('image owner'), other = create('other task');
+  const photo = join(cwd, 'shot.png');
+  const original = Buffer.alloc(120 * 1024, 42);
+  writeFileSync(photo, original);
+  try {
+    const attachment = svc.prepareAttachment(taskId, null, { name: 'shot.png', sourcePath: photo });
+    const draft = { kind: 'draft', attachmentId: attachment.id } as const;
+    svc.saveDraft(taskId, { text: 'saved', attachments: [attachment] }, 0);
+    const firstDraft = await svc.attachmentImage(taskId, draft, 0);
+    expect(firstDraft).toMatchObject({ mime: 'image/png', totalBytes: original.length });
+    expect(JSON.stringify(firstDraft).length).toBeLessThan(128 * 1024);
+
+    const { turnId } = await svc.submit(taskId, { clientInputId: id(1), text: 'image', expectedSelectionRevision: 1, attachments: [attachment] });
+    writeFileSync(photo, 'changed after send');
+    await expect(svc.attachmentImage(taskId, draft, firstDraft.next, firstDraft.revision)).rejects.toThrow('图片内容已变化');
+    const message = { kind: 'message', turnId, index: 0 } as const;
+    const first = await svc.attachmentImage(taskId, message, 0);
+    const second = await svc.attachmentImage(taskId, message, first.next, first.revision);
+    expect(Buffer.concat([Buffer.from(first.base64, 'base64'), Buffer.from(second.base64, 'base64')])).toEqual(original);
+    await expect(svc.attachmentImage(other, message, 0)).rejects.toThrow('图片附件不可用');
+    await expect(svc.attachmentImage(taskId, { ...message, index: 5 }, 0)).rejects.toThrow('图片附件不可用');
+  } finally {
+    await runs.closeAll();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 describe('复核 1620 回归', () => {
   it('CR01：排队期间项目内图片被换成指向根外的软链，派发仍只读接受时冻结的副本', async () => {
     const { rmSync, symlinkSync, readFileSync } = await import('node:fs');

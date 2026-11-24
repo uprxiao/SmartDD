@@ -18,6 +18,22 @@ it('A65/A73: real Git snapshots preserve HEAD and the user index, include unstag
  expect(await git(f.cwd,'rev-parse','HEAD')).toBe(head);expect(readFileSync(join(f.cwd,'.git/index'))).toEqual(index);expect((await git(f.cwd,'show',before.commit+':link'))).toBe(join(f.root,'secret'));
 },15000);
 
+it('keeps the changed hunk when the complete file versions exceed the preview budget',async()=>{
+ const f=fixture();
+ const path='large.log', unchanged=('unchanged: '+'x'.repeat(80)+'\n').repeat(12500);
+ await git(f.cwd,'init','-q','-b','main');
+ writeFileSync(join(f.cwd,path),unchanged+'old value\n');
+ await git(f.cwd,'add','-A');
+ await git(f.cwd,'-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','base');
+ const before=await runDiffJob({...f,action:'capture',turnId:'large-hunk',side:'before'}) as TreeRef;
+ writeFileSync(join(f.cwd,path),unchanged+'new value\n');
+ const after=await runDiffJob({...f,action:'capture',turnId:'large-hunk',side:'after'}) as TreeRef;
+ const preview=await runDiffJob({...f,action:'patch',turnId:'large-hunk',before,after,path});
+ expect(preview).toMatchObject({added:1,removed:1,patch:expect.stringContaining('-old value\n+new value'),reason:expect.stringContaining('上下文')});
+ expect(preview).not.toHaveProperty('beforeText');
+ expect(preview).not.toHaveProperty('afterText');
+});
+
 it('A73 captures a registered linked worktree below the private home while preserving the application data exclusion',async()=>{
  const f=fixture(),home=join(realpathSync(f.root),'home'),db=new Database(':memory:');
  mkdirSync(home);

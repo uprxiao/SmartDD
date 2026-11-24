@@ -1,8 +1,10 @@
 // 输入框附件（需求 R01、用例 A75）：项目内文件按路径引用；项目外文件复制为附件并注明，不放开 Agent 对项目外的读取；
 // 附件随所属输入冻结（排队、编辑、发送都处理整份输入）。
 import { randomUUID } from 'node:crypto';
-import { closeSync, constants, copyFileSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, realpathSync, statSync, writeFileSync } from 'node:fs';
-import { basename, extname, join, relative, sep } from 'node:path';
+import { closeSync, constants, copyFileSync, fstatSync, mkdirSync, openSync, readSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { open, realpath } from 'node:fs/promises';
+import { basename, extname, isAbsolute, join, relative, sep } from 'node:path';
+import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { DriverError } from './driver';
 
 export const ATTACHMENT_LIMIT = 20 * 1024 * 1024;
@@ -110,4 +112,50 @@ export function attachmentNote(list: Attachment[], attachImages = true): string 
   return `\n\n附件：\n${lines.join('\n')}`;
 }
 
-export const readImageBase64 = (a: Attachment, cwd: string) => readFileSync(a.kind === 'path' ? join(cwd, a.relativePath!) : a.storedPath!).toString('base64');
+export async function readAttachmentImage(attachment: Attachment, userData: string, draftCwd: string | null, offset: number, revision?: string) {
+  const mime = attachmentImageMime(attachment.name, attachment.mime);
+  if (!attachment.image || !mime) throw new DriverError('UNSUPPORTED', '此附件没有内置图片预览');
+  if (!Number.isSafeInteger(offset) || offset < 0) throw new DriverError('REJECTED', '图片偏移无效');
+
+  let path: string;
+  if (attachment.storedPath) {
+    const root = join(await realpath(userData), 'agent-attachments');
+    path = await realpath(attachment.storedPath);
+    const parts = relative(root, path).split(sep);
+    if (parts.length !== 2 || !/^(?:frozen-)?[a-f0-9-]{36}$/.test(parts[0])) {
+      throw new DriverError('REJECTED', '图片副本不在附件目录内');
+    }
+  } else if (draftCwd && attachment.kind === 'path' && attachment.relativePath && !isAbsolute(attachment.relativePath)) {
+    const root = await realpath(draftCwd);
+    path = await realpath(join(root, attachment.relativePath));
+    const within = relative(root, path);
+    if ((attachment.root && attachment.root !== root) || !within || within === '..' || within.startsWith('..' + sep) || isAbsolute(within)) {
+      throw new DriverError('REJECTED', '草稿图片不在任务目录内');
+    }
+  } else {
+    throw new DriverError('REJECTED', '图片副本不可用');
+  }
+
+  const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  try {
+    const stat = await file.stat();
+    const version = [stat.dev, stat.ino, stat.size, stat.mtimeMs, stat.ctimeMs].join(':');
+    if (!stat.isFile() || !stat.size || stat.size > ATTACHMENT_LIMIT) throw new DriverError('REJECTED', '图片为空或超过 20 MB');
+    if ((revision !== undefined && revision !== version) || offset >= stat.size) throw new DriverError('STATE', '图片内容已变化');
+    // Base64 编码后的分块小于 128 KiB，整张图不进入任务快照。
+    const bytes = Buffer.alloc(Math.min(95 * 1024, stat.size - offset));
+    let read = 0;
+    while (read < bytes.length) {
+      const { bytesRead } = await file.read(bytes, read, bytes.length - read, offset + read);
+      if (!bytesRead) throw new DriverError('STATE', '图片内容已变化');
+      read += bytesRead;
+    }
+    const after = await file.stat();
+    if (after.size !== stat.size || after.mtimeMs !== stat.mtimeMs || after.ctimeMs !== stat.ctimeMs) {
+      throw new DriverError('STATE', '图片内容已变化');
+    }
+    return { base64: bytes.toString('base64'), mime, revision: version, next: offset + read, totalBytes: stat.size };
+  } finally {
+    await file.close();
+  }
+}

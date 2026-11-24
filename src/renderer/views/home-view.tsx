@@ -192,7 +192,6 @@ export const HomeView = observer(function HomeView() {
   const preparing = useRef(new Set<string>());
   const discardChip = (chip: Chip) => {
     preparing.current.delete(chip.localId);
-    if (chip.preview) URL.revokeObjectURL(chip.preview);
     if (chip.data?.storedPath) void rpc.agentTasks.discardAttachment(null,chip.data).catch(e=>setError(rpcErrorMessage(e)));
   };
   const removeChip = (id: string) => {
@@ -208,9 +207,9 @@ export const HomeView = observer(function HomeView() {
   const addFiles = (files: File[]) => {
     if (!dir) return;
     for (const file of files) {
-      const localId = crypto.randomUUID(), preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      const localId = crypto.randomUUID();
       preparing.current.add(localId);
-      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
+      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', file }]);
       void prepareChip(file, f => rpc.agentTasks.prepareAttachment(null, dir.path, f))
         .then(data => {
           if (!preparing.current.delete(localId)) {
@@ -268,7 +267,6 @@ export const HomeView = observer(function HomeView() {
       const sameAttachments = current.chips.length === chipIds.size && current.chips.every(chip => chipIds.has(chip.localId));
       const sameDraft = navigation.homeInputRevision(projectId) === revision && sameAttachments;
       if (sameScope) {
-        for (const chip of chips) if (chip.preview) URL.revokeObjectURL(chip.preview);
         setChips(currentChips => currentChips.filter(chip => !chipIds.has(chip.localId)));
       }
       if (sameDraft) navigation.setHomeInput(projectId, '');

@@ -10,7 +10,8 @@ import { DriverError } from './driver';
 import { AgentStore, INPUT_TEXT_LIMIT, sha256, type AgentSelection, type StoredEvent } from './agent-store';
 import { AgentRunService, type OpenRunInput, type RunHandle } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
-import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
+import { attachmentNote, freezeImages, prepareAttachment, readAttachmentImage, verifyAttachments, type Attachment } from './attachments';
+import type { AttachmentImageSource } from '@shared/agent-attachment-image';
 import type { CapabilityName, CapabilityResult } from './capabilities';
 import { searchProjectFiles } from './file-search';
 import { HandoffService, type Transfer } from './handoff';
@@ -554,6 +555,29 @@ export class AgentTaskService {
         VALUES('task',?,'attachment',?,'prepared',?)`).run(taskId,prepared.storedPath,new Date().toISOString());
     }
     return prepared;
+  }
+
+  async attachmentImage(taskId: string, source: AttachmentImageSource, offset: number, revision?: string) {
+    if (!this.d.userData) throw new DriverError('UNSUPPORTED', '附件不可用');
+    const { task } = this.selection(taskId, true);
+    let attachment: Attachment | undefined;
+    if (source?.kind === 'message' && typeof source.turnId === 'string' && Number.isSafeInteger(source.index) && source.index >= 0) {
+      const turn = this.d.store.inputForTurn(source.turnId);
+      if (turn?.task_id === taskId && turn.source_kind === 'user' && turn.status !== 'canceled') {
+        attachment = (JSON.parse(turn.input_ref) as { attachments?: Attachment[] }).attachments?.[source.index];
+      }
+    } else if (source?.kind === 'draft' && typeof source.attachmentId === 'string' && !task.archived_at) {
+      const draft = this.d.store.draft(taskId)?.draft as { attachments?: Attachment[] } | undefined;
+      attachment = Array.isArray(draft?.attachments) ? draft.attachments.find(value => value?.id === source.attachmentId) : undefined;
+      if (attachment?.storedPath && !this.d.store.sqlite.prepare(`
+        SELECT 1 FROM agent_resource_refs
+        WHERE owner_kind='task' AND owner_id=? AND resource_kind='attachment' AND resource_id=?
+        UNION ALL SELECT 1 FROM agent_turns t, json_each(t.input_ref,'$.attachments') a
+        WHERE t.task_id=? AND t.status<>'canceled' AND a.type='object' AND json_extract(a.value,'$.storedPath')=? LIMIT 1
+      `).get(taskId, attachment.storedPath, taskId, attachment.storedPath)) attachment = undefined;
+    }
+    if (!attachment) throw new DriverError('REJECTED', '图片附件不可用');
+    return readAttachmentImage(attachment, this.d.userData, source.kind === 'draft' ? task.cwd : null, offset, revision);
   }
 
   /** 插话只认冻结进运行的能力；Claude 暂无原生接受关联，不提供（复核 CR02、CR15）。 */

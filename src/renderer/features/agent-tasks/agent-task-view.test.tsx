@@ -6,7 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
 
 const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), managedSkills: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
-vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
+const imageRead = vi.hoisted(() => vi.fn());
+vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: Object.assign(mocks, { attachmentImage: imageRead }) }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey', () => ({ useAppSettingsKey: () => ({ value: { fullConfirmed: true }, update: vi.fn() }) }));
@@ -22,7 +23,7 @@ function render(element: React.ReactElement) {
   const client = new QueryClient({defaultOptions:{queries:{retry:false, gcTime:0}}});
   return renderView(element, {wrapper: ({children}) => <QueryClientProvider client={client}>{children}</QueryClientProvider>});
 }
-afterEach(() => cleanup());
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.profiles.mockResolvedValue([]);
@@ -1333,7 +1334,7 @@ it('V03 combines completed reads and commands on one row, with process prose bet
   expect(runningDetails.open).toBe(false);
   fireEvent.click(runningCommand);
   expect(runningDetails.open).toBe(true);
-  expect(within(runningDetails).getByText('正在运行 pnpm test')).toBeTruthy();
+  expect((await within(runningDetails).findByLabelText('完整命令')).textContent).toBe('pnpm test');
   fireEvent.click(runningCommand);
   expect(runningDetails.open).toBe(false);
 });
@@ -1362,11 +1363,29 @@ it('folds a single completed command independently from its turn and final reply
   expect(details.open).toBe(false);
   fireEvent.click(command);
   expect(details.open).toBe(true);
-  expect(within(details).getByText('运行了 pwd')).toBeTruthy();
-  expect(within(details).getByText('/fixture/work')).toBeTruthy();
+  expect((await within(details).findByLabelText('完整命令')).textContent).toBe('pwd');
+  expect(within(details).getByLabelText('命令输出').textContent).toBe('/fixture/work');
   fireEvent.click(clock);
   expect(screen.queryByText('运行了 1 条命令')).toBeNull();
   expect(screen.getByText('目录已确认')).toBe(reply);
+});
+
+it('keeps the complete script and output in separately labeled areas of an expanded command',async()=>{
+ const command='printf "first\\n"\nprintf "second\\n"';
+ const output='first\nsecond\n';
+ mocks.snapshot.mockResolvedValue(snapshot({
+  status:'working',turns:[{turn_id:'command-detail',status:'started'}],
+  items:[{...item('command_execution',{command,output,exitCode:2,status:'failed'}),turnId:'command-detail',terminal:'failed'}],
+ }));
+ render(<AgentTaskView taskId="task"/>);
+ const summary=await screen.findByText('1 条命令运行失败');
+ expect(screen.queryByLabelText('完整命令')).toBeNull();
+ fireEvent.click(summary.closest('summary')!);
+ expect((await screen.findByLabelText('完整命令')).textContent).toBe(command);
+ expect(screen.getByLabelText('命令输出').textContent).toBe(output);
+ expect(screen.getByText('退出码 2')).toBeTruthy();
+ fireEvent.click(summary.closest('summary')!);
+ await waitFor(()=>expect(screen.queryByLabelText('命令输出')).toBeNull());
 });
 
 it('V19 marks failure, opens error details, and separately calls out unknown delivery without offering a resend', async () => {
@@ -1416,9 +1435,42 @@ it('A60 shows an unconfirmed command result, retaining its partial output after 
     turns:[{turn_id:'ended',status:'interrupted',started_at:started,ended_at:ended}],
   }));
   render(<AgentTaskView taskId="task"/>);
-  const label = await screen.findByText('未收到工具结果 · ls');
+  const label = await screen.findByText('1 条命令未收到结果');
   expect(screen.queryByText('正在运行 ls')).toBeNull();
-  expect(label.closest('details')?.textContent).toContain('partial output');
+  fireEvent.click(label.closest('summary')!);
+  expect((await screen.findByLabelText('命令输出')).textContent).toContain('partial output');
+});
+
+it('shows a restored draft image and a sent image with separate preview sources', async () => {
+  let urlNumber = 0;
+  vi.stubGlobal('URL', class extends URL {
+    static createObjectURL() { return 'blob:http://localhost/picture-' + ++urlNumber; }
+    static revokeObjectURL = vi.fn();
+  });
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+  imageRead.mockResolvedValue({ mime: 'image/png', base64: 'YWJj', totalBytes: 3, next: 3, revision: 'r' });
+  const pending = { id: 'draft-shot', name: '待发送.png', image: true, kind: 'path', mime: 'image/png', relativePath: 'pending.png' };
+  const sent = { name: '历史图片.png', image: true, kind: 'file' };
+  mocks.snapshot.mockResolvedValue(snapshot({
+    draft: { revision: 1, draft: { text: '', attachments: [pending] } },
+    items: [{ ...item('user_message', { text: '旧消息', attachments: [sent, { name: 'notes.txt', kind: 'file' }] }), turnId: 'older' }],
+  }));
+  render(<AgentTaskView taskId="task" />);
+  const sentImage = await screen.findByRole('img', { name: sent.name });
+  fireEvent.load(sentImage);
+  fireEvent.click(screen.getByRole('button', { name: '预览图片 ' + sent.name }));
+  const dialog = await screen.findByRole('dialog', { name: '图片预览' });
+  expect(within(dialog).getByRole('img', { name: sent.name })).toHaveProperty('src', sentImage.getAttribute('src'));
+  fireEvent.keyDown(dialog, { key: 'Escape' });
+  expect(screen.queryByRole('dialog', { name: '图片预览' })).toBeNull();
+  expect(screen.getByText('notes.txt')).toBeTruthy();
+
+  await screen.findByRole('img', { name: pending.name });
+  expect(imageRead).toHaveBeenCalledWith('task', { kind: 'draft', attachmentId: pending.id }, 0, undefined);
+  expect(imageRead).toHaveBeenCalledWith('task', { kind: 'message', turnId: 'older', index: 0 }, 0, undefined);
+  fireEvent.click(screen.getByRole('button', { name: '移除 ' + pending.name }));
+  expect(screen.queryByRole('img', { name: pending.name })).toBeNull();
+  expect(screen.getByRole('img', { name: sent.name })).toBeTruthy();
 });
 
 describe.each([
@@ -1450,10 +1502,12 @@ describe.each([
     if (status === 'failed') expect(heading.closest('.agent-turn-failed')).toBeTruthy();
     if (withTools) {
       const control = within(turn).getByRole('button',{name:title});
-      expect(within(turn).getByText('运行了 读第二份')).toBeTruthy();
+      const commands = within(turn).getAllByText('运行了 1 条命令');
+      expect(commands).toHaveLength(2);
+      fireEvent.click(commands[1].closest('summary')!);
+      expect((await within(turn).findByLabelText('完整命令')).textContent).toContain('读第二份');
       fireEvent.click(control);
-      expect(within(turn).queryByText('运行了 读第一份')).toBeNull();
-      expect(within(turn).queryByText('运行了 读第二份')).toBeNull();
+      expect(within(turn).queryByText('运行了 1 条命令')).toBeNull();
     } else {
       expect(within(turn).queryByRole('button',{name:title})).toBeNull();
     }

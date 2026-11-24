@@ -1,8 +1,10 @@
-import { highlightRanges, highlightWindow } from './model';
+import { highlightCode, highlightRanges, highlightWindow } from './model';
 let tokens: Uint32Array<ArrayBufferLike> = new Uint32Array(), revision = -1;
 self.addEventListener('message', ({ data }: MessageEvent) => {
   try {
-    if (data.type === 'parse') {
+    if (data.type === 'snippet') {
+      self.postMessage({ type: 'snippet', ...highlightCode(data.source, data.language) });
+    } else if (data.type === 'parse') {
       tokens = highlightRanges(data.source, data.filename); revision = data.revision;
       self.postMessage({ type: 'ready', revision });
     } else if (data.type === 'window' && data.revision === revision) {
