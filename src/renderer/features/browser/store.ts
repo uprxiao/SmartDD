@@ -3,6 +3,7 @@ import {rpc} from '@renderer/lib/ipc';
 import {navigation} from '@renderer/core/navigation';
 import {panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
 import {agentTasksStore} from '@renderer/core/agent-tasks-store';
+import {authorizeBrowserPresentation,type BrowserPresentationEvent} from './open-presentation';
 export class BrowserWorkspaceStore {
   private value:{state:BrowserWorkspaceState|null;error:string}={state:null,error:''};
   private readonly listeners=new Set<()=>void>();
@@ -55,4 +56,11 @@ export async function revealBrowserTab(taskId: string, tabId: string) {
   if (!isCurrentBrowserTask(taskId)) return;
   panelsFor({ kind: 'task', taskId }).open('browser');
   await browserWorkspaceFor(taskId).refresh();
+}
+export async function showBrowserPresentation(event:BrowserPresentationEvent){
+  if(!authorizeBrowserPresentation(event))return;
+  await rpc.browser.select({taskId:event.taskId,tabId:event.pageId});
+  if(!authorizeBrowserPresentation(event))return;
+  panelsFor({kind:'task',taskId:event.taskId}).open('browser',true);
+  await browserWorkspaceFor(event.taskId).refresh();
 }

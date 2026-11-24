@@ -300,12 +300,13 @@ export class ManagedTaskCapabilities {
     let skillsMaterialized = false;
     const sources = snapshot.packages.map(p => { const application = this.applications.builtin.retainedMetadata(p.packageHash); return { packageHash: p.packageHash, manifest: application.manifest, capabilities: builtinApplicationModules.capabilityViews(application.manifest) }; });
     const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, applicationScope: input.applicationScope, sandbox:cliPolicy?.available?{source:cliPolicy.source,digest:cliPolicy.digest}:undefined, cliVersion: input.version });
-    const browserEntry = plan.allowed.find(capability=>capability.capabilityId==='browser.tab.create')?.entry;
+    const browserEntry = plan.allowed.find(capability=>capability.capabilityId==='browser.tab.open')?.entry
+      ??plan.allowed.find(capability=>capability.capabilityId==='browser.tab.create')?.entry;
     const browserMcp = !codex && !managedAcp && browserEntry === 'mcp' ? {
       serverName: server.serverName,
       alwaysLoad: input.applicationScope === 'browser',
       toolNames: plan.allowed.flatMap(capability =>
-        capability.mcpTool && ['browser.tab.create', 'browser.nav.goto', 'browser.nav.snapshot'].includes(capability.capabilityId)
+        capability.mcpTool && ['browser.tab.open','browser.tab.create','browser.nav.goto','browser.nav.snapshot'].includes(capability.capabilityId)
           ? [capability.mcpTool] : []),
     } : undefined;
     const resourceIds = [...new Set([`agent-adapter:${snapshot.runner}:${adapter.hash}`, ...snapshot.packages.flatMap(p => ['app:' + p.packageHash, 'runtime:' + p.runtimeHash]), ...snapshot.mcp.map(m => (m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash)])];

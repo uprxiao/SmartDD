@@ -1,0 +1,108 @@
+{
+  "host": {
+    "arch": "arm64",
+    "kernel": "25.6.0"
+  },
+  "codexVersion": "codex-cli 0.171.0",
+  "appSha256": "244e4233925c026fea60adf33aba3a529db397447f8046fce8feda75b4aa0921",
+  "appExecutableSha256": "2e69a9b554f9c6ace2dd3e807773304d4961b3093bea1534a1069f371ea77811",
+  "driverSha256": "a6c29b56d119a3f20f273e850d6bf064e956986ae1226f6b178046c2b3cbd588",
+  "startedAt": "2026-11-24T03:02:49.091Z",
+  "finishedAt": "2026-11-24T03:02:54.398Z",
+  "exit": {
+    "pid": 8045,
+    "code": 0,
+    "signal": null
+  },
+  "privateCredentialRemoved": true,
+  "sameAsarAfterRun": true,
+  "phase": "fixture-preparation-before-model-submission",
+  "localSubscriptionDetected": true,
+  "modelSubmissions": 0,
+  "cases": [
+    {
+      "layout": "moved",
+      "taskId": "733b4ba5-245f-4bd7-9ccc-56b407470e6c",
+      "siteVisits": [
+        {
+          "route": "desk",
+          "method": "GET",
+          "receivedAt": 1795489373912.0798,
+          "finishedAt": 1795489373912.5764
+        },
+        {
+          "route": "login",
+          "method": "GET",
+          "receivedAt": 1795489373913.6357,
+          "finishedAt": 1795489373913.86
+        },
+        {
+          "route": "login",
+          "method": "POST",
+          "receivedAt": 1795489373988.4421,
+          "finishedAt": 1795489373989.0205
+        },
+        {
+          "route": "desk",
+          "method": "GET",
+          "receivedAt": 1795489373989.8755,
+          "finishedAt": 1795489373990.0947
+        }
+      ],
+      "writes": {
+        "logins": 1,
+        "writes": 0,
+        "rejectedWrites": 0,
+        "receiptReads": 0,
+        "downloads": 0
+      },
+      "failure": {
+        "stage": "prepare-original-page",
+        "kind": "assertion"
+      }
+    },
+    {
+      "layout": "invalid",
+      "taskId": "5e22f435-55dd-41a9-9e24-0346e9e746e2",
+      "siteVisits": [
+        {
+          "route": "desk",
+          "method": "GET",
+          "receivedAt": 1795489374149.0254,
+          "finishedAt": 1795489374149.1155
+        },
+        {
+          "route": "login",
+          "method": "GET",
+          "receivedAt": 1795489374149.978,
+          "finishedAt": 1795489374150.1096
+        },
+        {
+          "route": "login",
+          "method": "POST",
+          "receivedAt": 1795489374222.5388,
+          "finishedAt": 1795489374222.9238
+        },
+        {
+          "route": "desk",
+          "method": "GET",
+          "receivedAt": 1795489374223.687,
+          "finishedAt": 1795489374224.0515
+        }
+      ],
+      "writes": {
+        "logins": 1,
+        "writes": 0,
+        "rejectedWrites": 0,
+        "receiptReads": 0,
+        "downloads": 0
+      },
+      "failure": {
+        "stage": "prepare-original-page",
+        "kind": "assertion"
+      }
+    }
+  ],
+  "rootCause": "The driver treated a valid project-scoped browser profile identifier as a UUID. Actual candidate profile is project- plus the 24-hex SHA-256 prefix of the synthetic project UUID.",
+  "disposition": "Retain fixture failure and rerun after verifying the exact derived project profile."
+}

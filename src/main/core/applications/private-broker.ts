@@ -169,6 +169,21 @@ export class PrivateApplicationBroker {
     }catch{response.auditUnavailable=true;}
     return response;
   }
+  private async listTools(id: string, runId: string): Promise<BridgeResponse> {
+    const value = await this.tools.list(runId);
+    const response = { schema: 1, id, status: 'ok', value } as const;
+    if (boundedJson(response)) return response;
+    // MCP output schemas are optional discovery metadata. The tool service
+    // still validates each browser tool result against its stored contract.
+    const tools = value.tools.map(tool => {
+      if (!tool.name.startsWith('smartdd_browser_')) return tool;
+      const { outputSchema: _outputSchema, ...entry } = tool;
+      return entry;
+    });
+    const compact = { ...response, value: { ...value, tools } };
+    if (!boundedJson(compact)) throw new ApplicationError('TOO_LARGE', '工具目录超过应用通道的结构预算');
+    return compact;
+  }
   private async receive(peer: Peer,bytes: Buffer): Promise<BridgeResponse> {
     let id: string = randomUUID(), method='unknown';
     try {
@@ -186,7 +201,7 @@ export class PrivateApplicationBroker {
       if (request.method === 'cancel') { const current = peer.controllers.get(request.targetId); current?.abort(); return { schema: 1,id,status: 'ok',value: { cancellationRequested: !!current } }; }
       const controller = peer.controllers.get(id) ?? new AbortController(); peer.controllers.set(id,controller);
       try {
-        const response: BridgeResponse = request.method === 'tools/list' ? { schema: 1,id,status: 'ok',value: await this.tools.list(binding.runId) } : await this.tools.call(binding.runId,id,request.call,controller.signal);
+        const response: BridgeResponse = request.method === 'tools/list' ? await this.listTools(id,binding.runId) : await this.tools.call(binding.runId,id,request.call,controller.signal);
         try { this.checkBinding(peer,binding); }
         catch (error) { const denied = errorResponse(id,error); if (denied.status === 'error' && response.operationId) { denied.operationId = response.operationId; denied.error.effectState = response.status === 'error' ? response.error.effectState : response.effectState ?? 'unknown'; denied.error.nextAction = '查看此operationId关联的已有业务记录，不要重复提交'; } return this.recordDenial(peer,method,denied); }
         return response.status==='error'&&['AUTH_REQUIRED','SCOPE_DENIED','INVALID_INPUT'].includes(response.error.code)?this.recordDenial(peer,method,response):response;

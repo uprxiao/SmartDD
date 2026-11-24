@@ -1,0 +1,19 @@
+--- expired-login-continuation-driver.mjs
++++ expiry-driver-drain.mjs
+@@ -335,7 +335,15 @@
+   const resumed=await continuations(task);
+   assert.equal(resumed.length,1);
+   assert.equal(report.model.filter(call=>call.scenario===original.name&&call.tool).length,1);
+-  return {confirmedAt,resumed,read:row,nextToolReceiptId:request.requestId,tabId:tab.id,profileId:tab.profileId};
++  const notificationInput = 'business-result-' + request.requestId;
++  const drained = await until(async () => {
++    const snapshot = await taskSnapshot(task);
++    const notification = snapshot.turns.find(turn => turn.client_input_id === notificationInput);
++    if (notification?.status !== 'completed' || snapshot.queuedTotal !== 0 ||
++        snapshot.preparingTurnId || snapshot.run?.busy || ['working','waiting'].includes(snapshot.status)) return null;
++    return { turnId: notification.turn_id, status: notification.status, taskStatus: snapshot.status, endedAt: notification.ended_at };
++  }, 'the exact continuation result notification and task drain', 20000);
++  return {confirmedAt,resumed,read:row,nextToolReceiptId:request.requestId,tabId:tab.id,profileId:tab.profileId,drained};
+ }
+ function captureSite(site){return {counters:{...site.counters},visits:structuredClone(site.visits),records:structuredClone(site.records)};}
+ 

@@ -1,4 +1,6 @@
 import { homeWorkspace } from '@renderer/features/agent-tasks/workspace-panels-store';
+import {browserViewRevision,enterBrowserPresentationTask,rememberBrowserPresentation} from '@renderer/features/browser/open-presentation';
+import {showBrowserPresentation} from '@renderer/features/browser/store';
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
@@ -204,9 +206,11 @@ export const HomeView = observer(function HomeView() {
       const previous = navigation.homeLaunchAttempts.get(projectId);
       const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
       navigation.homeLaunchAttempts.set(projectId, attempt);
+      const originalBrowserRevision=browserViewRevision();
       const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, effort, initialCodexDefault, carryExtensions, extensionPreferences: homeSelection.extensions });
       if (created.tierNotice) toast.message(created.tierNotice);
       const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
+      rememberBrowserPresentation(created.taskId,attempt.inputId,originalBrowserRevision,true);
       if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
       if (navigation.homeLaunchAttempts.get(projectId)?.taskId === attempt.taskId) navigation.homeLaunchAttempts.delete(projectId);
       void agentTasksStore.refresh();
@@ -222,7 +226,8 @@ export const HomeView = observer(function HomeView() {
       if (sameDraft) navigation.setHomeInput(projectId, '');
       if (sameScope && sameDraft && navigation.currentViewId === 'home' && navigation.homePreset === presetAtLaunch) {
         draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
-        navigation.openAgentTask(created.taskId);
+        const pending=enterBrowserPresentationTask(created.taskId,attempt.inputId,()=>navigation.openAgentTask(created.taskId));
+        if(pending)void showBrowserPresentation(pending).catch(()=>{});
       }
     } catch (e) {
       setError(rpcErrorMessage(e));

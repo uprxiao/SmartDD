@@ -8,6 +8,9 @@ import {FILE_TERMINAL_DRAG_TYPE,dropFileToAgentComposer} from '@renderer/feature
 import {agentComposerTargets} from './composer-target';
 import { panelsFor } from './workspace-panels-store';
 import { revealBrowserTab } from '@renderer/features/browser/store';
+import { rememberBrowserPresentation } from '@renderer/features/browser/open-presentation';
+import { BrowserScriptCard } from '@renderer/features/browser/script-card';
+import { BrowserCheckpointCard } from '@renderer/features/browser/checkpoint-card';
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
@@ -349,12 +352,20 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
     }
     case 'files_changed': return <ChangeCard payload={p} />;
     case 'notification': {
+      if(useTaskId&&p.sourceKind==='browser_checkpoint'&&p.checkpoint){
+        return <BrowserCheckpointCard taskId={useTaskId} receipt={p.checkpoint} archived={archived}/>;
+      }
       const receipt = p.result?.value;
+      const script=receipt?.data?.result;
+      if(useTaskId&&receipt?.source?.appId==='browser'&&['browser.script.run','browser.script.resume'].includes(receipt.capabilityId)
+            &&typeof script?.executionId==='string'){
+        return <BrowserScriptCard taskId={useTaskId} executionId={script.executionId} archived={archived}/>;
+      }
       const pageId = receipt?.data?.pageId;
       if (p.status === 'finished' && receipt?.status === 'ok' && receipt.source?.appId === 'browser'
-        && receipt.capabilityId === 'browser.tab.create' && typeof pageId === 'string') {
+        && ['browser.tab.create','browser.tab.open'].includes(receipt.capabilityId) && typeof pageId === 'string') {
         return <div className="agent-child-result">
-          <b>内置浏览器已创建标签</b>
+          <b>{receipt.capabilityId==='browser.tab.open'&&receipt.data.reused?'内置浏览器已复用标签':'内置浏览器已创建标签'}</b>
           {typeof receipt.data?.url === 'string' && <small>{receipt.data.url}</small>}
           {!archived && useTaskId && <button type="button" onClick={() => void revealBrowserTab(useTaskId, pageId)
             .catch(error => toast.error(rpcErrorMessage(error)))}>查看网页标签</button>}
@@ -641,6 +652,7 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
   const hostBusiness = r.kind === 'host_business';
   const isMail = hostBusiness && r.payload.businessKind === 'mail_send';
   const isBrowser = hostBusiness && r.payload.businessKind === 'browser_access';
+  const isBrowserLogin = hostBusiness && r.payload.businessKind === 'browser_login';
   const phase = r.payload.phase;
   const review = isMail && phase === 'waiting_user' && r.payload.review?.content ? r.payload.review as MailSendReview : undefined;
   const unknownExecutions = review?.priorUnknownExecutionIds ?? [];
@@ -671,7 +683,7 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
     : undefined;
   const head = hostBusiness ? {
     title: isBrowser ? `需要授权：访问${r.targetTaskTitle ? `任务「${r.targetTaskTitle}」` : '另一任务'}的网页` : r.payload.title ?? '宿主业务请求',
-    detail: !isMail && !isBrowser ? hostStatus ?? JSON.stringify(r.payload.review, null, 2) : undefined,
+    detail: !isMail && !isBrowser && !isBrowserLogin ? hostStatus ?? JSON.stringify(r.payload.review, null, 2) : undefined,
   } : requestTitle(r);
 
   useEffect(() => {
@@ -754,6 +766,10 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
     {!form && head.detail && (r.kind !== 'plan_approval' || r.ownerTaskId || !r.origin.turnId || visiblePlans.get(r.origin.turnId) !== head.detail) && <pre className="agent-request-detail">{head.detail}</pre>}
     {(isMail || isBrowser) && hostStatus && <p className="agent-business-status" role="status">{hostStatus}</p>}
     {isBrowser && !incomplete && <BrowserAccessReview pages={r.payload.review?.pages} waitingForUser={phase === 'waiting_user'} />}
+    {isBrowserLogin && !incomplete && <div className="agent-business-status">
+      <p>{hostStatus??'请在右侧完成登录并返回原业务页，再确认继续。'}</p>
+      {typeof r.payload.review?.pageId==='string'&&<button type="button" onClick={()=>void revealBrowserTab(r.ownerTaskId??taskId,r.payload.review.pageId).catch(error=>toast.error(rpcErrorMessage(error)))}>查看网页标签</button>}
+    </div>}
     {review && mailSlot && createPortal(<MailReviewCard key={reqKey} review={review} state={mailState} edits={edits} busy={busy} unknownConfirmed={unknownConfirmed}
       onField={(field, value) => setMailDraft(draft => draft?.key === reqKey ? { ...draft, edits:{ ...draft.edits, [field]:value } } : draft)}
       onUnknown={checked => setCheckedUnknown(checked ? reqKey : null)}
@@ -1337,6 +1353,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     const frozenChipIds = new Set(chips.map(c => c.localId));
     const prior = pendingInput.current;
     const clientInputId = prior && prior.text === value && prior.chips === [...frozenChipIds].join(',') ? prior.clientInputId : newClientInputId();
+    rememberBrowserPresentation(taskId,clientInputId);
     pendingInput.current = { text: value, chips: [...frozenChipIds].join(','), clientInputId };
     sendingRef.current = true; setSending(true);
     try {

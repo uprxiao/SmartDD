@@ -1,0 +1,10 @@
+--- candidate-a28-frozen-redaction.mjs
++++ candidate-a28-frozen-redaction-exit.mjs
+@@ -489,5 +489,5 @@
+   if (!report.sameAsarAfterRun) report.status = 'failed';
+   await persist();
+   console.log(JSON.stringify({ status: report.status, samples: report.samples.length, lastStage: stage, failures: report.failures.map(f => f.stage) }));
+-  process.exitCode = report.status === 'passed-covered-subset' ? 0 : 1;
+-}
++  process.exitCode = report.status === 'passed' ? 0 : 1;
++}

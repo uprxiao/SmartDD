@@ -4,6 +4,7 @@ import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {boundedJson} from '@shared/application-bridge';
 import {BrowserService,type BrowserScope} from '../service';
 import {BrowserPageQueue} from '../queue';
 import {BrowserDeferredReferenceGuards,type BrowserReferenceDeferral} from '../deferred-reference';
@@ -30,6 +31,125 @@ function fixture(){
   return{service,sqlite,scope,grant,page,runs,root,projects};
 }
 describe('actual caller and target authority in the browser service',()=>{
+  it('reserves one pending tab for equivalent opens and preserves the original request receipt',async()=>{
+    const f=fixture();
+    const scope={...f.scope(),assertRetained:()=>{}};
+    const page=f.page('T1');
+    let release!:()=>void;
+    const gate=new Promise<void>(resolve=>{release=resolve;});
+    const load=vi.spyOn(f.service.workspace,'loadAgentOpen').mockImplementation(async()=>{await gate;return page;});
+    const show=vi.fn();f.service.attachOpenPresentation(show);
+    const args={url:'https://fixture.example/desk?month=11#report',presentation:'show'};
+    const first=await f.service.execute(scope,'tab open',args) as {pageId:string;phase:string;reused:boolean};
+    const second=await f.service.execute({...f.scope(),assertRetained:()=>{}},'tab open',{...args,presentation:'background'});
+    expect(first).toMatchObject({phase:'loading',reused:false});
+    expect(second).toMatchObject({pageId:first.pageId,phase:'loading',reused:true});
+    expect(f.service.workspace.snapshot('T1')).toMatchObject({activeId:null,tabs:[{id:first.pageId,pendingUrl:args.url,loading:true}]});
+    expect(show).toHaveBeenCalledOnce();
+    expect(await f.service.execute(scope,'tab open',args)).toEqual(first);
+    await expect(f.service.execute(scope,'tab open',{...args,url:'https://fixture.example/other'})).rejects.toMatchObject({code:'REQUEST_CONFLICT'});
+    release();
+    await vi.waitFor(()=>expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({summary:{phase:'ready'}}));
+    expect(load).toHaveBeenCalledOnce();
+  });
+  it('does not start a deferred tab navigation after the original authority ends',async()=>{
+    const f=fixture(),scope={...f.scope(),assertRetained:()=>{}};
+    const load=vi.spyOn(f.service.workspace,'loadAgentOpen');
+    await f.service.execute(scope,'tab open',{url:'https://fixture.example/forbidden-after-revocation'});
+    f.runs.get(scope.runId)!.abort();
+    await vi.waitFor(()=>expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({summary:{phase:'cancelled'}}));
+    expect(load).not.toHaveBeenCalled();
+  });
+  it('keeps URL variants distinct and selects the visible matching tab unless an ID is specified',async()=>{
+    const f=fixture(),page=f.page('T1');
+    vi.spyOn(f.service.workspace,'loadAgentOpen').mockResolvedValue(page);
+    const open=async(args:Record<string,unknown>)=>{
+      const scope={...f.scope(),assertRetained:()=>{}};
+      const receipt=await f.service.execute(scope,'tab open',args) as {pageId:string;reused:boolean;url:string};
+      await vi.waitFor(()=>expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({summary:{phase:'ready'}}));
+      // Stand in for the native navigation's real committed-address event.
+      const saved=f.service.workspace.savedTab(scope.taskId,receipt.pageId)!;
+      if(!receipt.reused)saved.url=receipt.url;
+      return receipt;
+    };
+    const url='https://fixture.example/desk?month=11#report';
+    const first=await open({url});
+    const second=await open({url,intent:'new'});
+    expect(second.pageId).not.toBe(first.pageId);
+    f.service.workspace.select('T1',second.pageId);
+    expect(await open({url})).toMatchObject({pageId:second.pageId,reused:true});
+    expect(await open({pageId:first.pageId})).toMatchObject({pageId:first.pageId,reused:true});
+    const month=await open({url:'https://fixture.example/desk?month=12#report'});
+    const anchor=await open({url:'https://fixture.example/desk?month=12#details'});
+    expect(new Set([first.pageId,second.pageId,month.pageId,anchor.pageId]).size).toBe(4);
+    expect(f.service.workspace.savedTab('T1',first.pageId)?.url).toBe(url);
+  });
+  it('preserves action and verification separately across runs and blocks a dependent write',async()=>{
+    const f=fixture(),page=f.page('T1');
+    const initial=f.scope(),successor=f.scope('T1','R2'),unrelated=f.scope('T1','R3');
+    f.sqlite.exec(`
+      CREATE TABLE capability_runs(run_id TEXT,task_id TEXT,project_id TEXT,binding_id TEXT,state TEXT);
+      INSERT INTO capability_runs VALUES('R1','T1','P1','B1','active'),('R2','T1','P1','B1','active'),('R3','T1','P1','B2','active');
+    `);
+    f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:T1',JSON.stringify({
+      version:1,activeId:page.id,closed:[],tabs:[{id:page.id,url:page.contents.getURL(),title:'Fixture',favicon:null,profileId:page.profileId}],
+    }));
+    vi.spyOn(f.service.pages,'get').mockReturnValue(page);
+    const click=vi.fn(async(_args:string[],invoke:{dispatched:()=>void})=>{invoke.dispatched();return {clicked:'@ref'};});
+    page.helper.command=click;
+    Object.assign(page,{references:{
+      documentGeneration:'document-1',
+      arm:async()=>({selector:'[held-node]',hostClick:false,finish:async()=>({connected:true,blocked:[],accepted:['click']})}),
+    }});
+    f.service['conditions'].set(page,{run:vi.fn(async(_args:unknown,_signal:AbortSignal,authorize:()=>void)=>{authorize();return{waited:true};})} as never);
+    const id=randomUUID(),action={page:page.id,element:'@ref',checkpoint:{id,selector:'#receipt',text:'RPT-11'}};
+    await f.service.execute(initial,'click',action);
+    const dependent={...action,checkpoint:{...action.checkpoint,id:randomUUID(),after:id}};
+    await expect(f.service.execute(f.scope('T1','R2'),'click',dependent)).rejects.toMatchObject({code:'RESOURCE_BUSY'});
+    expect(click).toHaveBeenCalledOnce();
+    await expect(f.service.execute(successor,'checkpoint status',{checkpointId:id})).resolves.toMatchObject({result:{business:'needs-review',action:{state:'succeeded'}}});
+    await expect(f.service.execute(unrelated,'checkpoint status',{checkpointId:id})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+    await expect(f.service.execute(f.scope('T1','R2'),'checkpoint verify',{checkpointId:id})).resolves.toMatchObject({result:{business:'verified',evidence:{generation:'document-1'}}});
+    await f.service.execute(f.scope('T1','R2'),'click',dependent);
+    expect(click).toHaveBeenCalledTimes(2);
+  });
+  it.each(['ready','timed-out','unavailable','changed'])('returns the original action when its observation is %s',async expected=>{
+    const f=fixture(),page=f.page('T1'),caller=new AbortController();
+    const scope={...f.scope(),signal:caller.signal};
+    let generation='document-1';
+    const click=vi.fn(async(_args:string[],options:{dispatched:()=>void})=>{
+      options.dispatched();
+      return {clicked:'@held'};
+    });
+    page.helper.command=click;
+    const snapshot=vi.fn(async()=>{
+      if(expected==='changed')generation='document-2';
+      return {snapshot:'button "Next" [ref=@fresh]',refs:[{ref:'@fresh',role:'button',name:'Next',available:true}]};
+    });
+    Object.assign(page,{references:{
+      arm:async()=>({selector:'[held-node]',hostClick:false,finish:async()=>({connected:true,blocked:[],accepted:['click']})}),
+      snapshot,get documentGeneration(){return generation;},
+    }});
+    const wait=vi.fn(async(_:unknown,signal:AbortSignal,authorize:()=>void)=>{
+      authorize();
+      expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({state:'succeeded',effectState:'completed'});
+      if(expected==='timed-out'){
+        await new Promise<void>((resolve,reject)=>signal.addEventListener('abort',()=>reject(signal.reason),{once:true}));
+      }
+      if(expected==='unavailable')caller.abort();
+      return {waited:true};
+    });
+    f.service['conditions'].set(page,{run:wait} as never);
+    const result=await f.service.execute(scope,'click',{element:'@held',observeAfter:{container:'#controls',timeout:100}});
+    expect(result).toMatchObject({action:{state:'completed',result:{clicked:'@held'}},observation:{state:expected,pageId:page.id}});
+    expect(boundedJson(result)).toBe(true);
+    if(expected==='ready'){
+      expect(result).toMatchObject({observation:{generation:'document-1',data:{refs:[{ref:'@fresh'}]}}});
+      expect(snapshot).toHaveBeenCalledWith(page.helper,expect.any(AbortSignal),'#controls');
+    }
+    expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({state:'succeeded',effectState:'completed'});
+    expect(click).toHaveBeenCalledOnce();
+  });
   it('revalidates previously reviewed saved tabs after startup without opening them or adding other dormant tabs',async()=>{
     const f=fixture(),id=randomUUID(),other=randomUUID(),url='https://fixture.example.test/cold';
     const savedTab=(pageId:string,address:string)=>({id:pageId,url:address,title:'Previously open tab',favicon:null,profileId:browserProjectProfile('P1')});
@@ -165,5 +285,93 @@ describe('actual caller and target authority in the browser service',()=>{
     const f=fixture(),state=f.service.workspace.create('T1');f.service.workspace.create('T1');const profile=f.service.profiles.create(f.scope(),'new');let count=0;
     vi.spyOn(f.service.workspace,'setProfile').mockImplementation(async(_task,_page,_profile,admit=()=>{},send=()=>{})=>{admit();send();if(++count===1)f.service.pauseFromUi('T1',true);admit();return undefined;});
     const scope=f.scope();await expect(f.service.execute(scope,'tab profile set',{task:'T1',profile:profile.id})).resolves.toMatchObject({result:{pages:expect.arrayContaining([state.activeId])}});expect(count).toBe(2);expect(f.service.operations.receipt('R1',scope.requestId)).toMatchObject({effectState:'completed'});await expect(f.service.execute(f.scope(),'tab list',{})).rejects.toMatchObject({code:'BROWSER_PAUSED'});
+  });
+
+  function checkpointFixture(){
+    const f=fixture(),page=f.page('T1');
+    f.sqlite.exec(`
+      CREATE TABLE capability_runs(run_id TEXT,task_id TEXT,project_id TEXT,binding_id TEXT,state TEXT);
+      INSERT INTO capability_runs VALUES('R1','T1','P1','B1','active'),('R2','T1','P1','B1','active'),('R3','T1','P1','B2','active');
+    `);
+    f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:T1',JSON.stringify({
+      version:1,activeId:page.id,closed:[],tabs:[{id:page.id,url:page.contents.getURL(),title:'Fixture',favicon:null,profileId:page.profileId}],
+    }));
+    vi.spyOn(f.service.pages,'get').mockReturnValue(page);
+    Object.assign(page,{references:{
+      documentGeneration:'doc-current',
+      arm:async()=>({selector:'[held-node]',hostClick:false,finish:async()=>({connected:true,blocked:[],accepted:['click']})}),
+    }})
+    const input={page:page.id,element:'@ref',checkpoint:{id:randomUUID(),selector:'#receipt',text:'synthetic original record'}};
+    return {...f,page,input,current:f.scope(),successor:f.scope('T1','R2'),wrongBinding:f.scope('T1','R3')};
+  }
+
+  it('A20 reconciles a dispatched action with an interrupted helper reply without replaying it',async()=>{
+    const f=checkpointFixture();
+    const changed=vi.fn();
+    f.service.attachCheckpointUpdates(changed);
+    let records=0;
+    f.page.helper.command=vi.fn(async(_args:string[],call:{dispatched:()=>void})=>{
+      call.dispatched();records++;throw Error('synthetic interrupted tool reply')
+    });
+    await expect(f.service.execute(f.current,'click',f.input)).rejects.toMatchObject({code:'BROWSER_ERROR'});
+    const checkpointId=f.input.checkpoint.id;
+    expect(changed).toHaveBeenLastCalledWith('T1',expect.objectContaining({checkpointId,business:'needs-review'}));
+    await expect(f.service.execute(f.successor,'checkpoint status',{checkpointId})).resolves.toMatchObject({
+      result:{business:'needs-review',action:{state:'unknown',effectState:'unknown'}},
+    });
+    f.service['conditions'].set(f.page,{run:async(args:{selector:string;text?:string},_signal:AbortSignal,authorize:()=>void)=>{
+      authorize();expect(args).toMatchObject({selector:'#receipt',text:'synthetic original record'});
+      expect(records).toBe(1);return {waited:true};
+    }} as never);
+    await expect(f.service.execute(f.scope('T1','R2'),'checkpoint verify',{checkpointId})).resolves.toMatchObject({
+      result:{business:'verified',action:{state:'unknown',effectState:'unknown'},evidence:{generation:'doc-current'}},
+    });
+    expect(changed).toHaveBeenLastCalledWith('T1',expect.objectContaining({checkpointId,business:'verified'}));
+    expect(records).toBe(1);
+  });
+
+  it('A21 keeps the expired unknown step locked for successor, another binding, and another task',async()=>{
+    const f=checkpointFixture();
+    const action=vi.fn(async(_args:string[],call:{dispatched:()=>void})=>{call.dispatched();throw Error('synthetic disconnected tool');});
+    f.page.helper.command=action;
+    await expect(f.service.execute(f.current,'click',f.input)).rejects.toMatchObject({code:'BROWSER_ERROR'});
+    f.service.operations.recover(Date.now()+8*86400000);
+    expect(f.service.operations.receipt(f.current.runId,f.current.requestId)).toEqual({state:'not-found'});
+    const checkpointId=f.input.checkpoint.id;
+    await expect(f.service.execute(f.successor,'checkpoint status',{checkpointId})).resolves.toMatchObject({
+      result:{business:'needs-review',action:{state:'not-found',effectState:'unknown'}},
+    });
+    await expect(f.service.execute(f.wrongBinding,'checkpoint status',{checkpointId})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+    await expect(f.service.execute(f.scope('T2'),'checkpoint status',{checkpointId})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+    await expect(f.service.execute(f.scope('T1','R2'),'click',{...f.input,checkpoint:{...f.input.checkpoint,id:randomUUID(),after:checkpointId}})).rejects.toMatchObject({code:'RESOURCE_BUSY'});
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it('A21 refuses redispatch even with the original request identity after operation detail expires',async()=>{
+    const f=checkpointFixture();
+    const action=vi.fn(async(_args:string[],call:{dispatched:()=>void})=>{call.dispatched();throw Error('synthetic disconnected tool');});
+    f.page.helper.command=action;
+    await expect(f.service.execute(f.current,'click',f.input)).rejects.toMatchObject({code:'BROWSER_ERROR'});
+    f.service.operations.recover(Date.now()+8*86400000);
+    expect(f.service.operations.receipt(f.current.runId,f.current.requestId)).toEqual({state:'not-found'});
+    await expect(f.service.execute(f.current,'click',f.input)).rejects.toMatchObject({code:'REQUEST_CONFLICT'});
+    expect(f.service.operations.receipt(f.current.runId,f.current.requestId)).toEqual({state:'not-found'});
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it('A17 preserves the admitted action and refuses the requested observation after scope revocation',async()=>{
+    const f=checkpointFixture();
+    let authorized=true;
+    const snapshot=vi.fn(async()=>({snapshot:'button "Continue"',refs:[]}));
+    Object.assign(f.page.references,{snapshot});
+    const click=vi.fn(async(_args:string[],call:{dispatched:()=>void})=>{call.dispatched();return {clicked:'@ref'}});
+    f.page.helper.command=click;
+    f.service['conditions'].set(f.page,{run:async()=>{authorized=false;return {waited:true}}} as never);
+    const scope={...f.current,assertActive:()=>{if(!authorized)throw new Error('synthetic host authority revoked')}};
+    const result=await f.service.execute(scope,'click',{page:f.page.id,element:'@ref',observeAfter:{container:'#safe',timeout:100}});
+    expect(result).toMatchObject({action:{state:'completed',result:{clicked:'@ref'}},observation:{state:'unavailable',pageId:f.page.id}});
+    expect(click).toHaveBeenCalledOnce();
+    expect(snapshot).not.toHaveBeenCalled();
+    expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({state:'succeeded',effectState:'completed'});
   });
 });

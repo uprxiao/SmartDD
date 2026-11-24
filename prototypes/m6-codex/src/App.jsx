@@ -24,6 +24,7 @@ import { M13Workspace, useM13State } from './M13Workspace';
 import { M14TaskArea, M14HomeModelPicker, carryHomeExtensions } from './M14TaskArea';
 import { AGENTS as M14_AGENTS } from './m14-model.mjs';
 import { M14RightPanel, DiffSurface } from './M14RightPanel';
+import { initialM15Scenario, M15_TASK, M15BrowserSurface, M15TaskPreview, useM15Preview } from './M15BrowserPreview';
 import { ManualTerminal, ComposerChips, pasteToChips } from './M14Extras.jsx';
 import { PanelBottom, PanelRight as PanelRightIcon } from 'lucide-react';
 import './m14.css';
@@ -251,8 +252,14 @@ export function TerminalPreview({ task, profile, project, dark, fontSize, fontFa
 }
 
 export function App() {
+  const searchParams = new URLSearchParams(location.search);
+  const preview = searchParams.get('preview');
+  const m15Preview = preview === 'm15';
+  const m15Initial = initialM15Scenario(location.search);
+  const m15StartsInBrowser = m15Preview && m15Initial !== 'open';
+  const m15 = useM15Preview(m15Initial);
   const [preparationPreview,setPreparationPreview]=useState(() => new URLSearchParams(location.search).get("m10Preparation") === "waiting");
-  const [route, setRoute] = useState(location.hash.slice(1) || (new URLSearchParams(location.search).get('preview') === 'm13' ? 'm13/plugins' : new URLSearchParams(location.search).get('preview') === 'm10' ? 'apps' : ['m9', 'm12', 'm14'].includes(new URLSearchParams(location.search).get('preview')) ? 'task/build' : 'home'));
+  const [route, setRoute] = useState(location.hash.slice(1) || (m15Preview ? 'task/' + M15_TASK : preview === 'm13' ? 'm13/plugins' : preview === 'm10' ? 'apps' : ['m9', 'm12', 'm14'].includes(preview) ? 'task/build' : 'home'));
   const voice = useVoicePreview(route), terminalVoiceTarget = useRef(null);
   const integration = useIntegrationPreview();
   const [integrationProjectId, setIntegrationProjectId] = useState('ais');
@@ -261,21 +268,21 @@ export function App() {
     { ...TASKS[0], id: 'archive-demo', title: '核对多平台构建说明', runner: 'codex', project: PROJECTS[0].id, archived: true, status: 'stopped', worktree: '/Users/demo/.willyou/worktrees/smartdd-a1b2c3/main_willyou_build-check' },
     { ...TASKS[0], id: 'archive-demo-child', parentId: 'archive-demo', title: '子任务：检查架构声明', runner: 'claude', project: PROJECTS[0].id, archived: true, status: 'stopped' },
     { ...TASKS[0], id: 'archive-demo-other', title: '整理启动检查结果', runner: 'claude', project: 'archive-review', archived: true, status: 'stopped', worktree: '/Users/demo/.willyou/worktrees/release-a1b2c3/main_willyou_launch-check' },
-  ] : []));
+  ] : [], m15Preview ? [{ ...TASKS[2], id: M15_TASK, title: '核对十一月报表', runner: 'codex' }] : []));
   const [projectId, setProjectId] = useState('smartdd'), [profileId, setProfileId] = useState('cc-work'), [homeInputs, setHomeInputs] = useState({});
   const prompt = homeInputs[projectId] || '';
   const setPrompt = value => setHomeInputs(current => ({ ...current, [projectId]: typeof value === 'function' ? value(current[projectId] || '') : value }));
-  const [fileWorkspace, setFileWorkspace] = useState(['m9', 'm12'].includes(new URLSearchParams(location.search).get('preview')));
+  const [fileWorkspace, setFileWorkspace] = useState(['m9', 'm12', 'm15'].includes(preview));
   // M12 browser prototype: web tabs are task-scoped (D8); only addresses persist (R01.9).
   const m12Preview = new URLSearchParams(location.search).get('preview') === 'm12';
   // M14：统一任务区原型（?preview=m14）。中央终端换成时间线；右侧文件／浏览器沿用既有组件，经可选属性接收消息链接。
-  const m14Preview = new URLSearchParams(location.search).get('preview') === 'm14';
+  const m14Preview = preview === 'm14' || m15Preview;
   const [m14Open, setM14Open] = useState(null), [m14Terminal, setM14Terminal] = useState(false), [m14Status, setM14Status] = useState(null);
   // M14 右侧统一面板（用户 2026-11-16 确认）：已打开的面板、当前面板、最大化、差异内容
-  const [m14Surfaces, setM14Surfaces] = useState(['files']), [m14Active, setM14Active] = useState('files'), [m14HomeChips, setM14HomeChips] = useState([]), [m14HomeSel, setM14HomeSel] = useState(null), [m14Child, setM14Child] = useState(null), [m14Max, setM14Max] = useState(false), [m14Diffs, setM14Diffs] = useState({});
+  const [m14Surfaces, setM14Surfaces] = useState(m15StartsInBrowser ? ['files', 'browser'] : ['files']), [m14Active, setM14Active] = useState(m15StartsInBrowser ? 'browser' : 'files'), [m14HomeChips, setM14HomeChips] = useState([]), [m14HomeSel, setM14HomeSel] = useState(null), [m14Child, setM14Child] = useState(null), [m14Max, setM14Max] = useState(false), [m14Diffs, setM14Diffs] = useState({});
   // M14 侧栏任务状态（R02）：当前任务取演示状态；其余示例任务为固定演示值
   const m14Show = surface => { if (task?.archived && surface !== 'diff') return; if (m14Home && !['files', 'terminal'].includes(surface)) return; setFileWorkspace(true); setM14Surfaces(list => list.includes(surface) ? list : [...list, surface]); setM14Active(surface); };
-  const m14SidebarStatus = t => t.id === taskId ? m14Status : ({ research: { kind: 'running', label: '工作中 2 分' }, structure: { kind: 'waiting', label: '等待批准' }, build: { kind: 'done', label: '已完成', unread: true } })[t.id] ?? null;
+  const m14SidebarStatus = t => t.id === M15_TASK ? m15.status : t.id === taskId ? m14Status : ({ research: { kind: 'running', label: '工作中 2 分' }, structure: { kind: 'waiting', label: '等待批准' }, build: { kind: 'done', label: '已完成', unread: true } })[t.id] ?? null;
   const [browserByTask, setBrowserByTask] = useState(() => { let saved = {}; try { saved = restoreBrowser(JSON.parse(localStorage.getItem(BROWSER_STORAGE) || '{}')); } catch { saved = {}; } if (m12Preview && !saved.build?.tabs.length) saved.build = openWebTab(emptyTaskBrowser(), 'https://qa.example.test/'); return saved; });
   const newWebTabRef = useRef(null);
   const [webShown, setWebShown] = useState(() => (m12Preview ? { build: true } : {}));
@@ -294,7 +301,7 @@ export function App() {
   const [taskHeaderLayout, setTaskHeaderLayout] = useState('default');
   const [fileAvailable, setFileAvailable] = useState(1000), [filePreference, setFilePreference] = useState(() => readFilePanelWidthPreference(localStorage.getItem('willyou-m9-prototype-panel-width')));
   const [directoryPreference, setDirectoryPreference] = useState(() => readFilePanelWidthPreference(localStorage.getItem('willyou-m14-prototype-directory-width'), true));
-  const [theme, setTheme] = useState(new URLSearchParams(location.search).get('theme') === 'light' || ['m9', 'm10', 'm12', 'm13'].includes(new URLSearchParams(location.search).get('preview')) ? 'light' : 'dark'), [fontSize, setFontSize] = useState(13), [collapsed, setCollapsed] = useState(false), [sidebarWidth, setSidebarWidth] = useState(240);
+  const [theme, setTheme] = useState(searchParams.get('theme') === 'light' || ['m9', 'm10', 'm12', 'm13'].includes(preview) || (m15Preview && !searchParams.has('theme')) ? 'light' : 'dark'), [fontSize, setFontSize] = useState(13), [collapsed, setCollapsed] = useState(false), [sidebarWidth, setSidebarWidth] = useState(240);
   const [integrationReference, setIntegrationReference] = useState(null);
   const [settingsSearch, setSettingsSearch] = useState('');
   const [searchProject, setSearchProject] = useState('all'), [searchIndex, setSearchIndex] = useState(0);
@@ -362,6 +369,21 @@ export function App() {
     setM14Surfaces(next);
     if (m14ActiveEff === surface) setM14Active(next.at(-1) ?? null);
   };
+  const m15Task = m15Preview && task?.id === M15_TASK && !task.archived;
+  const m15RegisterBrowser = () => setM14Surfaces(list => list.includes('browser') ? list : [...list, 'browser']);
+  const m15SelectScene = scene => {
+    m15.switchScene(scene);
+    if (scene === 'open') { removeM14Surface('browser'); m14Show('files'); }
+    else m14Show('browser');
+  };
+  const m15CloseTab = () => { m15.close(); removeM14Surface('browser'); };
+  const hideRightPanel = () => {
+    if (m15Task) m15.setViewChanged();
+    setM14Max(false);
+    setFileWorkspace(false);
+  };
+  const invalidateM15Presentation = m15.setViewChanged;
+  useEffect(() => { if (m15Preview) invalidateM15Presentation(); }, [route, m15Preview, invalidateM15Presentation]);
   const m14PanelKey = childWs ? childWs.id : task?.id;
   const panelTask = task ? (childWs ? { ...task, id: childWs.id, cwd: childWs.path, title: childWs.title } : task) : (m14Home ? homeTask : null), panelProject = task ? (childWs ? { ...taskProject, name: '工作副本 · ' + childWs.branch.split('_willyou_')[1], path: childWs.path } : taskProject) : homeProject;
   const m14Visible = task?.archived ? m14Surfaces.filter(x => x === 'diff') : m14Home ? m14Surfaces.filter(x => x === 'files' || x === 'terminal') : m14Surfaces;
@@ -472,7 +494,7 @@ export function App() {
   const webAllowed = !!(task && projects.some(p => p.id === task.project));
   const webActiveId = webAllowed && webShown[task.id] && taskBrowser.active ? taskBrowser.active : null;
   const openNewWebTab = () => { setFileWorkspace(true); updateTaskBrowser(current => openWebTab(current)); setWebShown(shown => ({ ...shown, [task.id]: true })); };
-  newWebTabRef.current = webAllowed ? openNewWebTab : null;
+  newWebTabRef.current = webAllowed && !m15Task ? openNewWebTab : null;
   const webRecent = webAllowed ? recentProjectSites(webVisits[task.project]) : [];
   const webVisitedUrl = webAllowed && taskBrowser.active ? webUrl(taskBrowser.tabs.find(item => item.id === taskBrowser.active) ?? { history: [''], index: 0 }) : '';
   const webVisitProject = webAllowed ? task.project : null;
@@ -480,7 +502,7 @@ export function App() {
   const webTabs = webAllowed ? taskBrowser.tabs.map(item => ({ id: item.id, url: webUrl(item), title: item.invalid ? '无效地址' : webTitle(item), marked: agentMarked(taskBrowser, item.id, Date.now()) || (taskBrowser.paused && taskBrowser.agent?.tabId === item.id), paused: taskBrowser.paused })) : [];
   const m14PanelShown = !!(panelTask && fileWorkspace && m14Preview && (!task?.archived || m14ActiveEff === 'diff'));
   return <div ref={fileFrame} className={'app codex-frame ' + (m14Preview ? 'm14-preview ' : '') + (m14PanelShown ? 'm14-docked ' : '') + (isApps || isM13 ? 'apps-mode ' : isSettings ? 'settings-mode ' : route === 'scheduled' ? 'scheduled-mode ' : route === 'home' ? 'home-mode ' : '') + (collapsed ? 'sidebar-collapsed ' : '') + (m14Preview && fileWorkspace && m14Max && panelTask ? 'm14-panel-maximized ' : '') + ((task || m14Home) && fileWorkspace ? 'm9-active' : '')} style={{ '--sidebar-width': sidebarWidth + 'px', '--prototype-file-width': fileWidth + 'px', '--prototype-directory-width': directoryWidth + 'px' }}>
-    <div className="window-navigation"><IconButton icon={ArrowLeft} label="返回工作台" onClick={() => nav('home')} /><IconButton icon={ArrowRight} label="前进" onClick={() => history.forward()} />{!isSettings && <IconButton icon={PanelLeft} label={collapsed ? '展开侧栏' : '收起侧栏'} onClick={() => setCollapsed(!collapsed)} />}{!task && <><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); nav("task/build"); }}><FolderOpen size={13} />M9 · 文件工作区</button><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); setBrowserByTask(all => (all.build?.tabs.length ? all : { ...all, build: openWebTab(emptyTaskBrowser(), "https://qa.example.test/") })); setWebShown(shown => ({ ...shown, build: true })); nav("task/build"); }}><M12Globe size={13} />M12 · 浏览器</button><button className="m7-preview-entry" onClick={() => { location.href = '?preview=m14'; }}><MessageSquare size={13} />M14 · 统一任务区</button><button className="m7-preview-entry" onClick={() => nav('m13/plugins')}><M13Puzzle size={13} />M13 · 插件与能力</button><button className="m7-preview-entry" onClick={() => setModal({ type: 'project-transfer', mode: 'import' })}><Folder size={13} />M8 · 项目迁移</button><button className="m7-preview-entry" onClick={() => { voice.clear(); setModal({ type: 'voice-demo' }); }}><Mic size={13} />M7 · 语音预览</button>{voice.notice?.kind === 'sent' && <button className="m7-preview-entry" onPointerDown={e => e.preventDefault()} onClick={voice.fillExample}>演示文字回填</button>}</>}</div>
+    <div className="window-navigation"><IconButton icon={ArrowLeft} label="返回工作台" onClick={() => nav('home')} /><IconButton icon={ArrowRight} label="前进" onClick={() => history.forward()} />{!isSettings && <IconButton icon={PanelLeft} label={collapsed ? '展开侧栏' : '收起侧栏'} onClick={() => setCollapsed(!collapsed)} />}{!task && <><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); nav("task/build"); }}><FolderOpen size={13} />M9 · 文件工作区</button><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); setBrowserByTask(all => (all.build?.tabs.length ? all : { ...all, build: openWebTab(emptyTaskBrowser(), "https://qa.example.test/") })); setWebShown(shown => ({ ...shown, build: true })); nav("task/build"); }}><M12Globe size={13} />M12 · 浏览器</button><button className="m7-preview-entry" onClick={() => { location.href = '?preview=m14'; }}><MessageSquare size={13} />M14 · 统一任务区</button><button className="m7-preview-entry" onClick={() => { location.href = '?preview=m15'; }}><M12Globe size={13} />M15 · 浏览器任务</button><button className="m7-preview-entry" onClick={() => nav('m13/plugins')}><M13Puzzle size={13} />M13 · 插件与能力</button><button className="m7-preview-entry" onClick={() => setModal({ type: 'project-transfer', mode: 'import' })}><Folder size={13} />M8 · 项目迁移</button><button className="m7-preview-entry" onClick={() => { voice.clear(); setModal({ type: 'voice-demo' }); }}><Mic size={13} />M7 · 语音预览</button>{voice.notice?.kind === 'sent' && <button className="m7-preview-entry" onPointerDown={e => e.preventDefault()} onClick={voice.fillExample}>演示文字回填</button>}</>}</div>
     {m14PanelShown && <div className="m14-rp-titlebar" ref={setM14PanelHeader}/>}
     {m14Home && !m14PanelShown && <div className="m14-home-controls"><IconButton icon={FolderOpen} label="打开右侧面板" onClick={() => { setM14Max(false); m14Show('files'); }} /><IconButton icon={PanelBottom} label="底部终端抽屉（⌃`）" onClick={() => { setM14Max(false); setM14Terminal(!m14Terminal); }} /></div>}
     {task && <header ref={taskHeaderRef} className="task-window-header" data-header-layout={taskHeaderLayout} aria-label="当前会话">
@@ -544,7 +566,8 @@ export function App() {
       {route === 'home' && <ReferenceHome attachmentsSlot={m14Preview ? <ComposerChips chips={m14HomeChips} onRemove={cid => setM14HomeChips(cs => cs.filter(c => c.id !== cid))} onRetry={() => {}} /> : null} onPasteFiles={m14Preview ? e => pasteToChips(e, setM14HomeChips, notify) : null} profilePicker={m14Preview ? <M14HomeModelPicker value={m14HomeSel} onChange={setM14HomeSel} /> : null} agentLabels={m13Active} preparing={preparationPreview} onCancelPreparation={() => { const url = new URL(location.href); url.searchParams.delete('m10Preparation'); history.replaceState(null, '', url); setPreparationPreview(false); notify('已取消准备，输入已保留'); }} dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError} launchFix={launchFix && { label: launchFix.label, onClick: () => { setLaunchError(''); setLaunchFix(null); nav(launchFix.route); } }}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={homeProfiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={m13Active ? setM13ProfileId : setProfileId} onSubmit={createTask} onSettings={() => nav('settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} {...(m13Active && profile ? { permission: effectivePermission(m13Permission, m13Tool), permissionOptions: permissionOptions(m13Tool), permissionAgent: AGENTS[m13Tool], onPermission: pickPermission, onPermissionHelp: () => notify('演示：权限说明页（原型不打开外部链接）。各档对应的启动参数见补验 E。') } : {})} />}
       {m14Home && m14Terminal && <div className="m14-home-drawer"><ManualTerminal cwd={homeProject.path} /></div>}
       {route === 'scheduled' && <section className="scheduled-placeholder" aria-label="定时任务规划"><span className="scheduled-clock" aria-hidden="true">🕗</span><h1>安排任务</h1><p>定时执行项目任务，让重复的工作按计划完成。</p><span className="scheduled-planned">功能规划中</span><p className="scheduled-note">已列入后续需求，本轮保留入口。暂不创建或执行定时任务。</p><button className="text-button" onClick={() => nav('home')}>返回工作台<ArrowRight size={14} /></button></section>}
-      {task && m14Preview && <section className="task-page"><M14TaskArea key={task.id} taskId={task.id} archived={!!task.archived} onRestore={() => archiveTask(task, false)} ptyId={task.ptyId ?? task.id} onStatus={setM14Status} initialSel={task.m14Sel} initialPermission={task.permission?.id ?? task.permission?.selected ?? null} initialMessage={task.m14First?.chips?.length || task.m14First?.text ? task.m14First : null} onChildChange={setM14Child} fullConfirmed={m13FullConfirmed} requestFullAccess={then => setModal({ type: 'm13-full-access', then })} hasProject={!!task.project} projectRoot={task.cwd || taskProject.path} terminalOpen={m14Terminal} onTerminal={setM14Terminal}
+      {m15Task && <section className="task-page"><M15TaskPreview demo={m15} selectScene={m15SelectScene} showBrowser={() => m14Show('browser')} registerBrowser={m15RegisterBrowser} /></section>}
+      {task && m14Preview && !m15Task && <section className="task-page"><M14TaskArea key={task.id} taskId={task.id} archived={!!task.archived} onRestore={() => archiveTask(task, false)} ptyId={task.ptyId ?? task.id} onStatus={setM14Status} initialSel={task.m14Sel} initialPermission={task.permission?.id ?? task.permission?.selected ?? null} initialMessage={task.m14First?.chips?.length || task.m14First?.text ? task.m14First : null} onChildChange={setM14Child} fullConfirmed={m13FullConfirmed} requestFullAccess={then => setModal({ type: 'm13-full-access', then })} hasProject={!!task.project} projectRoot={task.cwd || taskProject.path} terminalOpen={m14Terminal} onTerminal={setM14Terminal}
         onOpenFile={task.archived ? undefined : (path, line, column) => { m14Show('files'); setM14Open({ id: id(), path, line, column }); }} onRevealDir={task.archived ? undefined : path => { m14Show('files'); setM14Open({ id: id(), path, directory: true }); }}
         onOpenUrl={url => { updateTaskBrowser(current => openWebTab(current, url)); m14Show('browser'); }} onOpenDiff={d => { setM14Diffs(m => ({ ...m, [m14PanelKey]: { ...d, key: id() } })); m14Show('diff'); }} /></section>}
       {task && !m14Preview && <section className="task-page">
@@ -593,17 +616,26 @@ export function App() {
         const directoryOnly = directoryOnlyShown();
         storeFileWidth((directoryOnly ? directoryWidth : fileWidth) + (e.key === 'ArrowLeft' ? 10 : -10), fileAvailable, directoryOnly);
       }} />
-      <M14RightPanel headerTarget={m14PanelHeader} terminalOpen={m14Terminal} onTerminal={task?.archived ? undefined : () => { setM14Max(false); setM14Terminal(!m14Terminal); }} onCollapse={() => { setM14Max(false); setFileWorkspace(false); }} open={m14Visible} active={m14ActiveEff} webTabs={webTabs.length ? {
+      <M14RightPanel headerTarget={m14PanelHeader} terminalOpen={m14Terminal} onTerminal={task?.archived ? undefined : () => { setM14Max(false); setM14Terminal(!m14Terminal); }} onCollapse={hideRightPanel} open={m14Visible} active={m14ActiveEff} webTabs={m15Task ? m15.state.tab && {
+        tabs: [m15.state.tab], activeId: m15.state.tab.id, onSelect: () => {}, onClose: m15CloseTab,
+      } : webTabs.length ? {
         tabs: webTabs, activeId: taskBrowser.active,
         onSelect: tabId => updateTaskBrowser(current => ({ ...current, active: tabId })),
         onClose: tabId => { const next = closeWebTab(taskBrowser, tabId); updateTaskBrowser(() => next); if (!next.tabs.length) removeM14Surface('browser'); },
-      } : undefined} disabled={task?.archived ? { files: '已归档任务只读', terminal: '已归档任务只读', browser: '已归档任务只读' } : m14Home ? { browser: '创建任务后可用', diff: '创建任务后可用' } : {}} onActive={setM14Active} onAdd={surface => {
+      } : undefined} disabled={task?.archived ? { files: '已归档任务只读', terminal: '已归档任务只读', browser: '已归档任务只读' } : m14Home ? { browser: '创建任务后可用', diff: '创建任务后可用' } : m15Task ? { browser: '使用上方合成场景开页' } : {}} onActive={surface => {
+        if (m15Task) m15.setViewChanged();
+        setM14Active(surface);
+      }} onAdd={surface => {
+        if (m15Task) m15.setViewChanged();
         m14Show(surface);
         if (surface === 'browser' && webAllowed) updateTaskBrowser(current => openWebTab(current));
         if (surface === 'diff' && !m14Diffs[m14PanelKey]) dispatchEvent(new Event('m14:show-diff'));
-      }} onRemove={removeM14Surface} maximized={m14Max} onMaximize={() => setM14Max(!m14Max)}>
+      }} onRemove={surface => {
+        if (m15Task) m15.setViewChanged();
+        removeM14Surface(surface);
+      }} maximized={m14Max} onMaximize={() => setM14Max(!m14Max)}>
         {{ files: workspaceHeader => <>{childWs && <div className="m14-ws-banner" role="note"><GitBranch size={12} />工作副本 · <code>{childWs.branch}</code> · 子任务未合入的改动只在这里</div>}<FileWorkspace embedded workspaceHeader={workspaceHeader} key={panelTask.id + ":" + (panelTask.cwd || panelProject.path || "")} task={panelTask} project={panelProject} dark={dark} onTheme={() => setTheme(dark ? "light" : "dark")} onClose={() => setFileWorkspace(false)} openRequest={m14Open} dropToComposer savedSeed={childWs ? { 'scripts/build.mjs': '// 工作副本 ' + childWs.branch + '\n// 子任务新增的 node-pty 架构断言（尚未合入主目录）\nexport function assertArch(mod) {\n  return mod.arch === process.arch;\n}\n' } : undefined} /></>,
-          browser: webAllowed ? <div className="m14-browser-surface">{webAllowed && <BrowserWorkspace key={task.id} state={taskBrowser} onChange={updateTaskBrowser} projectName={taskProject.name} taskTitle={task.title} peerTask={tasks.find(item => item.project === task.project && item.id !== task.id)} profileStore={webProfiles[task.project] ?? webProjectProfiles(taskProject.name)} onProfileStore={updater => setWebProfiles(all => ({ ...all, [task.project]: updater(all[task.project] ?? webProjectProfiles(taskProject.name)) }))} onDeleteProfile={id => { const result = deleteWebProfile(webProfiles[task.project] ?? webProjectProfiles(taskProject.name), browserByTask, id); setWebProfiles(all => ({ ...all, [task.project]: result.store })); setBrowserByTask(result.browserByTask); }} settings={webSettings} onSettings={setWebSettings} recentSites={webRecent} onOpenFiles={() => setWebShown(shown => ({ ...shown, [task.id]: false }))} />}</div> : <div className="m14-diff-empty-state"><p>内置浏览器需要任务关联项目</p><small>请先为这个任务关联项目。</small></div>,
+          browser: m15Task ? <div className="m14-browser-surface"><M15BrowserSurface demo={m15} /></div> : webAllowed ? <div className="m14-browser-surface">{webAllowed && <BrowserWorkspace key={task.id} state={taskBrowser} onChange={updateTaskBrowser} projectName={taskProject.name} taskTitle={task.title} peerTask={tasks.find(item => item.project === task.project && item.id !== task.id)} profileStore={webProfiles[task.project] ?? webProjectProfiles(taskProject.name)} onProfileStore={updater => setWebProfiles(all => ({ ...all, [task.project]: updater(all[task.project] ?? webProjectProfiles(taskProject.name)) }))} onDeleteProfile={id => { const result = deleteWebProfile(webProfiles[task.project] ?? webProjectProfiles(taskProject.name), browserByTask, id); setWebProfiles(all => ({ ...all, [task.project]: result.store })); setBrowserByTask(result.browserByTask); }} settings={webSettings} onSettings={setWebSettings} recentSites={webRecent} onOpenFiles={() => setWebShown(shown => ({ ...shown, [task.id]: false }))} />}</div> : <div className="m14-diff-empty-state"><p>内置浏览器需要任务关联项目</p><small>请先为这个任务关联项目。</small></div>,
           terminal: <ManualTerminal cwd={panelTask.cwd || panelProject.path} />,
           diff: <DiffSurface readOnly={!!task?.archived} diff={m14Diffs[panelTask.id] ?? null} onOpenFile={path => { m14Show('files'); setM14Open({ id: id(), path }); }} /> }}
       </M14RightPanel></>}

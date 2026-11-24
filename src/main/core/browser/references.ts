@@ -33,12 +33,14 @@ const helperSnapshotSchema = z.object({
 });
 export class BrowserReferences {
   private generation = 0;
+  private documentEpoch = 0;
   private refs = new Map<string, NodeRef>();
   private worlds = new Map<string, number>();
   private readonly deferred=new BrowserDeferredReferenceGuards();
   private readonly dialogKeys=new Map<string,string|undefined>();
   get hasDeferredGuards(){return this.deferred.pending;}
   get hasOpenDialog(){return this.deferred.dialogOpen;}
+  get documentGeneration(){return `${this.pageShort}:${this.documentEpoch}`;}
   settleDeferredGuards(){return this.deferred.settle();}
   assertDeferredGuardsReady(){return this.deferred.assertReady();}
   constructor(private readonly proxy: BrowserCdpProxy, private readonly pageShort: string) {
@@ -51,6 +53,8 @@ export class BrowserReferences {
         for(const [key,sessionId]of this.dialogKeys)if(sessionId===event.sessionId&&(typeof event.params.frameId!=='string'||key===JSON.stringify([sessionId??null,event.params.frameId]))){this.dialogKeys.delete(key);this.deferred.closed(key);}
       }
       if (['Page.frameNavigated','Page.frameDetached','Target.detachedFromTarget','Runtime.executionContextsCleared'].includes(event.method)) this.invalidate(true);
+      if(!event.sessionId&&event.method==='Page.frameNavigated'&&event.params.frame&&
+        typeof event.params.frame==='object'&&!('parentId' in event.params.frame))this.documentEpoch++;
       if (event.method === 'Runtime.executionContextCreated') {
         const context=event.params.context as {id:number;name:string;auxData?:{frameId?:string}};
         if(context?.name===BROWSER_GUARD_WORLD&&context.auxData?.frameId)this.worlds.set((event.sessionId??'')+'\0'+context.auxData.frameId,context.id);
@@ -107,7 +111,7 @@ export class BrowserReferences {
     return trees;
   }
   /** T1 + the exact helper responses + T2. Matching only the outside samples misses A→B→A. */
-  async snapshot(helper: BrowserHelper, signal?: AbortSignal): Promise<{origin?:string;snapshot:string;refs:{ref:string;role:string;name:string;available:boolean}[]}> {
+  async snapshot(helper: BrowserHelper, signal?: AbortSignal, container?:string): Promise<{origin?:string;snapshot:string;refs:{ref:string;role:string;name:string;available:boolean}[]}> {
     this.invalidate();
     for (let attempt = 0; ; attempt++) {
       if (signal?.aborted) throw signal.reason ?? new BrowserError('BROWSER_ERROR', '快照已取消');
@@ -143,7 +147,33 @@ export class BrowserReferences {
       }
       // Retries create fresh helper snapshots; an unstable earlier snapshot is never rebound to a later node.
       if (attempt < 2 && refs.some(ref => !ref.available)) continue;
+      if(container!==undefined){
+        // Filter verified bindings, so a duplicate name outside the container
+        // cannot change which backend node a scoped reference identifies.
+        const group=`willyou-observe-${epoch}`;
+        try{
+          for(const ref of refs){
+            if(signal?.aborted)throw signal.reason;
+            const node=bindings.get(ref.ref);
+            if(!node||node.sessionId){bindings.delete(ref.ref);continue;}
+            const {object}=await this.proxy.send<{object:{objectId?:string}}>('DOM.resolveNode',{backendNodeId:node.backendNodeId,objectGroup:group});
+            if(!object.objectId){bindings.delete(ref.ref);continue;}
+            const {result,exceptionDetails}=await this.proxy.send<{result:{value?:boolean};exceptionDetails?:unknown}>('Runtime.callFunctionOn',{
+              objectId:object.objectId,functionDeclaration:'function(selector){return !!(this.isConnected && this.closest?.(selector))}',
+              arguments:[{value:container}],returnByValue:true,
+            });
+            if(exceptionDetails)throw new ApplicationError('INVALID_INPUT','观察范围的选择器无效');
+            if(!result.value)bindings.delete(ref.ref);
+          }
+        }finally{await this.proxy.send('Runtime.releaseObjectGroup',{objectGroup:group}).catch(()=>{});}
+      }
+      if(signal?.aborted)throw signal.reason;
+      if(epoch!==this.generation)throw new BrowserError('BROWSER_TAB_CHANGED','获取快照时页面已替换');
       this.refs = bindings;
+      if(container!==undefined){
+        const scoped=refs.filter(ref=>bindings.has(ref.ref));
+        return{origin:parsed.data.origin,snapshot:scoped.map(ref=>`${ref.role} ${JSON.stringify(ref.name)} [ref=${ref.ref}]`).join('\n'),refs:scoped};
+      }
       return { origin: parsed.data.origin, snapshot: parsed.data.snapshot.replace(/ref=(e\d+)/g, (_match, id:string) => 'ref=' + (mapping.get(id) ?? id)), refs };
     }
   }

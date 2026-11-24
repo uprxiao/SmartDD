@@ -20,6 +20,8 @@ export const agentTaskLiveEvent = defineEvent<AgentLiveFrame>('agentTasks:live')
 export const browserChangedEvent=defineEvent<{taskId:string}>('browser:changed');
 export const browserAccessChangedEvent=defineEvent<Record<string,never>>('browser:access-changed');
 export const browserShortcutEvent=defineEvent<{taskId:string;action:BrowserShortcut}>('browser:shortcut');
+export const browserOpenPresentationEvent=defineEvent<{taskId:string;pageId:string;operationId:string;clientInputId:string}>('browser:open-presentation');
+export const browserScriptChangedEvent=defineEvent<{taskId:string;executionId:string}>('browser:script-changed');
 export interface ApplicationHealthChange {kind:'health';appId:ApplicationId;connectionId:string}
 export interface PluginRuntimeChange {kind:'plugin-runtime';appId:string}
 export interface PluginApprovalChange {kind:'plugin-approval';taskId:string}

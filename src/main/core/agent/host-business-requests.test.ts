@@ -6,6 +6,8 @@ import { AgentStore } from './agent-store';
 import { HostBusinessRequests, type BusinessHandler } from './host-business-requests';
 import { evaluateCapabilities } from './capabilities';
 import type { RunHandle } from './agent-run-service';
+import {DriverError} from './driver';
+import type {ApplicationUiSender} from '../applications/execution-context';
 const clean: (() => void)[]=[];afterEach(()=>clean.splice(0).forEach(f=>f()));
 function fixture(needsRun=false, executionMs?:number) {
   const db=new Database(':memory:');db.pragma('foreign_keys=ON');runBundledMigrations(db);const store=new AgentStore(db);
@@ -34,6 +36,109 @@ it('E12: no owner approval is persistent pending-bind, never an early usable gra
 });
 it('E12: stopping/revoking before bind prevents the successor from receiving authority',async()=>{
  const f=fixture(true),r=f.create();f.end();await f.service.respond(f.taskId,r.requestId,1,{choice:'allow'});f.service.stop(f.taskId);await f.service.bindPending(f.taskId,f.open());expect(f.executions()).toBe(0);expect(f.store.request(r.requestId)?.status).toBe('retired');
+});
+it.each(['finished', 'unknown'] as const)('continues the original browser goal from a %s host result', async state => {
+  const f = fixture();
+  const originalRequestId = randomUUID();
+  f.service.register('browser_write', {
+    validate: async () => {},
+    execute: async () => state === 'finished'
+      ? { status: 'ok', value: 'raw synthetic page content' }
+      : { status: 'error', error: { effectState: 'unknown', message: 'raw synthetic page content' } },
+  });
+  const approval = f.service.create(f.origin, {
+    operationId: randomUUID(), kind: 'browser_write', title: '点击原网页', review: {},
+    data: { requestId: originalRequestId },
+  });
+  expect(await f.service.respond(f.taskId,approval.requestId,1,{choice:'allow'})).toMatchObject({state});
+  expect(f.notices).toHaveLength(1);
+  expect(f.notices[0]).toMatchObject({ wake: true });
+  expect(f.notices[0].text).toContain('不是新的真人授权');
+  expect(f.notices[0].text).toContain('原任务目标');
+  expect(f.notices[0].text).toContain(originalRequestId);
+  expect(f.notices[0].text).not.toContain('raw synthetic page content');
+  if (state === 'unknown') {
+    expect(f.notices[0].text).toContain('只读检查原标签');
+    expect(f.notices[0].text).toContain('请勿重发原操作');
+  }
+});
+it('preserves an early login confirmation and only queues one authenticated continuation',async()=>{
+  const f=fixture(true),wake=vi.fn(),browser={ready:false};
+  Object.assign(f.deps,{wakeLogin:wake});
+  let accepts=0;
+  f.service.register('browser_login',{
+    needsRun:true,
+    validate:async()=>{},
+    confirm:async()=>{if(!browser.ready)throw new DriverError('STATE','原业务页仍未就绪');},
+    readiness:async()=>browser.ready?'ready':'loading',
+    execute:async record=>{
+      accepts++;
+      f.store.acceptTurn({taskId:f.taskId,clientInputId:`browser-login-${record.row.request_id}-${record.row.revision}`,text:'续接',sourceKind:'system'});
+      return{status:'verified'};
+    },
+  });
+  const request=f.service.create(f.origin,{operationId:randomUUID(),kind:'browser_login',title:'登录',review:{},data:{pageId:'page'}});
+  const confirm=()=>f.service.respond(f.taskId,request.requestId,1,{choice:'allow'},{} as ApplicationUiSender);
+  await expect(f.service.respond(f.taskId,request.requestId,1,{choice:'allow'})).rejects.toThrow('原任务窗口');
+  await expect(confirm()).rejects.toThrow('仍未就绪');
+  expect(f.store.request(request.requestId)).toMatchObject({revision:1,status:'pending'});
+  expect(f.service.browserPageAwaitingLogin(f.taskId,'page')).toBe(true);
+  browser.ready=true;
+  f.end();
+  const raced=await Promise.allSettled([confirm(),confirm()]);
+  expect(raced.filter(result=>result.status==='fulfilled')).toEqual([
+    {status:'fulfilled',value:expect.objectContaining({state:'approved_pending_bind'})},
+  ]);
+  expect(raced.filter(result=>result.status==='rejected')).toHaveLength(1);
+  expect(wake).toHaveBeenCalledWith(f.taskId);
+  expect(f.store.queuedTurns(f.taskId)).toEqual([]);
+  const rebound=f.open();
+  browser.ready=false;
+  await f.service.bindPending(f.taskId,rebound);
+  expect(f.store.request(request.requestId)?.status).toBe('approved_pending_bind');
+  browser.ready=true;
+  f.service.browserChanged(f.taskId);
+  await f.service.bindPending(f.taskId,rebound);
+  await f.service.bindPending(f.taskId,rebound);
+  expect(accepts).toBe(1);
+  const turn=f.store.queuedTurns(f.taskId)[0];
+  expect(turn.source_kind).toBe('system');
+  expect(f.notices).toEqual([]);
+  f.service.stop(f.taskId);
+  expect(f.store.turn(turn.turn_id)?.status).toBe('canceled');
+});
+it.each(['pending', 'approved_pending_bind'])('retires a %s login request when its original tab identity is lost', async status => {
+  const f = fixture(true);
+  let originalTabExists = true;
+  const assertSourceCurrent = () => {
+    if (!originalTabExists) throw new Error('原标签或登录身份已变化');
+  };
+  const retire = vi.fn();
+  const execute = vi.fn(async () => ({ status: 'verified' }));
+  const loginHandler = { needsRun: true, assertSourceCurrent, validate: async () => assertSourceCurrent(), execute, retire };
+  f.service.register('browser_login', loginHandler);
+  const request = f.service.create(f.origin, {
+    operationId: randomUUID(), kind: 'browser_login', title: '登录', review: {}, data: { pageId: 'original' },
+  });
+  const confirm = (revision: number) => f.service.respond(f.taskId, request.requestId, revision, { choice: 'allow' }, {} as ApplicationUiSender);
+  if (status === 'approved_pending_bind') {
+    f.end();
+    expect(await confirm(1)).toMatchObject({ state: status });
+  }
+  const before = f.store.request(request.requestId)!;
+  f.service.browserChanged(f.taskId);
+  expect(f.store.request(request.requestId)).toMatchObject({ status, revision: before.revision });
+
+  originalTabExists = false;
+  f.service.browserChanged(f.taskId);
+  f.service.browserChanged(f.taskId);
+  expect(f.store.request(request.requestId)).toMatchObject({ status: 'retired', revision: before.revision + 1 });
+  expect(retire).toHaveBeenCalledTimes(1);
+  expect(f.service.browserPageAwaitingLogin(f.taskId, 'original')).toBe(false);
+  await expect(confirm(before.revision)).rejects.toThrow('请求已更新');
+  await f.service.bindPending(f.taskId, f.open());
+  expect(execute).not.toHaveBeenCalled();
+  expect(f.store.queuedTurns(f.taskId)).toEqual([]);
 });
 it('E12: changed account/content fails the late approval and cannot replace the stored original review',async()=>{
  const f=fixture(),r=f.create();f.setAccount('second');await expect(f.service.respond(f.taskId,r.requestId,1,{choice:'allow'})).rejects.toThrow('account changed');expect(f.executions()).toBe(0);

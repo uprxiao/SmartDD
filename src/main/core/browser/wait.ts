@@ -27,19 +27,22 @@ export class BrowserConditionWait {
     this.ready=page.proxy.send('Network.enable');void this.ready.catch(()=>{});
     page.abort.signal.addEventListener('abort',()=>this.off(),{once:true});
   }
-  async run(args:Record<string,unknown>,signal:AbortSignal):Promise<{waited:true}>{
+  async run(args:Record<string,unknown>,signal:AbortSignal,authorize?:()=>void):Promise<{waited:true}>{
     await this.ready;
     const timeout=Number(args.timeout??25000),until=Date.now()+timeout,selector=args.selector===undefined?null:String(args.selector),text=args.text===undefined?null:String(args.text),hidden=args.state==='hidden';
     const url=args.url===undefined?null:picomatch(String(args.url),{dot:true});
     while(true){
       if(signal.aborted)throw signal.reason;
+      authorize?.();
       try{
         const tree=await this.page.proxy.send<{frameTree:{frame:{id:string}}}>('Page.getFrameTree');
         const world=await this.page.proxy.send<{executionContextId:number}>('Page.createIsolatedWorld',{frameId:tree.frameTree.frame.id,worldName:'willyou-browser-observer-v1'});
+        signal.throwIfAborted();
+        authorize?.();
         const observed=await this.page.proxy.send<{result:{value?:{selector:boolean;text:boolean;ready:string}};exceptionDetails?:unknown}>('Runtime.callFunctionOn',{executionContextId:world.executionContextId,functionDeclaration:BROWSER_WAIT_OBSERVER,arguments:[{value:selector},{value:text},{value:hidden}],returnByValue:true});
         if(observed.exceptionDetails)throw new BrowserError('BROWSER_ERROR','等待条件的选择器无效');
         const value=observed.result.value,load=args.load,loaded=load===undefined||load==='domcontentloaded'&&value?.ready!=='loading'||load==='load'&&value?.ready==='complete'||load==='networkidle'&&value?.ready==='complete'&&this.requests.size===0&&Date.now()-this.lastNetwork>=500;
-        if(value?.selector&&value.text&&(!url||url(this.page.contents.getURL()))&&loaded)return{waited:true};
+        if(value?.selector&&value.text&&(!url||url(this.page.contents.getURL()))&&loaded&&(!authorize||!this.page.contents.isLoadingMainFrame()))return{waited:true};
       }catch(error){
         // A navigation can replace the observer world while waiting for its URL.
         if(!(error instanceof Error&&/execution context.*(?:destroyed|not found)|cannot find context|inspected target navigated/i.test(error.message)))throw error;

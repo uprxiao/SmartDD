@@ -37,7 +37,7 @@ export type LaunchResolver = (input: { taskId?: string; profileId: string; cwd: 
 export type ProfileDriver = (profileId: string) => DriverId;
 
 const PREWARM_IDLE_MS = 60_000;
-const HOST_BUSINESS_INSTRUCTIONS = '宿主工具返回 awaiting_user 时，可继续其他工作。用户批准后由宿主执行并通知。不要轮询或重复提交。宿主通知不构成新的真人授权。';
+const HOST_BUSINESS_INSTRUCTIONS = '宿主工具返回 awaiting_user 时，可继续不依赖该批准的工作。需要结果才能继续时，请结束当前回合。宿主获批执行后会在后续回合自动送达结果。请勿休眠等待、轮询或重复提交。结果通知不构成新的真人授权。';
 interface PrewarmingRun {
   controller: AbortController;
   opening: Promise<RunHandle | undefined>;
@@ -429,7 +429,8 @@ export class AgentTaskService {
 
   private async advance(taskId: string) {
     const task = this.d.store.task(taskId); if (!task || task.archived_at || this.archiving.has(taskId)) return;
-    if (this.paused.has(taskId) || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
+    const browserContinuation=this.hasBrowserContinuation(taskId);
+    if (this.paused.has(taskId)&&!browserContinuation || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
     const { selection, revision } = this.selection(taskId), run = this.d.runs.runForTask(taskId);
     if (selection.pendingSwitch && !this.d.store.queuedTurns(taskId).length && !this.d.runs.respondingForTask(taskId) && !(run && this.d.runs.busy(run.runId)) && !this.d.runs.closingForTask(taskId)) {
       try { await this.switchProfile(taskId, selection.pendingSwitch.profileId, revision, selection.pendingSwitch.model, selection.pendingSwitch.effort); }
@@ -440,6 +441,13 @@ export class AgentTaskService {
       }
     }
     await this.pump(taskId);
+  }
+
+  private hasBrowserContinuation(taskId:string):boolean{
+    return !this.stoppedByUser.has(taskId)&&(
+      this.business?.needsLoginRun(taskId)===true||
+      this.d.store.queuedTurns(taskId).some(turn=>turn.source_kind==='system'&&turn.client_input_id.startsWith('browser-login-'))
+    );
   }
 
   /** 草稿与输入同一文字上限；超限明确拒绝，原记录不变（复核 SR02）。冲突回执只带修订，不回传草稿正文。 */
@@ -740,14 +748,30 @@ export class AgentTaskService {
 
   /** 按接受顺序派发下一条排队输入；必要时先打开或恢复运行。 */
   private async pump(taskId: string) {
-    if (this.paused.has(taskId) || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
-    const next = this.d.store.queuedTurns(taskId)[0];
+    const browserContinuation=this.hasBrowserContinuation(taskId);
+    if (this.paused.has(taskId)&&!browserContinuation || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
+    const queued=this.d.store.queuedTurns(taskId);
+    const next=browserContinuation?queued.find(turn=>turn.source_kind==='system'&&turn.client_input_id.startsWith('browser-login-')):queued[0];
+    if(!next&&browserContinuation){
+      if(this.d.runs.closingForTask(taskId)||this.d.runs.respondingForTask(taskId))return;
+      this.dispatching.add(taskId);
+      try{
+        const run=await this.ensureRun(taskId);
+        if(this.hasBrowserContinuation(taskId))await this.business?.bindPending(taskId,run);
+      }catch(error){
+        this.d.store.addHostItem(taskId,null,'system_notice',{code:'browserLoginBindPending',detail:(error as Error).message.slice(0,500)});
+      }finally{
+        this.dispatching.delete(taskId);
+        if(this.missedPump.delete(taskId))this.kick(taskId);
+      }
+      return;
+    }
     if (!next) return;
     const existing = this.d.runs.runForTask(taskId);
     if (existing && this.d.runs.busy(existing.runId)) return;
     this.dispatching.add(taskId);
     const seq = this.stopSeq.get(taskId) ?? 0;
-    const stoppedSince = () => (this.stopSeq.get(taskId) ?? 0) !== seq || this.paused.has(taskId);
+    const stoppedSince = () => (this.stopSeq.get(taskId) ?? 0) !== seq || this.paused.has(taskId)&&!browserContinuation;
     let transfer: Transfer | null = null;
     try {
       if (existing?.tierChange) await existing.tierChange;
@@ -817,7 +841,12 @@ export class AgentTaskService {
       const context = [transfer?.text, hostContext].filter(Boolean).join('\n\n');
       if (!run.readOnly) await this.diffs?.before(taskId, next.turn_id, run.runId, this.d.runs.nativeBusy(run.runId));
       if(stoppedSince())return;
-      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
+      const dispatched=await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort },
+        browserContinuation?async()=>!stoppedSince()&&!!await this.business?.authorizeLoginDispatch(taskId,next.client_input_id,run)&&!stoppedSince():undefined);
+      if(dispatched===null){
+        if(transfer)this.handoffs.delivered(transfer.id,'unsent');
+        return;
+      }
       const savedTier = this.selection(taskId, true).selection.tier as Tier;
       if (!stoppedSince() && savedTier !== selection.tier) void this.d.runs.changeTurnTier(run.runId, savedTier);
       if (selection.initialCodexDefault) {
@@ -832,6 +861,12 @@ export class AgentTaskService {
       if (transfer) this.handoffs.delivered(transfer.id, e instanceof DriverError && ['REJECTED', 'STATE', 'UNSUPPORTED'].includes(e.code) ? 'unsent' : 'unknown');
       if (stoppedSince()) return;
       const t = this.d.store.turn(next.turn_id);
+      if(browserContinuation&&t?.status==='accepted'&&e instanceof DriverError&&e.code==='REJECTED'){
+        this.d.store.endTurn(next.turn_id,'canceled','BROWSER_LOGIN_REVOKED');
+        this.d.store.addHostItem(taskId,next.turn_id,'system_notice',{code:'browserLoginBlocked',detail:e.message});
+        this.missedPump.add(taskId);
+        return;
+      }
       // 驱动在发送前拒绝且已放回排队（原生仍在跑）：等该回合结束后由 turn.ended 再派发，不算失败。
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
       // 上一运行已不可用、仍在等真实退出：输入保留但暂停，明确告知原因；退出后自动恢复派发（复核 NR04）。

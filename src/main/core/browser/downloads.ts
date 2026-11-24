@@ -28,7 +28,8 @@ export class BrowserDownloadReservations {
 }
 interface Owner {contents:WebContents;taskId:string;pageId:string;profileId:string}
 interface Live {item:DownloadItem;detach:()=>void}
-interface Expected {contents:WebContents;path:string;active:boolean;recordId?:string;complete:(record:BrowserDownload)=>void;fail:(error:unknown)=>void}
+type ExpectedResult=BrowserDownload&{sourceFilename:string};
+interface Expected {contents:WebContents;path:string;active:boolean;recordId?:string;complete:(record:ExpectedResult)=>void;fail:(error:unknown)=>void}
 export class BrowserDownloads {
   private readonly owners=new Map<WebContents,Owner>();
   private readonly detachOwners=new Map<WebContents,()=>void>();
@@ -50,7 +51,8 @@ export class BrowserDownloads {
       if(this.closed||!source||!available){event.preventDefault();this.expected.get(contents)?.fail(new BrowserError('BROWSER_UNAVAILABLE','下载来源页面或登录态不可用'));return;}
       const safe=<T>(read:()=>T,fallback:T):T=>{try{return read();}catch{return fallback;}};
       const pending=this.expected.get(contents),expected=pending?.active?pending:undefined;if(expected)this.expected.delete(contents);
-      const id=randomUUID(),record:BrowserDownload={id,taskId:source.taskId,pageId:source.pageId,name:browserDownloadFilename(safe(()=>item.getFilename(),'download')),path:null,destination:expected?'explicit':'downloads',url:safe(()=>item.getURL(),''),state:'progress',receivedBytes:0,totalBytes:Math.max(0,safe(()=>item.getTotalBytes(),0)),updatedAt:Date.now(),error:null};this.records.set(id,record);if(expected)expected.recordId=id;
+      const sourceFilename=browserDownloadFilename(safe(()=>item.getFilename(),'download'));
+      const id=randomUUID(),record:BrowserDownload={id,taskId:source.taskId,pageId:source.pageId,name:sourceFilename,path:null,destination:expected?'explicit':'downloads',url:safe(()=>item.getURL(),''),state:'progress',receivedBytes:0,totalBytes:Math.max(0,safe(()=>item.getTotalBytes(),0)),updatedAt:Date.now(),error:null};this.records.set(id,record);if(expected)expected.recordId=id;
       let release=()=>{};
       try{const reservation=expected?this.destinations.explicit(expected.path):this.destinations.reserve(record.name);release=reservation.release;record.name=reservation.name;record.path=reservation.path;
         // Electron permits this only synchronously inside will-download. Do not
@@ -65,7 +67,7 @@ export class BrowserDownloads {
         // Detach before cancellation: native done(cancelled) must not overwrite
         // the interruption failure or cancel an explicit expectation twice.
         if(cancelNative)try{item.cancel();}catch{/* The failed record remains usable. */}
-        this.changed(record);if(record.state==='done')expected?.complete(record);else expected?.fail(new BrowserError('BROWSER_ERROR',record.state==='cancelled'?'下载已取消':'下载连接被中断'));
+        this.changed(record);if(record.state==='done')expected?.complete({...record,sourceFilename});else expected?.fail(new BrowserError('BROWSER_ERROR',record.state==='cancelled'?'下载已取消':'下载连接被中断'));
       };
       const updated=(_event:Electron.Event,state:string)=>{
         readProgress();this.changed(record);
@@ -81,13 +83,13 @@ export class BrowserDownloads {
   snapshot(taskId:string):BrowserDownload[]{return[...this.records.values()].filter(record=>record.taskId===taskId).reverse().map(record=>({...record}));}
   /** Arm before a guarded click; start only at its actual dispatch. The first
    * native event from this page consumes the override, never later downloads. */
-  expect(contents:WebContents,path:string,signal:AbortSignal):{result:Promise<BrowserDownload>;start:()=>void;claimed:()=>boolean;cancel:(error:unknown)=>void}{
+  expect(contents:WebContents,path:string,signal:AbortSignal):{result:Promise<ExpectedResult>;start:()=>void;claimed:()=>boolean;cancel:(error:unknown)=>void}{
     if(this.closed||!this.owners.has(contents)||contents.isDestroyed())throw new BrowserError('BROWSER_TAB_CLOSED','网页已关闭');
     if(!isAbsolute(path)||path.includes('\0')||!basename(path))throw new ApplicationError('INVALID_INPUT','下载保存路径无效');
     if(this.expected.has(contents))throw new ApplicationError('RESOURCE_BUSY','本页已有下载正在等待触发');
-    let accept!:(value:BrowserDownload)=>void,reject!:(error:unknown)=>void,settled=false;
-    const result=new Promise<BrowserDownload>((yes,no)=>{accept=yes;reject=no;});void result.catch(()=>{});
-    const finish=(error:unknown,record?:BrowserDownload)=>{
+    let accept!:(value:ExpectedResult)=>void,reject!:(error:unknown)=>void,settled=false;
+    const result=new Promise<ExpectedResult>((yes,no)=>{accept=yes;reject=no;});void result.catch(()=>{});
+    const finish=(error:unknown,record?:ExpectedResult)=>{
       if(settled)return;settled=true;if(this.expected.get(contents)===entry)this.expected.delete(contents);this.expectations.delete(entry);signal.removeEventListener('abort',aborted);
       if(record)accept({...record});else{const item=entry.recordId?this.live.get(entry.recordId)?.item:undefined;try{item?.cancel();}catch{/* Preserve the original operation failure. */}reject(error);}
     };
@@ -95,6 +97,14 @@ export class BrowserDownloads {
     const aborted=()=>entry.fail(signal.reason??new ApplicationError('CANCELED','下载操作已取消'));
     this.expected.set(contents,entry);this.expectations.add(entry);signal.addEventListener('abort',aborted,{once:true});if(signal.aborted)aborted();
     return{result,start:()=>{if(settled)throw signal.reason??new ApplicationError('CANCELED','下载操作已取消');entry.active=true;},claimed:()=>entry.recordId!==undefined,cancel:error=>entry.fail(error)};
+  }
+  retainScriptEvidence(download:ExpectedResult,path:string):void{
+    const record=this.records.get(download.id);
+    if(!record||record.taskId!==download.taskId||record.pageId!==download.pageId
+      ||record.state!=='done'||record.destination!=='explicit'||record.path!==download.path)return;
+    record.path=path;
+    record.name=download.sourceFilename;
+    this.changed(record);
   }
   async action(taskId:string,id:string,action:'cancel'|'open'|'reveal'|'remove'):Promise<void>{
     const record=this.records.get(id);if(!record||record.taskId!==taskId)throw new ApplicationError('SCOPE_DENIED','没有此任务的下载记录');

@@ -7,7 +7,7 @@ import { once } from 'node:events';
 import { createInterface } from 'node:readline';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BRIDGE_LIMITS, type BridgeBootstrap, type BridgeResponse } from '@shared/application-bridge';
+import { BRIDGE_LIMITS, boundedJson, type BridgeBootstrap, type BridgeResponse, type BridgeTool } from '@shared/application-bridge';
 import { applicationMcpServerName } from '@shared/application-session';
 import { ApplicationToolService } from '../tool-service';
 import { PrivateApplicationBroker } from '../private-broker';
@@ -311,6 +311,41 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
     const prepared = await ticket(), data = consumeBridgeBootstrap(prepared.bootstrapPath); expect(existsSync(prepared.bootstrapPath)).toBe(false); const client = new ApplicationBridgeClient(data);
     try { await client.start(); await Promise.all([client.renew(),client.renew()]); const response = await client.request('tools/call',{ operation: 'smartdd_zentao_query_v1',contractMajor: 1,connectionId: null,arguments: { value: 'controlled-value' } }); expect(response).toMatchObject({ status: 'ok',value: { value: 'controlled-value',projectId: 'p1',taskId: f.snapshot.taskId,packageHash: f.application!.packageHash } }); expect(count).toBe(1); const ledger = JSON.stringify(f.sqlite.prepare('SELECT * FROM application_invocations').all()); expect(ledger).not.toContain(data.secret); expect(ledger).not.toContain('controlled-value'); }
     finally { client.close(); }
+  });
+  it('returns a large browser catalog over the existing bridge without raising the result budget', async () => {
+    const fields = Object.fromEntries(Array.from({ length: 85 }, (_, index) => [
+      `field${index}`, { type: 'string', maxLength: 120 },
+    ]));
+    const catalog: BridgeTool[] = Array.from({ length: 80 }, (_, index) => ({
+      name: `smartdd_browser_fixture_${index}_v2`, description: 'Local browser tool',
+      inputSchema: { type: 'object', properties: { page: { type: 'string' } } },
+      outputSchema: { type: 'object', properties: fields },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      contractMajor: 2,
+    }));
+    const originalTool: BridgeTool = {
+      ...catalog[0], name: 'smartdd_zentao_query_v1', contractMajor: 1, outputSchema: { type: 'object' },
+    };
+    const value = { tools: [...catalog, originalTool], unavailable: [] };
+    expect(Buffer.byteLength(JSON.stringify(value))).toBeLessThan(BRIDGE_LIMITS.responseBytes);
+    expect(boundedJson(value)).toBe(false);
+    const list = vi.spyOn(tools, 'list').mockResolvedValueOnce({ tools: [catalog[0]], unavailable: [] }).mockResolvedValue(value);
+    const client = new ApplicationBridgeClient(consumeBridgeBootstrap((await ticket()).bootstrapPath));
+    try {
+      await client.start();
+      expect(await client.request('tools/list')).toMatchObject({ status: 'ok', value: { tools: [catalog[0]] } });
+      const listed = await client.request('tools/list');
+      expect(listed.status === 'ok' && listed.value).toEqual({
+        tools: [...catalog.map(({ outputSchema: _outputSchema, ...entry }) => entry), originalTool], unavailable: [],
+      });
+      expect(value.tools[0].outputSchema).toEqual({ type: 'object', properties: fields });
+      const call = vi.spyOn(tools, 'call').mockImplementation(async (_, id) => ({ schema: 1, id, status: 'ok', value }));
+      try {
+        await expect(client.request('tools/call', {
+          operation: 'smartdd_zentao_query_v1', contractMajor: 1, connectionId: null, arguments: {},
+        })).rejects.toMatchObject({ code: 'CAPABILITY_UNAVAILABLE' });
+      } finally { call.mockRestore(); }
+    } finally { client.close(); list.mockRestore(); }
   });
   it('rejects linked or over-permissioned bootstrap files without deleting other content', async () => {
     const prepared = await ticket(), original = readFileSync(prepared.bootstrapPath); chmodSync(prepared.bootstrapPath,0o644); expect(() => consumeBridgeBootstrap(prepared.bootstrapPath)).toThrow(); expect(existsSync(prepared.bootstrapPath)).toBe(true); chmodSync(prepared.bootstrapPath,0o600);

@@ -95,6 +95,12 @@ def willyou_usage(key, usage):
         rewritten += ' [--page <页面ID>]'
     if key == 'find':
         rewritten += ' [--name <名称>] [--exact true]'
+    if key in {'goto', 'click', 'fill', 'select'}:
+        rewritten += ' [--observeAfter <JSON对象>]'
+    if key == 'snapshot':
+        rewritten += ' [--container <CSS选择器>]'
+    if key in {'goto', 'click', 'fill', 'select', 'download'}:
+        rewritten += ' [--checkpoint <JSON对象>]'
     return rewritten
 
 
@@ -282,6 +288,14 @@ def obj(properties, required=None):
 def arr(items):
     return {'type': 'array', 'items': items}
 
+OBSERVATION_INPUT = obj({
+    **{key: {'type': 'string', 'minLength': 1, 'maxLength': 512} for key in ['container', 'selector', 'text']},
+    'timeout': {'type': 'integer', 'minimum': 1, 'maximum': 15000},
+}, [])
+ACTION_CHECKPOINT = obj({
+    'id': {'type': 'string'}, 'after': {'type': 'string'},
+    **{key: OBSERVATION_INPUT['properties'][key] for key in ['selector', 'text']},
+}, ['id', 'selector'])
 
 STRING, INTEGER, BOOLEAN = {'type': 'string'}, {'type': 'integer', 'minimum': 0}, {'type': 'boolean'}
 HASH = {'type': 'string', 'pattern': '^[a-f0-9]{64}$'}
@@ -295,7 +309,7 @@ ELEMENT_VALUE = {'anyOf': [STRING, {'type': 'number'}, BOOLEAN, {'type': 'null'}
 OUTPUTS = {
     'tab list': obj({'tabs': arr({'anyOf': [obj({**PAGE, 'kind': {'const': 'tab'}}), obj({**PAGE, 'kind': {'const': 'popup'}, 'openerPageId': STRING})]})}),
     'tab create': obj({'pageId': STRING, 'url': STRING}), 'goto': obj({'navigated': {'const': True}}),
-    'snapshot': {'anyOf': [ARTIFACT, obj({'origin': STRING, 'snapshot': STRING, 'refs': arr(obj({'ref': STRING, 'role': STRING, 'name': STRING, 'available': BOOLEAN}, ['ref', 'role', 'name'])), 'browserPageId': STRING, 'url': STRING, 'title': STRING}, ['snapshot', 'refs', 'browserPageId', 'url', 'title'])]},
+    'snapshot': {'anyOf': [ARTIFACT, obj({'origin': STRING, 'snapshot': STRING, 'refs': arr(obj({'ref': STRING, 'role': STRING, 'name': STRING, 'available': BOOLEAN}, ['ref', 'role', 'name'])), 'browserPageId': STRING, 'generation': STRING, 'url': STRING, 'title': STRING}, ['snapshot', 'refs', 'browserPageId', 'url', 'title'])]},
     'click': obj({'clicked': STRING, 'path': {'const': 'cdp'}, 'newTab': BOOLEAN, 'url': STRING, 'dialogOpened': BOOLEAN}, ['clicked']),
     'fill': obj({'filled': STRING}), 'type': obj({'typed': {'const': True}, 'progress': PROGRESS}), 'inserttext': obj({'typed': {'const': True}, 'progress': PROGRESS}),
     'wait': obj({'waited': {'const': True}}),
@@ -311,6 +325,12 @@ OUTPUTS = {
     'console': {'anyOf': [ARTIFACT, obj({'messages': arr(obj({'type': STRING, 'text': STRING, 'args': arr({})}, ['type', 'text']))})]},
     'network': {'anyOf': [ARTIFACT, obj({'requests': arr({'type': 'object'})})]},
 }
+for key in ['goto', 'click', 'fill', 'select']:
+    legacy = OUTPUTS.get(key, {'anyOf': [ARTIFACT, obj({'result': {}})]})
+    observed = obj({'state': {'enum': ['ready', 'timed-out', 'changed', 'unavailable']}, 'pageId': STRING,
+                    'generation': STRING, 'url': STRING, 'data': {}}, ['state', 'pageId'])
+    OUTPUTS[key] = {'anyOf': [legacy, obj({'action': obj({'state': {'enum': ['completed', 'unknown']}, 'result': legacy}),
+                                          'observation': observed})]}
 
 
 def runtime_contract(row):
@@ -327,6 +347,12 @@ def runtime_contract(row):
         if placeholder and '|' in placeholder:
             schema = {'type': 'string', 'enum': placeholder.split('|')}
         schema = COMMAND_FIELD_OVERRIDES.get((key, name), FIELD_OVERRIDES.get(name, schema))
+        if name == 'observeAfter':
+            schema = OBSERVATION_INPUT
+        if key == 'snapshot' and name == 'container':
+            schema = OBSERVATION_INPUT['properties']['container']
+        if name == 'checkpoint':
+            schema = ACTION_CHECKPOINT
         fields[name] = schema
         if not optional:
             required.append(name)
@@ -342,16 +368,63 @@ def runtime_contract(row):
         'id': capability_id, 'command': willyou(key).split()[1:],
         'semantics': 'read' if semantics == '读' else 'write',
         'input': {'type': 'object', 'properties': fields, 'required': required, 'additionalProperties': False},
-        'usage': usage, 'cases': ['M12-' + case for case in COVERAGE[key]],
+        'usage': usage, 'cases': ['M12-' + case for case in COVERAGE[key]] + (['M15-A17'] if 'observeAfter' in fields or 'container' in fields else []),
         'output': OUTPUTS.get(key, {'anyOf': [ARTIFACT, obj({'result': {}})]}),
     }
 
 
 catalogue = [runtime_contract(row) for row in rows if row[7] != '不适用']
-assert len(catalogue) == 82
+catalogue.append({
+    'id': 'browser.tab.open', 'command': ['browser', 'tab', 'open'], 'semantics': 'write',
+    'input': obj({
+        'url': {'type': 'string', 'maxLength': 8192}, 'pageId': STRING, 'profileId': STRING,
+        'intent': {'enum': ['reuse-or-new', 'new']}, 'presentation': {'enum': ['show', 'background']},
+        'ready': obj({key: OBSERVATION_INPUT['properties'][key] for key in ['selector', 'text', 'timeout']}, []),
+    }, []),
+    'usage': 'willyou-app browser tab open (--url <网址> | --pageId <标签ID>) [--intent <reuse-or-new|new>] [--presentation <show|background>] [--profileId <身份ID>] [--ready <JSON对象>]',
+    'cases': ['M15-A01', 'M15-A02', 'M15-A03', 'M15-A04', 'M15-A05', 'M15-A06', 'M15-A07', 'M15-A08', 'M15-A09'],
+    'output': obj({'pageId': STRING, 'url': STRING, 'operationId': STRING, 'reused': BOOLEAN,
+                   'presentation': {'enum': ['show', 'background']}, 'phase': {'enum': ['loading', 'ready', 'failed', 'cancelled', 'unknown']}}),
+})
+SCRIPT_ID = obj({'executionId': STRING})
+SCRIPT_RESULT = obj({'result': {'type': 'object'}})
+SCRIPT_EXECUTE = obj({
+        'executionId': STRING, 'bundle': STRING, 'revision': HASH, 'pageId': STRING, 'origin': STRING,
+        'cases': {'type': 'array', 'items': STRING, 'minItems': 1, 'maxItems': 32, 'uniqueItems': True},
+        'timeout': {'type': 'integer', 'minimum': 1000, 'maximum': 300000},
+}, ['executionId', 'bundle', 'revision', 'pageId', 'origin', 'cases'])
+SCRIPT_USAGE = '--executionId <执行编号> --bundle <冻结目录> --revision <摘要> --pageId <标签ID> --origin <站点来源> --cases <JSON数组> [--timeout <ms>]'
+for name, meaning, params, usage in [
+    ('run', 'write', SCRIPT_EXECUTE, SCRIPT_USAGE),
+    ('resume', 'write', SCRIPT_EXECUTE, SCRIPT_USAGE),
+    ('status', 'read', SCRIPT_ID, '--executionId <执行编号>'),
+    ('pause', 'write', SCRIPT_ID, '--executionId <执行编号>'),
+    ('stop', 'write', SCRIPT_ID, '--executionId <执行编号>'),
+]:
+    catalogue.append({
+        'id': 'browser.script.' + name, 'command': ['browser', 'script', name],
+        'semantics': meaning, 'input': params, 'output': SCRIPT_RESULT,
+        'usage': 'willyou-app browser script ' + name + ' ' + usage,
+        'cases': ['M15-A22', 'M15-A23', 'M15-A24', 'M15-A25', 'M15-A26', 'M15-A27', 'M15-A28', 'M15-A29', 'M15-A30', 'M15-A31', 'M15-A32'],
+    })
+catalogue.append({
+    'id': 'browser.login.wait', 'command': ['browser', 'login', 'wait'], 'semantics': 'write',
+    'input': obj({'pageId': STRING, 'origin': STRING, 'readySelector': STRING, 'checkpoint': STRING}),
+    'output': obj({'result': {'type': 'object'}}),
+    'usage': 'willyou-app browser login wait --pageId <原标签ID> --origin <站点来源> --readySelector <选择器> --checkpoint <接续位置>',
+    'cases': ['M15-A10', 'M15-A11', 'M15-A12', 'M15-A13', 'M15-A14', 'M15-A15'],
+})
+for name in ['status', 'verify']:
+    catalogue.append({
+        'id': 'browser.checkpoint.' + name, 'command': ['browser', 'checkpoint', name], 'semantics': 'read',
+        'input': obj({'checkpointId': STRING}), 'output': obj({'result': {'type': 'object'}}),
+        'usage': 'willyou-app browser checkpoint ' + name + ' --checkpointId <原检查点编号>',
+        'cases': ['M15-A19', 'M15-A20', 'M15-A21'],
+    })
+assert len(catalogue) == 91
 assert len({item['id'] for item in catalogue}) == len(catalogue), 'duplicate capability id'
 assert len({tuple(item['command']) for item in catalogue}) == len(catalogue), 'duplicate CLI command'
-assert sum(item['semantics'] == 'read' for item in catalogue) == 21
+assert sum(item['semantics'] == 'read' for item in catalogue) == 24
 for item in catalogue:
     assert all(name in item['input']['properties'] for name in item['input']['required'])
 with open(RUNTIME_OUT, 'w', encoding='utf-8') as f:

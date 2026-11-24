@@ -55,7 +55,9 @@ export function protectBrowserSummary(command:string,summary:unknown,auditRecord
 export class BrowserAudit {
   constructor(private readonly operations:BrowserOperations){}
   start(scope:{runId:string;requestId:string;taskId:string;projectId:string},command:string,args:Record<string,unknown>,read:boolean){
-    const key='audit:'+scope.requestId,record=this.operations.begin(scope.runId,key,scope.taskId,null,command);
+    const key='audit:'+scope.requestId;
+    const previous=this.operations.get(scope.runId,key);
+    const record=this.operations.begin(scope.runId,key,scope.taskId,previous?.page_id??null,command);
     let summary:BrowserCommandAudit={schema:'browser-audit-v1',actor:'agent',projectId:scope.projectId,targetTaskId:typeof args.task==='string'?args.task:scope.taskId,semantics:read?'read':'write',arguments:browserAuditValue(command,args,'arguments'),result:null,authorization:null,authorizations:[],passwordFill:null};
     const save=(state:BrowserOperation['state'],effect:string,code?:string)=>{if(!record.replay)this.operations.update(scope.runId,key,state,effect,{summary,code});};
     save('running',read?'read-only':'not-started');

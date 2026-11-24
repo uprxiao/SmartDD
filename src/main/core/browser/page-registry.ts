@@ -121,9 +121,9 @@ export class BrowserPageRegistry {
     })();
     return contents;
   }
-  async navigate(page:BrowserPage,url:string,signal?:AbortSignal):Promise<void>{
+  async navigate(page:BrowserPage,url:string,signal?:AbortSignal,stopOwnedLoad=false):Promise<void>{
     this.options.profiles?.assertAvailable(page.profileId);
-    await this.navigateOwned(page,url,signal);
+    await this.navigateOwned(page,url,signal,stopOwnedLoad);
   }
   /** Import coordinator only: keep its lifecycle lock through the reload so
    * deletion/another import cannot race the final navigation batch. */
@@ -132,13 +132,18 @@ export class BrowserPageRegistry {
     page.abort=new AbortController();page.importPaused=false;
     await this.navigateOwned(page,url,signal);
   }
-  private async navigateOwned(page:BrowserPage,url:string,signal?:AbortSignal):Promise<void>{
+  private async navigateOwned(page:BrowserPage,url:string,signal?:AbortSignal,stopOwnedLoad=false):Promise<void>{
     const navigationSignal=signal?AbortSignal.any([page.abort.signal,signal]):page.abort.signal;
     if(navigationSignal.aborted)throw navigationSignal.reason??new BrowserError('BROWSER_TAB_CLOSED','网页已关闭');
     let normalized:string;
     try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();normalized=parsed.href;}catch{throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s)、file 或 about:blank 地址');}
     const request={};this.navigationRequests.set(page,request);page.references.invalidate(true);page.hostNavigation=normalized;
-    const navigation=(async()=>{try{await loadBrowserUrl(page.contents,normalized,navigationSignal);}finally{if(this.navigationRequests.get(page)===request){this.navigationRequests.delete(page);page.hostNavigation=null;}}})();
+    const stop=()=>{if(this.navigationRequests.get(page)===request&&!page.contents.isDestroyed())page.contents.stop();};
+    if(stopOwnedLoad)navigationSignal.addEventListener('abort',stop,{once:true});
+    const navigation=(async()=>{try{await loadBrowserUrl(page.contents,normalized,navigationSignal);}finally{
+      navigationSignal.removeEventListener('abort',stop);
+      if(this.navigationRequests.get(page)===request){this.navigationRequests.delete(page);page.hostNavigation=null;}
+    }})();
     await awaitBrowserNavigation(navigation,navigationSignal);
   }
   async placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{

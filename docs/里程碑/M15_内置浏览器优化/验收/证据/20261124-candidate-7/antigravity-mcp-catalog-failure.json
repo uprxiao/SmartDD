@@ -1,0 +1,158 @@
+{
+  "appSha256": "244e4233925c026fea60adf33aba3a529db397447f8046fce8feda75b4aa0921",
+  "appExecutableSha256": "2e69a9b554f9c6ace2dd3e807773304d4961b3093bea1534a1069f371ea77811",
+  "agySha256": "e8c2959bf4744580d0e5b8f938ec2dc3918a942b620a6262e53856400f14e5fb",
+  "root": "/private/tmp/willyou-m15-a28-agy-run-AKbOlB",
+  "mode": "legacy",
+  "host": {
+    "arch": "arm64",
+    "kernel": "25.6.0",
+    "cpus": 16,
+    "initialLoad": [
+      17.91064453125,
+      20.078125,
+      19.49658203125
+    ]
+  },
+  "driverSha256": "da2bb01549545de871b68707d622808fca2823fe65230fbc792721a09719d237",
+  "fixtureSha256": "e1d0c0da3b19f092327365a2d7f1a31d3e89981f16a457d2913b83793ba6451d",
+  "samples": [],
+  "cases": {},
+  "model": [
+    {
+      "at": 1795490637370,
+      "model": "gemini-4-carbon",
+      "route": "streamGenerateContent",
+      "step": null,
+      "toolNames": [
+        "wy_ping"
+      ],
+      "toolGroupKeys": [
+        [
+          "functionDeclarations"
+        ]
+      ],
+      "auxiliary": false,
+      "called": "wy_ping",
+      "resultReceipt": false
+    },
+    {
+      "at": 1795490637390,
+      "model": "gemini-4-carbon",
+      "route": "streamGenerateContent",
+      "step": null,
+      "toolNames": [
+        "wy_ping"
+      ],
+      "toolGroupKeys": [
+        [
+          "functionDeclarations"
+        ]
+      ],
+      "auxiliary": false,
+      "called": null,
+      "resultReceipt": false
+    },
+    {
+      "at": 1795490638760,
+      "model": "gemini-3.1-flash-lite-preview",
+      "route": "streamGenerateContent",
+      "step": "tab_create-10f322b5b432",
+      "toolNames": [],
+      "toolGroupKeys": [],
+      "auxiliary": true,
+      "called": null,
+      "resultReceipt": false
+    },
+    {
+      "at": 1795490638760,
+      "model": "gemini-4-carbon",
+      "route": "streamGenerateContent",
+      "step": "tab_create-10f322b5b432",
+      "toolNames": [
+        "read_file",
+        "run_command",
+        "manage_task",
+        "send_message",
+        "schedule",
+        "invoke_subagent",
+        "define_subagent",
+        "manage_subagents",
+        "write_file",
+        "edit_file",
+        "search_web",
+        "run_workflow",
+        "swarm",
+        "ask_question"
+      ],
+      "toolGroupKeys": [
+        [
+          "functionDeclarations"
+        ]
+      ],
+      "auxiliary": false,
+      "rejected": "Exactly one current browser MCP declaration required for tab_create. Observed declarations: [\"read_file\",\"run_command\",\"manage_task\",\"send_message\",\"schedule\",\"invoke_subagent\",\"define_subagent\",\"manage_subagents\",\"write_file\",\"edit_file\",\"search_web\",\"run_workflow\",\"swarm\",\"ask_question\"]\n\n0 !== 1\n"
+    }
+  ],
+  "failures": [
+    {
+      "stage": "mcp-tab_create",
+      "error": "Error: Exactly one current browser MCP declaration required for tab_create. Observed declarations: [\"read_file\",\"run_command\",\"manage_task\",\"send_message\",\"schedule\",\"invoke_subagent\",\"define_subagent\",\"manage_subagents\",\"write_file\",\"edit_file\",\"search_web\",\"run_workflow\",\"swarm\",\"ask_question\"]\n\n0 !== 1\n\n    at file:///private/tmp/willyou-m15-a28-agy.Mm5nPcX1/candidate-a28-agy-declaration-trace.mjs:189:34\n    at until (file:///private/tmp/willyou-m15-a28-agy.Mm5nPcX1/candidate-a28-agy-declaration-trace.mjs:63:25)\n    at async issue (file:///private/tmp/willyou-m15-a28-agy.Mm5nPcX1/candidate-a28-agy-declaration-trace.mjs:188:3)\n    at async file:///private/tmp/willyou-m15-a28-agy.Mm5nPcX1/candidate-a28-agy-declaration-trace.mjs:276:17"
+    }
+  ],
+  "startedAt": "2026-11-24T03:23:51.501Z",
+  "isolation": {
+    "preEntry": {
+      "pid": 35238,
+      "mode": "synthetic-private-cipher-pre-entry",
+      "home": "/private/tmp/willyou-m15-a28-agy-run-AKbOlB/home"
+    },
+    "postEntry": {
+      "pid": true,
+      "executable": true,
+      "home": true,
+      "data": true,
+      "fixture": true
+    }
+  },
+  "agyVersion": "1.5.14",
+  "providerCheck": {
+    "availability": "available",
+    "check": {
+      "status": "available",
+      "attempts": 1,
+      "durationMs": 31,
+      "message": "Gemini 流式工具调用和回传验证通过",
+      "checkedAt": 1795490637390,
+      "failures": []
+    },
+    "modelId": "gemini-4-carbon"
+  },
+  "status": "failed",
+  "cipherRestored": "restored",
+  "exit": {
+    "pid": 35238,
+    "code": 0,
+    "signal": null
+  },
+  "steps": [
+    {
+      "name": "tab_create-10f322b5b432",
+      "operation": "tab_create",
+      "input": {
+        "url": "http://127.0.0.1:51913/a28-agy-legacy/open?legacy=first"
+      },
+      "fixtureFailure": "Exactly one current browser MCP declaration required for tab_create. Observed declarations: [\"read_file\",\"run_command\",\"manage_task\",\"send_message\",\"schedule\",\"invoke_subagent\",\"define_subagent\",\"manage_subagents\",\"write_file\",\"edit_file\",\"search_web\",\"run_workflow\",\"swarm\",\"ask_question\"]\n\n0 !== 1\n"
+    }
+  ],
+  "modelFixtureErrors": [
+    {
+      "message": "Exactly one current browser MCP declaration required for tab_create. Observed declarations: [\"read_file\",\"run_command\",\"manage_task\",\"send_message\",\"schedule\",\"invoke_subagent\",\"define_subagent\",\"manage_subagents\",\"write_file\",\"edit_file\",\"search_web\",\"run_workflow\",\"swarm\",\"ask_question\"]\n\n0 !== 1\n"
+    }
+  ],
+  "rejectedOutboundOrUnknownRoutes": [],
+  "site": [],
+  "finishedAt": "2026-11-24T03:23:59.109Z",
+  "sameAsarAfterRun": true,
+  "sameAgyAfterRun": true
+}

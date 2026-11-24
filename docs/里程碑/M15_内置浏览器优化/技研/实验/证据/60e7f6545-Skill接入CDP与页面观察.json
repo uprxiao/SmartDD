@@ -1,0 +1,209 @@
+{
+  "environment": {
+    "commit": "60e7f65452e96f2f76c9fa82725f972822d2091a",
+    "sourceArchiveSha256": "9e33b2e682f9fde3020ace8568c8e29017c018eba649374e4e3e8996b3fc60ef",
+    "helperSha256": "c4064fb1eb9b66cbf3c819222182096e682076035549f49b784188545f4c8974",
+    "skillBaseline": "21d2f1897de8c35a3398a11c79be00a8a753ab0b1561924405a1587e5b45a074",
+    "skillDriverSha256": "e7fe7182f434881f2b0a4d6ae3a9419417f01a2161ca3b4ce63200321f82096e",
+    "studyDriverSha256": "ca646609b6e5e7455ed66e212f2e1350becc200baec41a1155d961caf8ee9ef3",
+    "caseInputSha256": "5c511651ce2e7292f157414a0c322720f1fd2c419850c14546b4572dcf9540d3",
+    "generatedSuiteSha256": "5fb77c43cd1a508ef12c03ab98b8e54549d9766683eb801a36c9389abd832ac3",
+    "fixtureVersions": {
+      "react": "18.3.1",
+      "antd": "6.4.4",
+      "smart-frame": "1.0.6-test3"
+    },
+    "fixtureWrites": 0,
+    "exit": {
+      "code": 0,
+      "signal": null
+    }
+  },
+  "result": {
+    "time": "2026-11-23T23:25:11.976Z",
+    "electron": "42.11.14",
+    "chromium": "148.0.7778.280",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cases": {
+      "generatedCase": {
+        "methods": {
+          "Page.getFrameTree": 1,
+          "Runtime.evaluate": 35,
+          "Input.dispatchKeyEvent": 4,
+          "Input.dispatchMouseEvent": 9,
+          "Page.captureScreenshot": 1,
+          "Accessibility.getFullAXTree": 1
+        },
+        "result": {
+          "status": "passed",
+          "caseId": "CATALOG-CHOICE",
+          "baselineRevision": "21d2f1897de8c35a3398a11c79be00a8a753ab0b1561924405a1587e5b45a074",
+          "suiteResult": "passed",
+          "assertions": [
+            {
+              "id": "labels",
+              "actual": [
+                "Option 1"
+              ],
+              "expected": [
+                "Option 1"
+              ],
+              "status": "passed"
+            }
+          ],
+          "operations": [
+            {
+              "operation": "select.choose",
+              "stepId": "selection",
+              "controlIds": [
+                "catalog-choice"
+              ]
+            }
+          ],
+          "before": [
+            "catalog"
+          ],
+          "after": [
+            "teams"
+          ],
+          "selection": [
+            "Option 1"
+          ],
+          "screenshot": {
+            "file": "selected.png",
+            "bytes": 110101,
+            "sha256": "0efd7698aab1da2c141c5ccdd6e63e06991f507d7e70946c42d0312bc89c4e45"
+          },
+          "diagnostics": {
+            "interactions": {
+              "clickAttempts": 3,
+              "clicks": 3,
+              "geometryChecks": 9,
+              "hoverAttempts": 0,
+              "hovers": 0,
+              "tooltipHoverRecoveries": 0,
+              "focusedInputReuses": 0,
+              "mouseMovedMs": 3,
+              "mousePressedMs": 11,
+              "mouseReleasedMs": 19
+            },
+            "slowMouseEvents": []
+          },
+          "foreignTargetDenied": true,
+          "freshAXHeading": "teams"
+        },
+        "revoked": false,
+        "sameMountedView": true,
+        "originalPageLoginMarkerPreserved": true,
+        "otherTaskUntouched": true,
+        "screenshotSha256": "0efd7698aab1da2c141c5ccdd6e63e06991f507d7e70946c42d0312bc89c4e45",
+        "screenshotPixels": [
+          2560,
+          1640
+        ]
+      },
+      "cancel": {
+        "methods": {
+          "Page.getFrameTree": 1,
+          "Runtime.evaluate": 1
+        },
+        "result": {
+          "status": "cancelled",
+          "reason": "Owned page connection closed",
+          "elapsedMs": 0
+        },
+        "revoked": true,
+        "sameMountedView": true
+      },
+      "hostDownload": {
+        "state": "done",
+        "samePage": true,
+        "bytes": 22,
+        "contentsVerified": true,
+        "foreignTaskRows": 0
+      }
+    },
+    "error": null
+  },
+  "studySources": {
+    "run-skill-cdp-study.mjs": "293166edd36aaa23a9b6270e0d1445952912fed24f789019c8d0520c59d5c18d",
+    "skill-cdp-study.ts": "84b5fb701b2f3afc9e940f99ab9b73e44649e818d2bdcdb4d141197a3bc22cfb",
+    "skill-cdp-study-worker.mjs": "175a3ea93d413700d03e0fa336bcde4087646d92cfbb497b5f1b4ef606984344"
+  },
+  "firstAttempt": {
+    "status": "harness-failed",
+    "actualScreenshotShows": "Option 1",
+    "failure": "Independent read used incomplete AntD selection-class selectors and returned an empty array",
+    "screenshotSha256": "ccaa6abe79fdfb2dfeaa2b7eb96e9f0652acc869794dd3bc52d8c86ea56472d8"
+  },
+  "standaloneNegativeControl": {
+    "runMode": "independent-Chrome",
+    "switch": "--business-checkpoint",
+    "driverSelfTest": "passed",
+    "checks": [
+      {
+        "id": "CATALOG-CHOICE",
+        "status": "failed",
+        "criteria": {
+          "labels": "failed",
+          "readback": "not_run"
+        },
+        "assertions": [
+          {
+            "message": "Visible selected option",
+            "passed": false,
+            "details": {
+              "actual": [
+                "Option 1"
+              ],
+              "expected": [
+                "Option 7"
+              ]
+            },
+            "id": "labels"
+          }
+        ]
+      },
+      {
+        "id": "TEAMS-CHOICE",
+        "status": "passed",
+        "criteria": {
+          "labels": "passed",
+          "readback": "passed"
+        },
+        "assertions": [
+          {
+            "message": "Visible selected option",
+            "passed": true,
+            "details": {
+              "actual": [
+                "Option 2"
+              ],
+              "expected": [
+                "Option 2"
+              ]
+            },
+            "id": "labels"
+          },
+          {
+            "message": "Independent follow-up selection",
+            "passed": true,
+            "details": {
+              "actual": [
+                "Option 2"
+              ],
+              "expected": [
+                "Option 2"
+              ]
+            },
+            "id": "readback"
+          }
+        ]
+      }
+    ],
+    "screenshotSha256": "28d2fd95c28e182cd681ad1287acd81b4d6aa44cbe2e84fd1bdae8e7d5499ad0",
+    "browserClosed": true,
+    "profileRemoved": true
+  }
+}

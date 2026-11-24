@@ -14,7 +14,7 @@ import type {BrowserAuthPrompt,BrowserAuthCancelled} from '@shared/browser-auth'
 import type {BrowserJavascriptDialog} from '@shared/browser-javascript-dialog';
 
 type Runtime=Pick<BrowserTabState,'loading'|'canGoBack'|'canGoForward'|'failure'>;
-type PendingNavigation={url:string};
+type PendingNavigation={url:string;agent?:true;cancel?:()=>void};
 const idle=():Runtime=>({loading:false,canGoBack:false,canGoForward:false,failure:null});
 /** UI tab state has its own database keys. Live views remain owned by the registry. */
 export class BrowserWorkspace {
@@ -63,6 +63,68 @@ export class BrowserWorkspace {
     this.options.changed?.(taskId);
   }
   private changed(taskId:string):void{this.options.changed?.(taskId);}
+  /** Read the user's active identity before consulting the Agent's own target. */
+  currentProfile(taskId:string):string{
+    const state=this.load(taskId);
+    return state.tabs.find(tab=>tab.id===state.activeId)?.profileId??browserProjectProfile(this.project(taskId));
+  }
+  savedTab(taskId:string,id:string){
+    return this.load(taskId).tabs.find(tab=>tab.id===id);
+  }
+  reserveAgentOpen(taskId:string,input:{pageId?:string;url?:string;profileId:string;forceNew:boolean}){
+    const state=this.load(taskId);
+    const matches=state.tabs.filter(tab=>input.pageId?tab.id===input.pageId:
+      !input.forceNew&&tab.profileId===input.profileId&&(this.pendingNavigations.get(tab.id)?.url??tab.url)===input.url);
+    const existing=matches.find(tab=>tab.id===state.activeId)??matches[0];
+    if(existing){
+      return{pageId:existing.id,profileId:existing.profileId,reused:true,url:this.pendingNavigations.get(existing.id)?.url??existing.url};
+    }
+    if(input.pageId||!input.url)throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有指定的网页标签');
+    const id=randomUUID();
+    const pending:PendingNavigation={url:input.url,agent:true};
+    state.tabs.push({id,url:BROWSER_BLANK_URL,title:'新标签页',favicon:null,profileId:input.profileId});
+    this.pendingNavigations.set(id,pending);
+    this.save(taskId);
+    return{pageId:id,profileId:input.profileId,reused:false,url:input.url};
+  }
+  async loadAgentOpen(taskId:string,id:string,signal:AbortSignal,authorize:()=>void){
+    const request=this.pendingNavigations.get(id);
+    const controller=new AbortController();
+    const combined=AbortSignal.any([signal,controller.signal]);
+    if(request?.agent)request.cancel=()=>controller.abort(new ApplicationError('CANCELED','标签导航已被取消或替换'));
+    try{
+      const page=await this.ensure(taskId,id);
+      if(!request?.agent)return page;
+      const loadingSignal=AbortSignal.any([combined,page.abort.signal]);
+      loadingSignal.throwIfAborted();
+      authorize();
+      if(this.pendingNavigations.get(id)!==request)throw new ApplicationError('CANCELED','标签导航已被替换');
+      await this.options.pages.navigate(page,request.url,loadingSignal,true);
+      loadingSignal.throwIfAborted();
+      authorize();
+      return page;
+    }catch(error){
+      if(!combined.aborted&&request?.agent&&this.pendingNavigations.get(id)===request){
+        this.runtime.set(id,{...idle(),failure:describeBrowserLoadFailure(-2,'ERR_FAILED',request.url)});
+      }
+      throw error;
+    }finally{
+      if(request?.agent&&this.pendingNavigations.get(id)===request){
+        this.pendingNavigations.delete(id);
+        this.changed(taskId);
+      }
+    }
+  }
+  private clearPendingNavigation(id:string):boolean{
+    const request=this.pendingNavigations.get(id);
+    if(!request)return false;
+    this.pendingNavigations.delete(id);
+    request.cancel?.();
+    return true;
+  }
+  abandonAgentOpen(taskId:string,id:string):void{
+    if(this.pendingNavigations.get(id)?.agent&&this.clearPendingNavigation(id))this.changed(taskId);
+  }
   snapshot(taskId:string):BrowserWorkspaceState{
     const state=this.load(taskId),projectId=this.project(taskId);
     const row=this.options.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserRecent.v1:'+projectId) as {value:string}|undefined;
@@ -163,7 +225,7 @@ export class BrowserWorkspace {
   async navigate(taskId:string,id:string,address:string,engine:BrowserSearchEngine=this.options.searchEngine?.()??'bing'):Promise<BrowserWorkspaceState>{
     const url=normalizeBrowserNavigationUrl(address,engine);if(url===null){this.notices.set(taskId,'请输入有效的 http(s) 或 localhost 地址');this.changed(taskId);return this.snapshot(taskId);}
     this.notices.delete(taskId);const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
-    if(this.pendingNavigations.delete(id))this.changed(taskId);
+    if(this.clearPendingNavigation(id))this.changed(taskId);
     if(url===BROWSER_BLANK_URL){const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live){this.closingTabs.add(id);try{await this.options.pages.close(taskId,id);}finally{this.closingTabs.delete(id);}}tab.url=url;tab.title='新标签页';tab.favicon=null;this.runtime.delete(id);this.save(taskId);}
     else{const page=await this.ensure(taskId,id);await this.loadUrl(page,url);}
     return this.snapshot(taskId);
@@ -176,7 +238,7 @@ export class BrowserWorkspace {
   }
   async action(taskId:string,id:string,action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'):Promise<void>{
     const tab=this.load(taskId).tabs.find(tab=>tab.id===id);
-    if(action==='stop'&&tab&&this.pendingNavigations.delete(id)){
+    if(action==='stop'&&tab&&this.clearPendingNavigation(id)){
       const page=this.options.pages.list(taskId).find(page=>page.id===id);
       if(page)this.stopLoading(page);
       this.changed(taskId);
@@ -238,7 +300,7 @@ export class BrowserWorkspace {
   async close(taskId:string,id:string,fromPageQueue=false):Promise<BrowserWorkspaceState>{
     const changing=this.profileChanges.get(id);if(changing)await changing;
     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return this.snapshot(taskId);
-    this.pendingNavigations.delete(id);this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending.catch(()=>undefined);
+    this.clearPendingNavigation(id);this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending.catch(()=>undefined);
     this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id,fromPageQueue);}finally{this.closingTabs.delete(id);}
     state.closed=[...state.closed,tab].slice(-10);state.tabs=state.tabs.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.tabs.at(-1)?.id??null;this.runtime.delete(id);this.save(taskId);return this.snapshot(taskId);
   }

@@ -1,4 +1,5 @@
 import { ApplicationError } from '@shared/applications';
+import {browserDigest} from '../../../browser/artifacts';
 import commands from '@shared/browser-commands.generated.json';
 import type { ApplicationModuleData, ApplicationModuleDefinition, ApplicationModuleServices, ApplicationModuleCapability } from '../registry';
 import type { ApplicationExecutionContext } from '../../execution-context';
@@ -42,8 +43,16 @@ class BrowserModuleData implements ApplicationModuleData {
     if(!input||typeof input!=='object'||Array.isArray(input))throw new ApplicationError('INVALID_INPUT','浏览器参数必须为对象');
     const service=this.services.retained.get('browser') as BrowserService|undefined;
     if(!service)throw new ApplicationError('BROWSER_UNAVAILABLE','浏览器主进程服务尚未就绪');
+    const projectId=context.projectId;
+    const policy=JSON.stringify(this.services.selections.policyStamp(projectId,'browser'));
     return service.execute({projectId:context.projectId,taskId:context.taskId,runId:runtime.runId,requestId:caller.requestId,
-      operationId:context.operationId,signal:context.signal,runSignal,assertActive:()=>this.services.contexts.require(context,rule.permission)},
+      operationId:context.operationId,signal:context.signal,runSignal,assertActive:()=>this.services.contexts.require(context,rule.permission),
+      policyDigest:browserDigest(policy),
+      assertRetained:()=>{
+        if(runSignal.aborted||policy!==JSON.stringify(this.services.selections.policyStamp(projectId,'browser')))
+          throw new ApplicationError('SCOPE_DENIED','浏览器运行或授权已变化');
+        this.services.selections.requireApplicationEnabled(projectId,'browser');
+      }},
       command.command.slice(1).join(' '),input as Record<string,unknown>);
   }
 }

@@ -175,15 +175,21 @@
             "boolean"
           ],
           "maxLength": 262144
+        },
+        "container": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
         }
       },
       "required": [],
       "additionalProperties": false
     },
-    "usage": "willyou-app browser snapshot [--task <任务ID>] [--page <页面ID>]",
+    "usage": "willyou-app browser snapshot [--task <任务ID>] [--page <页面ID>] [--container <CSS选择器>]",
     "cases": [
       "M12-T050",
-      "M12-T051"
+      "M12-T051",
+      "M15-A17"
     ],
     "output": {
       "anyOf": [
@@ -259,6 +265,9 @@
               }
             },
             "browserPageId": {
+              "type": "string"
+            },
+            "generation": {
               "type": "string"
             },
             "url": {
@@ -402,6 +411,59 @@
             "boolean"
           ],
           "maxLength": 262144
+        },
+        "observeAfter": {
+          "type": "object",
+          "properties": {
+            "container": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string"
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "id",
+            "selector"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -409,21 +471,92 @@
       ],
       "additionalProperties": false
     },
-    "usage": "willyou-app browser goto --url <url> [--task <任务ID>] [--page <页面ID>]",
+    "usage": "willyou-app browser goto --url <url> [--task <任务ID>] [--page <页面ID>] [--observeAfter <JSON对象>] [--checkpoint <JSON对象>]",
     "cases": [
-      "M12-T072"
+      "M12-T072",
+      "M15-A17"
     ],
     "output": {
-      "type": "object",
-      "properties": {
-        "navigated": {
-          "const": true
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "navigated": {
+              "const": true
+            }
+          },
+          "required": [
+            "navigated"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "completed",
+                    "unknown"
+                  ]
+                },
+                "result": {
+                  "type": "object",
+                  "properties": {
+                    "navigated": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "navigated"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "state",
+                "result"
+              ],
+              "additionalProperties": false
+            },
+            "observation": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "ready",
+                    "timed-out",
+                    "changed",
+                    "unavailable"
+                  ]
+                },
+                "pageId": {
+                  "type": "string"
+                },
+                "generation": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "data": {}
+              },
+              "required": [
+                "state",
+                "pageId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "action",
+            "observation"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "navigated"
-      ],
-      "additionalProperties": false
+      ]
     }
   },
   {
@@ -1158,6 +1291,59 @@
             "boolean"
           ],
           "maxLength": 262144
+        },
+        "observeAfter": {
+          "type": "object",
+          "properties": {
+            "container": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string"
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "id",
+            "selector"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1165,33 +1351,116 @@
       ],
       "additionalProperties": false
     },
-    "usage": "willyou-app browser click --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "usage": "willyou-app browser click --element <ref> [--task <任务ID>] [--page <页面ID>] [--observeAfter <JSON对象>] [--checkpoint <JSON对象>]",
     "cases": [
-      "M12-T061"
+      "M12-T061",
+      "M15-A17"
     ],
     "output": {
-      "type": "object",
-      "properties": {
-        "clicked": {
-          "type": "string"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "clicked": {
+              "type": "string"
+            },
+            "path": {
+              "const": "cdp"
+            },
+            "newTab": {
+              "type": "boolean"
+            },
+            "url": {
+              "type": "string"
+            },
+            "dialogOpened": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "clicked"
+          ],
+          "additionalProperties": false
         },
-        "path": {
-          "const": "cdp"
-        },
-        "newTab": {
-          "type": "boolean"
-        },
-        "url": {
-          "type": "string"
-        },
-        "dialogOpened": {
-          "type": "boolean"
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "completed",
+                    "unknown"
+                  ]
+                },
+                "result": {
+                  "type": "object",
+                  "properties": {
+                    "clicked": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "const": "cdp"
+                    },
+                    "newTab": {
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "type": "string"
+                    },
+                    "dialogOpened": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "clicked"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "state",
+                "result"
+              ],
+              "additionalProperties": false
+            },
+            "observation": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "ready",
+                    "timed-out",
+                    "changed",
+                    "unavailable"
+                  ]
+                },
+                "pageId": {
+                  "type": "string"
+                },
+                "generation": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "data": {}
+              },
+              "required": [
+                "state",
+                "pageId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "action",
+            "observation"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "clicked"
-      ],
-      "additionalProperties": false
+      ]
     }
   },
   {
@@ -1330,6 +1599,59 @@
             "boolean"
           ],
           "maxLength": 262144
+        },
+        "observeAfter": {
+          "type": "object",
+          "properties": {
+            "container": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string"
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "id",
+            "selector"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1338,22 +1660,93 @@
       ],
       "additionalProperties": false
     },
-    "usage": "willyou-app browser fill --element <ref> --value <text> [--task <任务ID>] [--page <页面ID>]",
+    "usage": "willyou-app browser fill --element <ref> --value <text> [--task <任务ID>] [--page <页面ID>] [--observeAfter <JSON对象>] [--checkpoint <JSON对象>]",
     "cases": [
       "M12-T063",
-      "M12-T064"
+      "M12-T064",
+      "M15-A17"
     ],
     "output": {
-      "type": "object",
-      "properties": {
-        "filled": {
-          "type": "string"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "filled": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "filled"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "completed",
+                    "unknown"
+                  ]
+                },
+                "result": {
+                  "type": "object",
+                  "properties": {
+                    "filled": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "filled"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "state",
+                "result"
+              ],
+              "additionalProperties": false
+            },
+            "observation": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "ready",
+                    "timed-out",
+                    "changed",
+                    "unavailable"
+                  ]
+                },
+                "pageId": {
+                  "type": "string"
+                },
+                "generation": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "data": {}
+              },
+              "required": [
+                "state",
+                "pageId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "action",
+            "observation"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "filled"
-      ],
-      "additionalProperties": false
+      ]
     }
   },
   {
@@ -1509,6 +1902,59 @@
             "boolean"
           ],
           "maxLength": 262144
+        },
+        "observeAfter": {
+          "type": "object",
+          "properties": {
+            "container": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string"
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "id",
+            "selector"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1517,55 +1963,164 @@
       ],
       "additionalProperties": false
     },
-    "usage": "willyou-app browser select --element <ref> --value <value> [--task <任务ID>] [--page <页面ID>]",
+    "usage": "willyou-app browser select --element <ref> --value <value> [--task <任务ID>] [--page <页面ID>] [--observeAfter <JSON对象>] [--checkpoint <JSON对象>]",
     "cases": [
-      "M12-T063"
+      "M12-T063",
+      "M15-A17"
     ],
     "output": {
       "anyOf": [
         {
-          "type": "object",
-          "properties": {
-            "file": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "path": {
-                  "type": "string"
+                "file": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "bytes",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
                 },
-                "bytes": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "sha256": {
+                "truncatedPreview": {
                   "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
+                  "maxLength": 4096
                 }
               },
               "required": [
-                "path",
-                "bytes",
-                "sha256"
+                "file",
+                "truncatedPreview"
               ],
               "additionalProperties": false
             },
-            "truncatedPreview": {
-              "type": "string",
-              "maxLength": 4096
+            {
+              "type": "object",
+              "properties": {
+                "result": {}
+              },
+              "required": [
+                "result"
+              ],
+              "additionalProperties": false
             }
-          },
-          "required": [
-            "file",
-            "truncatedPreview"
-          ],
-          "additionalProperties": false
+          ]
         },
         {
           "type": "object",
           "properties": {
-            "result": {}
+            "action": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "completed",
+                    "unknown"
+                  ]
+                },
+                "result": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "file": {
+                          "type": "object",
+                          "properties": {
+                            "path": {
+                              "type": "string"
+                            },
+                            "bytes": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "path",
+                            "bytes",
+                            "sha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "truncatedPreview": {
+                          "type": "string",
+                          "maxLength": 4096
+                        }
+                      },
+                      "required": [
+                        "file",
+                        "truncatedPreview"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {}
+                      },
+                      "required": [
+                        "result"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "state",
+                "result"
+              ],
+              "additionalProperties": false
+            },
+            "observation": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "ready",
+                    "timed-out",
+                    "changed",
+                    "unavailable"
+                  ]
+                },
+                "pageId": {
+                  "type": "string"
+                },
+                "generation": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "data": {}
+              },
+              "required": [
+                "state",
+                "pageId"
+              ],
+              "additionalProperties": false
+            }
           },
           "required": [
-            "result"
+            "action",
+            "observation"
           ],
           "additionalProperties": false
         }
@@ -3431,6 +3986,32 @@
             "boolean"
           ],
           "maxLength": 262144
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string"
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "id",
+            "selector"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -3439,7 +4020,7 @@
       ],
       "additionalProperties": false
     },
-    "usage": "willyou-app browser download --selector <ref> --path <path> [--task <任务ID>] [--page <页面ID>]",
+    "usage": "willyou-app browser download --selector <ref> --path <path> [--task <任务ID>] [--page <页面ID>] [--checkpoint <JSON对象>]",
     "cases": [
       "M12-T067"
     ],
@@ -7776,5 +8357,549 @@
         }
       ]
     }
+  },
+  {
+    "id": "browser.tab.open",
+    "command": [
+      "browser",
+      "tab",
+      "open"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "profileId": {
+          "type": "string"
+        },
+        "intent": {
+          "enum": [
+            "reuse-or-new",
+            "new"
+          ]
+        },
+        "presentation": {
+          "enum": [
+            "show",
+            "background"
+          ]
+        },
+        "ready": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab open (--url <网址> | --pageId <标签ID>) [--intent <reuse-or-new|new>] [--presentation <show|background>] [--profileId <身份ID>] [--ready <JSON对象>]",
+    "cases": [
+      "M15-A01",
+      "M15-A02",
+      "M15-A03",
+      "M15-A04",
+      "M15-A05",
+      "M15-A06",
+      "M15-A07",
+      "M15-A08",
+      "M15-A09"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "operationId": {
+          "type": "string"
+        },
+        "reused": {
+          "type": "boolean"
+        },
+        "presentation": {
+          "enum": [
+            "show",
+            "background"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "loading",
+            "ready",
+            "failed",
+            "cancelled",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "pageId",
+        "url",
+        "operationId",
+        "reused",
+        "presentation",
+        "phase"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.script.run",
+    "command": [
+      "browser",
+      "script",
+      "run"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "executionId": {
+          "type": "string"
+        },
+        "bundle": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000
+        }
+      },
+      "required": [
+        "executionId",
+        "bundle",
+        "revision",
+        "pageId",
+        "origin",
+        "cases"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser script run --executionId <执行编号> --bundle <冻结目录> --revision <摘要> --pageId <标签ID> --origin <站点来源> --cases <JSON数组> [--timeout <ms>]",
+    "cases": [
+      "M15-A22",
+      "M15-A23",
+      "M15-A24",
+      "M15-A25",
+      "M15-A26",
+      "M15-A27",
+      "M15-A28",
+      "M15-A29",
+      "M15-A30",
+      "M15-A31",
+      "M15-A32"
+    ]
+  },
+  {
+    "id": "browser.script.resume",
+    "command": [
+      "browser",
+      "script",
+      "resume"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "executionId": {
+          "type": "string"
+        },
+        "bundle": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000
+        }
+      },
+      "required": [
+        "executionId",
+        "bundle",
+        "revision",
+        "pageId",
+        "origin",
+        "cases"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser script resume --executionId <执行编号> --bundle <冻结目录> --revision <摘要> --pageId <标签ID> --origin <站点来源> --cases <JSON数组> [--timeout <ms>]",
+    "cases": [
+      "M15-A22",
+      "M15-A23",
+      "M15-A24",
+      "M15-A25",
+      "M15-A26",
+      "M15-A27",
+      "M15-A28",
+      "M15-A29",
+      "M15-A30",
+      "M15-A31",
+      "M15-A32"
+    ]
+  },
+  {
+    "id": "browser.script.status",
+    "command": [
+      "browser",
+      "script",
+      "status"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "executionId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionId"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser script status --executionId <执行编号>",
+    "cases": [
+      "M15-A22",
+      "M15-A23",
+      "M15-A24",
+      "M15-A25",
+      "M15-A26",
+      "M15-A27",
+      "M15-A28",
+      "M15-A29",
+      "M15-A30",
+      "M15-A31",
+      "M15-A32"
+    ]
+  },
+  {
+    "id": "browser.script.pause",
+    "command": [
+      "browser",
+      "script",
+      "pause"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "executionId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionId"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser script pause --executionId <执行编号>",
+    "cases": [
+      "M15-A22",
+      "M15-A23",
+      "M15-A24",
+      "M15-A25",
+      "M15-A26",
+      "M15-A27",
+      "M15-A28",
+      "M15-A29",
+      "M15-A30",
+      "M15-A31",
+      "M15-A32"
+    ]
+  },
+  {
+    "id": "browser.script.stop",
+    "command": [
+      "browser",
+      "script",
+      "stop"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "executionId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionId"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser script stop --executionId <执行编号>",
+    "cases": [
+      "M15-A22",
+      "M15-A23",
+      "M15-A24",
+      "M15-A25",
+      "M15-A26",
+      "M15-A27",
+      "M15-A28",
+      "M15-A29",
+      "M15-A30",
+      "M15-A31",
+      "M15-A32"
+    ]
+  },
+  {
+    "id": "browser.login.wait",
+    "command": [
+      "browser",
+      "login",
+      "wait"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "readySelector": {
+          "type": "string"
+        },
+        "checkpoint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "pageId",
+        "origin",
+        "readySelector",
+        "checkpoint"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser login wait --pageId <原标签ID> --origin <站点来源> --readySelector <选择器> --checkpoint <接续位置>",
+    "cases": [
+      "M15-A10",
+      "M15-A11",
+      "M15-A12",
+      "M15-A13",
+      "M15-A14",
+      "M15-A15"
+    ]
+  },
+  {
+    "id": "browser.checkpoint.status",
+    "command": [
+      "browser",
+      "checkpoint",
+      "status"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "checkpointId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkpointId"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser checkpoint status --checkpointId <原检查点编号>",
+    "cases": [
+      "M15-A19",
+      "M15-A20",
+      "M15-A21"
+    ]
+  },
+  {
+    "id": "browser.checkpoint.verify",
+    "command": [
+      "browser",
+      "checkpoint",
+      "verify"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "checkpointId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkpointId"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser checkpoint verify --checkpointId <原检查点编号>",
+    "cases": [
+      "M15-A19",
+      "M15-A20",
+      "M15-A21"
+    ]
   }
 ]

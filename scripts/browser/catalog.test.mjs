@@ -6,14 +6,14 @@ const validator=new AjvJsonSchemaValidator();
 const find=name=>commands.find(command=>command.command.slice(1).join(' ')===name);
 const valid=(name,input)=>validator.getValidator(find(name).input)(input).valid;
 test('all approved commands are discoverable once with complete input and output contracts',()=>{
- assert.equal(commands.length,82);assert.equal(new Set(commands.map(c=>c.id)).size,82);assert.equal(commands.filter(c=>c.semantics==='read').length,21);
+ assert.equal(commands.length,91);assert.equal(new Set(commands.map(c=>c.id)).size,91);assert.equal(commands.filter(c=>c.semantics==='read').length,24);
  assert.equal(find('open-url'),undefined);
- const manifest=browserDefinition({type:'builtin'},(_app,_policy,data)=>data);assert.equal(manifest.capabilities.length,82);
+ const manifest=browserDefinition({type:'builtin'},(_app,_policy,data)=>data);assert.equal(manifest.capabilities.length,91);
  for(const capability of manifest.capabilities){assert.ok(capability.input);assert.ok(capability.output);assert.equal(capability.retry,capability.semantics==='read'?'safe-read':'never');}
 });
 test('opening and operating a page through MCP uses the existing browser command contracts',()=>{
  const manifest=browserDefinition({type:'builtin'},(_app,_policy,data)=>data);
- for(const id of ['tab.create','nav.goto','nav.snapshot','interact.click','operation.get']){
+ for(const id of ['tab.create','tab.open','nav.goto','nav.snapshot','interact.click','operation.get']){
   const command=commands.find(c=>c.id==='browser.'+id);
   const capability=manifest.capabilities.find(c=>c.id===command.id);
   assert.deepEqual(capability.binding.cli.command,command.command);

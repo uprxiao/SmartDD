@@ -23,6 +23,7 @@ module.exports = {
       { from: 'out/native/willyou-process-identity', to: 'native/willyou-process-identity' },
       { from: 'out/native/willyou-app', to: 'native/willyou-app' },
       { from: 'out/agent-browser', to: 'agent-browser', filter: ['SOURCE.json', 'LICENSE', '${arch}/agent-browser'] },
+      { from: 'resources/browser-runner', to: 'browser-runner', filter: ['worker.mjs'] },
       { from: 'out/capability-bundles', to: 'capability-bundles' },
       { from: 'out/plugins', to: 'plugins' },
       { from: 'out/native/tex', to: 'native/tex' },

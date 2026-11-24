@@ -4,12 +4,13 @@ import {BrowserJavascriptDialogView} from './javascript-dialog';
 import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {createPortal} from 'react-dom';
 import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,AlertTriangle,WifiOff,UserRound,Download,KeyRound,Pause,Play,Bot,ExternalLink} from 'lucide-react';
-import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
+import {browserChangedEvent,browserOpenPresentationEvent,browserShortcutEvent} from '@shared/events';
 import type {BrowserWorkspaceState,BrowserTabState,BrowserShortcut} from '@shared/browser-workspace';
 import type {BrowserProfile} from '@shared/browser-profiles';
 import {BROWSER_BLANK_URL,normalizeBrowserNavigationUrl} from '@shared/browser-navigation';
 import {events,rpc} from '@renderer/lib/ipc';
-import {browserWorkspaceFor,openNewBrowserTab,type BrowserWorkspaceStore} from './store';
+import {browserWorkspaceFor,openNewBrowserTab,showBrowserPresentation,type BrowserWorkspaceStore} from './store';
+import {observeBrowserPresentationView} from './open-presentation';
 import './workspace.css';
 import {agentTasksStore} from '@renderer/core/agent-tasks-store';
 import {panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
@@ -24,6 +25,8 @@ import {browserAccess} from './access-store';
 
 export function useBrowserShortcuts(){
   useEffect(()=>{
+    const stopWatchingView=observeBrowserPresentationView();
+    const offPresentation=events.on(browserOpenPresentationEvent,event=>{void showBrowserPresentation(event).catch(()=>{});});
     const key=(event:KeyboardEvent)=>{
       if(event.defaultPrevented||event.isComposing||!(event.metaKey||event.ctrlKey)||!event.shiftKey||event.altKey||event.key.toLowerCase()!=='b')return;
       if(event.target instanceof Element&&event.target.closest('[data-browser-shortcut-owner]'))return;
@@ -44,7 +47,7 @@ export function useBrowserShortcuts(){
       if(agentTasksStore.tasks.some(t=>t.taskId===event.taskId))reveal();
       else void agentTasksStore.refresh().then(reveal);
     });
-    document.addEventListener('keydown',key);return()=>{showGeneration++;document.removeEventListener('keydown',key);off();};
+    document.addEventListener('keydown',key);return()=>{showGeneration++;document.removeEventListener('keydown',key);off();offPresentation();stopWatchingView();};
   },[]);
 }
 interface BrowserHeader {

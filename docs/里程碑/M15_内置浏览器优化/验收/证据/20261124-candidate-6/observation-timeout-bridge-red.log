@@ -1,0 +1,40 @@
+
+> smartdd@0.1.7 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/browser/__tests__/service-access.test.ts -t 'returns the original action'
+
+[1124/101635.928507:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1124/101636.115085:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/browser/__tests__/service-access.test.ts (34 tests | 1 failed | 30 skipped) 143ms
+     × returns the original action when its observation is timed-out 109ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > returns the original action when its observation is timed-out
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/browser/__tests__/service-access.test.ts:145:33
+    143|     const result=await f.service.execute(scope,'click',{element:'@held…
+    144|     expect(result).toMatchObject({action:{state:'completed',result:{cl…
+    145|     expect(boundedJson(result)).toBe(true);
+       |                                 ^
+    146|     if(expected==='ready'){
+    147|       expect(result).toMatchObject({observation:{generation:'document-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed | 30 skipped (34)
+   Start at  10:16:36
+   Duration  918ms (transform 533ms, setup 0ms, import 694ms, tests 143ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

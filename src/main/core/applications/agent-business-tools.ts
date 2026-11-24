@@ -9,7 +9,8 @@ import {canonicalJson,digest} from './manifest';import type {CapabilityRunRegist
 import type {ApplicationToolService} from './tool-service';import type {AgentStore} from '../agent/agent-store';
 import type {HostBusinessRequests,BusinessRecord} from '../agent/host-business-requests';
 import { selectedTaskTier } from '../agent/permissions';
-interface Data {entry:ApplicationEntry;call:BridgeToolCall;requestId:string;originCallHash:string;policyStamp:string;mailIntentId?:string}
+interface Data {entry:ApplicationEntry;call:BridgeToolCall;requestId:string;originCallHash:string;policyStamp:string;mailIntentId?:string;presentationInputId?:string}
+const BROWSER_APPROVAL_NEXT = '如果下一步依赖此结果，请结束当前回合。获批执行后，WillYou 会自动在后续回合送达结果。请勿休眠等待、轮询或重复提交。';
 function uuidFor(value:string){const h=createHash('sha256').update(value).digest('hex');return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-a${h.slice(17,20)}-${h.slice(20,32)}`;}
 export class AgentBusinessTools {
  constructor(private readonly d:{store:AgentStore;requests:HostBusinessRequests;runs:CapabilityRunRegistry;applications:ApplicationService;services:Map<ApplicationEntry,ApplicationToolService>;notify(taskId:string,id:string,text:string):void}){
@@ -52,7 +53,9 @@ export class AgentBusinessTools {
  private intercept(runId:string,id:string,call:BridgeToolCall,entry:ApplicationEntry):Promise<BridgeResponse>|undefined{
   const run=this.d.store.run(runId);if(!run?.binding_id)return;const context=this.d.runs.assertActive(runId),hash=digest(canonicalJson({entry,call}));if(context.taskBusiness){if(context.taskBusiness.callHash!==hash)throw new ApplicationError('SCOPE_DENIED','业务批准不能替换原调用');return;}
   const description=this.service(entry).inspectCall(runId,call);if(description.semantics!=='write')return;
-  const canonical=context.plan?.allowed.find(c=>(entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor)?.capabilityId??call.operation;if(['mail.send.prepare','mail.send.cancel','browser.access.request'].includes(canonical))return;const browser=description.selected.application.appId==='browser';const mail=description.selected.application.appId==='mail'&&(canonical==='mail.send.execute'||/mail_send_execute/.test(call.operation));const policy=mail?null:this.policy(context,call,entry);if(!mail&&(!policy?.plugin||policy.full))return;
+  const canonical=context.plan?.allowed.find(c=>(entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor)?.capabilityId??call.operation;if(['mail.send.prepare','mail.send.cancel','browser.access.request','browser.login.wait','smartdd_browser_login_wait_v2'].includes(canonical))return;const browser=description.selected.application.appId==='browser';const mail=description.selected.application.appId==='mail'&&(canonical==='mail.send.execute'||/mail_send_execute/.test(call.operation));const policy=mail?null:this.policy(context,call,entry);
+  const frozenBrowserScript=browser&&['browser.script.run','smartdd_browser_script_run_v2','browser.script.resume','smartdd_browser_script_resume_v2'].includes(canonical);
+  if(!mail&&!frozenBrowserScript&&(!policy?.plugin||policy.full))return;
   const operationId=uuidFor(runId+':'+id),known=this.d.store.sqlite.prepare("SELECT * FROM agent_requests WHERE operation_id=? AND class='host_business'").get(operationId) as any;
   const reply = (value: {status:string;requestId:string;next:string}): Promise<BridgeResponse> => Promise.resolve({
    schema:1,id,status:'ok',
@@ -60,11 +63,17 @@ export class AgentBusinessTools {
     ? {taskRequest:true,value:{schema:'willyou-task-request-v1',capabilityId:call.operation,operationId,...value}}
     : {value}),
   });
-  if(known){const data=JSON.parse(known.payload_ref).data as Data;if(data.originCallHash!==hash||known.task_id!==run.task_id)throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已用于其他业务');return reply({status:known.status,requestId:known.request_id,next:'这是既有业务请求，请等待通知，不要重复提交'});}
+  if(known){
+   const data=JSON.parse(known.payload_ref).data as Data;
+   if(data.originCallHash!==hash||known.task_id!==run.task_id)throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已用于其他业务');
+   const waitingForBrowserResult=browser&&['pending','approved_pending_bind'].includes(known.status);
+   return reply({status:known.status,requestId:known.request_id,next:waitingForBrowserResult?BROWSER_APPROVAL_NEXT:'这是既有业务请求，请等待通知，不要重复提交'});
+  }
   const m=mail?this.mail(String(call.arguments.intentId)):null;if(m&&(m.source_task_id!==run.task_id||m.source_run_id!==runId||call.arguments.expectedReviewHash!==m.review_hash))throw new ApplicationError('SCOPE_DENIED','发送意图不是本次任务原发起内容');
   const stamp=m?this.mailPolicy(m):policy!.stamp,review=m?{reviewHash:m.review_hash,...JSON.parse(m.review_json)}:policy!.review,data:Data={entry,call:structuredClone(call),requestId:id,originCallHash:hash,policyStamp:stamp,...(m?{mailIntentId:m.id}:{})};
-  const receipt=this.d.requests.create({taskId:run.task_id,bindingId:run.binding_id,runId,generation:run.generation},{operationId,kind:mail?'mail_send':browser?'browser_write':'application_write',title:mail?'需要批准：发送邮件':'需要批准：'+(policy!.review?.operation??call.operation),review,data,accountIdentity:stamp,options:mail?[{label:'批准发送',value:'allow'},{label:'手动修改',value:'edit'},{label:'让 Agent 按我的说明修改',value:'agentedit'}]:undefined});
-  return reply({status:'awaiting_user',...receipt,next:'批准后会通知任务结果，先做别的。不要轮询或重复写调用。'});
+  if(browser&&call.arguments.presentation==='show')data.presentationInputId=this.d.requests.browserPresentationInput(run.task_id,runId);
+  const receipt=this.d.requests.create({taskId:run.task_id,bindingId:run.binding_id,runId,generation:run.generation},{operationId,kind:mail?'mail_send':browser?'browser_write':'application_write',title:mail?'需要批准：发送邮件':frozenBrowserScript?'需要批准：运行浏览器测试':'需要批准：'+(policy!.review?.operation??call.operation),review,data,accountIdentity:stamp,options:mail?[{label:'批准发送',value:'allow'},{label:'手动修改',value:'edit'},{label:'让 Agent 按我的说明修改',value:'agentedit'}]:undefined});
+  return reply({status:'awaiting_user',...receipt,next:browser?BROWSER_APPROVAL_NEXT:'批准后会通知任务结果，先做别的。不要轮询或重复写调用。'});
  }
  private async cancelMail(sender:ApplicationUiSender|undefined,m:any){if(sender){await this.d.applications.cancelTaskMail(sender,m.project_id,m.id);return;}/* A retired task request cannot authorize the old intent; later expiry/invalidation remains conservative. */}
  private async reviseMail(r:BusinessRecord,decision:{edits?:{to:string;cc:string;bcc:string;subject:string;text:string}},sender:ApplicationUiSender){if(!decision.edits)throw Error('请先保存修改内容');const data=r.payload.data as Data,m=this.mail(data.mailIntentId!),draft=await this.d.applications.viewDraft(sender,m.project_id,m.draft_id,m.draft_revision),edits=decision.edits;

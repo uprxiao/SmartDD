@@ -13,7 +13,7 @@ export class BrowserArtifacts {
     try{const stat=await lstat(this.root);if(!stat.isDirectory()||stat.isSymbolicLink())throw new ApplicationError('SCOPE_DENIED','浏览器文件根目录必须是实际目录');return true;}
     catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return false;throw error;}
   }
-  async write(taskId: string, command: string, extension: 'json' | 'txt' | 'png' | 'jpeg' | 'pdf' | 'har', bytes: Uint8Array) {
+  async write(taskId: string, command: string, extension: 'json' | 'txt' | 'png' | 'jpeg' | 'pdf' | 'har' | 'csv' | 'bin', bytes: Uint8Array) {
     if (!/^[A-Za-z0-9_-]{1,128}$/.test(taskId) || !/^[a-z][a-z-]{0,40}$/.test(command))
       throw new ApplicationError('INVALID_INPUT', '浏览器文件归属或命令无效');
     return this.serialize(async()=>{

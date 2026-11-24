@@ -1,6 +1,8 @@
 import { applicationChildEnvironment } from './launch-env';
 import { AgentTransferService } from './core/ai/agent-transfer';
 import {BrowserService} from './core/browser/service';
+import {browserDigest} from './core/browser/artifacts';
+import {attachBrowserLoginRequests} from './core/agent/business-browser-login';
 import {installBrowserProjectDefaults} from './core/applications/browser-project-defaults';
 import {pluginHostReadOnlyRoots} from './core/applications/plugins/host-paths';
 import {existsSync,readFileSync} from 'node:fs';
@@ -13,6 +15,8 @@ import {
   browserChangedEvent,
   browserAccessChangedEvent,
   browserShortcutEvent,
+  browserOpenPresentationEvent,
+  browserScriptChangedEvent,
   menuOpenSettingsEvent,
   menuToggleLeftSidebarEvent,
   ptyDataEvent,
@@ -184,6 +188,7 @@ async function main(): Promise<void> {
   const ptys = new PtyManager();
   ptys.on('exit',()=>queueMicrotask(scanManagedCapabilities));
   let browser:BrowserService|undefined;
+  let browserLoginChanged:((taskId:string)=>void)|undefined;
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
   const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,capabilities,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,
@@ -218,8 +223,17 @@ async function main(): Promise<void> {
       const browserRoot=app.isPackaged?join(process.resourcesPath,'agent-browser'):join(app.getAppPath(),'out/agent-browser');
       if(process.platform==='darwin'&&existsSync(join(browserRoot,'SOURCE.json'))){
         const source=JSON.parse(readFileSync(join(browserRoot,'SOURCE.json'),'utf8')),binary=source.files.find((file:{arch:string})=>file.arch===process.arch);
-        if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,taskDirectory:id=>(agentSupport.store.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null,window:getMainWindow,changed:taskId=>events.emit(browserChangedEvent,{taskId}),accessChanged:()=>events.emit(browserAccessChangedEvent,{}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
+        if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,taskDirectory:id=>(agentSupport.store.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null,window:getMainWindow,changed:taskId=>{events.emit(browserChangedEvent,{taskId});browserLoginChanged?.(taskId);},accessChanged:()=>events.emit(browserAccessChangedEvent,{}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
       }
+      browser?.attachOpenPresentation((scope,pageId)=>{
+        const clientInputId=agentWorkspace.requests.browserPresentationInput(scope.taskId,scope.runId,scope.operationId);
+        if(clientInputId)events.emit(browserOpenPresentationEvent,{taskId:scope.taskId,pageId,operationId:scope.operationId,clientInputId});
+      });
+      browser?.attachScriptUpdates((taskId,executionId)=>events.emit(browserScriptChangedEvent,{taskId,executionId}));
+      browser?.attachCheckpointUpdates((taskId,receipt)=>agentWorkspace.store.upsertItem({
+        taskId,turnId:null,runId:null,nativeKey:`browser-checkpoint:${receipt.checkpointId}`,type:'notification',
+        payload:{sourceKind:'browser_checkpoint',checkpoint:receipt},
+      }));
       await browser?.reconcile();
       applications=new ApplicationService(agentSupport.store,{browser,openPluginUrl:url=>shell.openExternal(url),plugins:process.platform==='darwin'?{bundledZentao:app.isPackaged?join(process.resourcesPath,'plugins/zentao'):join(app.getAppPath(),'out/plugins/zentao'),runtime:{executable:process.execPath,readOnlyRoots:pluginHostReadOnlyRoots(app.getAppPath(),process.execPath),keychainRoots:[join(app.getPath('home'),'Library/Keychains'),'/Library/Keychains']}}:undefined,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,agentRuns:agentWorkspace.applicationRuns,agentSessionActive:id=>Boolean(agentWorkspace.runs.runForTask(id)??agentWorkspace.runs.closingForTask(id)),workspaceFiles:files,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>{events.emit(applicationsChangedEvent,change);void agentWorkspace.requests.reconcile();if(change?.kind!=='plugin-runtime'&&change?.kind!=='plugin-approval')managedTasks?.syncSkillLibrary();}});
 
@@ -227,7 +241,31 @@ async function main(): Promise<void> {
       if(browser)installBrowserProjectDefaults(projects,applications.selections,()=>events.emit(applicationsChangedEvent,undefined));
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),skillLibraryHome:app.getPath('home'),cleanupUnattributable:app.isPackaged,stopPty:id=>ptys.kill(id)});
-        agentWorkspace.attachBusiness(managedTasks);if(browser)agentWorkspace.attachBrowser(browser);
+        agentWorkspace.attachBusiness(managedTasks);
+        if(browser){
+          agentWorkspace.attachBrowser(browser);
+          const appService=applications;
+          const capabilityRuns=managedTasks.runs;
+          attachBrowserLoginRequests({browser,requests:agentWorkspace.requests,tasks:agentWorkspace.tasks,store:agentWorkspace.store,
+            assertEnabled:projectId=>appService.selections.requireApplicationEnabled(projectId,'browser'),
+            scriptScope:(record,runId,signal)=>{
+              const run=capabilityRuns.assertActive(runId),projectId=run.run.projectId,taskId=record.row.task_id;
+              const policy=()=>browserDigest(JSON.stringify(appService.selections.policyStamp(projectId,'browser')));
+              const policyDigest=policy();
+              const assertActive=()=>{
+                const current=capabilityRuns.assertActive(runId);
+                if(current.run.taskId!==taskId||current.run.projectId!==projectId||policy()!==policyDigest||
+                  !current.snapshot.packages.some(item=>item.appId==='browser'&&item.allowedOperations.includes('browser.write')))
+                  throw new Error('原浏览器测试的执行授权已变化');
+                appService.selections.requireApplicationEnabled(projectId,'browser');
+              };
+              return{taskId,projectId,runId,operationId:record.row.operation_id,requestId:record.row.request_id,signal,runSignal:run.signal,
+                assertActive,assertRetained:assertActive,policyDigest};
+            }});
+          browserLoginChanged=taskId=>agentWorkspace.requests.browserChanged(taskId);
+          void agentWorkspace.requests.reconcile();
+          for(const taskId of agentWorkspace.store.tasksWithQueue())browserLoginChanged(taskId);
+        }
       }
     }
   } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}

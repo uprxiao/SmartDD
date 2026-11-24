@@ -16,8 +16,16 @@ export function createBrowserController(service:BrowserService|undefined,trusted
     snapshot:(event,input:{taskId:string})=>ui(event).snapshot(browserTaskInput.parse(input).taskId),
     create:(event,input:{taskId:string;address?:string})=>{const w=ui(event),v=browserCreateInput.parse(input);return w.create(v.taskId,v.address);},
     select:(event,input:{taskId:string;tabId:string|null})=>{const w=ui(event),v=browserTaskInput.extend({tabId:z.string().uuid().nullable()}).strict().parse(input);return w.select(v.taskId,v.tabId);},
-    navigate:(event,input:{taskId:string;tabId:string;address:string})=>{const w=ui(event),v=browserNavigationInput.parse(input);return w.navigate(v.taskId,v.tabId,v.address);},
-    action:(event,input:{taskId:string;tabId:string;action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'})=>{const w=ui(event),v=browserActionInput.parse(input);return w.action(v.taskId,v.tabId,v.action);},
+    navigate:(event,input:{taskId:string;tabId:string;address:string})=>{
+      const service=host(event),v=browserNavigationInput.parse(input);
+      service.userChangedScriptPage(v.taskId,v.tabId);
+      return service.workspace.navigate(v.taskId,v.tabId,v.address);
+    },
+    action:(event,input:{taskId:string;tabId:string;action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'})=>{
+      const service=host(event),v=browserActionInput.parse(input);
+      if(v.action!=='focus')service.userChangedScriptPage(v.taskId,v.tabId);
+      return service.workspace.action(v.taskId,v.tabId,v.action);
+    },
     placement:(event,input:{taskId:string;tabId:string;rect:Electron.Rectangle|null})=>{const w=ui(event),v=browserPlacementInput.parse(input);return w.placement(v.taskId,v.tabId,v.rect);},
     close:(event,input:{taskId:string;tabId:string})=>{const w=ui(event),v=browserTabInput.parse(input);return w.close(v.taskId,v.tabId);},
     reopen:(event,input:{taskId:string})=>ui(event).reopen(browserTaskInput.parse(input).taskId),
@@ -30,6 +38,22 @@ export function createBrowserController(service:BrowserService|undefined,trusted
       if(v.searchEngine!==undefined)s.settings.setSearchEngine(v.searchEngine);if(v.identity!==undefined)s.settings.setIdentity(v.identity);return s.preferences(v.taskId);
     },
     clearArtifacts:(event,input:{taskId:string;confirmed:true})=>{const s=host(event),v=browserTaskInput.extend({confirmed:z.literal(true)}).strict().parse(input);return s.clearArtifacts(v.taskId);},
+    scriptStatus:(event,input:{taskId:string;executionId:string;action?:'pause'|'stop'})=>{
+      const service=host(event),value=browserTaskInput.extend({executionId:z.uuid(),action:z.enum(['pause','stop']).optional()}).strict().parse(input);
+      return service.scriptFromUi(value.taskId,value.executionId,value.action);
+    },
+    readScriptEvidence:(event,input:{taskId:string;executionId:string;kind:'report'|'screenshot'})=>{
+      const service=host(event),value=browserTaskInput.extend({executionId:z.uuid(),kind:z.enum(['report','screenshot'])}).strict().parse(input);
+      return service.readScriptEvidence(value.taskId,value.executionId,value.kind);
+    },
+    inspectScriptResult:(event,input:{taskId:string;executionId:string})=>{
+      const service=host(event),value=browserTaskInput.extend({executionId:z.uuid()}).strict().parse(input);
+      return service.inspectScriptFromUi(value.taskId,value.executionId);
+    },
+    verifyCheckpoint:(event,input:{taskId:string;checkpointId:string})=>{
+      const service=host(event),value=browserTaskInput.extend({checkpointId:z.uuid()}).strict().parse(input);
+      return service.verifyCheckpointFromUi(value.taskId,value.checkpointId);
+    },
     continueCertificate:(event,input:{taskId:string;tabId:string;challengeId:string})=>{const s=host(event),v=browserTabInput.extend({challengeId:z.string().uuid()}).strict().parse(input);return s.continueCertificate(v.taskId,v.tabId,v.challengeId);},
     profileSiteStates:(event,input:{taskId:string})=>host(event).profileSiteStates(browserTaskInput.parse(input).taskId),
     accessState:event=>host(event).accessState(),

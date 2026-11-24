@@ -1,0 +1,40 @@
+
+> smartdd@0.1.7 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/browser/__tests__/downloads.test.ts -t 'applies an explicit path'
+
+[1124/094535.747756:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1124/094535.891235:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/browser/__tests__/downloads.test.ts (13 tests | 1 failed | 12 skipped) 5ms
+     × applies an explicit path only after dispatch and only to the next download from that page 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/browser/__tests__/downloads.test.ts > ordinary browser downloads > applies an explicit path only after dispatch and only to the next download from that page
+AssertionError: expected { …(12) } to match object { …(4) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "name": "exact.json",
+    "path": "/private/project-external/exact.json",
+    "receivedBytes": 100,
+-   "sourceFilename": "订单导出.csv",
+  }
+
+ ❯ src/main/core/browser/__tests__/downloads.test.ts:26:755
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  09:45:35
+   Duration  144ms (transform 35ms, setup 0ms, import 64ms, tests 5ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

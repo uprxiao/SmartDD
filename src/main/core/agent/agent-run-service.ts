@@ -44,6 +44,7 @@ export interface OpenRunInput {
 }
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; modelsWithoutImageInput?: ReadonlySet<string>; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; appliedModel?: string; appliedEffort?: string; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
+type QueuedTurnInput={clientInputId:string;text:string;images?:{path:string;mime:string}[];tier?:Tier;model?:string;effort?:string;context?:string};
 export interface RunHandle {
   hostBusinessInstructions?: string;
   hostBusinessInstructionsInstalled?: boolean;
@@ -445,7 +446,9 @@ export class AgentRunService {
   }
 
   /** 派发一条已接受（排队中）的输入；原生开始信号到达后才确认开始。 */
-  async dispatch(runId: string, turnId: string, input: { clientInputId: string; text: string; images?: { path: string; mime: string }[]; tier?: Tier; model?: string; effort?: string; context?: string }) {
+  async dispatch(runId:string,turnId:string,input:QueuedTurnInput):Promise<{nativeTurnId:string}>;
+  async dispatch(runId:string,turnId:string,input:QueuedTurnInput,beforeNative:(()=>Promise<boolean>)|undefined):Promise<{nativeTurnId:string}|null>;
+  async dispatch(runId:string,turnId:string,input:QueuedTurnInput,beforeNative?:()=>Promise<boolean>) {
     const run = this.runs.get(runId);
     if (!run || run.closing) throw new DriverError('STATE', '运行不存在或正在关闭');
     if (run.turnId) throw new DriverError('STATE', '上一轮尚未结束');
@@ -454,6 +457,12 @@ export class AgentRunService {
     if (input.context) await this.injectHistory(runId, input.context);
     if (this.runs.get(runId) !== run || run.closing || this.held.has(run.taskId)) throw new DriverError('STATE', '已停止或会话已退出，输入保留在排队');
     if (input.context) this.assertIdleRunCurrent(run);
+    if(beforeNative){
+      if(!await beforeNative())return null;
+      if(this.runs.get(runId)!==run||run.closing||run.turnId||this.held.has(run.taskId)||store.turn(turnId)?.status!=='accepted')
+        throw new DriverError('STATE','接续确认后原运行状态已变化');
+      this.assertIdleRunCurrent(run);
+    }
     const tier = input.tier ? resolveTier(run.driverId, input.tier) : { ok: true as const, tier: run.tier };
     if (!tier.ok) { store.endTurn(turnId, 'canceled', 'TIER'); throw new DriverError('REJECTED', '不支持的权限档位'); }
     store.dispatchTurn(turnId, runId);
