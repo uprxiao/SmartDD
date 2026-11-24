@@ -3,14 +3,14 @@
 // 模型选择器对照 ModelPickerContent／ModelPickerSidebar／TraitsPicker。输入框外壳、左侧栏、右侧文件／浏览器沿用 WillYou。全部为合成数据。
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { GitBranch, GitMerge, ThumbsUp } from 'lucide-react';
-import { AlertCircle, AlertTriangle, ArrowRightLeft, ArrowUp, Bell, Brain, Check, CheckCircle2, ChevronDown, ChevronRight, CircleDashed, Copy, FileDiff, FilePlus2, FileText, Globe, Hourglass, ListChecks, LoaderCircle, Pencil, Plus, Search, Settings, ShieldAlert, Square, SquareTerminal, Star, Wrench, X, Zap, Layers, ArrowUpLeft, Network, Lock, PlugZap, RefreshCw, WifiOff, Minimize2, Image as ImageIcon, Link2, Gauge } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRightLeft, ArrowUp, Bell, Brain, Check, CheckCircle2, ChevronDown, ChevronRight, CircleDashed, Copy, FileDiff, FilePlus2, FileText, Globe, Hourglass, ListChecks, LoaderCircle, Pencil, Plus, Search, Settings, ShieldAlert, Square, SquareTerminal, Star, Wrench, X, Zap, Layers, ArrowUpLeft, Network, Lock, PlugZap, RefreshCw, WifiOff, Minimize2, Paperclip, Target, Gauge } from 'lucide-react';
 import { AgentIcon, PermIcon, ProviderIcon } from './m13-icons.jsx';
 import { VoiceButton } from './VoicePreview';
 import { FILE_DRAG_TYPE, resolveFileDrag } from './file-drag-model.mjs';
 import { RequestPanel, buildRequests } from './M14Requests.jsx';
-import { GoalRow, slashBlocked } from './M14Extras';
-import { AttachmentChips, Banner, BackgroundWork, BusinessApprovalRow, CodeBlock, ComposerChips, CompactionRow, LinkMenu, MentionMenu, NativeDrawer, NativeSubagentRow, pasteToChips, PlanCard, SysNoteRow, TodoRow, mentionItems, mentionTrigger } from './M14Extras.jsx';
-import { AGENTS, PERMISSIONS, SCENARIOS, TEAM_CHILDREN, clock, deriveRows, entryLabel, formatDuration, inlineSegments, routeLink, statusLine, thoughtHeading, goalLock } from './m14-model.mjs';
+import { GoalComposerMode, GoalRow, slashBlocked } from './M14Extras';
+import { AttachmentChips, Banner, BackgroundWork, BusinessApprovalRow, CodeBlock, ComposerChips, CompactionRow, LinkMenu, MentionMenu, NativeDrawer, NativeSubagentRow, addFilesToChips, pasteToChips, PlanCard, SysNoteRow, TodoRow, mentionItems, mentionTrigger } from './M14Extras.jsx';
+import { AGENTS, PERMISSIONS, SCENARIOS, TEAM_CHILDREN, clock, deriveRows, entryLabel, formatDuration, inlineSegments, routeLink, statusLine, thoughtHeading, goalLock, goalStatus } from './m14-model.mjs';
 
 const ICON = { thought: Brain, read: FileText, edit: Pencil, command: SquareTerminal, search: Search, web: Globe, tool: Wrench, mixed: Layers };
 
@@ -320,10 +320,16 @@ export function ModelPill({ agent, model, effort, onClick, open }) {
 }
 
 // ---------- 输入框（WillYou reference-composer 外壳；待处理请求时按 T3 换成审批／提问面板） ----------
-function Composer({ scenario, sel, setSel, bound, permission, setPermission, fullConfirmed, requestFullAccess, queued, setQueued, onPromote, onToast, onDecide, requests = [], reqIndex = 0, setReqIndex, statusNode, taskId, ptyId, delegation, setDelegation }) {
+function Composer({ scenario, sel, setSel, bound, permission, setPermission, fullConfirmed, requestFullAccess, queued, setQueued, onPromote, onToast, onDecide, requests = [], reqIndex = 0, setReqIndex, statusNode, taskId, ptyId, delegation, setDelegation, initialGoal }) {
   const [text, setTextRaw] = useState(() => DRAFTS.get(taskId) ?? '');
   const setTextState = v => { DRAFTS.set(taskId, v); setTextRaw(v); };
   const [menu, setMenu] = useState(null), [pick, setPick] = useState(null);
+  const [goalMode, setGoalMode] = useState(() => taskState(taskId).goalMode ?? false);
+  const [localGoal, setLocalGoal] = useState(() => taskState(taskId).composerGoal ?? (initialGoal ? {
+    id: 'home-goal', objective: initialGoal, agent: AGENTS.find(agent => agent.id === sel.agent).tool,
+    status: 'active', working: false, secs: 0, turns: 0,
+  } : null));
+  const fileInput = useRef(null);
   const [trig, setTrig] = useState(null), [active, setActive] = useState(0), [chips, setChipsRaw] = useState(() => taskState(taskId).chips ?? []), [fresh, setFresh] = useState(null), [dismissed, setDismissed] = useState({}), [dragOver, setDragOver] = useState(false);
   const setChips = v => setChipsRaw(cur => { const next = typeof v === 'function' ? v(cur) : v; taskState(taskId, { chips: next }); return next; });
   const setText = v => { const next = typeof v === 'function' ? v(text) : v; setTextState(next); setTrig(mentionTrigger(next)); };
@@ -331,6 +337,12 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
   const pickMention = it => { setTextState(text.slice(0, trig.start) + it.insert + ' '); if (it.chip) addChip(it.chip); setTrig(null); box.current?.focus(); };
   const onDrop = e => { setDragOver(false); if (!e.dataTransfer.types.includes(FILE_DRAG_TYPE)) return; e.preventDefault(); const f = resolveFileDrag(e.dataTransfer.getData(FILE_DRAG_TYPE), taskId, ptyId); if (!f.ok) { onToast(f.error === 'foreign-task' ? '拖入的文件不属于当前任务，未添加' : '拖动已失效，请重新拖动'); return; } const rel = f.path.replace(RootCtx.root + '/', ''); addChip({ kind: 'file', name: rel }); onToast(`已添加引用：${rel}（未发送）`); };
   const box = useRef(null);
+  const changeGoalMode = value => {
+    taskState(taskId, { goalMode: value });
+    setGoalMode(value);
+    setTrig(null);
+    box.current?.focus();
+  };
   const running = scenario.status === 'running' || scenario.status === 'stopping', stopping = scenario.status === 'stopping';
   const a = AGENTS.find(x => x.id === sel.agent);
   const ba = AGENTS.find(x => x.id === (running ? (bound?.agent ?? sel.agent) : sel.agent)); // 本轮实际执行器：插话按它判断（评审 RV09）
@@ -367,12 +379,30 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
     if (!text.trim()) return;
     if (unavailable) { onToast(`${a.name}${a.status.label}，消息未发送；请重新检测或换一个智能体`); return; }
     const blocked = slashBlocked(text, a.caps); if (blocked) { onToast(`${a.name} 没有公布 ${blocked} 命令，消息未发送`); return; } // 评审 RR08
+    const goalCommand = /^\/goal(?:\s+([\s\S]*))?$/.exec(text.trim());
+    if (goalCommand || goalMode) {
+      const objective = (goalCommand ? goalCommand[1] ?? '' : text).trim();
+      if (!a.caps?.goal || chips.length || !objective || objective.length > 4000 || (goalCommand && objective === 'clear')) {
+        onToast(!a.caps?.goal ? '当前执行器的目标不可用' : chips.length ? '目标不能带附件，附件已保留' : '请输入有效目标和可验证的完成条件');
+        return;
+      }
+      const goal = { id: 'goal-' + Date.now(), objective, agent: a.tool, status: 'active', working: running, secs: 0, turns: 0 };
+      taskState(taskId, { composerGoal: goal });
+      setLocalGoal(goal);
+      setText('');
+      changeGoalMode(false);
+      onToast('目标已设定（合成）');
+      return;
+    }
     const notReady = chips.filter(c => c.state === 'preparing' || c.state === 'failed'); if (notReady.length) { onToast(notReady.some(c => c.state === 'failed') ? '有附件准备失败：重试或移除后再发送' : '附件还在准备中，准备好后再发送'); return; } // 评审 RR06
     if (running) { setQueued(q => [...q, { id: 'q' + Date.now(), text, time: '14:04', chips }]); setText(''); setChips([]); return; } // 附件随所属输入一起排队（评审 RV10）
     onToast('已发送 · 合成'); setText(''); setChips([]); setFresh(null);
   };
   const items = trig ? mentionItems(trig, a.caps) : [];
   const pending = req?.kind;
+  const localGoalState = localGoal && goalStatus(taskId, localGoal);
+  const lockedGoal = localGoalState && localGoalState !== 'cleared' && localGoalState !== 'complete'
+    ? { agent: localGoal.agent, status: localGoalState } : goalLock(taskId, scenario);
   return <div className="m14-composer-wrap">
     {queued.length > 0 && <div className="m14-queue" aria-label="排队消息">{queued.map(q => <div key={q.id} className="m14-queued">
       <div className="m14-queued-bubble" title={q.text}>{q.text}{q.chips?.length > 0 && <small> · {q.chips.length} 个附件</small>}</div>
@@ -381,6 +411,7 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
         <button aria-label="删除" title="删除" onClick={() => setQueued(qs => qs.filter(x => x.id !== q.id))}><X size={12} /></button>
       </div></div>)}</div>}
     {statusNode}
+    {localGoal && <GoalRow key={localGoal.id} e={localGoal} onToast={onToast} taskId={taskId} />}
     {scenario.background && <div className="m14-composer-above"><BackgroundWork items={scenario.background} onToast={onToast} /></div>}
     {scenario.status === 'stopping' && <Banner tone="warn" icon={<LoaderCircle size={14} className="spin" />} actions={<button className="danger" onClick={() => onToast('已强制停止：结束执行器进程及其子进程（合成）')}>强制停止</button>}><b>Agent 未响应停止</b>（已等待 12 秒）· 可能内存不足，强制停止会结束它的进程</Banner>}
     {scenario.status === 'failed' && !dismissed.conn && <Banner tone="error" icon={<WifiOff size={14} />} actions={<button onClick={() => onToast('正在重新连接…（合成）')}>立即重试</button>} onClose={() => setDismissed(d => ({ ...d, conn: true }))}>与 Codex 的连接已断开，正在重新连接（第 2 次）…</Banner>}
@@ -394,19 +425,28 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
       {req && <RequestPanel requests={requests} index={reqIndex} setIndex={setReqIndex} pick={pick} setPick={setPick} note={blocking ? null : rtext} setNote={setRtext} />}
       {req && <div className="m14-approve-actions m14-req-actions">{req.kind === 'question' && <button type="button" className="outline" onClick={() => decide('skip')}>跳过</button>}<button type="button" className="primary" disabled={(!pick && !(req.kind === 'question' && rtext.trim())) || (req.options.find(o => o.key === pick)?.needsText && !rtext.trim())} onClick={() => decide(pick ?? 'text')}>{req.kind === 'question' ? '提交' : '确认'}</button><button type="button" className="reference-send m14-stop" aria-label="停止" title="停止本轮（挂起的请求随之作废）" onClick={() => dispatchEvent(new Event('m14:stop'))}><Square size={11} fill="currentColor" /></button></div>}
       {!blocking && <ComposerChips chips={chips} onRemove={id => setChips(cs => cs.filter(c => c.id !== id))} onRetry={id => { setChips(cs => cs.map(c => c.id === id ? { ...c, state: 'preparing' } : c)); setTimeout(() => setChips(cs => cs.map(c => c.id === id ? { ...c, state: null } : c)), 1200); }} />}
-      <textarea ref={box} aria-label="消息输入" placeholder={blocking ? (pending === 'question' ? '输入自己的回答…' : pending === 'plan' ? '发送文字即请 Claude 按意见继续修改计划' : '发送文字即拒绝这次请求并说明原因') : req ? '随心输入；待批准的请求会继续保留' : running ? '继续输入，本轮结束后发送' : '随心输入，@ 引用文件，$ 选用 Skill'} value={blocking ? rtext : text} onChange={e => { const v = e.target.value; if (blocking) setRtext(v); else setText(v); }} onPaste={e => { if (!req && pasteToChips(e, setChips, onToast)) e.preventDefault(); }} onKeyDown={e => {
+      <textarea ref={box} aria-label="消息输入" placeholder={blocking ? (pending === 'question' ? '输入自己的回答…' : pending === 'plan' ? '发送文字即请 Claude 按意见继续修改计划' : '发送文字即拒绝这次请求并说明原因') : goalMode ? '描述目标和可验证的完成条件' : req ? '随心输入；待批准的请求会继续保留' : running ? '继续输入，本轮结束后发送' : '随心输入，@ 引用文件，$ 选用 Skill'} value={blocking ? rtext : text} onChange={e => { const v = e.target.value; if (blocking) setRtext(v); else setText(v); }} onPaste={e => { if (!req && pasteToChips(e, setChips, onToast)) e.preventDefault(); }} onKeyDown={e => {
         if (trig && items.length && ['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); if (e.key === 'ArrowDown') setActive(i => (i + 1) % items.length); else if (e.key === 'ArrowUp') setActive(i => (i - 1 + items.length) % items.length); else if (e.key === 'Escape') setTrig(null); else pickMention(items[active]); return; }
         if (e.key === 'Escape' && trig) { setTrig(null); return; }
         if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (blocking && pick) decide(); else submit(); } if (blocking && !rtext && !e.nativeEvent.isComposing && /^[1-9]$/.test(e.key) && req.options[Number(e.key) - 1] && !req.options[Number(e.key) - 1].disabled) { e.preventDefault(); setPick(req.options[Number(e.key) - 1].key); } }} />
       <div className="reference-composer-toolbar">
         <div className="reference-home-picker"><button type="button" className="composer-add" aria-label="添加" aria-expanded={menu === 'add'} onClick={() => setMenu(menu === 'add' ? null : 'add')}><Plus size={20} /></button>
-          {menu === 'add' && <div className="reference-home-menu" role="menu"><button role="menuitem" type="button" onClick={() => { setText(t => t + '@'); setMenu(null); }}><FileText size={15} />引用文件（@）</button><button role="menuitem" type="button" onClick={() => { setText(t => t + '$'); setMenu(null); }}><Zap size={15} />选用 Skill（$）</button><button role="menuitem" type="button" onClick={() => { setMenu(null); const id = 'img' + Date.now(); setChips(cs => [...cs, { id, kind: 'image', name: '启动崩溃截图.png', state: 'preparing' }]); setTimeout(() => setChips(cs => cs.map(c => c.id === id ? { ...c, state: null } : c)), 1200); }}><ImageIcon size={15} />添加图片（演示：准备中→完成）</button><button role="menuitem" type="button" onClick={() => { setMenu(null); addChip({ kind: 'file', name: 'fixtures/不可读.txt', state: 'failed', note: '读取失败' }); }}><Plus size={15} />添加附件（演示：失败可重试）</button><div className="popup-divider" /><button role="menuitem" type="button" onClick={() => { setMenu(null); addChip({ kind: 'ref', name: '禅道 Bug #1234 · x64 启动崩溃' }); onToast('已从禅道插入引用到输入框，未发送'); }}><Link2 size={15} />（演示）从插件插入引用</button><p className="m14-menu-note">也可从右侧文件树把文件拖进输入框</p></div>}</div>
+          <input ref={fileInput} type="file" hidden multiple onChange={event => {
+            const files = Array.from(event.currentTarget.files ?? []);
+            event.currentTarget.value = '';
+            addFilesToChips(files, setChips, onToast);
+          }} />
+          {menu === 'add' && <div className="reference-home-menu" role="menu">
+            <button role="menuitem" type="button" onClick={() => { setMenu(null); fileInput.current?.click(); }}><Paperclip size={15} />图片和文件</button>
+            {!blocking && a.caps?.goal && <button role="menuitem" type="button" onClick={() => { setMenu(null); changeGoalMode(true); }}><Target size={15} />目标</button>}
+          </div>}</div>
         <div className="reference-home-picker m13-perm-picker"><button type="button" className={'m13-perm-trigger' + (effectivePermission.danger ? ' danger' : '')} aria-label="权限档位" aria-expanded={menu === 'perm'} onClick={() => setMenu(menu === 'perm' ? null : 'perm')}><PermIcon icon={effectivePermission.icon} size={15} />{effectivePermission.name}<ChevronDown size={12} /></button>{activeRound && permission.id !== effectivePermission.id && <small className="m14-perm-note" role="status">下轮生效 · {permission.name}</small>}
           {menu === 'perm' && <div className="m13-perm-menu" role="menu" aria-label="权限">{perms.map(p => <button key={p.id} type="button" role="menuitemradio" aria-checked={permission.id === p.id} className={p.danger ? 'danger' : undefined} onClick={() => pickPerm(p)}><PermIcon icon={p.icon} size={16} /><span className="m13-perm-text"><b>{p.name}</b><small>{a.tool === 'codex' ? p.desc : p.otherDesc ?? p.desc}</small></span>{permission.id === p.id && <Check size={16} className="m13-perm-check" />}</button>)}</div>}</div>
+        {goalMode && !blocking && <GoalComposerMode onExit={() => changeGoalMode(false)} />}
         {<button type="button" className={'m14-deleg' + (delegation ? ' on' : '')} aria-pressed={delegation} title={delegation ? '允许 Agent 委派子任务（点击关闭）' : '不允许新委派，单 Agent 工作（点击开启）'} onClick={() => { const next = !delegation; setDelegation(next); onToast(next ? '已允许委派子任务' : scenario.id === 'team' ? '已关闭新委派：现有 3 个子任务完成后回到单 Agent' : '已关闭新委派，本任务以单 Agent 工作'); }}><Network size={14} />{delegation ? '可委派' : '单 Agent'}</button>}
         <>
           <div className="reference-home-picker composer-profile"><ModelPill agent={sel.agent} model={sel.model} effort={sel.effort} open={menu === 'model'} onClick={() => setMenu(menu === 'model' ? null : 'model')} />
-            {menu === 'model' && <ModelPicker taskId={taskId} goal={goalLock(taskId, scenario)} agent={sel.agent} model={sel.model} effort={sel.effort} running={running} onToast={onToast} onClose={() => setMenu(null)} onPick={(agentId, modelId, eff, keep) => { const changed = agentId !== sel.agent; if (changed && !running) setFresh(sel); setSel({ agent: agentId, model: modelId, effort: eff }); if (!keep) setMenu(null); if (changed && running) onToast(`本轮仍由 ${ba.name} 执行，本轮结束后切换到 ${AGENTS.find(x => x.id === agentId).name}`); }} />}</div>
+            {menu === 'model' && <ModelPicker taskId={taskId} goal={lockedGoal} agent={sel.agent} model={sel.model} effort={sel.effort} running={running} onToast={onToast} onClose={() => setMenu(null)} onPick={(agentId, modelId, eff, keep) => { const changed = agentId !== sel.agent; if (changed && !running) setFresh(sel); setSel({ agent: agentId, model: modelId, effort: eff }); if (!keep) setMenu(null); if (changed && running) onToast(`本轮仍由 ${ba.name} 执行，本轮结束后切换到 ${AGENTS.find(x => x.id === agentId).name}`); }} />}</div>
           <VoiceButton compact onClick={() => onToast('语音输入（沿用 M7）')} />
           {stopping && !text.trim() ? <button type="button" className="reference-send m14-stop" aria-label="正在停止" title="正在停止，等待执行器确认" disabled><LoaderCircle size={13} className="spin" /></button>
             : running && !text.trim() ? <button type="button" className="reference-send m14-stop" aria-label="停止" title="停止本轮" onClick={() => { dispatchEvent(new Event('m14:stop')); onToast('正在停止…（合成）'); }}><Square size={11} fill="currentColor" /></button>
@@ -568,7 +608,7 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
       </div>
     </div>
     <div className="m14-bottom">
-      {archived ? <div className="m14-archive-composer"><textarea aria-label="已归档任务输入" disabled placeholder="恢复后可以继续此会话" /></div> : <Composer requests={requests} reqIndex={Math.min(reqIndex, Math.max(0, requests.length - 1))} setReqIndex={setReqIndex} onDecide={onDecide} taskId={taskId} ptyId={ptyId} delegation={delegation} setDelegation={setDelegation} scenario={eff} sel={sel} setSel={setSel} bound={bound} fullConfirmed={fullConfirmed} requestFullAccess={requestFullAccess} permission={permission} setPermission={setPermission} queued={queued} setQueued={setQueued} onPromote={q => {
+      {archived ? <div className="m14-archive-composer"><textarea aria-label="已归档任务输入" disabled placeholder="恢复后可以继续此会话" /></div> : <Composer initialGoal={initialMessage?.objective} requests={requests} reqIndex={Math.min(reqIndex, Math.max(0, requests.length - 1))} setReqIndex={setReqIndex} onDecide={onDecide} taskId={taskId} ptyId={ptyId} delegation={delegation} setDelegation={setDelegation} scenario={eff} sel={sel} setSel={setSel} bound={bound} fullConfirmed={fullConfirmed} requestFullAccess={requestFullAccess} permission={permission} setPermission={setPermission} queued={queued} setQueued={setQueued} onPromote={q => {
           setQueued(items => items.filter(item => item.id !== q.id));
           setPromoted(items => [...items, { ...q, steer: eff.turns.at(-1)?.state === 'running' }]);
           requestAnimationFrame(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; });

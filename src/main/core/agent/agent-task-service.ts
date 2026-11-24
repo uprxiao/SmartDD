@@ -1,3 +1,5 @@
+import type { GoalInput } from '@shared/agent-goal';
+import type { QueuedGoal } from './agent-store';
 import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, findAgentModel, modelEffortKey, offersCodexLoginDefault, resolveModelEffort, type AgentModelOption } from '@shared/agent-model-choice';
 import type { HostBusinessRequests } from './host-business-requests';
 import type { TurnDiffs } from './turn-diffs';
@@ -239,8 +241,7 @@ export class AgentTaskService {
   private readonly blockedByClosing = new Map<string, number>();
   /** 每次停止递增：异步打开运行期间按了停止，返回后不再派发（复核 CR03）。 */
   private readonly stopSeq = new Map<string, number>();
-  /** Claude 目标命令已发出、尚未得到原生确认（复核 CR14）；确认后以原生事实为准。 */
-  private readonly goalPending = new Map<string, { kind: 'set' | 'clear'; objective?: string; turnId?: string }>();
+  private readonly goalPending = new Map<string, GoalInput & { turnId: string }>();
   // A /goal turn that ended without a recognised confirmation: the goal state is unknown (A69, D06-66).
   private readonly goalUnknown = new Map<string, { kind: 'set' | 'clear'; objective?: string }>();
 
@@ -254,8 +255,21 @@ export class AgentTaskService {
       this.stoppedByUser.add(taskId);
     }
     d.store.subscribe(e => {
-      if (e.type === 'goal.changed') { this.goalPending.delete(e.taskId); this.goalUnknown.delete(e.taskId); }
-      if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g && g.turnId === (e.payload as { turnId?: string }).turnId) { this.goalPending.delete(e.taskId); this.goalUnknown.set(e.taskId, { kind: g.kind, ...(g.objective ? { objective: g.objective } : {}) }); } }
+      const goal = this.goalPending.get(e.taskId);
+      if (e.type === 'goal.changed') {
+        this.goalUnknown.delete(e.taskId);
+        const { status } = e.payload as { status: string };
+        if (goal && (goal.kind === 'clear' ? status === 'cleared' : status === 'active')
+            && this.d.store.turn(goal.turnId)?.status !== 'accepted') this.goalPending.delete(e.taskId);
+      }
+      if (e.type === 'turn.ended' && goal && goal.turnId === (e.payload as { turnId: string }).turnId) {
+        this.goalPending.delete(e.taskId);
+        const turn = this.d.store.inputForTurn(goal.turnId);
+        if (turn?.started_at || turn?.status === 'unknown') {
+          const { turnId: _turnId, ...intent } = goal;
+          this.goalUnknown.set(e.taskId, intent);
+        }
+      }
       // 只解除“等待旧运行退出”这一原因；等待期间用户又按了停止，则保持暂停（复核 FR01）。
       if (e.type === 'run.ended' && this.blockedByClosing.has(e.taskId)) { const since = this.blockedByClosing.get(e.taskId); this.blockedByClosing.delete(e.taskId); if (since === (this.stopSeq.get(e.taskId) ?? 0)) this.paused.delete(e.taskId); }
       if (e.type === 'turn.ended' && this.diffs) {
@@ -484,10 +498,11 @@ export class AgentTaskService {
   /** 草稿与输入同一文字上限；超限明确拒绝，原记录不变（复核 SR02）。冲突回执只带修订，不回传草稿正文。 */
   saveDraft(taskId: string, draft: unknown, expectedRevision: number) {
     this.selection(taskId);
-    const d = draft as { text?: unknown; attachments?: unknown } | null;
+    const d = draft as { text?: unknown; attachments?: unknown; goalMode?: unknown } | null;
     if (!d || typeof d !== 'object' || (d.text !== undefined && typeof d.text !== 'string')) throw new DriverError('REJECTED', '草稿无效');
     if (typeof d.text === 'string' && Buffer.byteLength(d.text) > INPUT_TEXT_LIMIT) throw new DriverError('REJECTED', '草稿超过 256 KB，未保存；请拆分或改用附件');
     if (d.attachments !== undefined && (!Array.isArray(d.attachments) || d.attachments.length > 20)) throw new DriverError('REJECTED', '草稿附件无效');
+    if (d.goalMode !== undefined && typeof d.goalMode !== 'boolean') throw new DriverError('REJECTED', '草稿模式无效');
     const previous = this.d.store.draft(taskId)?.draft;
     const r = this.d.store.saveDraft(taskId, draft, expectedRevision);
     if (r.ok) {
@@ -499,7 +514,7 @@ export class AgentTaskService {
   }
 
   /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
-  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] },sender?:import('../applications/execution-context').ApplicationUiSender) {
+  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] },sender?:import('../applications/execution-context').ApplicationUiSender, goal?: QueuedGoal) {
     let { revision, task } = this.selection(taskId);
     // 幂等命中直接返回原收据，不再核对选择修订、准备或冻结附件（复核 NR01、FR06）。
     const existing = this.d.store.turnByClientInput(taskId, input.clientInputId);
@@ -517,8 +532,9 @@ export class AgentTaskService {
     // 图片在接受时冻结副本，派发只读副本（复核 CR01）。
     const attachments = this.d.userData ? freezeImages(verified, task.cwd, this.d.userData) : verified;
     if (!input.text.trim() && !attachments.length) throw new DriverError('REJECTED', '内容为空');
-    const accepted = this.d.store.acceptTurn({ taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: 'user', attachments });
+    const accepted = this.d.store.acceptTurn({ taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: 'user', attachments, goal });
     if (accepted.duplicate) return { turnId: accepted.turn.turn_id, duplicate: true, status: accepted.turn.status };
+    if (goal) this.trackGoal(taskId, accepted.turn.turn_id, goal);
     if(sender)this.trustedInputs.set(accepted.turn.turn_id,sender);
     this.paused.delete(taskId);
     this.stoppedByUser.delete(taskId);
@@ -793,26 +809,45 @@ export class AgentTaskService {
       .map(({ name }) => ({ name }));
   }
 
-  /** 目标（需求 R02）：Codex 用原生目标接口，可暂停／继续；Claude 以 /goal 文字设定与清除，不能暂停。 */
-  async goal(taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {
+  private trackGoal(taskId: string, turnId: string, goal: QueuedGoal) {
+    const { bindingId: _bindingId, ...intent } = goal;
+    this.goalUnknown.delete(taskId);
+    this.goalPending.set(taskId, { ...intent, turnId });
+  }
+
+  /** Codex uses its goal RPC. Claude and Gemini use their own slash command in a turn. */
+  async goal(taskId: string, op: GoalInput | { kind: 'pause' } | { kind: 'resume' }) {
     this.requireStableSelection(taskId);
-    this.d.store.tx(emit => emit(taskId, 'goal.user_action', { kind: op.kind }));
-    if (op.kind !== 'pause') this.coordination?.userContinued(taskId);
-    const { selection } = this.selection(taskId);
+    const { selection, revision, task } = this.selection(taskId);
+    if (task.parent_task_id) throw new DriverError('UNSUPPORTED', '子任务不支持设置目标');
     if (op.kind === 'set' && (!op.objective.trim() || op.objective.length > 4000)) throw new DriverError('REJECTED', '目标内容无效');
-    if (selection.driverId === 'claude-sdk') {
-      if (op.kind === 'pause' || op.kind === 'resume') throw new DriverError('UNSUPPORTED', 'Claude 目标不能暂停，只能清除');
-      const run = await this.ensureRun(taskId);
-      this.requireCapability(run, 'goal', '目标');
-      const text = op.kind === 'set' ? `/goal ${op.objective.trim()}` : '/goal clear';
-      // 不预写目标状态：命令发出后等原生确认（active_goal 或 Goal set／cleared），期间显示“等待确认”（复核 CR14）。
-      const r = await this.submit(taskId, { clientInputId: `goal-${randomUUID().replace(/-/g, '')}`, text, expectedSelectionRevision: this.selection(taskId).revision });
-      this.goalUnknown.delete(taskId);
-      this.goalPending.set(taskId, { kind: op.kind === 'set' ? 'set' : 'clear', ...(op.kind === 'set' ? { objective: op.objective.trim() } : {}), turnId: r.turnId });
-      return r;
+    if (selection.driverId !== 'codex-app-server' && (op.kind === 'pause' || op.kind === 'resume')) {
+      throw new DriverError('UNSUPPORTED', '此执行器的目标不能暂停或继续，只能清除');
     }
     const run = await this.ensureRun(taskId);
+    if (this.selection(taskId).revision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
     this.requireCapability(run, 'goal', '目标');
+    if (!this.d.runs.goalAvailable(run.runId)) throw new DriverError('UNSUPPORTED', '执行器没有公布目标命令');
+    this.d.store.tx(emit => emit(taskId, 'goal.user_action', { kind: op.kind }));
+    if (op.kind !== 'pause') this.coordination?.userContinued(taskId);
+    if (run.driverId !== 'codex-app-server' && (op.kind === 'set' || op.kind === 'clear')) {
+      if (this.goalPending.has(taskId)) throw new DriverError('STATE', '已有目标操作等待执行器确认');
+      const current = this.d.store.goal(taskId);
+      const acp = run.driverId === 'antigravity-acp';
+      if (acp && op.kind === 'clear' && current?.status === 'complete') {
+        this.d.store.upsertGoal({ taskId, bindingId: run.bindingId, objective: null, status: 'cleared' });
+        return { ok: true };
+      }
+      const interrupt = acp && op.kind === 'clear' && current?.status === 'active' && this.d.runs.busy(run.runId);
+      const goal = op.kind === 'set' ? { kind: 'set' as const, objective: op.objective.trim() } : op;
+      const text = goal.kind === 'set' ? `/goal ${goal.objective}` : '/goal clear';
+      const accepted = await this.submit(taskId, { clientInputId: `goal-${randomUUID().replace(/-/g, '')}`, text,
+        expectedSelectionRevision: revision }, undefined, { ...goal, bindingId: run.bindingId });
+      if (interrupt && accepted.status === 'queued' && this.d.runs.busy(run.runId)) {
+        await this.d.runs.interrupt(run.runId, true);
+      }
+      return accepted;
+    }
     if (op.kind === 'set') await this.commandContext(taskId, run);
     if (op.kind === 'resume' || op.kind === 'set') { this.stoppedByUser.delete(taskId); this.paused.delete(taskId); this.d.runs.hold(taskId, false); }
     await this.d.runs.goal(run.runId, op);
@@ -824,7 +859,11 @@ export class AgentTaskService {
     const browserContinuation=this.hasBrowserContinuation(taskId);
     if (this.paused.has(taskId)&&!browserContinuation || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
     const queued=this.d.store.queuedTurns(taskId);
-    const next=browserContinuation?queued.find(turn=>turn.source_kind==='system'&&turn.client_input_id.startsWith('browser-login-')):queued[0];
+    const goalPending = this.goalPending.get(taskId);
+    const urgentClear = goalPending?.kind === 'clear' && this.d.runs.runForTask(taskId)?.driverId === 'antigravity-acp'
+      ? queued.find(turn => turn.turn_id === goalPending.turnId) : undefined;
+    const next = browserContinuation ? queued.find(turn => turn.source_kind === 'system' && turn.client_input_id.startsWith('browser-login-'))
+      : urgentClear ?? queued[0];
     if(!next&&browserContinuation){
       if(this.d.runs.closingForTask(taskId)||this.d.runs.respondingForTask(taskId))return;
       this.dispatching.add(taskId);
@@ -864,7 +903,18 @@ export class AgentTaskService {
       this.gateTier(run, selection.tier as Tier);
       // 异步打开期间用户按了停止：输入保留在排队，不派发（复核 CR03）。
       if (stoppedSince()) return;
-      const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
+      const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[]; goal?: QueuedGoal };
+      if (frozen.goal) {
+        if (run.bindingId !== frozen.goal.bindingId) throw new DriverError('REJECTED', '目标所属会话已变化，请重新设置目标');
+        if (!this.d.runs.goalAvailable(run.runId)) throw new DriverError('UNSUPPORTED', '执行器没有公布目标命令');
+        if (!this.goalPending.has(taskId)) this.trackGoal(taskId, next.turn_id, frozen.goal);
+        if (run.driverId === 'antigravity-acp' && frozen.goal.kind === 'clear' && this.d.store.goal(taskId)?.status === 'complete') {
+          this.d.store.upsertGoal({ taskId, bindingId: run.bindingId, objective: null, status: 'cleared' });
+          this.d.store.endTurn(next.turn_id, 'canceled');
+          this.missedPump.add(taskId);
+          return;
+        }
+      }
       const selectedModel = selection.model ?? run.defaultModel;
       const modelSettings = this.d.profileModelSettings?.(selection.profileId);
       const providerOptions = modelSettings?.options ?? [];
@@ -909,13 +959,17 @@ export class AgentTaskService {
       const acp = run.driverId === 'antigravity-acp';
       const effort = acp || confirmedNativeEffort ? preferred : resolveModelEffort(modelInfo, preferred, isCodex);
       if (!acp && preferred && effort !== preferred) this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${preferred}：执行器未公布该模型的此选项。` });
-      const hostContext = [this.coordination?.dispatchContext?.(taskId), run.hostBusinessInstructionsInstalled ? undefined : run.hostBusinessInstructions].filter(Boolean).join('\n\n');
+      // Native goal commands need their own prompt. Leave any handoff available to the next ordinary turn.
+      const includeContext = !(acp && frozen.goal);
+      const hostContext = includeContext
+        ? [this.coordination?.dispatchContext?.(taskId), run.hostBusinessInstructionsInstalled ? undefined : run.hostBusinessInstructions].filter(Boolean).join('\n\n')
+        : '';
       const remaining = INPUT_TEXT_LIMIT - Buffer.byteLength(input.text) - (hostContext ? Buffer.byteLength(hostContext) + 2 : 0);
-      transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);
+      if (includeContext) transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);
       const context = [transfer?.text, hostContext].filter(Boolean).join('\n\n');
       if (!run.readOnly) await this.diffs?.before(taskId, next.turn_id, run.runId, this.d.runs.nativeBusy(run.runId));
       if(stoppedSince())return;
-      const dispatched=await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort },
+      const dispatched=await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, goal: frozen.goal, context: context || undefined, tier: selection.tier as Tier, model, effort },
         browserContinuation?async()=>!stoppedSince()&&!!await this.business?.authorizeLoginDispatch(taskId,next.client_input_id,run)&&!stoppedSince():undefined);
       if(dispatched===null){
         if(transfer)this.handoffs.delivered(transfer.id,'unsent');
@@ -1020,8 +1074,10 @@ export class AgentTaskService {
   editQueued(taskId: string, turnId: string, version: string, text: string) {
     const row = this.userInput(taskId, turnId, 'accepted');
     if (this.dispatching.has(taskId)) throw new DriverError('STATE', '正在派发，请稍后核对队列');
+    const input = JSON.parse(row.input_ref);
+    if (input.goal) throw new DriverError('REJECTED', '请取消这条目标命令，然后重新输入目标');
     if (typeof text !== 'string' || Buffer.byteLength(text) > INPUT_TEXT_LIMIT ||
-        !text.trim() && !JSON.parse(row.input_ref).attachments?.length) throw new DriverError('REJECTED', '输入为空或超过 256 KB');
+        !text.trim() && !input.attachments?.length) throw new DriverError('REJECTED', '输入为空或超过 256 KB');
     this.d.store.editQueuedInput(taskId, turnId, version, text);
   }
 
@@ -1047,6 +1103,7 @@ export class AgentTaskService {
       this.kick(taskId);
       return { status: 'queued' as const };
     }
+    if (JSON.parse(row.input_ref).goal) throw new DriverError('STATE', '目标命令会在当前回合结束后执行');
     if (!this.steerable(run) || this.paused.has(taskId) || this.coordination?.blocked(taskId)
         || run.appliedTier !== selection.tier || run.appliedModel !== (selection.model ?? run.defaultModel)
         || selection.effort && selection.effort !== run.appliedEffort) {
@@ -1081,9 +1138,13 @@ export class AgentTaskService {
     const { revision } = this.selection(taskId);
     this.requireStableSelection(taskId);
     if (revision !== expectedRevision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
-    const { text, attachments } = JSON.parse(row.input_ref) as { text: string; attachments?: Attachment[] };
-    const accepted = this.d.store.acceptTurn({ taskId, clientInputId: 'retry-' + turnId, text, attachments, sourceKind: 'user' });
+    const { text, attachments, goal } = JSON.parse(row.input_ref) as { text: string; attachments?: Attachment[]; goal?: QueuedGoal };
+    if (goal && this.goalPending.has(taskId) && !this.d.store.turnByClientInput(taskId, 'retry-' + turnId)) {
+      throw new DriverError('STATE', '已有目标操作等待执行器确认');
+    }
+    const accepted = this.d.store.acceptTurn({ taskId, clientInputId: 'retry-' + turnId, text, attachments, goal, sourceKind: 'user' });
     if (!accepted.duplicate) {
+      if (goal) this.trackGoal(taskId, accepted.turn.turn_id, goal);
       this.trustedInputs.set(accepted.turn.turn_id, sender);
       this.paused.delete(taskId);
       this.stoppedByUser.delete(taskId);
@@ -1239,7 +1300,13 @@ export class AgentTaskService {
   }
 
   list() {
-    return this.d.store.listTasks().map(t => ({ taskId: t.id, parentTaskId: t.parent_task_id, projectId: t.project_id, dirId: t.dir_id, cwd: t.cwd, title: t.title, selection: JSON.parse(t.selection_json) as AgentSelection, createdAt: t.created_at, updatedAt: t.updated_at, pinnedAt: t.pinned_at, status: this.status(t.id), stopping: !!this.d.runs.stopProgress(t.id) }));
+    return this.d.store.listTasks().map(t => {
+      const status = this.status(t.id);
+      return { taskId: t.id, parentTaskId: t.parent_task_id, projectId: t.project_id, dirId: t.dir_id, cwd: t.cwd, title: t.title,
+        selection: JSON.parse(t.selection_json) as AgentSelection, createdAt: t.created_at, updatedAt: t.updated_at,
+        pinnedAt: t.pinned_at, status, goalRunning: status === 'working' && this.d.store.goal(t.id)?.status === 'active',
+        stopping: !!this.d.runs.stopProgress(t.id) };
+    });
   }
   /** Parent item fixes run/node identity. The renderer cannot provide a foreign native thread ID. */
   nativeHistory(taskId: string, itemId: string, beforeOrdinal = Number.MAX_SAFE_INTEGER) {
@@ -1279,6 +1346,7 @@ export class AgentTaskService {
     const queuedAll = this.d.store.queuedTurns(taskId).filter(row => row.turn_id !== preparingTurnId);
     const allTurns = this.d.store.turnsWithNativeWait(taskId);
     const goal = this.d.store.goal(taskId);
+    const pendingGoal = this.goalPending.get(taskId);
     const catalog = run ? this.d.runs.active(run.runId)?.catalog ?? null : null;
     const backgroundWork = run?.driverId === 'claude-sdk'
       ? this.d.store.activeBackgroundItems(taskId, run.runId).map(item => previewItem(item, 2048)) : [];
@@ -1294,8 +1362,8 @@ export class AgentTaskService {
         queued: queuedAll.slice(0, [10, 10, 5, 3][level]).map(q => queuedPreview(q, [1000, 1000, 400, 200][level])),
         queuedTotal: queuedAll.length, preparingTurnId,
         ...(backgroundWork.length ? { backgroundWork } : {}),
-        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.turnTier ?? run.appliedTier ?? run.tier, tierChanging: !!run.tierChange, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: !this.d.runs.stopProgress(taskId) && this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
-        goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null, goalUnknown: this.goalUnknown.get(taskId) ?? null,
+        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.turnTier ?? run.appliedTier ?? run.tier, tierChanging: !!run.tierChange, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: !this.d.runs.stopProgress(taskId) && this.steerable(run), goal: this.d.runs.goalAvailable(run.runId), catalog: catalogForSnapshot(catalog, level) } : null,
+        goal: goal ? boundGoal(goal) : goal, goalPending: pendingGoal ? { ...pendingGoal, queued: this.d.store.turn(pendingGoal.turnId)?.status === 'accepted' } : null, goalUnknown: this.goalUnknown.get(taskId) ?? null,
         status: this.status(taskId), seq: this.d.store.watermark(taskId),
       };
       const recentTurns = allTurns.slice(-[20, 20, 10, 3][level]);

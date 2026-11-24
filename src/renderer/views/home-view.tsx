@@ -4,7 +4,7 @@ import {showBrowserPresentation} from '@renderer/features/browser/store';
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, Folder, FolderTree, Info, Loader2, Monitor, Paperclip, Plus, Settings } from 'lucide-react';
+import { ArrowUp, CircleAlert, Folder, FolderTree, Info, Loader2, Monitor, Settings } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -32,7 +32,8 @@ import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { Button } from '@renderer/lib/ui/button';
 import { Dialog, DialogContent, DialogContentArea, DialogFooter, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
+import { ComposerAddMenu, ComposerGoalMode, GOAL_PLACEHOLDER } from '@renderer/features/agent-tasks/composer-add-menu';
+import { canConfigureGoal, composerGoal } from '@shared/agent-goal';
 import { Field } from './projects/form-parts';
 import { ProjectDialog } from './projects/project-dialogs';
 import { cn } from '@renderer/utils/utils';
@@ -52,6 +53,7 @@ export const HomeView = observer(function HomeView() {
   const [creatingProject, setCreatingProject] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const message = navigation.homeInput(projectId);
+  const goalMode = navigation.homeGoalMode(projectId);
   const setMessage = (value: string) => navigation.setHomeInput(projectId, value);
   const [dirId, setDirId] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -61,7 +63,6 @@ export const HomeView = observer(function HomeView() {
   const [launching, setLaunching] = useState(false);
   const launchToken = useRef<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const attachmentInput = useRef<HTMLInputElement>(null);
   const { data: project } = useProject(projectId);
   useLayoutEffect(()=>{
     const el=inputRef.current;if(!el)return;
@@ -125,6 +126,12 @@ export const HomeView = observer(function HomeView() {
   const dir = dirs.find((d) => d.id === dirId) ?? dirs.find((d) => d.isDefault) ?? dirs[0] ?? null;
   useEffect(()=>homeWorkspace.set(projectId,dir?.id??null,dir?.path??null),[projectId,dir?.id,dir?.path]);
   const profile = profiles?.find((p) => p.id === profileId) ?? null;
+  const canGoal = !!profile && canConfigureGoal(profile.kind, agents?.tools.find(tool => tool.id === profile.toolId)?.version);
+  const changeGoalMode = (active: boolean) => {
+    navigation.setHomeInput(projectId, message, active);
+    setSkillTrigger(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
   const catalogProject = projectId ?? '';
   const catalogDir = dir?.id ?? '';
   const isCodexLogin = profile?.kind === 'codex' && profile.source === 'login';
@@ -223,6 +230,14 @@ export const HomeView = observer(function HomeView() {
   };
   const launch = async () => {
     if (!ready || launchToken.current || !projectId || !profile || !dir) return;
+    const goal = composerGoal(message, goalMode);
+    if (goal) {
+      if (!canGoal) { setError('当前执行器的目标不可用'); return; }
+      if (goal.kind === 'clear') { setError('请在已有任务内清除目标'); return; }
+      if (!goal.objective) { setError('请输入目标和可验证的完成条件'); return; }
+      if (goal.objective.length > 4000) { setError('目标不能超过 4000 个字符'); return; }
+      if (chips.length) { setError('目标不能带附件，附件已保留'); return; }
+    }
     if (chips.some(c => c.status === 'preparing')) { setError('附件还在准备中，准备好后再开始任务'); return; }
     if (chips.some(c => c.status === 'failed')) { setError('有附件准备失败，请重试或移除后再开始任务'); return; }
     setError('');
@@ -254,11 +269,14 @@ export const HomeView = observer(function HomeView() {
       const previous = navigation.homeLaunchAttempts.get(projectId);
       const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
       navigation.homeLaunchAttempts.set(projectId, attempt);
-      const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, effort, initialCodexDefault, carryExtensions, extensionPreferences: homeSelection.extensions });
+      const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: (goal?.kind === 'set' ? goal.objective : message).split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, effort, initialCodexDefault, carryExtensions, extensionPreferences: homeSelection.extensions });
       if (created.tierNotice) toast.message(created.tierNotice);
       const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
-      rememberBrowserPresentation(created.taskId,attempt.inputId,originalBrowserRevision,true);
-      if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
+      if (goal) await rpc.agentTasks.goal(created.taskId, goal);
+      else {
+        rememberBrowserPresentation(created.taskId,attempt.inputId,originalBrowserRevision,true);
+        if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
+      }
       if (navigation.homeLaunchAttempts.get(projectId)?.taskId === attempt.taskId) navigation.homeLaunchAttempts.delete(projectId);
       void agentTasksStore.refresh();
 
@@ -269,11 +287,14 @@ export const HomeView = observer(function HomeView() {
       if (sameScope) {
         setChips(currentChips => currentChips.filter(chip => !chipIds.has(chip.localId)));
       }
-      if (sameDraft) navigation.setHomeInput(projectId, '');
+      if (sameDraft) navigation.setHomeInput(projectId, '', false);
       if (sameScope && sameDraft && navigation.currentViewId === 'home' && navigation.homePreset === presetAtLaunch) {
         draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
-        const pending=enterBrowserPresentationTask(created.taskId,attempt.inputId,()=>navigation.openAgentTask(created.taskId));
-        if(pending)void showBrowserPresentation(pending).catch(()=>{});
+        if (goal) navigation.openAgentTask(created.taskId);
+        else {
+          const pending=enterBrowserPresentationTask(created.taskId,attempt.inputId,()=>navigation.openAgentTask(created.taskId));
+          if(pending)void showBrowserPresentation(pending).catch(()=>{});
+        }
       }
     } catch (e) {
       setError(rpcErrorMessage(e));
@@ -334,13 +355,8 @@ export const HomeView = observer(function HomeView() {
       </div>
       <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
         <AttachmentChips chips={chips} onRemove={removeChip} onRetry={id => { const c = chips.find(x => x.localId === id); removeChip(id); if (c?.file) addFiles([c.file]); }} />
-        <input ref={attachmentInput} type="file" hidden multiple onChange={e => {
-          const files = Array.from(e.currentTarget.files ?? []);
-          e.currentTarget.value = '';
-          if (files.length) addFiles(files);
-        }} />
         <ComposerMenu items={skills} index={activeSkill} onPick={pickSkill} skills={selectingSkill} empty={skillCatalog.empty} />
-        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')}
+        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={goalMode ? GOAL_PLACEHOLDER : t('m6.promptPlaceholder')}
           onChange={e => { setMessage(e.currentTarget.value); updateSkillTrigger(e.currentTarget); }}
           onSelect={e => updateSkillTrigger(e.currentTarget)}
           onBlur={() => setSkillTrigger(null)}
@@ -356,10 +372,10 @@ export const HomeView = observer(function HomeView() {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void launch(); }
           }} />
         <div className="reference-composer-toolbar">
-          <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
-            <DropdownMenuItem disabled={!dir?.status.available || launching} onClick={() => attachmentInput.current?.click()}><Paperclip />{t('home.addAttachments')}</DropdownMenuItem>
-          </DropdownMenuContent></DropdownMenu>
+          <ComposerAddMenu addLabel={t('m6.addContext')} filesLabel={t('home.addAttachments')} onFiles={addFiles}
+            disabled={!dir?.status.available || launching} onGoal={canGoal ? () => changeGoalMode(true) : undefined} />
           <HomePermissionPicker kind={profile?.kind??'claude'} disabled={!profile||launching} />
+          {goalMode && <ComposerGoalMode onExit={() => changeGoalMode(false)} disabled={launching} />}
           <div className="reference-home-picker composer-profile">{profilePicker}</div>
           <VoiceButton compact disabled={launching} onClick={() => void voiceStore.trigger(textareaVoiceTarget(inputRef.current), 'home')} />
           <button type="submit" data-testid="home-launch" className="reference-send" disabled={!ready} aria-label={t('home.launchHint')} title={t('home.launchHint')}>{launching ? <Loader2 size={19} className="animate-spin" /> : <ArrowUp size={19} />}</button>

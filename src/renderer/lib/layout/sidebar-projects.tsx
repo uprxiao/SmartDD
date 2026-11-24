@@ -109,7 +109,7 @@ const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskS
           <span className="truncate">{task.title}</span>
         </button>
         {task.pinnedAt && <Pin className="agent-sidebar-pinned" aria-label="已置顶" size={13} />}
-        {(task.stopping || AGENT_STATUS[task.status]) && <span className={`task-state-tail agent-tail ${task.status}`}>{task.stopping ? '正在停止…' : AGENT_STATUS[task.status]}</span>}
+        {(task.stopping || AGENT_STATUS[task.status]) && <span className={`task-state-tail agent-tail ${task.status}`}>{task.stopping ? '正在停止…' : task.goalRunning ? '目标进行中' : AGENT_STATUS[task.status]}</span>}
         <div className="agent-sidebar-actions">
           <button type="button" className="row-action" title={pinLabel} aria-label={pinLabel} disabled={busy} onClick={pin}><PinIcon size={14} /></button>
           <button type="button" className="row-action" title="归档" aria-label="归档" disabled={busy} onClick={archive}><Archive size={14} /></button>

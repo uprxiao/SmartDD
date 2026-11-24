@@ -1,3 +1,4 @@
+import type { GoalInput } from '@shared/agent-goal';
 // M14 运行服务（技术方案 T1.5 §3）：打开／恢复绑定、登记真实运行身份、提交输入、转发原生请求与回应。
 // 统一接口验证 task、binding、run、generation；客户端不得自报 PID、nativeId 或真人来源。
 import { randomUUID } from 'node:crypto';
@@ -44,7 +45,7 @@ export interface OpenRunInput {
 }
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; modelsWithoutImageInput?: ReadonlySet<string>; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; appliedModel?: string; appliedEffort?: string; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
-type QueuedTurnInput={clientInputId:string;text:string;images?:{path:string;mime:string}[];tier?:Tier;model?:string;effort?:string;context?:string};
+type QueuedTurnInput={clientInputId:string;text:string;images?:{path:string;mime:string}[];tier?:Tier;model?:string;effort?:string;context?:string;goal?:GoalInput};
 export interface RunHandle {
   hostBusinessInstructions?: string;
   hostBusinessInstructionsInstalled?: boolean;
@@ -142,7 +143,10 @@ export class AgentRunService {
       await run.integration?.beforeFork?.();
       assertStarting();
       forkAttempted = true;
+      const storedGoal = input.driverId === 'antigravity-acp' && resumeNativeId ? store.goal(run.taskId) : null;
+      const resumedGoal = storedGoal?.bindingId === bindingId && storedGoal?.status === 'active' ? storedGoal.objective : undefined;
       const opened = await instance.open({
+        resumedGoal,
         executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: run.hostBusinessInstructions,
         cwd: input.cwd, env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs, settingSources: input.settingSources,
         mcpServers: run.integration?.mcpServers, projectContextMcp: run.integration?.projectContextMcp,
@@ -354,6 +358,10 @@ export class AgentRunService {
             && Number.isFinite(e.nativeCreatedAt) && e.nativeCreatedAt === before.nativeCreatedAt
             && Number.isFinite(e.nativeUpdatedAt) && e.nativeUpdatedAt === before.nativeUpdatedAt;
           const pausedReason = sameWaitingPause ? 'waiting_children' : heldActive ? before?.pausedReason ?? 'user' : undefined;
+          if (run.driverId === 'antigravity-acp' && before?.status === 'active' && e.status === 'complete' && run.turnId) {
+            const startedAt = store.inputForTurn(run.turnId)?.started_at;
+            if (startedAt) store.addGoalTime(run.taskId, (Date.now() - Date.parse(startedAt)) / 1000);
+          }
           store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: heldActive ? 'paused' : e.status, pausedReason, timeUsedSeconds: e.timeUsedSeconds, nativeCreatedAt: e.nativeCreatedAt, nativeUpdatedAt: e.nativeUpdatedAt });
           // 目标在回合进行中设定：这一轮计入目标轮次（宿主计数）。
           const after = store.goal(run.taskId);
@@ -381,9 +389,9 @@ export class AgentRunService {
           break;
         }
         case 'turn.completed': {
-          // Claude 不回报目标用时：按目标进行期间的回合用时累计（Codex 由 thread/goal/updated 提供）。
-          if (run.driverId === 'claude-sdk' && store.goal(run.taskId)?.status === 'active' && run.turnId) {
-            const t = store.turn(run.turnId) as { started_at?: string | null } | undefined;
+          // Claude 和 Gemini 按运行目标的回合用时累计。Codex 直接读取原生用时。
+          if (run.driverId !== 'codex-app-server' && store.goal(run.taskId)?.status === 'active' && run.turnId) {
+            const t = store.inputForTurn(run.turnId);
             if (t?.started_at) store.addGoalTime(run.taskId, (Date.now() - Date.parse(t.started_at)) / 1000);
           }
           const turns = store.turnsByNative(run.runId, e.nativeTurnId);
@@ -475,12 +483,12 @@ export class AgentRunService {
     run.turnId = turnId;
     run.turnTier = tier.tier;
     try {
-      const names = new Set(Array.from(input.text.matchAll(/(?:^|\s)\$([\w.-]+)(?=\s|$)/g), match => match[1]));
+      const names = new Set(Array.from((input.goal ? '' : input.text).matchAll(/(?:^|\s)\$([\w.-]+)(?=\s|$)/g), match => match[1]));
       const skills = run.integration?.managedSkills?.filter(skill => names.has(skill.name)) ?? [];
       const text = skills.length
         ? `用户选用了这些 WillYou 技能。请先读取对应的 SKILL.md，再按说明处理请求。\n${skills.map(skill => `${skill.name} ${JSON.stringify(skill.path)}`).join('\n')}\n\n${input.text}`
         : input.text;
-      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
+      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort, ...(input.goal ? { goal: input.goal } : {}) });
       run.appliedTier = tier.tier; run.appliedModel = input.model; run.appliedEffort = input.effort; if (input.model) run.sentModel = true;
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };
@@ -564,6 +572,12 @@ export class AgentRunService {
     await run.instance.injectHistory(text);
     this.deps.store.tx(emit => emit(run.taskId, 'run.history_injected', { runId, elapsedMs: Math.round(performance.now() - started) }));
   }
+  goalAvailable(runId: string) {
+    const run = this.runs.get(runId);
+    return run?.capabilities.goal.state === 'enabled'
+      && (run.driverId !== 'antigravity-acp' || run.catalog?.commands.includes('goal') === true);
+  }
+
   async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {
     const run = this.runs.get(runId);
     if (!run) throw new DriverError('STATE', '运行不存在');

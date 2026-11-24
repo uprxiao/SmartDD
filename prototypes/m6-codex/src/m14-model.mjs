@@ -18,7 +18,7 @@ export const AGENTS = [
   { id: 'cc-hub', tool: 'claude', caps: { goal: true, compact: true, init: true }, provider: true, providerBadge: { catalog: 'ultracloud', name: 'Model Hub' }, name: 'Claude Code · Model Hub', short: 'Claude Code · Model Hub', source: 'WillYou 托管 · 合成目录', models: [{ id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5' }, { id: 'declared-claude-effort', name: '档位声明示例（合成）', efforts: ['低', '中等', '高'] }], efforts: [], steer: true },
   { id: 'cc-rj', tool: null, name: 'CC-rj', short: 'CC-rj', source: '本机程序 · 旧版配置', status: { kind: 'unavailable', label: '不可用', reason: '本机 claude 2.0.1 低于已验证的最低版本 2.1.321，请升级后重新检测' }, models: [{ id: 'default', name: '默认模型', note: '执行器当前默认' }], efforts: [], steer: false, steerReason: '未验证运行中插话，只能排队' },
   ...(F35_PREVIEW ? [{
-    id: 'agy-hub', tool: 'antigravity', provider: true, providerBadge: { catalog: 'ultracloud', name: 'Model Hub' },
+    id: 'agy-hub', tool: 'antigravity', caps: { goal: true }, provider: true, providerBadge: { catalog: 'ultracloud', name: 'Model Hub' },
     name: 'Antigravity · Model Hub', short: 'Antigravity · Model Hub', source: 'WillYou 托管 · 合成目录',
     models: F35_MODELS, efforts: ['低', '中等', '高'], defaultEffort: '低', steer: false,
   }] : []),

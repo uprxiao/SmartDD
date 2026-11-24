@@ -28,7 +28,7 @@ class NavigationStore {
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
   /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
-  homeInputDrafts = new Map<string | null, { text: string; revision: number }>();
+  homeInputDrafts = new Map<string | null, { text: string; revision: number; goalMode?: boolean }>();
   private homeInputSequence = 0;
   homeLaunchAttempts = new Map<string, HomeLaunchAttempt>();
   pluginPromptRequest:{seq:number;prompt:string}|null=null;
@@ -78,8 +78,11 @@ class NavigationStore {
   consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
   homeInput(projectId: string | null): string { return this.homeInputDrafts.get(projectId)?.text ?? ''; }
   homeInputRevision(projectId: string | null): number { return this.homeInputDrafts.get(projectId)?.revision ?? 0; }
-  setHomeInput(projectId: string | null, text: string): void {
-    if (this.homeInput(projectId) !== text) this.homeInputDrafts.set(projectId, { text, revision: ++this.homeInputSequence });
+  homeGoalMode(projectId: string | null): boolean { return this.homeInputDrafts.get(projectId)?.goalMode === true; }
+  setHomeInput(projectId: string | null, text: string, goalMode = this.homeGoalMode(projectId)): void {
+    if (this.homeInput(projectId) !== text || this.homeGoalMode(projectId) !== goalMode) {
+      this.homeInputDrafts.set(projectId, { text, revision: ++this.homeInputSequence, goalMode });
+    }
   }
 
   openAgentTask(id: string, readOnly = false): void {

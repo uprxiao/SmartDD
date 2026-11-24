@@ -5,10 +5,10 @@ import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {HomeView} from './home-view';
 import {navigation} from '@renderer/core/navigation';
 const m=vi.hoisted(()=>({update:vi.fn(),subscribed:false,projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
-const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),modelCatalog:vi.fn(),homeSkillCatalog:vi.fn(),prepareAttachment:vi.fn(),claudeLogin:null as 'local' | 'api' | null}));
+const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),goal:vi.fn(),modelCatalog:vi.fn(),homeSkillCatalog:vi.fn(),prepareAttachment:vi.fn(),claudeLogin:null as 'local' | 'api' | null}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
-vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'login',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[...(m.subscribed?[{id:"codex",login:"subscription"}]:[]),...(agent.claudeLogin?[{id:"claude",login:agent.claudeLogin}]:[])]}})}));
+vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'login',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[{id:'codex', version:'0.169.0', installed:true,login:m.subscribed?'subscription':'api'},...(agent.claudeLogin?[{id:"claude",login:agent.claudeLogin}]:[])]}})}));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey',()=>({useAppSettingsKey:(key:string)=>({value:key==='agentPermissions'?{selected:'ask',fullConfirmed:false}:m.draft,update:m.update})}));
 vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:agent.store}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{agentTasks:agent}}));
@@ -53,7 +53,7 @@ it('opens the attachment picker from + and passes the chosen file to the first m
     const { container } = render(<HomeView />);
     fireEvent.click(screen.getByRole('button', { name: 'm6.addContext' }));
     const addAttachment = await screen.findByRole('menuitem', { name: 'home.addAttachments' });
-    expect(screen.getAllByRole('menuitem')).toEqual([addAttachment]);
+    expect(screen.getAllByRole('menuitem').map(el => el.textContent)).toEqual(['home.addAttachments', '目标设置要持续追求的目标']);
     fireEvent.click(addAttachment);
     const picker = container.querySelector<HTMLInputElement>('input[type="file"]')!;
     expect(openPicker).toHaveBeenCalledOnce();
@@ -73,6 +73,22 @@ it('opens the attachment picker from + and passes the chosen file to the first m
     openPicker.mockRestore();
     vi.unstubAllGlobals();
   }
+});
+
+it('creates one task from the homepage goal and never submits its objective as chat', async () => {
+  agent.create.mockResolvedValue({ taskId: 'goal-task' });
+  agent.goal.mockResolvedValue({ ok: true });
+  render(<HomeView />);
+  fireEvent.click(await screen.findByTestId('composer-add'));
+  fireEvent.click(await screen.findByRole('menuitem', { name: /目标/ }));
+  const input = screen.getByPlaceholderText('描述目标和可验证的完成条件');
+  fireEvent.change(input, { target: { value: '每条测试结果都有记录' } });
+  expect(agent.create).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByTestId('home-launch'));
+  await waitFor(() => expect(agent.goal).toHaveBeenCalledWith('goal-task',
+    expect.objectContaining({ kind: 'set', objective: '每条测试结果都有记录' })));
+  expect(agent.create).toHaveBeenCalledTimes(1);
+  expect(agent.submit).not.toHaveBeenCalled();
 });
 
 describe('application example handoff to the real home composer',()=>{

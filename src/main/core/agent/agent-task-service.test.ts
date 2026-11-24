@@ -21,7 +21,8 @@ class Inst implements DriverInstance {
   nativeDefault?: string; lazyDefault?: string; newNativeId = 'n1';
   modelCatalog?: (onFallback?: (models: DriverModel[]) => void) => Promise<DriverModel[]>;
   nativeSelection?: { model: string; effort: string };
-  async open(o: DriverOpenOptions) { this.opened = o; this.emit({ type: 'process', pid: 9 }); return { nativeId: o.resumeNativeId ?? this.newNativeId, confirmed: true, ...(this.nativeDefault ? { defaultModel: this.nativeDefault } : {}), ...(this.nativeSelection ? { nativeSelection: this.nativeSelection } : {}) }; }
+  publishesGoal = false;
+  async open(o: DriverOpenOptions) { this.opened = o; this.emit({ type: 'process', pid: 9 }); if (this.publishesGoal) this.emit({ type: 'catalog', commands: ['goal'], skills: [] }); return { nativeId: o.resumeNativeId ?? this.newNativeId, confirmed: true, ...(this.nativeDefault ? { defaultModel: this.nativeDefault } : {}), ...(this.nativeSelection ? { nativeSelection: this.nativeSelection } : {}) }; }
   async defaultModel() { return this.lazyDefault; }
   histories: string[] = [];
   async injectHistory(text: string) { this.histories.push(text); }
@@ -40,15 +41,16 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { distinctNativeIds?: boolean; failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: Inst['modelCatalog']; nativeSelection?: Inst['nativeSelection']; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string>; profileModelSettings?: ConstructorParameters<typeof AgentTaskService>[0]['profileModelSettings'] } = {}) {
+function setup(opts: { publishesGoal?: boolean; distinctNativeIds?: boolean; failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: Inst['modelCatalog']; nativeSelection?: Inst['nativeSelection']; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string>; profileModelSettings?: ConstructorParameters<typeof AgentTaskService>[0]['profileModelSettings'] } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db, { artifactDir: opts.artifactDir });
   const insts: Inst[] = [];
-  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); if (opts.distinctNativeIds) i.newNativeId = `n${insts.length + 1}`; i.nativeDefault = opts.nativeDefault; i.modelCatalog = opts.modelCatalog; i.nativeSelection = opts.nativeSelection; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
-  const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
+  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.publishesGoal = opts.publishesGoal === true; if (opts.distinctNativeIds) i.newNativeId = `n${insts.length + 1}`; i.nativeDefault = opts.nativeDefault; i.modelCatalog = opts.modelCatalog; i.nativeSelection = opts.nativeSelection; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
+  const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')], ['antigravity-acp', drv('antigravity-acp')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
-  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
-  const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData, profileModelSettings: opts.profileModelSettings });
+  const driverFor = (profileId: string): DriverId => profileId === 'cc' ? 'claude-sdk' : profileId === 'gemini' ? 'antigravity-acp' : 'codex-app-server';
+  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: driverFor(i.profileId), executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : i.profileId === 'gemini' ? '1.5.14' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
+  const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: driverFor, userData: opts.userData, profileModelSettings: opts.profileModelSettings });
   return { db, store, runs, svc, insts, launches, resolveLaunch };
 }
 const id = (n: number) => `client-input-${n}`;
@@ -633,6 +635,64 @@ describe('目标与插话', () => {
     expect(svc.snapshot(taskId).goalPending).toBeNull();
     await expect(svc.goal(taskId, { kind: 'pause' })).rejects.toThrow('不能暂停');
   });
+  it('requires the current Gemini session to advertise its native goal command', async () => {
+    const { svc, insts, runs } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'Gemini', profileId: 'gemini', tier: 'ask' });
+    await expect(svc.goal(taskId, { kind: 'set', objective: '核对结果' })).rejects.toThrow('没有公布目标命令');
+    expect(insts[0].turns).toHaveLength(0);
+    expect(svc.snapshot(taskId)).toMatchObject({ run: { goal: false }, goal: null, goalPending: null });
+    await runs.closeAll();
+  });
+
+  it('queues Gemini clear before interrupting, then clears the native goal before dispatching ordinary queued input', async () => {
+    const { svc, insts, runs } = setup({ publishesGoal: true });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'Gemini', profileId: 'gemini', tier: 'ask' });
+    const objective = '查完两项后核对结果';
+    await svc.goal(taskId, { kind: 'set', objective });
+    const native = insts[0];
+    await until(() => native.turns.length === 1 && !svc.isDispatching(taskId));
+    expect(native.turns[0]).toMatchObject({ text: '/goal ' + objective, goal: { kind: 'set', objective } });
+    expect(svc.snapshot(taskId).goalPending).toMatchObject({ kind: 'set', queued: false });
+    native.emit({ type: 'goal', status: 'active', objective });
+    expect(svc.list()[0]).toMatchObject({ goalRunning: true });
+    const ordinary = await svc.submit(taskId, { clientInputId: id(519), text: '以后再查第三项', expectedSelectionRevision: 1 });
+    expect(ordinary.status).toBe('queued');
+    const cleared = await svc.goal(taskId, { kind: 'clear' });
+    expect(cleared).toMatchObject({ status: 'queued' });
+    expect(native.interrupts).toBe(1);
+    await until(() => native.turns.length === 2 && !svc.isDispatching(taskId));
+    expect(native.turns[1].goal?.kind).toBe('clear');
+    expect(svc.snapshot(taskId)).toMatchObject({ goal: { status: 'active' }, goalPending: { kind: 'clear' } });
+    native.emit({ type: 'goal', objective: null, status: 'cleared' });
+    native.finish();
+    await until(() => native.turns.length === 3);
+    expect(native.turns[2]).toMatchObject({ text: '以后再查第三项', clientInputId: id(519) });
+    expect(svc.snapshot(taskId)).toMatchObject({ goal: null, goalPending: null });
+    native.finish();
+    await runs.closeAll();
+  });
+
+  it('recovers the confirmed Gemini objective when the same native session opens again', async () => {
+    const { svc, store, insts, runs } = setup({ publishesGoal: true, distinctNativeIds: true });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'Resume Gemini', profileId: 'gemini', tier: 'ask' });
+    const objective = '恢复已确认的检查目标';
+    await svc.goal(taskId, { kind: 'set', objective });
+    await until(() => insts[0]?.turns.length === 1 && !svc.isDispatching(taskId));
+    insts[0].emit({ type: 'goal', status: 'active', objective });
+    insts[0].finish();
+    const goal = store.goal(taskId);
+    expect(goal).toMatchObject({ objective, status: 'active', turns: 1 });
+    expect(svc.list()[0].goalRunning).toBe(false);
+    await runs.close(runs.runForTask(taskId)!.runId);
+
+    await svc.submit(taskId, { clientInputId: id(520), text: '继续检查', expectedSelectionRevision: 1 });
+    await until(() => insts[1]?.turns.length === 1 && !svc.isDispatching(taskId));
+    expect(insts[1].opened).toMatchObject({ resumeNativeId: insts[0].newNativeId, resumedGoal: objective });
+    expect(store.goal(taskId)).toMatchObject({ bindingId: goal?.bindingId, objective, status: 'active', turns: 2 });
+    insts[1].finish();
+    await runs.closeAll();
+  });
+
   it('A69: a Claude /goal turn that ends without a recognised reply shows the goal state as unknown (D06-66)', async () => {
     const { svc, insts } = setup();
     const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });

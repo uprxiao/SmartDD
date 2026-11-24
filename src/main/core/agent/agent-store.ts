@@ -5,7 +5,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import type { DriverId } from './capabilities';
+import type { GoalInput } from '@shared/agent-goal';
 import type { AgentModelChoice } from '@shared/agent-model-choice';
+
+export type QueuedGoal = GoalInput & { bindingId: string };
 
 export const EVENT_PAYLOAD_LIMIT = 32 * 1024;
 /** 历史正文与输入原文的上限（复核 CR06）：输入在接受前按文字预算校验，这里只防异常大对象。 */
@@ -406,7 +409,7 @@ export class AgentStore {
   }
 
   /** 本地接受：同一 clientInputId 只接受一次，重复提交返回原收据（幂等只保证宿主接受）。 */
-  acceptTurn(t: { taskId: string; clientInputId: string; text: string; sourceKind: 'user' | 'delegation' | 'notification' | 'system'; attachments?: unknown[] }): { turn: TurnRow; duplicate: boolean } {
+  acceptTurn(t: { taskId: string; clientInputId: string; text: string; sourceKind: 'user' | 'delegation' | 'notification' | 'system'; attachments?: unknown[]; goal?: QueuedGoal }): { turn: TurnRow; duplicate: boolean } {
     // 用户消息与其他条目同一正文合同：转义后超过内联上限也转 artifact，时间线能逐字读回（复核 V02）。
     return this.itemTx((written, _replaced, emit) => {
       const existing = this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(t.taskId, t.clientInputId) as TurnRow | undefined;
@@ -415,7 +418,7 @@ export class AgentStore {
       if (Buffer.byteLength(t.text) > INPUT_TEXT_LIMIT) throw new Error(`输入超过 ${INPUT_TEXT_LIMIT / 1024} KB，请拆分或改用附件`);
       // 输入原文完整保存，派发读回的就是接受时的原文（不复用事件的 32 KiB 预览限额）。
       this.sqlite.prepare("INSERT INTO agent_turns(turn_id,task_id,client_input_id,input_ref,source_kind,status,accepted_at) VALUES(?,?,?,?,?,'accepted',?)")
-        .run(turnId, t.taskId, t.clientInputId, JSON.stringify({ text: t.text, ...(t.attachments?.length ? { attachments: t.attachments } : {}) }), t.sourceKind, now());
+        .run(turnId, t.taskId, t.clientInputId, JSON.stringify({ text: t.text, ...(t.goal ? { goal: t.goal } : {}), ...(t.attachments?.length ? { attachments: t.attachments } : {}) }), t.sourceKind, now());
       emit(t.taskId, 'turn.accepted', { turnId, clientInputId: t.clientInputId, sourceKind: t.sourceKind });
       // 用户消息由宿主在本地接受时记录（可信出站来源），不取原生回显（技术方案 §4 user_message）。
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(t.taskId) as { ordinal: number };
@@ -843,9 +846,9 @@ export class AgentStore {
       const previous = this.goalNativeMeta(g.taskId);
       const nativeCreatedAt = Number.isFinite(g.nativeCreatedAt) ? g.nativeCreatedAt : previous.nativeCreatedAt;
       const nativeUpdatedAt = Number.isFinite(g.nativeUpdatedAt) ? g.nativeUpdatedAt : previous.nativeUpdatedAt;
-      const revision = !cur ? 1 : cur.status === 'cleared' || cur.objective !== objective || (previous.nativeCreatedAt !== undefined && nativeCreatedAt !== previous.nativeCreatedAt) ? cur.revision + 1 : cur.revision;
+      const revision = !cur ? 1 : cur.status === 'cleared' || (cur.status === 'complete' && status === 'active') || cur.objective !== objective || (previous.nativeCreatedAt !== undefined && nativeCreatedAt !== previous.nativeCreatedAt) ? cur.revision + 1 : cur.revision;
       this.sqlite.prepare(`INSERT INTO agent_goals(task_id,binding_id,objective,revision,status,paused_reason,turns,time_used_s,updated_at) VALUES(?,?,?,?,?,?,0,?,?)
-        ON CONFLICT(task_id) DO UPDATE SET binding_id=excluded.binding_id,objective=excluded.objective,revision=excluded.revision,status=excluded.status,paused_reason=excluded.paused_reason,time_used_s=MAX(agent_goals.time_used_s,excluded.time_used_s),turns=CASE WHEN agent_goals.revision<>excluded.revision THEN 0 ELSE agent_goals.turns END,updated_at=excluded.updated_at`)
+        ON CONFLICT(task_id) DO UPDATE SET binding_id=excluded.binding_id,objective=excluded.objective,revision=excluded.revision,status=excluded.status,paused_reason=excluded.paused_reason,time_used_s=CASE WHEN agent_goals.revision<>excluded.revision THEN excluded.time_used_s ELSE MAX(agent_goals.time_used_s,excluded.time_used_s) END,turns=CASE WHEN agent_goals.revision<>excluded.revision THEN 0 ELSE agent_goals.turns END,updated_at=excluded.updated_at`)
         .run(g.taskId, g.bindingId, objective, revision, status, reason, Math.round(g.timeUsedSeconds ?? 0), now());
       emit(g.taskId, 'goal.changed', { objective, status, pausedReason: reason, revision, bindingId: g.bindingId, nativeCreatedAt, nativeUpdatedAt });
     });

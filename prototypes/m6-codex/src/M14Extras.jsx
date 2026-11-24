@@ -5,31 +5,38 @@ import { Pause, Target } from 'lucide-react';
 import { AlertTriangle, ArrowRightLeft, Bell, Bot, Check, ChevronDown, ChevronRight, CircleDashed, Copy, Download, FileText, Globe, Hourglass, Image as ImageIcon, Info, ListTodo, LoaderCircle, Mail, Minimize2, Paperclip, Play, RefreshCw, Save, ShieldAlert, Slash, SquareTerminal, Terminal, WrapText, X, Zap, Link2, Activity, WifiOff } from 'lucide-react';
 
 // ---------- 时间线条目 ----------
-// 目标（/goal，照 T3 goal 条目）：显示目标、状态、时长与轮次（不显示 token）。Codex 可暂停／继续／清除；Claude 只能清除。
+// 目标（/goal，照 T3 goal 条目）：显示目标、状态、时长与轮次（不显示 token）。Codex 可暂停／继续／清除；Claude 和 Gemini 只提供清除。
+export function GoalComposerMode({ onExit }) {
+  return <button type="button" className="m14-goal-mode" aria-label="退出目标模式" onClick={onExit}>
+    <Target size={14} />目标<X size={12} />
+  </button>;
+}
+
 export function GoalRow({ e, onToast, taskId = 'demo' }) {
   const [open, setOpen] = useState(false), [st, setStRaw] = useState(() => goalStatus(taskId, e));
   useEffect(() => { setStRaw(goalStatus(taskId, e)); }, [taskId, e.id, e.rev]);
   const setSt = v => { setGoalStatus(taskId, e, v); setStRaw(v); dispatchEvent(new Event('m14:goal')); };
-  const claude = e.agent === 'claude';
+  const codex = e.agent === 'codex';
+  const name = e.agent === 'claude' ? 'Claude Code' : 'Gemini';
   // 停止键（评审 RV13）：Codex 停止＝暂停目标；Claude 只停本轮，目标保留
-  useEffect(() => { const h = () => { if (!claude && st === 'active') { setSt('paused'); onToast('已停止本轮并暂停目标（合成）'); } else if (claude) onToast('已停止本轮；Claude 的目标保留，发送消息后继续（合成）'); }; addEventListener('m14:stop', h); return () => removeEventListener('m14:stop', h); }, [claude, st]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { const h = () => { if (codex && st === 'active') { setSt('paused'); onToast('已停止本轮并暂停目标（合成）'); } else if (!codex && st === 'active') onToast(`已停止本轮。${name} 的目标保留（合成）`); }; addEventListener('m14:stop', h); return () => removeEventListener('m14:stop', h); }, [codex, name, st]); // eslint-disable-line react-hooks/exhaustive-deps
   if (st === 'cleared') return <div className="m14-goal-cleared"><Target size={13} />目标已清除</div>;
   const label = { active: '进行中', paused: '已暂停', 'waiting-children': '等子任务 · 已自动暂停', complete: '已完成' }[st];
   const m = Math.floor(e.secs / 60), sec = e.secs % 60;
   return <div className={'m14-goal s-' + st}>
     <button className="m14-goal-head" aria-expanded={open} onClick={() => setOpen(!open)}>
       <Target size={14} /><b>目标</b><span className="m14-goal-obj">{e.objective}</span>
-      <span className={'m14-goal-st' + (st === 'active' ? ' live' : '')}>{st === 'active' && <LoaderCircle size={11} className="spin" />}{label}</span>
+      <span className={'m14-goal-st' + (st === 'active' ? ' live' : '')}>{st === 'active' && e.working !== false && <LoaderCircle size={11} className="spin" />}{st === 'active' && e.working === false ? '已设定' : label}</span>
       <span className="m14-goal-meta">{m} 分 {sec} 秒 · 第 {e.turns} 轮</span><ChevronRight size={12} className={'m14-chev' + (open ? ' open' : '')} />
     </button>
     {open && <div className="m14-goal-body">
       <p>{e.objective}</p>
       {st === 'waiting-children' && <p className="m14-goal-note">主任务在等子任务结果，WillYou 已自动暂停目标；子任务结果回来会自动继续，不需要你操作。</p>}
-      {claude && <p className="m14-goal-note">Claude Code 的目标不能暂停或继续，只能清除；按停止只停当前这一轮，目标仍在。</p>}
-      {!claude && st === 'active' && <p className="m14-goal-note">按停止＝停止这一轮并暂停目标。</p>}
+      {!codex && <p className="m14-goal-note">{name} 提供清除。按停止会结束当前回合，目标保留。</p>}
+      {codex && st === 'active' && <p className="m14-goal-note">按停止＝停止这一轮并暂停目标。</p>}
       <div className="m14-goal-actions">
-        {!claude && st === 'active' && <button onClick={() => { setSt('paused'); onToast('目标已暂停（合成）'); }}><Pause size={12} />暂停</button>}
-        {!claude && st === 'paused' && <button onClick={() => { setSt('active'); onToast('目标已继续，Codex 开始下一轮（合成）'); }}><Play size={12} />继续</button>}
+        {codex && st === 'active' && <button onClick={() => { setSt('paused'); onToast('目标已暂停（合成）'); }}><Pause size={12} />暂停</button>}
+        {codex && st === 'paused' && <button onClick={() => { setSt('active'); onToast('目标已继续，Codex 开始下一轮（合成）'); }}><Play size={12} />继续</button>}
         <button onClick={() => { setSt('cleared'); onToast('目标已清除（合成）'); }}><X size={12} />清除</button>
       </div>
     </div>}

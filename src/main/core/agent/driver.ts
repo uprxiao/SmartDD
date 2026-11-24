@@ -1,3 +1,4 @@
+import type { GoalInput } from '@shared/agent-goal';
 // M14 Driver 合同（技术方案 T1.5 §3）。Driver 定义是不可变注册项；每次 open 创建独立实例，
 // 持有流式缓冲、原生关联、工具映射和待回应回调。任务／编排层不出现品牌配对枚举。
 import type { DriverId } from './capabilities';
@@ -14,6 +15,7 @@ export interface DriverOpenOptions {
   executable: DriverExecutable;
   modelCache?: DriverModelCache;
   hostBusinessInstructions?: string;
+  resumedGoal?: string;
   cwd: string;
   /** 宿主组装的环境；凭据由现有凭据服务解析后注入，不写入任何文件。 */
   env: Record<string, string>;
@@ -49,6 +51,7 @@ export interface DriverOpenOptions {
 }
 
 export interface TurnInput {
+  goal?: GoalInput;
   clientInputId: string;
   text: string;
   /** 已由宿主核对的图片附件（绝对路径）；非图片附件只在文字中注明。 */

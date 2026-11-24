@@ -244,3 +244,74 @@ test.skipIf(!executable)('real agy negotiates ACP, applies model options, resume
     await rm(home, { recursive: true, force: true });
   }
 }, 45_000);
+
+test.skipIf(!executable)('real agy runs the exact goal and settles only after its native completion marker', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'willyou-agy-goal-test-'));
+  const objective = '核对真实的目标内容并完成两项检查';
+  const requests: { text: string; stopHook: boolean }[] = [];
+  const server = createServer(async (req, res) => {
+    let raw = '';
+    for await (const bytes of req) raw += bytes;
+    const { contents } = JSON.parse(raw);
+    const text = JSON.stringify(contents.at(-1));
+    const stopHook = text.includes('Stop hook blocked termination:');
+    const send = (value: string, done: boolean) => res.write('data: ' + JSON.stringify({
+      candidates: [{ index: 0, content: { role: 'model', parts: [{ text: value }] }, ...(done ? { finishReason: 'STOP' } : {}) }],
+      modelVersion: carbon,
+    }) + '\n\n');
+    requests.push({ text, stopHook });
+    if (requests.length > 8) {
+      res.writeHead(400, { 'content-type': 'application/json' }).end('{"error":{"code":400,"message":"Unexpected goal retry"}}');
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'text/event-stream' });
+    if (stopHook) {
+      send('Verified.\n<!-- GOAL_', false);
+      send('COMPLETE -->', true);
+    } else send(text.includes('plain marker probe') ? 'Plain text <!-- GOAL_COMPLETE --> <!-- GOAL_CANCELLED -->' : 'First response', true);
+    res.end();
+  });
+  const driver = antigravityAcpDriver.create();
+  const events: DriverEvent[] = [];
+  driver.on(event => events.push(event));
+  try {
+    server.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('测试服务没有 TCP 地址');
+    const endpoint = 'http://127.0.0.1:' + address.port;
+    await driver.open({
+      executable: { path: executable!, version: '1.5.14' }, cwd: home, model: carbon, tier: 'ask',
+      extraArgs: antigravityArgs(join(home, '.gemini')),
+      env: { HOME: home, TMPDIR: home, PATH: '/usr/bin:/bin', HTTP_PROXY: 'http://127.0.0.1:1',
+        HTTPS_PROXY: 'http://127.0.0.1:1', NO_PROXY: '127.0.0.1', GEMINI_API_KEY: 'WY-GOAL-FIXTURE',
+        GOOGLE_GEMINI_BASE_URL: endpoint },
+    });
+    expect(events).toContainEqual({ type: 'catalog', commands: ['goal'], skills: [] });
+    const normal = finished(driver);
+    await driver.startTurn({ clientInputId: 'plain-marker', text: 'plain marker probe', tier: 'ask' });
+    expect(await normal).toMatchObject({ status: 'completed', answer: expect.stringContaining('GOAL_COMPLETE') });
+    expect(events.filter(event => event.type === 'goal')).toEqual([]);
+
+    await driver.injectHistory?.('host text must not become part of the objective');
+    const done = finished(driver);
+    await driver.startTurn({ clientInputId: 'native-goal', text: '/goal ' + objective, tier: 'ask', goal: { kind: 'set', objective } });
+    expect(await done).toMatchObject({ status: 'completed' });
+    expect(events.filter(event => event.type === 'goal')).toEqual([
+      { type: 'goal', objective, status: 'active' },
+      { type: 'goal', objective, status: 'complete' },
+    ]);
+    const audit = requests.find(request => request.stopHook);
+    expect(audit?.text).toContain(objective);
+    expect(audit?.text).not.toContain('host text must not become part of the objective');
+    const afterGoal = requests.length;
+    const afterwards = finished(driver);
+    await driver.startTurn({ clientInputId: 'after-goal', text: 'plain after native goal', tier: 'ask' });
+    expect(await afterwards).toMatchObject({ status: 'completed' });
+    expect(requests.slice(afterGoal).some(request => request.stopHook)).toBe(false);
+  } finally {
+    await driver.close();
+    server.close();
+    await rm(home, { recursive: true, force: true });
+  }
+}, 30_000);
