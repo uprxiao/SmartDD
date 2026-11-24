@@ -287,7 +287,13 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   private onMessage(m: any) {
-    this.emitter.emit({ type: 'native', name: m?.type === 'system' ? `system/${m.subtype}` : String(m?.type ?? 'unknown'), payload: m });
+    // Auto-compaction or a retry can be the first frame of a resumed turn.
+    if (m?.type === 'system' && !m.parent_tool_use_id && !this.historyPending
+      && (m.subtype === 'compact_boundary' || m.subtype === 'api_retry'
+        || m.subtype === 'status' && (m.status === 'compacting' || m.compact_result)))
+      this.markStarted();
+    this.emitter.emit({ type: 'native', name: m?.type === 'system' ? `system/${m.subtype}` : String(m?.type ?? 'unknown'),
+      payload: m, ...(this.activeTurn?.interrupted ? { turnInterrupted: true } : {}) });
     if (m?.type === 'system' && ['task_started', 'task_notification'].includes(m.subtype) && typeof m.task_id === 'string') {
       const id = String(m.tool_use_id ?? m.task_id), runId = typeof m.run_id === 'string' ? m.run_id : undefined, old = this.nodeStates.get(id), running = m.subtype === 'task_started';
       const late = old && (old.runId && runId && runId < old.runId || old.terminal && running && (!runId || runId === old.runId));

@@ -84,9 +84,10 @@ export type DriverEvent =
   | { type: 'node.message'; nodeId: string; key: string; payload: unknown }
   | { type: 'node.state'; nodeId: string; state: 'running' | 'completed' | 'failed' | 'interrupted'; nativeRunId?: string }
   | { type: 'request.resolved'; requestKey: string }
+  | { type: 'activity'; nativeTurnId: string; activity: import('@shared/agent-activity').AgentActivityUpdate }
   | { type: 'turn.completed'; nativeTurnId: string; status: TurnStatus; error?: string }
   /** 所有原生通知原样保留，供时间线（阶段 2）与诊断使用；不在此处解释。 */
-  | { type: 'native'; name: string; payload: unknown }
+  | { type: 'native'; name: string; payload: unknown; turnInterrupted?: true }
   | { type: 'diagnostic'; message: string }
   /** 实例已不可再用（如 SDK 流异常结束）：宿主把运行退役，下次提交恢复会话。 */
   | { type: 'unusable'; reason: string }

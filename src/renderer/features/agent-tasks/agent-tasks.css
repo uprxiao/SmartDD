@@ -153,6 +153,18 @@
 .agent-todo-box { width: 14px; height: 14px; border: 1px solid currentColor; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
 .agent-error { padding: 8px 12px; border-radius: 8px; background: rgba(209,67,67,.1); color: #d14343; font-size: 13px; }
 .agent-divider { text-align: center; font-size: 12px; color: var(--foreground-passive, #888); }
+.agent-compaction-activity { display: flex; align-items: center; gap: 10px; min-height: 24px; }
+.agent-compaction-activity::before, .agent-compaction-activity::after { content: ''; flex: 1; border-top: 1px solid var(--outline, #dedede); }
+.agent-compaction-activity span, .agent-retry-activity > div, .agent-offline-notice { display: flex; align-items: center; gap: 6px; }
+.agent-retry-activity, .agent-offline-notice { color: var(--foreground-passive, #888); font-size: 13px; }
+.agent-retry-activity[data-status="failed"], .agent-compaction-activity[data-status="failed"] { color: #a52834; }
+.ydark .agent-retry-activity[data-status="failed"], .ydark .agent-compaction-activity[data-status="failed"] { color: #ff9aa3; }
+.agent-retry-activity summary { cursor: pointer; width: fit-content; }
+.agent-retry-activity pre { margin: 4px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.agent-offline-notice { max-width: 760px; margin: 0 auto 6px; padding-inline: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  .agent-compaction-activity .spin, .agent-retry-activity .spin { animation: none; }
+}
 .agent-notice summary { font-size: 12px; color: var(--foreground-passive, #888); cursor: pointer; }
 .agent-notice pre { font-size: 12px; white-space: pre-wrap; }
 .agent-turn-footer { font-size: 12px; color: var(--foreground-passive, #888); } .agent-turn-footer.failed { color: #d14343; }

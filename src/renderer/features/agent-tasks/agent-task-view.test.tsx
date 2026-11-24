@@ -42,6 +42,73 @@ beforeEach(() => {
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
 
+it.each(['claude-sdk', 'codex-app-server', 'antigravity-acp'])('shows local offline and online transitions without losing the task for %s', async driverId => {
+  let online = true;
+  const connection = vi.spyOn(navigator, 'onLine', 'get').mockImplementation(() => online);
+  try {
+    mocks.snapshot.mockResolvedValue(snapshot({
+      selection: { driverId, profileId: 'p', tier: 'ask' },
+      items: [item('assistant_message', { text: '已经收到的工作记录' })],
+      status: 'working', run: { runId: 'active', busy: true },
+    }));
+    render(<AgentTaskView taskId="task" />);
+    const history = await screen.findByText('已经收到的工作记录');
+    expect(screen.queryByText('网络已断开')).toBeNull();
+    online = false;
+    fireEvent(window, new Event('offline'));
+    expect(screen.getByText('网络已断开')).toBeTruthy();
+    expect(screen.getByText('已经收到的工作记录')).toBe(history);
+    online = true;
+    fireEvent(window, new Event('online'));
+    expect(screen.queryByText('网络已断开')).toBeNull();
+    expect(screen.getByText('已经收到的工作记录')).toBe(history);
+    expect(mocks.submit).not.toHaveBeenCalled();
+  } finally {
+    connection.mockRestore();
+  }
+});
+
+it('updates compaction and retry in place while keeping the same process record', async () => {
+  const turnId = 'active-turn';
+  const compaction = { ...item('compaction', { status: 'running' }), turnId, itemId: 'compact', ordinal: 2, terminal: null };
+  const retry = { ...item('error', { retry: { status: 'running', attempt: 1, maxAttempts: 4 }, message: 'Service unavailable' }),
+    turnId, itemId: 'retry', ordinal: 3, terminal: null };
+  const previous = { ...item('assistant_message', { text: '已经开始检查' }), turnId, ordinal: 1 };
+  const turns = [{ turn_id: turnId, status: 'started', accepted_at: '2026-11-24T00:00:00Z', started_at: '2026-11-24T00:00:00Z', ended_at: null }];
+  const busy = { status: 'working', run: { runId: 'active', busy: true }, turns };
+  let state = snapshot({ ...busy, items: [previous, compaction, retry] });
+  let publish!: (event: { taskId: string; seq: number }) => void;
+  mocks.on.mockImplementation((event, cb) => { if (event.name === 'agentTasks:event') publish = cb; return () => {}; });
+  mocks.snapshot.mockImplementation(async () => state);
+  render(<AgentTaskView taskId="task" />);
+  const compactLine = await screen.findByText('正在压缩上下文…');
+  const retryLine = screen.getByText(/模型请求异常，正在重试.*1\/4/);
+  state = snapshot({ ...busy, seq: 2, items: [previous,
+    { ...compaction, revision: 2, terminal: 'completed', payload: { status: 'completed' } },
+    { ...retry, revision: 2, terminal: 'completed', payload: { ...retry.payload, retry: { status: 'completed', attempt: 2, maxAttempts: 4 } } },
+  ] });
+  await act(async () => publish({ taskId: 'task', seq: 2 }));
+  expect(await screen.findByText('上下文已压缩')).toBe(compactLine);
+  expect(screen.getByText(/模型请求已恢复/)).toBe(retryLine);
+  expect(screen.getByText('已经开始检查')).toBeTruthy();
+  expect(screen.queryByText(/正在重试/)).toBeNull();
+});
+
+it('keeps legacy compaction history and closes activity from a lost process on reopen', async () => {
+  const turnId = 'lost-turn';
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [
+    { ...item('compaction', {}), itemId: 'legacy' },
+    { ...item('compaction', { status: 'running' }), turnId, itemId: 'compact', ordinal: 2, terminal: null },
+    { ...item('error', { retry: { status: 'running', attempt: 1 } }), turnId, itemId: 'retry', ordinal: 3, terminal: null },
+  ], turns: [{ turn_id: turnId, status: 'unknown', accepted_at: '2026-11-24T00:00:00Z',
+    started_at: '2026-11-24T00:00:00Z', ended_at: '2026-11-24T00:00:05Z' }] }));
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByText('上下文已压缩');
+  expect(screen.getByText('上下文压缩已中断')).toBeTruthy();
+  expect(screen.getByText(/模型请求重试已中断/)).toBeTruthy();
+  expect(screen.queryByText(/正在重试|正在压缩/)).toBeNull();
+});
+
 it('refreshes the managed Skill list when reopening $ in the same task', async () => {
   mocks.snapshot.mockResolvedValue(snapshot({
     run: { catalog: { commands: [], skills: [{ name: 'open-source-radar' }] } },

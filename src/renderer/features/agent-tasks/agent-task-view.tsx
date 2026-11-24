@@ -14,7 +14,7 @@ import { BrowserCheckpointCard } from '@renderer/features/browser/checkpoint-car
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, WifiOff, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentCommandDetails } from './agent-command-details';
 import { AgentModelPicker } from './agent-model-picker';
@@ -32,8 +32,9 @@ import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { AgentDialog } from '@renderer/features/agents/ui';
-import { Fragment, createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, createContext, useContext, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
+import type { AgentActivityStatus, AgentRetryProgress } from '@shared/agent-activity';
 import type { MailSendReview } from '@shared/mail-execution';
 import { BrowserAccessReview, MailReviewCard, mailEdits, type MailEdits } from './agent-business-review';
 import { toast } from 'sonner';
@@ -60,6 +61,34 @@ const LIVE_PREVIEW_ITEMS = 2_000;
 const liveEncoder = new TextEncoder();
 const emptyLive = { items: {} as Record<string, string>, bytes: 0, incomplete: false };
 const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
+const COMPACTION_LABEL: Record<AgentActivityStatus, string> = {
+  running: '正在压缩上下文…', completed: '上下文已压缩', failed: '上下文压缩失败', interrupted: '上下文压缩已中断',
+};
+const RETRY_LABEL: Record<AgentActivityStatus, string> = {
+  running: '模型请求异常，正在重试', completed: '模型请求已恢复', failed: '模型请求重试失败', interrupted: '模型请求重试已中断',
+};
+
+function activityStatus(status: AgentActivityStatus, turnStatus?: TurnGroup['status']): AgentActivityStatus {
+  if (status !== 'running') return status;
+  // A task reopened after a lost process may have only the last live activity revision.
+  if (turnStatus === 'interrupted' || turnStatus === 'unknown' || turnStatus === 'canceled') return 'interrupted';
+  if (turnStatus === 'completed' || turnStatus === 'failed') return 'failed';
+  return 'running';
+}
+
+function subscribeToNetwork(onChange: () => void) {
+  window.addEventListener('offline', onChange);
+  window.addEventListener('online', onChange);
+  return () => {
+    window.removeEventListener('offline', onChange);
+    window.removeEventListener('online', onChange);
+  };
+}
+
+function TaskOfflineNotice() {
+  const offline = useSyncExternalStore(subscribeToNetwork, () => navigator.onLine === false);
+  return offline ? <div className="agent-offline-notice" role="status"><WifiOff size={15} aria-hidden />网络已断开</div> : null;
+}
 
 async function changedHistoryIds(taskId: string, from: number, through: number, cached: ReadonlySet<string>, active: () => boolean) {
   const changed = new Set<string>();
@@ -268,7 +297,9 @@ function ReplyActions({ item, copy, stamp }: { item: TimelineItem; copy?: () => 
   </div>;
 }
 
-function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalReply?: boolean; completedAt?: string | null }) {
+function ItemRow({ item, finalReply, completedAt, turnStatus }: {
+  item: TimelineItem; finalReply?: boolean; completedAt?: string | null; turnStatus?: TurnGroup['status'];
+}) {
   const useTaskId=useContext(TaskScope);
   const archived=useContext(ArchivedScope);
   const relations=useContext(RelationsScope);
@@ -376,6 +407,20 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {RESULT_STATUS[p.status] ?? p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => openRelatedTask(useTaskId,p.childTaskId,archived)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
     }
     case 'error': {
+      const retry = p.retry as AgentRetryProgress | undefined;
+      const count = retry?.attempt ? ` · ${retry.attempt}${retry.maxAttempts ? `/${retry.maxAttempts}` : ' 次'}` : '';
+      if (retry && !p.limited) {
+        const status = activityStatus(retry.status, turnStatus);
+        const delay = status === 'running' && retry.retryDelayMs
+          ? ` · ${retry.retryDelayMs < 1000 ? retry.retryDelayMs + ' 毫秒' : retry.retryDelayMs / 1000 + ' 秒'}后重试`
+          : '';
+        return <div className="agent-retry-activity" data-status={status}>
+          <div role="status">{status === 'running' && <Loader2 size={13} className="spin" aria-hidden />}{RETRY_LABEL[status]}{count}{delay}</div>
+          {status === 'failed' && (p.message || p.code) && <details>
+            <summary>查看错误详情</summary><pre>{String(p.message ?? p.code)}</pre>{more}
+          </details>}
+        </div>;
+      }
       if (!p.limited) return <div className="agent-error agent-error-details">
         <details><summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary>
           <pre>{String(p.message ?? p.code ?? '未提供错误详情')}</pre>
@@ -385,11 +430,17 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       const { kind, resetAt } = p.limited;
       const resume = actions?.continuation(item.itemId);
       return <div className="agent-limit-card" role="status"><TriangleAlert size={16}/><div><b>{LIMIT_LABEL[kind] ?? '受限'}</b>
+        {retry && <small>{RETRY_LABEL.failed}{count}</small>}
         <small>{kind === 'output' ? '部分回答已保留，可手动继续。' : `本轮已暂停，部分结果已保留。${resetAt ? `可在 ${resetAt} 后` : '稍后'}手动继续（不会自动换账号或到点重跑）。`}</small>{more}</div>
         {resume && <button type="button" className="agent-inline-action" disabled={actions?.busy} onClick={resume}>继续</button>}
       </div>;
     }
-    case 'compaction': return <div className="agent-divider">上下文已压缩</div>;
+    case 'compaction': {
+      const status = activityStatus(p.status ?? 'completed', turnStatus);
+      return <div className="agent-divider agent-compaction-activity" role="status" data-status={status} title={p.message}>
+        <span>{status === 'running' && <Loader2 size={13} className="spin" aria-hidden />}{COMPACTION_LABEL[status]}</span>
+      </div>;
+    }
     case 'provider_switch': return <div className="agent-divider">此处切换到 {p.toName ?? p.to}{more}</div>;
     case 'handoff': return <details className="agent-notice"><summary>{p.kind === 'full' ? '已准备全量交接' : '已准备增量交接'}{p.omissions?.length ? ` · ${p.omissions.length} 项因预算未覆盖` : ''}</summary><pre>{p.text}</pre>{p.omissions?.map((x: any) => <div key={x.itemId}>{x.itemId}：{x.reason}</div>)}{more}</details>;
     case 'omission_notice': return <div className="agent-limited">{p.detail}{more}</div>;
@@ -581,7 +632,7 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
     const visible = open || !isProcess(row);
     const content = !visible ? null : row.kind === 'work'
       ? <WorkContents items={row.items}/>
-      : <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt}/>;
+      : <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt} turnStatus={group.status}/>;
     return <Fragment key={row.kind === 'item' ? row.item.itemId : row.id}>
       {content}
       {index === firstUser && summary}
@@ -1601,6 +1652,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
         <button type="button" className="agent-inline-action" onClick={() => setTerminalOpen(true)}>打开终端</button>
       </div>}
       {archived ? <div className="agent-composer agent-archive-composer"><textarea rows={3} disabled aria-label="已归档任务输入" placeholder="恢复后可以继续此会话" /></div> : <>
+        <TaskOfflineNotice />
         {/* 2026-11-20 对齐 T3：请求面板在输入框上方，输入框与模型／档位／执行器入口始终保留（A72）。 */}
         {requests.length > 0 && <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />}
         <form className="agent-composer" onSubmit={e => { e.preventDefault(); if (!composerStopping) void send(); }}

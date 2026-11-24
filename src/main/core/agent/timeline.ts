@@ -1,7 +1,8 @@
 // 统一时间线投影（技术方案 T1.5 §4）：把两种执行器的原生条目映射为同一组规范条目类型。
 // 只做映射与配对，不推断执行器没提供的内容（待办只在执行器提供结构化清单时出现）。
 import type { SDKPartialAssistantMessage } from '@anthropic-ai/claude-agent-sdk';
-import type { DriverEvent } from './driver';
+import type { AgentActivityError, AgentActivityStatus, AgentActivityUpdate, AgentRetryProgress } from '@shared/agent-activity';
+import type { DriverEvent, TurnStatus } from './driver';
 import type { DriverId } from './capabilities';
 
 export type ItemType =
@@ -15,6 +16,10 @@ const WEB_TOOLS = new Set(['WebSearch', 'WebFetch']);
 const TODO_TOOLS = new Set(['TaskCreate', 'TaskUpdate', 'TodoWrite']);
 const text = (v: unknown) => (typeof v === 'string' ? v : v == null ? '' : JSON.stringify(v));
 type CodexQuotaWindow = { usedPercent?: unknown; resetsAt?: unknown };
+
+function positiveInteger(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : undefined;
+}
 
 function claudeToolType(name: string): ItemType {
   if (name === 'Bash') return 'command_execution';
@@ -78,13 +83,68 @@ export class TimelineProjector {
   private readonly closedNotices = new Set<string>();
   private codexTurnId?: string;
   private codexQuota: { primary?: CodexQuotaWindow; secondary?: CodexQuotaWindow } = {};
+  private activityTurnId?: string;
+  private readonly compactions = new Map<string, AgentActivityStatus>();
+  private retry?: AgentRetryProgress;
+  private claudeCompactionId?: string;
+  private readonly claudeActivityFrames = new Set<string>();
 
   private readonly acpTools = new Map<string, Record<string, unknown>>();
   constructor(private readonly driverId: DriverId) {}
 
   project(e: DriverEvent): ItemUpsert[] {
-    if (this.driverId === 'antigravity-acp') return this.acp(e);
-    return this.driverId === 'claude-sdk' ? this.claude(e) : this.codex(e);
+    if (e.type === 'turn.started' && this.activityTurnId !== e.nativeTurnId) {
+      this.resetActivity();
+      this.activityTurnId = e.nativeTurnId;
+    }
+    if (e.type === 'activity') return this.projectActivity(e.nativeTurnId, e.activity);
+    const items = this.driverId === 'claude-sdk' ? this.claude(e)
+      : this.driverId === 'antigravity-acp' ? this.acp(e) : this.codex(e);
+    if (e.type === 'turn.completed' && e.nativeTurnId === this.activityTurnId)
+      return [...items, ...this.finishActivity(e.status, e.error)];
+    if (e.type === 'exit' || e.type === 'unusable')
+      return [...items, ...this.finishActivity('unknown')];
+    return items;
+  }
+
+  private resetActivity() {
+    this.activityTurnId = undefined;
+    this.compactions.clear();
+    this.retry = undefined;
+    this.claudeCompactionId = undefined;
+  }
+
+  private projectActivity(turnId: string | undefined, update: AgentActivityUpdate): ItemUpsert[] {
+    if (!turnId || turnId !== this.activityTurnId) return [];
+    const { status } = update;
+    const terminal = status === 'running' ? null : status === 'completed' ? 'completed' : 'failed';
+    if (update.kind === 'compaction') {
+      const key = `compact:${turnId}:${update.id}`;
+      const previous = this.compactions.get(update.id);
+      if (previous && (previous !== 'running' || status === 'running')) return [];
+      this.compactions.set(update.id, status);
+      return [{ key, type: 'compaction', terminal, payload: { status, ...(update.message ? { message: update.message.slice(0, 2000) } : {}) } }];
+    }
+    if (status !== 'running' && !this.retry) return [];
+    const retry: AgentRetryProgress = status === 'running'
+      ? { status, attempt: update.attempt, maxAttempts: update.maxAttempts, retryDelayMs: update.retryDelayMs }
+      : { ...this.retry, status };
+    this.retry = status === 'running' ? retry : undefined;
+    return [{ key: `retry:${turnId}`, type: 'error', terminal,
+      payload: { retry, ...(update.code ? { code: update.code } : {}),
+        ...(update.message ? { message: update.message.slice(0, 2000) } : {}),
+        ...(status === 'failed' && update.limited ? { limited: update.limited } : {}) } }];
+  }
+
+  private finishActivity(status: TurnStatus, message?: string): ItemUpsert[] {
+    const turnId = this.activityTurnId;
+    const compactionStatus = status === 'completed' || status === 'failed' ? 'failed' : 'interrupted';
+    const items = [...this.compactions].flatMap(([id, phase]) => phase === 'running'
+      ? this.projectActivity(turnId, { kind: 'compaction', id, status: compactionStatus, message })
+      : []);
+    items.push(...this.projectActivity(turnId, { kind: 'retry', status: status === 'unknown' ? 'interrupted' : status, message }));
+    this.resetActivity();
+    return items;
   }
 
   private acp(event: DriverEvent): ItemUpsert[] {
@@ -114,6 +174,41 @@ export class TimelineProjector {
     if (!reusable && this.closedNotices.has(key)) return [];
     if (!reusable && terminal) this.closedNotices.add(key);
     return [{ key, type: 'system_notice', payload: { severity, title, detail: detail.slice(0, 4000), ...lifecycle }, terminal }];
+  }
+
+  private claudeSystemActivity(p: { subtype?: string; status?: string | null; uuid?: string;
+    compact_result?: 'success' | 'failed'; compact_error?: string; attempt?: number; max_retries?: number;
+    retry_delay_ms?: number; error?: string }, turnId: string, turnInterrupted?: true): ItemUpsert[] {
+    if (p.subtype === 'status' && p.status !== 'compacting' && !p.compact_result) return [];
+    if (p.uuid) {
+      if (this.claudeActivityFrames.has(p.uuid)) return [];
+      this.claudeActivityFrames.add(p.uuid);
+      if (this.claudeActivityFrames.size > 512)
+        this.claudeActivityFrames.delete(this.claudeActivityFrames.values().next().value!);
+    }
+    if (p.subtype === 'api_retry') {
+      return this.projectActivity(turnId, { kind: 'retry', status: 'running',
+        attempt: positiveInteger(p.attempt), maxAttempts: positiveInteger(p.max_retries),
+        retryDelayMs: typeof p.retry_delay_ms === 'number' && Number.isSafeInteger(p.retry_delay_ms) && p.retry_delay_ms >= 0 ? p.retry_delay_ms : undefined,
+        code: typeof p.error === 'string' ? p.error : undefined });
+    }
+    if (p.subtype === 'compact_boundary') {
+      const id = this.claudeCompactionId ?? p.uuid ?? `claude-${turnId}-${this.compactions.size}`;
+      this.claudeCompactionId = undefined;
+      return this.projectActivity(turnId, { kind: 'compaction', id, status: 'completed' });
+    }
+    if (p.status === 'compacting') {
+      if (this.claudeCompactionId && this.compactions.get(this.claudeCompactionId) === 'running') return [];
+      const id = this.claudeCompactionId = p.uuid ?? `claude-${turnId}-${this.compactions.size}`;
+      return this.projectActivity(turnId, { kind: 'compaction', id, status: 'running' });
+    }
+    const id = this.claudeCompactionId;
+    if (!id || !p.compact_result) return [];
+    // A successful status can precede compact_boundary. Retain its identity until the boundary arrives.
+    if (p.compact_result === 'failed') this.claudeCompactionId = undefined;
+    const status = p.compact_result === 'success' ? 'completed' : turnInterrupted ? 'interrupted' : 'failed';
+    return this.projectActivity(turnId, { kind: 'compaction', id, status,
+      message: status === 'failed' && typeof p.compact_error === 'string' ? p.compact_error : undefined });
   }
 
   private claudeThinkingFrame(frame: SDKPartialAssistantMessage): ItemUpsert[] {
@@ -158,7 +253,14 @@ export class TimelineProjector {
   }
 
   private claude(e: DriverEvent): ItemUpsert[] {
-    if (e.type === 'native' && e.name === 'stream_event') return this.claudeThinkingFrame(e.payload as SDKPartialAssistantMessage);
+    if (e.type === 'native' && e.name === 'stream_event') {
+      const frame = e.payload as SDKPartialAssistantMessage;
+      const items = this.claudeThinkingFrame(frame);
+      if (!frame?.parent_tool_use_id && frame?.event?.type === 'content_block_delta'
+        && frame.event.delta?.type === 'text_delta' && frame.event.delta.text)
+        items.push(...this.projectActivity(this.activityTurnId, { kind: 'retry', status: 'completed' }));
+      return items;
+    }
     if (e.type === 'turn.completed' || e.type === 'exit' || e.type === 'unusable') {
       const out: ItemUpsert[] = [];
       for (const message of this.claudeThinkingMessages.values()) for (const block of message.byIndex.values()) {
@@ -243,17 +345,28 @@ export class TimelineProjector {
     if (e.type === 'native' && (e.payload as any)?.type === 'rate_limit_event' && (e.payload as any).rate_limit_info?.status === 'rejected') {
       const info = (e.payload as any).rate_limit_info;
       const resetAt = typeof info.resetsAt === 'number' ? new Date(info.resetsAt * (info.resetsAt < 1e12 ? 1000 : 1)).toISOString() : undefined;
-      return [{ key: `limit:${(e.payload as any).uuid ?? Date.now()}`, type: 'error', payload: { code: 'rate_limit_rejected', message: `额度受限（${info.rateLimitType ?? '未知类型'}）`, limited: { kind: 'usage', ...(resetAt ? { resetAt } : {}) } }, terminal: 'failed' }];
+      const failure = { code: 'rate_limit_rejected', message: `额度受限（${info.rateLimitType ?? '未知类型'}）`,
+        limited: { kind: 'usage' as const, ...(resetAt ? { resetAt } : {}) } };
+      if (this.retry) return this.projectActivity(this.activityTurnId, { kind: 'retry', status: 'failed', ...failure });
+      return [{ key: `limit:${(e.payload as any).uuid ?? Date.now()}`, type: 'error', payload: failure, terminal: 'failed' }];
     }
-    if (e.type === 'native' && (e.payload as any)?.type === 'assistant' && typeof (e.payload as any).error === 'string' && !(e.payload as any).parent_tool_use_id) {
-      const err = (e.payload as any).error as string;
-      const limited = err === 'rate_limit' ? { kind: 'rate' } : err === 'max_output_tokens' ? { kind: 'output' } : err === 'billing_error' ? { kind: 'usage' } : null;
-      const text = ((e.payload as any).message?.content ?? []).map((b: any) => b?.text ?? '').join('').slice(0, 2000);
-      return [{ key: `assistant-error:${(e.payload as any).uuid ?? Date.now()}`, type: 'error', payload: { code: err, message: text || err, ...(limited ? { limited } : {}) }, terminal: 'failed' }];
+    const native = e.type === 'native' ? e.payload as any : null;
+    if (native?.type === 'assistant' && !native.parent_tool_use_id) {
+      if (typeof native.error === 'string') {
+        const code = native.error;
+        const kind = code === 'rate_limit' ? 'rate' : code === 'max_output_tokens' ? 'output' : code === 'billing_error' ? 'usage' : undefined;
+        const message = (native.message?.content ?? []).map((b: any) => b?.text ?? '').join('').slice(0, 2000) || code;
+        const failure: AgentActivityError = { code, message, ...(kind ? { limited: { kind } } : {}) };
+        if (this.retry) return this.projectActivity(this.activityTurnId, { kind: 'retry', status: 'failed', ...failure });
+        return [{ key: `assistant-error:${native.uuid ?? Date.now()}`, type: 'error', payload: { ...failure }, terminal: 'failed' }];
+      }
+      const model = native.message?.model;
+      if (typeof model === 'string' && model !== '<synthetic>')
+        return this.projectActivity(this.activityTurnId, { kind: 'retry', status: 'completed' });
     }
-    if (e.type === 'native' && (e.payload as any)?.type === 'system' && (e.payload as any).subtype === 'compact_boundary') {
-      return [{ key: `compact:${(e.payload as any).uuid ?? Date.now()}`, type: 'compaction', payload: {}, terminal: 'completed' }];
-    }
+    if (e.type === 'native' && this.activityTurnId && native?.type === 'system' && !native.parent_tool_use_id
+      && ['status', 'compact_boundary', 'api_retry'].includes(native.subtype))
+      return this.claudeSystemActivity(native, this.activityTurnId, e.turnInterrupted);
     if (e.type === 'native' && ['system/hook_started', 'system/hook_progress', 'system/hook_response'].includes(e.name)) {
       const p = e.payload as { hook_id?: string; hook_name?: string; hook_event?: string; outcome?: string; exit_code?: number };
       if (!p?.hook_id) return [];
@@ -265,7 +378,9 @@ export class TimelineProjector {
     }
     if (e.type === 'native' && (e.payload as any)?.type === 'result' && (e.payload as any).is_error && (e.payload as any).subtype !== 'error_during_execution') {
       const p = e.payload as any;
-      return [{ key: `error:${p.uuid ?? p.session_id}`, type: 'error', payload: { code: p.subtype, message: text(p.result ?? p.errors ?? p.subtype) }, terminal: 'failed' }];
+      const failure = { code: p.subtype, message: text(p.result ?? p.errors ?? p.subtype) };
+      if (this.retry) return this.projectActivity(this.activityTurnId, { kind: 'retry', status: 'failed', ...failure });
+      return [{ key: `error:${p.uuid ?? p.session_id}`, type: 'error', payload: failure, terminal: 'failed' }];
     }
     return [];
   }
@@ -284,10 +399,24 @@ export class TimelineProjector {
       }
       return [];
     }
-    if (e.type === 'native' && e.name === 'item/started') {
-      const item = (e.payload as any)?.item;
-      const mapped = item && this.codexItem(item, false);
-      return mapped ? [mapped] : [];
+    if (e.type === 'native' && (e.name === 'item/started' || e.name === 'item/completed')) {
+      const { turnId, item } = (e.payload as { turnId?: string; item?: any }) ?? {};
+      if (item?.type === 'contextCompaction' && typeof item.id === 'string') {
+        const status = e.name === 'item/started' ? 'running'
+          : item.status === 'failed' || item.status === 'interrupted' ? item.status : 'completed';
+        return this.projectActivity(turnId, { kind: 'compaction', id: item.id, status });
+      }
+      if (e.name === 'item/started') {
+        const mapped = this.codexItem(item, false);
+        return mapped ? [mapped] : [];
+      }
+      if (item?.type === 'agentMessage' && item.text)
+        return this.projectActivity(turnId, { kind: 'retry', status: 'completed' });
+    }
+    if (e.type === 'native' && ['item/agentMessage/delta', 'item/reasoning/summaryTextDelta',
+      'item/reasoning/textDelta', 'item/plan/delta'].includes(e.name)) {
+      const p = e.payload as { turnId?: string; delta?: string } | null;
+      return p?.delta ? this.projectActivity(p.turnId, { kind: 'retry', status: 'completed' }) : [];
     }
     if (e.type === 'item.completed') {
       const mapped = this.codexItem(e.payload as any, true);
@@ -335,14 +464,25 @@ export class TimelineProjector {
       const p = e.payload as any;
       const info = p?.error?.codexErrorInfo;
       const code = typeof info === 'string' ? info : info && typeof info === 'object' ? Object.keys(info)[0] : 'error';
+      const message = text(p?.error?.message ?? p);
+      if (p?.willRetry === true) {
+        const count = /\b(\d+)\s*\/\s*(\d+)\b/u.exec(message);
+        return this.projectActivity(p.turnId, { kind: 'retry', status: 'running', code, message,
+          attempt: count ? positiveInteger(Number(count[1])) : undefined,
+          maxAttempts: count ? positiveInteger(Number(count[2])) : undefined });
+      }
       // 受限与普通失败分开（复核 CR18，需求 R02）：额度／限流与输出上限各自标明，保留原生事实。
       const outputLimit = code === 'other' && p?.willRetry !== true && p?.error?.message === 'Incomplete response returned, reason: max_output_tokens';
       // Codex reports a 429 that outlasted its own retries as an HTTP-status variant, not rateLimitExceeded (D06-63).
       const http429 = p?.willRetry !== true && info && typeof info === 'object' && (info as any)[code]?.httpStatusCode === 429;
-      const limited = outputLimit ? { kind: 'output' } : code === 'usageLimitExceeded' ? { kind: 'usage' } : code === 'rateLimitExceeded' || code === 'tooManyRequests' || http429 ? { kind: 'rate' } : code === 'contextWindowExceeded' ? { kind: 'context' } : null;
-      const resetAt = limited?.kind === 'usage' && p?.willRetry !== true && this.codexTurnId && p?.turnId === this.codexTurnId
+      const kind = outputLimit ? 'output' : code === 'usageLimitExceeded' ? 'usage'
+        : code === 'rateLimitExceeded' || code === 'tooManyRequests' || http429 ? 'rate' : code === 'contextWindowExceeded' ? 'context' : null;
+      const resetAt = kind === 'usage' && this.codexTurnId && p?.turnId === this.codexTurnId
         ? this.codexQuotaReset() : undefined;
-      return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { code, message: text(p?.error?.message ?? p), ...(limited ? { limited: { ...limited, ...(resetAt ? { resetAt } : {}) } } : {}) }, terminal: 'failed' }];
+      const failure: AgentActivityError = { code, message, ...(kind ? { limited: { kind, ...(resetAt ? { resetAt } : {}) } } : {}) };
+      if (this.retry && p?.turnId === this.activityTurnId)
+        return this.projectActivity(p.turnId, { kind: 'retry', status: 'failed', ...failure });
+      return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { ...failure }, terminal: 'failed' }];
     }
     return [];
   }
@@ -381,7 +521,7 @@ export class TimelineProjector {
       case 'collabAgentToolCall':
         return { key, type: 'subagent', payload: { kind: 'provider_native', tool: item.tool ?? null, status, prompt: item.prompt ?? null, nativeNodeIds: item.receiverThreadIds ?? [], agentsStates: item.agentsStates ?? {} }, terminal };
       case 'contextCompaction':
-        return done ? { key, type: 'compaction', payload: {}, terminal } : null;
+        return null; // Use the native notification above, which still carries turnId.
       case 'userMessage':
         return null; // 用户消息由宿主接受输入时记录。
       default: {
