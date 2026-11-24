@@ -554,7 +554,7 @@ export function App() {
         if (item.status === 'running' || item.parentId || tasks.some(t => t.parentId === item.id)) return notify('当前任务或委派任务需要先收口（合成）');
         setModal({ type: 'delete-agent-task', task: item });
       }}
-      onSettings={() => nav('settings/general')} onInfo={() => setModal({ type: 'preview' })} />
+      onInfo={() => setModal({ type: 'preview' })} />
     {route === 'scheduled' && <aside className="sidebar scheduled-sidebar"><h2>定时任务</h2><button className="nav-row" disabled title="后续开放"><Plus size={16} />新建任务</button><p>即将执行</p><span className="scheduled-empty">暂未开放</span></aside>}
     {!collapsed && <div className="sidebar-resizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={sidebarWidth} aria-valuemin={240} aria-valuemax={420} onPointerDown={resize} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setSidebarWidth(w => Math.max(240, Math.min(420, w + (e.key === 'ArrowRight' ? 10 : -10)))); } }} />}
     <main ref={fileArea} inert={m14Preview && fileWorkspace && m14Max && !!panelTask} className="workspace" style={(task || m14Home) && fileWorkspace ? { minWidth: 0 } : undefined}>

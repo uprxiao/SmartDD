@@ -168,6 +168,22 @@ it('shows reasoning recorded after the answer above the completed reply when wor
   expect(screen.getByRole('group', { name: '回复操作' })).toBe(actions);
 });
 
+it('shows the thinking prompt below the single work separator', async () => {
+  const turnId = 'starting-phase';
+  const startedAt = new Date().toISOString();
+  const user = { ...item('user_message', { text: '先解释一下' }), turnId };
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [user], status: 'working', turns: [
+    { turn_id: turnId, status: 'started', accepted_at: startedAt, started_at: startedAt, ended_at: null },
+  ] }));
+  render(<AgentTaskView taskId="task" />);
+  const thinking = (await screen.findByText('思考中……')).closest('[role=status]')!;
+  expect(thinking.querySelector('svg')).toBeTruthy();
+  const turn = thinking.closest('.agent-turn')!;
+  const separators = turn.querySelectorAll('.agent-work-divider');
+  expect(separators).toHaveLength(1);
+  expect(thinking.previousElementSibling).toBe(separators[0].parentElement);
+});
+
 it('runs a single live clock for multiple process segments', async () => {
   const turnId = 'active-clock';
   const now = new Date(Date.now() - 5_000).toISOString();
@@ -183,6 +199,7 @@ it('runs a single live clock for multiple process segments', async () => {
   render(<AgentTaskView taskId="task" />);
   const clock = await screen.findByRole('button', { name: /^工作中 \d+ 秒$/ });
   expect(screen.getAllByRole('button', { name: /^工作中 \d+ 秒$/ })).toHaveLength(1);
+  expect(clock.closest('.agent-turn')?.querySelectorAll('.agent-work-divider')).toHaveLength(1);
   expect(screen.getByText('继续检查第二处')).toBeTruthy();
   expect(screen.queryByRole('button', { name: '分支到新聊天' })).toBeNull();
   const initial = clock.textContent;
@@ -284,13 +301,13 @@ it('A59 keeps the active status with the user message while startup diagnostics 
   const user = await screen.findByText('你好');
   const work = within(user.closest('.agent-turn') as HTMLElement);
   expect(work.getByText('工作中 0 秒')).toBeTruthy();
-  expect(work.getByText('思考中')).toBeTruthy();
+  expect(work.getByText('思考中……')).toBeTruthy();
   expect(work.queryByText(/正在启动|正在准备执行器/)).toBeNull();
   preparing.unmount();
 
   mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', turns: [{ ...turn, started_at: now, status: 'started' }], items }));
   const active = render(<AgentTaskView taskId="task" />);
-  await screen.findByText('思考中');
+  await screen.findByText('思考中……');
   expect(screen.queryByText(/MCP 启动 · personal/)).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: '更多' }));
   fireEvent.click(screen.getByRole('button', { name: '运行诊断' }));
@@ -305,7 +322,7 @@ it('A59 keeps the active status with the user message while startup diagnostics 
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
   render(<AgentTaskView taskId="task" />);
   await screen.findByText('今天想一起做点什么？');
-  expect(screen.queryByText('思考中')).toBeNull();
+  expect(screen.queryByText('思考中……')).toBeNull();
   expect(screen.queryByText('查看差异')).toBeNull();
   expect(screen.queryByText(/首次快照仍在后台准备/)).toBeNull();
   expect(screen.getByText('今天想一起做点什么？').closest('.agent-assistant')?.querySelector('time')?.dateTime).toBe(now);
@@ -1291,7 +1308,46 @@ it('V03 combines completed reads and commands on one row, with process prose bet
   expect(details.open).toBe(false);
   fireEvent.click(grouped.closest('summary')!);
   expect(within(details).getByText('运行了 git status')).toBeTruthy();
-  expect(paragraph.nextElementSibling?.textContent).toContain('正在运行 pnpm test');
+  const runningCommand = screen.getByText('正在运行 1 条命令').closest('summary')!;
+  const runningDetails = runningCommand.closest('details')!;
+  expect(paragraph.nextElementSibling?.contains(runningCommand)).toBe(true);
+  expect(runningDetails.open).toBe(false);
+  fireEvent.click(runningCommand);
+  expect(runningDetails.open).toBe(true);
+  expect(within(runningDetails).getByText('正在运行 pnpm test')).toBeTruthy();
+  fireEvent.click(runningCommand);
+  expect(runningDetails.open).toBe(false);
+});
+
+it('folds a single completed command independently from its turn and final reply', async () => {
+  const turnId = 'single-command';
+  const start = '2026-11-24T00:00:00Z', end = '2026-11-24T00:00:03Z';
+  const items = [
+    item('user_message', { text: '看一下目录' }),
+    item('command_execution', { command: 'pwd', status: 'completed', output: '/fixture/work' }),
+    item('assistant_message', { text: '目录已确认' }),
+  ].map((entry, ordinal) => ({ ...entry, ordinal, turnId, itemId: `single-${ordinal}` }));
+  mocks.snapshot.mockResolvedValue(snapshot({ items, status: 'completed', turns: [
+    { turn_id: turnId, status: 'completed', accepted_at: start, started_at: start, ended_at: end },
+  ] }));
+  render(<AgentTaskView taskId="task" />);
+  const reply = await screen.findByText('目录已确认');
+  const turn = reply.closest('.agent-turn')!;
+  const clock = screen.getByRole('button', { name: '用时 3 秒' });
+  expect(turn.querySelector('.agent-work-divider')).toBeNull();
+  expect(screen.queryByText('运行了 1 条命令')).toBeNull();
+  fireEvent.click(clock);
+  expect(turn.querySelectorAll('.agent-work-divider')).toHaveLength(1);
+  const command = screen.getByText('运行了 1 条命令').closest('summary')!;
+  const details = command.closest('details')!;
+  expect(details.open).toBe(false);
+  fireEvent.click(command);
+  expect(details.open).toBe(true);
+  expect(within(details).getByText('运行了 pwd')).toBeTruthy();
+  expect(within(details).getByText('/fixture/work')).toBeTruthy();
+  fireEvent.click(clock);
+  expect(screen.queryByText('运行了 1 条命令')).toBeNull();
+  expect(screen.getByText('目录已确认')).toBe(reply);
 });
 
 it('V19 marks failure, opens error details, and separately calls out unknown delivery without offering a resend', async () => {

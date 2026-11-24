@@ -493,12 +493,15 @@ const WORK_ICONS: Record<string, typeof Brain> = {
   web_search:Globe, tool_call:Wrench, subagent:Network,
 };
 
-function WorkItem({ it }: { it: TimelineItem }) {
+function WorkItem({ it, inGroup = false }: { it: TimelineItem; inGroup?: boolean }) {
   const { payload: p, truncated, load } = useFullPayload(it);
   const viewProcess = useContext(NativeProcessScope);
   const Icon = WORK_ICONS[it.type] ?? Info;
-  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}`}>
-    <summary><Icon size={14}/><span>{workLabel({ ...it, payload: p })}</span></summary>
+  const standaloneCommand = it.type === 'command_execution' && !inGroup;
+  const entry = { ...it, payload: p };
+  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${standaloneCommand ? ' agent-work-command-row' : ''}`}>
+    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, standaloneCommand)}</span>{standaloneCommand && <ChevronRight size={13} aria-hidden/>}</summary>
+    {standaloneCommand && <div className="agent-work-command">{workLabel(entry)}</div>}
     {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
     {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}
     <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
@@ -520,7 +523,7 @@ function WorkContents({ items }: { items: TimelineItem[] }) {
     if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first}/>;
     return <details className="agent-work-row agent-work-group" key={first.itemId}>
       <summary><Wrench size={14} aria-hidden/><span>{summarizeTools(segment.items)}</span><ChevronRight size={13} aria-hidden/></summary>
-      {segment.items.map(item => <WorkItem key={item.itemId} it={item}/>)}
+      {segment.items.map(item => <WorkItem key={item.itemId} it={item} inGroup/>)}
     </details>;
   })}</div>;
 }
@@ -560,9 +563,10 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
       onClick={() => setChoice({ completed, open: !open })}>
       {label}<ChevronRight size={13} className={open ? 'open' : ''} aria-hidden/>
     </button> : <div className={headClass}>{label}</div>}
+    {(showThinking || (open && hasDetails)) && <div className="agent-work-divider" aria-hidden/>}
     {open && waitDetail && <div className="agent-turn-footer">{waitDetail}</div>}
   </div>;
-  const thinking = showThinking && <div className="agent-starting-phase" role="status"><Brain size={14} aria-hidden/>思考中</div>;
+  const thinking = showThinking && <div className="agent-starting-phase" role="status"><Brain size={14} aria-hidden/><span>思考中……</span></div>;
   const rows = group.rows.map((row, index) => {
     if (row.kind === 'footer') return null;
     const visible = open || !isProcess(row);

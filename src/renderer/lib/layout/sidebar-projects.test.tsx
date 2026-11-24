@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { navigation } from '@renderer/core/navigation';
+import { LeftSidebar } from './left-sidebar';
 import { SidebarProjects } from './sidebar-projects';
 
 const m = vi.hoisted(() => ({
@@ -22,7 +23,7 @@ vi.mock('@renderer/lib/hooks/useProjects', () => ({
   useRefreshProjects: () => m.refresh,
 }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { projects: { setArchived: m.setArchived, delete: m.remove, deletePreview:m.preview } }, events: { on: () => () => undefined } }));
-vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { of: m.tasksFor, refresh: m.refresh } }));
+vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { tasks: [], of: m.tasksFor, refresh: m.refresh } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 beforeEach(() => {
@@ -42,6 +43,13 @@ afterEach(() => {
 });
 
 const openMenu = async () => { fireEvent.click(screen.getByTestId('sidebar-project-more')); return screen.findByTestId('sidebar-project-delete'); };
+
+it('renders the project sidebar without a duplicate settings button', () => {
+  render(<LeftSidebar />);
+  const sidebar = within(screen.getByRole('complementary'));
+  expect(sidebar.getByRole('button', { name: /^nav\.newTask/ })).toBeTruthy();
+  expect(sidebar.queryByRole('button', { name: 'nav.settings' })).toBeNull();
+});
 
 it('clicking the project name toggles its sessions and retains the active task and collapsed state', async () => {
   m.projects.mockReturnValue([m.project, { id: 'p2', name: 'Other', archivedAt: null }]);

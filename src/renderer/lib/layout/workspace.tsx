@@ -44,7 +44,9 @@ export const Workspace = observer(function Workspace() {
     ?? navigation.currentProjectId ?? navigation.homePreset?.projectId;
   const railSelection: RailIconName | null = view === 'home' || view === 'project' ? 'home'
     : scheduled ? 'clock' : settings ? 'settings' : apps ? 'grid' : null;
-  const railButton = (name: RailIconName, label: string, onClick: () => void) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`} aria-label={label} aria-current={railSelection === name ? 'page' : undefined} title={label} onClick={onClick}><RailIcon name={name} selected={railSelection === name} /></button>;
+  const railButton = (name: RailIconName, label: string, onClick: () => void) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`}
+    data-testid={name === 'settings' ? 'nav-settings' : undefined} aria-label={label} aria-current={railSelection === name ? 'page' : undefined}
+    title={label} onClick={onClick}><RailIcon name={name} selected={railSelection === name} /></button>;
   return (
     <div className={`app codex-frame ${apps ? 'apps-mode' : settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && view === 'project' ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
       <div className="m6-window-drag app-drag" />

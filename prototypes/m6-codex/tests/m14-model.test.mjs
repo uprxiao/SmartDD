@@ -50,9 +50,24 @@ test('已结束的用户处理耗时随工作过程展开，最终回复独立�
 });
 test('T3 规则：运行中不折叠，轮首“工作中”，末尾实时行或“思考中”', () => {
   assert.deepEqual(kinds(turn('starting')), ['working', 'thinking']);
+  const starting = deriveRows(turn('starting'));
+  assert.equal(starting[1].label, '思考中……');
+  assert.deepEqual(starting.filter(row => row.divider).map(row => row.kind), ['working']);
   const r = kinds(turn('running')); assert.equal(r[0], 'working'); assert.equal(r.at(-1), 'work-live');
   assert.ok(!kinds(turn('approval')).includes('thinking'), '待审批时不显示思考中');
   assert.equal(deriveRows(turn('team')).at(-1).label, '等待 3 个子任务');
+});
+test('单条命令从运行到完成只占一行，整轮收起后仅显示最终回复', () => {
+  const cmd = { id: 'cmd', kind: 'command', cmd: 'pwd', live: true };
+  const active = { id: 'one', state: 'live', elapsed: 2, entries: [cmd] };
+  assert.deepEqual(kinds(active), ['working', 'work']);
+  assert.equal(deriveRows(active)[1].live, true);
+  const done = { ...active, state: 'done', final: ['已查看目录'], entries: [{ ...cmd, live: false }] };
+  assert.deepEqual(kinds(done), ['turn-fold', 'final']);
+  assert.equal(deriveRows(done).some(row => row.divider), false);
+  const expanded = deriveRows(done, { expandedTurns: new Set([done.id]) });
+  assert.deepEqual(expanded.map(row => row.kind), ['turn-fold', 'work', 'final']);
+  assert.deepEqual(expanded.filter(row => row.divider).map(row => row.kind), ['turn-fold']);
 });
 test('T3 规则：停止和失败的轮次不折叠', () => {
   assert.equal(deriveRows(turn('stopped'))[0].label, '你在 1 分 3 秒后停止了');

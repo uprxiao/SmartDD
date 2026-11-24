@@ -16,6 +16,27 @@ function render(element: ReactElement) {
 const profiles = [{ profileId: 'a', name: 'Codex account', kind: 'codex', source: 'login', models: ['m1'], available: true, extensionSupport: 'partial' }, { profileId: 'b', name: 'Claude account', kind: 'claude', source: 'login', models: ['m2'], available: true }];
 const open = () => fireEvent.click(screen.getByRole('button', { name: '选择智能体与模型' }));
 
+it('anchors the popup to the trigger using its rendered width', () => {
+  let popupWidth = 480;
+  const triggerRight = window.innerWidth - 60;
+  const bounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    if (this.classList.contains('agent-model-picker')) return new DOMRect(triggerRight - 180, 500, 180, 28);
+    if (this.classList.contains('agent-picker')) return new DOMRect(0, 0, popupWidth, 340);
+    return new DOMRect();
+  });
+  try {
+    render(<AgentModelPicker profiles={profiles} profileId="a" onPick={() => {}} onExtensions={() => {}} />);
+    open();
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.style.left).toBe(`${triggerRight - popupWidth}px`);
+    popupWidth = 420;
+    fireEvent(window, new Event('resize'));
+    expect(dialog.style.left).toBe(`${triggerRight - popupWidth}px`);
+  } finally {
+    bounds.mockRestore();
+  }
+});
+
 it('distinguishes loading and failure, retries and reveals reasoning for the native default', async () => {
   const scope = { kind: 'task' as const, taskId: 't' };
   const loading = { status: 'loading', models: [] };

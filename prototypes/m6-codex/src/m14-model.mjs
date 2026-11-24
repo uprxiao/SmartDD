@@ -139,7 +139,7 @@ export function groupIcon(entries) {
 // T3 workEntryDisplayLabel／liveWorkEntryLabel 的中文对应
 export function entryLabel(e, live = false) {
   switch (e.kind) {
-    case 'thought': return live ? '思考中' : thoughtHeading(e.text) || '思考';
+    case 'thought': return live ? '思考中……' : thoughtHeading(e.text) || '思考';
     case 'read': return (live ? '正在读取 ' : '读取 ') + e.path;
     case 'edit': return (live ? '正在修改 ' : '修改 ') + e.path;
     case 'command': return live ? `正在运行 ${e.cmd.split(/\s+/)[0]}` : e.cmd;
@@ -162,7 +162,7 @@ const KEEP_WHEN_FOLDED = ['notice', 'subagents', 'error', 'created', 'plan', 'co
 
 // 把一轮的记录换成时间线行。规则对应 T3 deriveMessagesTimelineRows／deriveTurnFolds：
 // 1. 运行中：轮首显示“工作中 N 秒”（下方分隔线）；记录按时间顺序展示，不折叠。
-// 2. 连续的工作记录合成一组：一组只有 1 条工具记录时直接显示那一行；多条时显示汇总行（默认收起，可展开）。
+// 2. 连续的工作记录合成一组。命令即使只有一条也默认收起，可展开查看详情。
 // 3. 末尾仍在进行的一组显示为“实时行”：最新一条带流光；组内有思考时，上方先显示思考标题。
 // 4. 没有任何实时行、也没有待审批时，末尾显示“思考中”；有子任务在跑则改为“等待 N 个子任务”。
 // 5. 正常结束：整轮折叠成“用时 N 秒”，只露出最终回答；通知、子任务卡、待办、错误不进折叠。展开后与第 1–3 条相同。
@@ -192,20 +192,26 @@ export function deriveRows(turn, ui = {}) {
     while (i + 1 < visible.length && !STANDALONE.has(visible[i + 1].kind)) group.push(visible[++i]);
     const gid = 'g:' + group[0].id;
     const activeEntries = live ? group.filter(x => x.live) : [];
-    if (activeEntries.length && i === visible.length - 1) {
+    if (group.length === 1 && e.kind === 'command') {
+      rows.push({ kind: 'work', id: e.id, entry: e, live: activeEntries.length > 0 });
+    } else if (activeEntries.length && i === visible.length - 1) {
       const thought = [...group].reverse().find(x => x.kind === 'thought');
       rows.push({ kind: 'work-live', id: gid, entry: activeEntries.at(-1), thought, entries: group, expanded: !!ui.expandedGroups?.has(gid) });
     } else if (group.length === 1) rows.push({ kind: 'work', id: group[0].id, entry: group[0] });
     else rows.push({ kind: 'work-toggle', id: gid, summary: summarizeGroup(group), icon: groupIcon(group), at: group[0].at?.[0] ?? 0, entries: group, expanded: !!ui.expandedGroups?.has(gid) });
   }
-  const tailLive = rows.at(-1)?.kind === 'work-live';
+  const tailLive = rows.at(-1)?.kind === 'work-live' || rows.at(-1)?.live;
   const footer = state === 'stopped' ? { kind: 'turn-footer', id: turn.id + ':f', label: `已停止 · 共工作 ${formatDuration(elapsed)}` } : state === 'failed' ? { kind: 'turn-footer', id: turn.id + ':f', failed: true, label: `已失败 · 共工作 ${formatDuration(elapsed)}` } : null;
-  if (live && !tailLive && !pendingApproval && !turn.question && !turn.streaming && !turn.stopping) rows.push({ kind: 'thinking', id: turn.id + ':thinking', label: turn.waitingLabel ?? (turn.waitingOn ? `等待 ${turn.waitingOn} 个子任务` : '思考中') });
+  if (live && !tailLive && !pendingApproval && !turn.question && !turn.streaming && !turn.stopping) rows.push({ kind: 'thinking', id: turn.id + ':thinking', label: turn.waitingLabel ?? (turn.waitingOn ? `等待 ${turn.waitingOn} 个子任务` : '思考中……') });
   if (unfolded && waitingSeconds > 0) rows.push({ kind: 'turn-footer', id: turn.id + ':user-wait', label: `用户处理耗时 ${formatDuration(waitingSeconds)}` });
   if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent, table: turn.finalTable, time: turn.completedTime ?? '14:04', showActions: state === 'done' });
   if (!live && !turn.diffState && turn.changes?.length) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, turnId: turn.id });
   if (turn.length) rows.push({ kind: 'length', id: turn.id + ':len' });
   if (footer) rows.push(footer);
+  if (unfolded && (waitingSeconds > 0 || rows.some(row => ['work', 'work-live', 'work-toggle', 'message', 'thinking'].includes(row.kind)))) {
+    const heading = rows[0];
+    if (['working', 'turn-header', 'turn-fold'].includes(heading.kind)) heading.divider = true;
+  }
   return rows;
 }
 
