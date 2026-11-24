@@ -1150,6 +1150,60 @@ it('M14 A29/A74: the native child process drawer and family card open independen
   }
 });
 
+it('renders the native result as Markdown and pairs each Bash output with its command', async () => {
+  const turnId = 'native-rendering';
+  const result = '## 源码分析结果\n\n- 最终结论包含 `reader.ts`\n\n```bash\nprintf sample\n```';
+  const parent = { ...item('subagent', { name: 'Agent', status: 'completed', input: { description: '核对源码' },
+    childLog: ['重复的旧预览'], childLogPreviewOnly: true, output: result }), turnId };
+  const native = (ordinal: number, payload: unknown) => ({ ...item('subagent_message', payload), itemId: `child-${ordinal}`, ordinal, nodeId: 'native-child' });
+  const tool = (id: string, command: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'Bash', input: { command } }] } });
+  const output = (id: string, text: string, failed = false) => ({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: id, content: [{ type: 'text', text }], is_error: failed }] } });
+  const reply = { type: 'assistant', message: { content: [{ type: 'text', text: result }] } };
+  const rows = [native(2, tool('a', 'printf first')), native(3, tool('b', 'printf second')),
+    native(4, output('b', '第二条输出', true)), native(5, { truncated: true, bytes: 5421,
+      nativePreview: [{ kind: 'tool_result', id: 'a', output: '第一条预览', failed: false }] }), native(6, reply)];
+  const full = output('a', '第一条完整输出\n长输出末尾');
+  mocks.itemBody.mockResolvedValueOnce({ chunk: JSON.stringify(full), next: 0, done: true, revision: 1 });
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [parent], turns: [{ turn_id: turnId, status: 'completed',
+    started_at: '2026-11-18T00:00:00Z', ended_at: '2026-11-18T00:00:05Z' }] }));
+  const listeners = new Set<(event: { taskId: string; seq: number }) => void>();
+  mocks.on.mockImplementation((event, listener) => {
+    if (event.name === 'agentTasks:event') listeners.add(listener);
+    return () => { listeners.delete(listener); };
+  });
+  const api = mocks as typeof mocks & { nativeHistory?: ReturnType<typeof vi.fn> };
+  api.nativeHistory = vi.fn().mockResolvedValue({ items: rows, states: ['completed'], total: rows.length });
+  try {
+    render(<AgentTaskView taskId="task" />);
+    fireEvent.click(await screen.findByRole('button', { name: /用时/ }));
+    fireEvent.click(screen.getByText('子 Agent 核对源码'));
+    expect(await screen.findByRole('heading', { name: '源码分析结果' })).toHaveProperty('tagName', 'H2');
+    expect(screen.queryByRole('button', { name: '在终端运行' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '查看过程' }));
+    const drawer = within(screen.getByRole('region', { name: '执行器原生子 Agent' }));
+    expect(await drawer.findByRole('heading', { name: '源码分析结果' })).toHaveProperty('tagName', 'H2');
+    expect(drawer.getAllByRole('heading', { name: '源码分析结果' })).toHaveLength(1);
+    expect(drawer.queryByText('重复的旧预览')).toBeNull();
+    expect(drawer.queryByLabelText('命令输出')).toBeNull();
+    expect(drawer.queryByText(/"truncated"/)).toBeNull();
+    const first = drawer.getByText('printf first').closest('details')!;
+    fireEvent.click(first.querySelector('summary')!);
+    expect((await within(first).findByLabelText('命令输出')).textContent).toBe('第一条预览');
+    fireEvent.click(within(first).getByRole('button', { name: /展开全文/ }));
+    await waitFor(() => expect(within(first).getByLabelText('命令输出').textContent).toContain('长输出末尾'));
+    expect(mocks.itemBody).toHaveBeenCalledWith('task', 'child-5', 0, 1);
+    await act(async () => { for (const listener of listeners) listener({ taskId: 'task', seq: 2 }); });
+    expect(api.nativeHistory).toHaveBeenCalledTimes(2);
+    expect(within(first).getByLabelText('命令输出').textContent).toContain('长输出末尾');
+    const second = drawer.getByText('printf second').closest('details')!;
+    expect(within(second).getByText('失败')).toBeTruthy();
+    fireEvent.click(second.querySelector('summary')!);
+    expect((await within(second).findByLabelText('命令输出')).textContent).toBe('第二条输出');
+  } finally {
+    delete api.nativeHistory;
+  }
+});
+
 it('M14 A29: the native lifecycle keeps the owning-run stop action after the launch tool returns', async () => {
   const turnId = 'native-turn';
   mocks.snapshot.mockResolvedValue(snapshot({

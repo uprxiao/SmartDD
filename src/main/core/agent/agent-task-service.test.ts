@@ -1668,6 +1668,27 @@ it('A29/A45: native child messages have independent scoped pagination and cannot
  await f.runs.closeAll();
 });
 
+it('keeps a long native tool result associated with its call without loading the full body in the history page', async () => {
+  const f = setup(), { taskId } = f.svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'native output', profileId: 'cx', tier: 'ask' });
+  await f.svc.submit(taskId, { clientInputId: id(998), text: 'start', expectedSelectionRevision: 1 });
+  await until(() => f.insts[0]?.turns.length === 1);
+  const runId = f.runs.runForTask(taskId)!.runId;
+  try {
+    const parent = f.store.upsertItem({ taskId, turnId: null, runId, nativeKey: 'native-parent', type: 'subagent', payload: { nativeNodeIds: ['child'] } });
+    const body = { type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'bash-call',
+      content: [{ type: 'text', text: `${'命令输出\n'.repeat(1000)}完整结果尾部` }], is_error: true }] } };
+    const result = f.store.upsertItem({ taskId, turnId: null, runId, nodeId: 'child', nativeKey: 'long-result', type: 'subagent_message', payload: body });
+    const [entry] = f.svc.nativeHistory(taskId, parent).items;
+    expect(entry).toMatchObject({ itemId: result, nodeId: 'child', payload: { truncated: true,
+      nativePreview: [{ kind: 'tool_result', id: 'bash-call', output: expect.stringContaining('命令输出'), failed: true }] } });
+    expect(Buffer.byteLength(JSON.stringify(entry.payload))).toBeLessThanOrEqual(4096);
+    expect(JSON.stringify(entry.payload)).not.toContain('完整结果尾部');
+    expect(JSON.parse(f.svc.itemBody(taskId, result, 0, entry.revision).chunk)).toEqual(body);
+  } finally {
+    await f.runs.closeAll();
+  }
+});
+
 describe('S1/S2 排队输入与确认未发送的重试', () => {
   const sender = {} as import('../applications/execution-context').ApplicationUiSender;
   it('edits the same input and preserves frozen attachment bytes into one verified steer', async () => {
