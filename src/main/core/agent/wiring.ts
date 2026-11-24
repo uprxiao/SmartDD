@@ -31,10 +31,11 @@ import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
 import { DriverError, type DriverOpenOptions } from './driver';
 import { previewCodexModels } from './drivers/codex-app-server';
+import { previewClaudeModels } from './drivers/claude-sdk';
 import { antigravityArgs, previewAntigravityModels } from './drivers/antigravity-acp';
-import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
+import { claudeCatalogScope, SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
 import type { AgentModelCatalog, AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
-import { providerModelOptions } from '@shared/agent-model-choice';
+import { isClaudeSubscription, providerModelOptions } from '@shared/agent-model-choice';
 import { tiersFor } from './permissions';
 import { AgentManualTerminals } from './manual-terminal';
 import { canonicalPath } from './identity';
@@ -308,7 +309,9 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const profiles = () => d.agents.configs().filter(c => c.source !== 'legacy' && codeAgentKindSchema.safeParse(c.kind).success).map(c => {
     const driverId = driverForKind(c.kind);
     const provider = c.providerId ? d.agents.providers().find(p => p.id === c.providerId) : undefined;
+    const tool = d.agents.tools().find(t => t.id === c.toolId);
     return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const,
+      claudeSubscription: isClaudeSubscription(c, tool?.login),
       provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, c),
     };
   });
@@ -331,13 +334,28 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const modelCatalog = async (scope: AgentModelScope, profileId: string, mode?: CatalogReadMode): Promise<AgentModelCatalog> => {
     const profile = config(profileId);
     const antigravity = profile.kind === 'antigravity' && profile.source === 'provider';
-    if (!antigravity && (profile.kind !== 'codex' || profile.source !== 'login')) return { status: 'ready', models: [] };
+    const nativeLogin = profile.source === 'login' && (profile.kind === 'codex' || profile.kind === 'claude');
+    if (!antigravity && !nativeLogin) return { status: 'ready', models: [] };
     if (profile.loggedOut || !profile.available) return { status: 'unavailable', models: [] };
     const task = scope.kind === 'task' ? store.task(scope.taskId) : undefined;
     if (scope.kind !== 'project' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
     const cwd = scope.kind === 'project' ? registeredProjectCwd(d.sqlite, scope.projectId, scope.dirId) : canonicalPath(task!.cwd);
     const tool = d.agents.tools().find(item => item.id === profile.toolId);
     if (!tool) throw new DriverError('REJECTED', '执行器不可用');
+    if (profile.kind === 'claude') {
+      if (!isClaudeSubscription(profile, tool.login)) return { status: 'unavailable', models: [] };
+      const baseEnv = d.baseEnv();
+      const launch = resolveProfileLaunch({ config: profile, tool, cwd, userData: d.userData, runId: randomUUID(), baseEnv });
+      return modelCatalogs.read(claudeCatalogScope(profile.id, launch, tool, cwd), async () => {
+        const native = await probeDriver('claude-sdk', { env: baseEnv, executable: launch.command, detect });
+        if (!native.realpath || native.state === 'unsupported') throw new DriverError('UNSUPPORTED', native.reason ?? 'Claude Code 不可用');
+        const signal = AbortSignal.any([recoveryAbort.signal, AbortSignal.timeout(5000)]);
+        const env = withShellProxy(native.shellPath ? { ...launch.env, PATH: native.shellPath } : launch.env, native.shellProxy);
+        const models = await previewClaudeModels({ executable: { path: native.realpath, version: native.version ?? 'unknown' },
+          cwd, env, settingSources: launch.settingSources }, signal);
+        return { confirmed: true, models };
+      }, mode);
+    }
     if (antigravity) {
       const provider = d.agents.providers().find(item => item.id === profile.providerId);
       if (!provider?.hasKey || !provider.endpoints.gemini) return { status: 'unavailable', models: [] };

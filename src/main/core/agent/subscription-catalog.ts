@@ -55,6 +55,15 @@ export function subscriptionCatalogScope(profileId: string, launch: ProfileLaunc
   return { key, localLoginBound };
 }
 
+export function claudeCatalogScope(profileId: string, launch: ProfileLaunch, tool: CodeAgentTool, cwd: string) {
+  const home = launch.env.HOME ?? homedir();
+  const paths = [join(launch.stateRoot, 'settings.json'), join(launch.stateRoot, '.credentials.json'),
+    ...projectLayers(cwd, home).flatMap(dir => ['settings.json', 'settings.local.json'].map(file => join(dir, '.claude', file)))];
+  return cacheKey('claude:', profileId, JSON.stringify([cwd, launch.stateRoot, launch.command, fileStamp(launch.command),
+    tool.login, tool.version, launch.env.PATH, launch.env.ANTHROPIC_BASE_URL, launch.env.ANTHROPIC_MODEL,
+    paths.map(path => [path, fileStamp(path)])]));
+}
+
 export class SubscriptionCatalogs {
   private readonly entries = new Map<string, Entry>();
   constructor(private readonly db: Database.Database) {}

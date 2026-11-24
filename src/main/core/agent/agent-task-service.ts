@@ -1,4 +1,4 @@
-import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, modelEffortKey, offersCodexLoginDefault, resolveModelEffort, type AgentModelOption } from '@shared/agent-model-choice';
+import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, findAgentModel, modelEffortKey, offersCodexLoginDefault, resolveModelEffort, type AgentModelOption } from '@shared/agent-model-choice';
 import type { HostBusinessRequests } from './host-business-requests';
 import type { TurnDiffs } from './turn-diffs';
 // M14 任务命令服务（技术方案 T1.5 §3 TaskCommandService）：输入框、IPC 与（后续）MCP 共用。
@@ -800,7 +800,8 @@ export class AgentTaskService {
         && (!selection.initialCodexDefault || run.defaultModel === selectedModel)
         && native?.model === selectedModel && native?.effort === selection.effort;
       let models = run.models;
-      if (run.driverId === 'codex-app-server' && selection.effort && !models && !matchesNativeSelection && !providerOptions.some(item => item.id === selectedModel)) {
+      const readsNativeEffort = run.driverId === 'codex-app-server' || (run.driverId === 'claude-sdk' && !modelSettings?.providerBacked);
+      if (readsNativeEffort && selection.effort && !models && !matchesNativeSelection && !providerOptions.some(item => item.id === selectedModel)) {
         models = await this.d.runs.resolveModelCatalog(run.runId, selectedModel, selection.effort);
         if (stoppedSince()) return;
       }
@@ -821,7 +822,7 @@ export class AgentTaskService {
       if (stoppedSince()) return;
       const { omittedImages, ...input } = this.agentInput(frozen.text, frozen.attachments ?? [], run, model);
       models ??= run.models;
-      const nativeModel = models?.find(m => m.id === model);
+      const nativeModel = findAgentModel(models, model);
       const providerModel = providerOptions.find(m => m.id === model);
       const isCodex = run.driverId === 'codex-app-server';
       const modelInfo = !isCodex && modelSettings?.providerBacked

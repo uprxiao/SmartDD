@@ -119,6 +119,41 @@ it('uses the saved Codex subscription name in the collapsed picker even without 
   expect(screen.getByRole('button', { name: '选择智能体与模型' }).textContent).toBe('我的 Codex 订阅 · 执行器默认');
 });
 
+it('reads the Claude catalog before opening a native session and applies the offered Opus alias and effort together', async () => {
+  const choose = vi.fn();
+  const local = { ...profiles[1], models: [], claudeSubscription: true };
+  const scope = { kind: 'task' as const, taskId: 'preview-claude' };
+  catalog.mockResolvedValue({status:'ready',models:[
+    { id:'opus', resolvedId:'claude-opus-5-5', name:'Claude Opus 5.5', efforts:['low','medium','high'] },
+    { id:'sonnet', resolvedId:'claude-sonnet-5-5', name:'Sonnet', efforts:['high'] },
+  ]});
+  render(<AgentModelPicker profiles={[profiles[0], local]} profileId="a" scope={scope} onPick={choose} onExtensions={() => {}} />);
+  open();
+  fireEvent.click(screen.getByRole('button', {name:local.name}));
+  const opus = await screen.findByRole('button', { name:'Claude Opus 5.5' });
+  expect(opus.getAttribute('aria-pressed')).toBe('true');
+  expect(screen.getByRole('button', { name:'中等' }).getAttribute('aria-pressed')).toBe('true');
+  expect(screen.getByRole('button', {name:'Sonnet'})).toBeTruthy();
+  expect(catalog).toHaveBeenCalledWith(scope, 'b');
+  expect(choose).not.toHaveBeenCalled();
+  fireEvent.click(opus);
+  await waitFor(() => expect(choose).toHaveBeenCalledExactlyOnceWith('b','opus','medium'));
+});
+
+it('leaves Claude on executor default when the current catalog excludes medium on Opus', async () => {
+  const local = { ...profiles[1], models: [], claudeSubscription:true };
+  catalog.mockResolvedValue({status:'ready',models:[
+    {id:'opus', resolvedId:'claude-opus-5-5', name:'Opus', efforts:['high']},
+    {id:'sonnet', name:'Sonnet', efforts:['medium']},
+  ]});
+  render(<AgentModelPicker profiles={[profiles[0], local]} profileId="a" scope={{kind:'task',taskId:'restricted-claude'}} onPick={() => {}} onExtensions={() => {}} />);
+  open();
+  fireEvent.click(screen.getByRole('button', {name:local.name}));
+  await screen.findByText(/Claude.*目录.*中等.*执行器默认/);
+  expect(screen.getByRole('button', {name:'执行器默认'}).getAttribute('aria-pressed')).toBe('true');
+  expect(screen.queryByRole('button',{name:'中等'})).toBeNull();
+});
+
 it.each([undefined, { model: 'gpt-6.2-sol', effort: 'high' }, { model: null, effort: null }])(
   'previews the subscription model and effort when switching from Claude (%j)', async (saved) => {
     const choose = vi.fn();

@@ -4,6 +4,8 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { McpServerStatus, OnElicitation } from '@anthropic-ai/claude-agent-sdk';
+import { claudeEffortSchema } from '@shared/ai-agents';
+import { CLAUDE_LOGIN_MODEL } from '@shared/agent-model-choice';
 import {isHostBusinessCli} from '../host-cli-command';
 import { CLAUDE_TIERS } from '../permissions';
 import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
@@ -15,7 +17,7 @@ export interface SdkQuery extends AsyncIterable<any> {
   stopTask?(taskId: string): Promise<void>;
   setPermissionMode(mode: string): Promise<void>;
   setModel?(model?: string): Promise<void>;
-  supportedModels?(): Promise<{ value: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
+  supportedModels?(): Promise<{ value: string; resolvedModel?: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
   mcpServerStatus?(): Promise<McpServerStatus[]>;
   applyFlagSettings?(settings: { effortLevel: string | null }): Promise<void>;
   close?(): void;
@@ -35,6 +37,59 @@ class InputQueue<T> implements AsyncIterable<T> {
   end() { this.ended = true; for (const w of this.waiters.splice(0)) w({ value: undefined as never, done: true }); }
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return { next: () => this.items.length ? Promise.resolve({ value: this.items.shift()!, done: false }) : this.ended ? Promise.resolve({ value: undefined as never, done: true }) : new Promise(r => this.waiters.push(r)) };
+  }
+}
+
+async function readClaudeModels(query: SdkQuery, signal: AbortSignal): Promise<DriverModel[]> {
+  if (!query.supportedModels) return [];
+  signal.throwIfAborted();
+  let cancel!: () => void;
+  const cancelled = new Promise<never>((_, reject) => {
+    cancel = () => reject(signal.reason);
+    signal.addEventListener('abort', cancel, { once: true });
+  });
+  try {
+    const rows = await Promise.race([query.supportedModels(), cancelled]);
+    const models = new Map<string, DriverModel>();
+    for (const row of rows) {
+      if (typeof row?.value !== 'string' || !row.value || row.value.length > 256 || models.has(row.value)) continue;
+      const resolvedId = typeof row.resolvedModel === 'string' && row.resolvedModel.length <= 256 ? row.resolvedModel || undefined : undefined;
+      const isDefault = row.value === 'default';
+      const label = typeof row.displayName === 'string' && row.displayName ? row.displayName : row.value;
+      const name = row.value === CLAUDE_LOGIN_MODEL || (row.value === 'opus' && resolvedId === CLAUDE_LOGIN_MODEL)
+        ? 'Claude Opus 5.5' : label;
+      const efforts = row.supportsEffort && query.applyFlagSettings && Array.isArray(row.supportedEffortLevels)
+        ? [...new Set(row.supportedEffortLevels.filter(level => claudeEffortSchema.safeParse(level).success))] : [];
+      models.set(row.value, { id: row.value, resolvedId, name: name.slice(0, 160), efforts, ...(isDefault ? { isDefault: true } : {}) });
+      if (models.size === 200) break;
+    }
+    return [...models.values()];
+  } finally {
+    signal.removeEventListener('abort', cancel);
+  }
+}
+
+/** Initialize a catalog-only SDK process without submitting a user turn or persisting a session. */
+export async function previewClaudeModels(
+  options: Pick<DriverOpenOptions, 'executable' | 'cwd' | 'env' | 'settingSources'>,
+  signal: AbortSignal,
+  sdk: () => Promise<SdkQueryFn> = loadSdk,
+) {
+  const queryFn = await sdk();
+  signal.throwIfAborted();
+  const input = new InputQueue<never>();
+  const active = queryFn({ prompt: input, options: {
+    pathToClaudeCodeExecutable: options.executable.path, cwd: options.cwd, env: options.env,
+    settingSources: options.settingSources, persistSession: false, strictMcpConfig: true,
+    tools: [], settings: { disableAllHooks: true, syncClaudeAiPlugins: false },
+  } });
+  const drain = (async () => { for await (const _ of active) { /* Initialization output has no user content. */ } })().catch(() => {});
+  try {
+    return await readClaudeModels(active, signal);
+  } finally {
+    input.end();
+    active.close?.();
+    await drain;
   }
 }
 
@@ -76,9 +131,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   on = this.emitter.on.bind(this.emitter);
 
   async modelCatalog(): Promise<DriverModel[]> {
-    if (!this.query?.supportedModels) return [];
-    const models = await this.query.supportedModels();
-    return models.slice(0, 200).map(m => ({ id: m.value, name: m.displayName, efforts: m.supportsEffort && this.query?.applyFlagSettings ? m.supportedEffortLevels ?? [] : [] }));
+    return this.query ? readClaudeModels(this.query, AbortSignal.timeout(5000)) : [];
   }
   async injectHistory(text: string) {
     if (!this.input || this.activeTurn || this.ended || this.exited) throw new DriverError('STATE', '历史交接需要空闲会话');

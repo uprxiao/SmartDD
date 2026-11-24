@@ -20,7 +20,10 @@ import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
 import { homeAgents, homeAgentId, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
-import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, modelEffortKey, offersCodexLoginDefault, providerModelOptions } from '@shared/agent-model-choice';
+import {
+  CLAUDE_LOGIN_EFFORT, CLAUDE_LOGIN_FALLBACK, CLAUDE_LOGIN_UNAVAILABLE, CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL,
+  claudeSubscriptionDefault, isClaudeSubscription, modelEffortKey, offersCodexLoginDefault, providerModelOptions,
+} from '@shared/agent-model-choice';
 import { agentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
@@ -124,20 +127,29 @@ export const HomeView = observer(function HomeView() {
   const isCodexLogin = profile?.kind === 'codex' && profile.source === 'login';
   const isCodexSubscription = (candidate: NonNullable<typeof profile>) => candidate.kind === 'codex' && candidate.source === 'login'
     && agents?.tools.some(tool => tool.id === candidate.toolId && tool.login === 'subscription') === true;
+  const claudeSubscription = isClaudeSubscription(profile, agents?.tools.find(tool => tool.id === profile?.toolId)?.login);
   const catalogScope = catalogProject && catalogDir ? {kind:'project' as const,projectId:catalogProject,dirId:catalogDir} : undefined;
-  const catalog = useQuery({...modelCatalogQuery(catalogScope, profileId ?? ''), enabled:!!(catalogScope && isCodexLogin && profile?.available)});
+  const catalog = useQuery({...modelCatalogQuery(catalogScope, profileId ?? ''), enabled:!!(catalogScope && (isCodexLogin || claudeSubscription) && profile?.available)});
   const hasModelChoice = !!profileId && Object.hasOwn(homeSelection.models, profileId);
   const implicitCodexChoice = !!profile && isCodexSubscription(profile) && !hasModelChoice;
+  const implicitClaudeChoice = claudeSubscription && !hasModelChoice;
   const offeredDefault = implicitCodexChoice && offersCodexLoginDefault(catalog.data?.models);
-  const defaultNotice = implicitCodexChoice && catalog.data?.status === 'ready' && !offeredDefault ? CODEX_LOGIN_FALLBACK : undefined;
-  const selectedModel = hasModelChoice && profileId ? homeSelection.models[profileId] : offeredDefault ? CODEX_LOGIN_MODEL : undefined;
+  const claudeDefault = implicitClaudeChoice && !catalog.isError && catalog.data?.status !== 'unavailable'
+    ? claudeSubscriptionDefault(catalog.data?.models) : undefined;
+  const defaultNotice = implicitCodexChoice && catalog.data?.status === 'ready' && !offeredDefault ? CODEX_LOGIN_FALLBACK
+    : implicitClaudeChoice && !claudeDefault && catalog.data?.status === 'ready' ? CLAUDE_LOGIN_FALLBACK
+    : implicitClaudeChoice && (catalog.isError || catalog.data?.status === 'unavailable') ? CLAUDE_LOGIN_UNAVAILABLE
+    : undefined;
+  const implicitSelection = offeredDefault ? { id: CODEX_LOGIN_MODEL, defaultEffort: CODEX_LOGIN_EFFORT }
+    : claudeDefault ? { id: claudeDefault.id, defaultEffort: CLAUDE_LOGIN_EFFORT } : undefined;
+  const selectedModel = hasModelChoice && profileId ? homeSelection.models[profileId] : implicitSelection?.id;
   const profileDefaultModel = (id: string) => profiles?.find(p => p.id === id)?.defaultModel ??
     (id === profileId ? catalog.data?.models.find(item => item.isDefault)?.id : undefined);
   const selectedEffort = hasModelChoice && profileId
     ? homeSelection.modelEfforts
       ? homeSelection.modelEfforts[modelEffortKey(profileId, selectedModel || profileDefaultModel(profileId))]
       : homeSelection.efforts[profileId]
-    : offeredDefault ? CODEX_LOGIN_EFFORT : undefined;
+    : implicitSelection?.defaultEffort;
 
   const selectedProvider=agents?.providers.find(p=>p.id===profile?.providerId);
   const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;
@@ -194,19 +206,28 @@ export const HomeView = observer(function HomeView() {
       const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
       const revision = navigation.homeInputRevision(projectId);
       const presetAtLaunch = navigation.homePreset;
+      const originalBrowserRevision=browserViewRevision();
       // A cold directory is resolved by the active executor after the first message is saved.
       const initialCodexDefault = implicitCodexChoice && (catalog.data?.status !== 'ready' || offeredDefault);
-      const model = initialCodexDefault ? CODEX_LOGIN_MODEL : homeSelection.models[profile.id] || undefined;
-      const effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : hasModelChoice ? selectedEffort : undefined;
+      let model = initialCodexDefault ? CODEX_LOGIN_MODEL : selectedModel || undefined;
+      let effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : selectedEffort;
       if (implicitCodexChoice && !initialCodexDefault) toast.message(CODEX_LOGIN_FALLBACK);
+      if (implicitClaudeChoice && !claudeDefault) {
+        const result = catalogScope && !catalog.isError && (!catalog.data || catalog.data.status === 'loading' || catalog.data.status === 'refreshing')
+          ? await rpc.agentTasks.modelCatalog(catalogScope, profile.id, 'wait').catch(() => undefined)
+          : catalog.data;
+        const preferred = result && result.status !== 'unavailable' ? claudeSubscriptionDefault(result.models) : undefined;
+        model = preferred?.id;
+        effort = preferred ? CLAUDE_LOGIN_EFFORT : undefined;
+        if (!preferred) toast.message(result?.status === 'ready' ? CLAUDE_LOGIN_FALLBACK : CLAUDE_LOGIN_UNAVAILABLE);
+      }
       const carryExtensions = homeSelection.extensions[profile.id] !== false;
       const chipIds = new Set(chips.map(chip => chip.localId));
-      const modelChoice = implicitCodexChoice ? 'subscription-default' : [model, effort];
+      const modelChoice = implicitCodexChoice || implicitClaudeChoice ? 'subscription-default' : [model, effort];
       const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, modelChoice, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
       const previous = navigation.homeLaunchAttempts.get(projectId);
       const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
       navigation.homeLaunchAttempts.set(projectId, attempt);
-      const originalBrowserRevision=browserViewRevision();
       const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, effort, initialCodexDefault, carryExtensions, extensionPreferences: homeSelection.extensions });
       if (created.tierNotice) toast.message(created.tierNotice);
       const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
@@ -249,13 +270,18 @@ export const HomeView = observer(function HomeView() {
   </Select>;
   const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => {
     const provider = agents?.providers.find(item => item.id === p.providerId);
+    const tool = agents?.tools.find(item => item.id === p.toolId);
     return { profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, codexSubscription: isCodexSubscription(p), extensionSupport: p.kind === 'codex' ? 'partial' : 'full',
+      claudeSubscription: isClaudeSubscription(p, tool?.login),
       provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, p) };
   })} profileId={profileId} model={selectedModel} effort={selectedEffort} extensions={homeSelection.extensions}
-    modelEfforts={offeredDefault ? { ...homeSelection.modelEfforts, [modelEffortKey(profileId, CODEX_LOGIN_MODEL)]: CODEX_LOGIN_EFFORT } : homeSelection.modelEfforts}
+    modelEfforts={!hasModelChoice && implicitSelection
+      ? { ...homeSelection.modelEfforts, [modelEffortKey(profileId, implicitSelection.id)]: implicitSelection.defaultEffort }
+      : homeSelection.modelEfforts}
     profileChoices={Object.fromEntries(Object.entries(homeSelection.models).map(([id, model]) => [id, { model, effort: homeSelection.modelEfforts ? undefined : homeSelection.efforts[id] }]))}
     nativeModels={catalog.data?.models} scope={catalogScope} defaultNotice={defaultNotice}
-    defaultPending={implicitCodexChoice && !!catalogScope && !offeredDefault && !catalog.isError && (catalog.isPending || catalog.data?.status === 'loading' || catalog.data?.status === 'refreshing')}
+    defaultPending={(implicitCodexChoice || implicitClaudeChoice) && !!catalogScope && !implicitSelection && !catalog.isError
+      && (catalog.isPending || catalog.data?.status === 'loading' || catalog.data?.status === 'refreshing')}
     onPick={(id, model, effort) => {
       profileChosen.current = true;
       setProfileId(id);

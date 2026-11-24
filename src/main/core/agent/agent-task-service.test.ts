@@ -126,6 +126,26 @@ it('keeps reply likes local and reversible without changing the reply time or bo
   expect(getReply()).toEqual(initial);
 });
 
+it('validates a saved Claude model ID against the native alias before sending the first effort', async () => {
+  const { svc, store, insts } = setup({
+    modelCatalog: async () => [{ id:'opus', resolvedId:'claude-opus-5-5', name:'Opus', efforts:['medium'] }],
+  });
+  const model = 'claude-opus-5-5';
+  const { taskId } = svc.create({ projectId:null, dirId:null, cwd:'/w', title:'Claude subscription', profileId:'cc', tier:'ask', model, effort:'medium' });
+  const { turnId } = await svc.submit(taskId, { clientInputId:id(976), text:'first turn', expectedSelectionRevision:1 });
+  await until(() => store.turn(turnId)?.status === 'started' && !svc.isDispatching(taskId));
+  expect(insts[0].opened?.model).toBe(model);
+  expect(insts[0].turns[0]).toMatchObject({ model, effort:'medium' });
+  insts[0].finish();
+  await until(() => store.turn(turnId)?.status === 'completed');
+
+  const current = svc.snapshot(taskId);
+  expect(svc.setSelection(taskId, { model:null, effort:null }, current.selectionRevision).ok).toBe(true);
+  const next = await svc.submit(taskId, { clientInputId:id(977), text:'executor default', expectedSelectionRevision:svc.snapshot(taskId).selectionRevision });
+  await until(() => store.turn(next.turnId)?.status === 'started');
+  expect(insts[0].turns[1]).toMatchObject({ model:undefined, effort:undefined });
+});
+
 it('sends the first Claude turn with the selected DeepSeek level and keeps each model setting on resume', async () => {
   const flash = 'deepseek-flash', pro = 'deepseek-v4-pro', other = 'unverified';
   const models = [flash, pro, other];

@@ -194,6 +194,7 @@ export class AgentRunService {
           if (this.runs.get(runId) !== run || run.closing) return undefined;
           run.models = models.slice(0, 200).map(model => ({
             id: model.id.slice(0, 256), name: model.name.slice(0, 160),
+            ...(model.resolvedId ? { resolvedId: model.resolvedId.slice(0, 256) } : {}),
             efforts: model.efforts.slice(0, 12).map(effort => effort.slice(0, 24)),
             defaultEffort: model.defaultEffort?.slice(0, 24),
             ...(model.isDefault ? { isDefault: true } : {}),
