@@ -5,7 +5,7 @@ import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {HomeView} from './home-view';
 import {navigation} from '@renderer/core/navigation';
 const m=vi.hoisted(()=>({update:vi.fn(),subscribed:false,projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
-const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),modelCatalog:vi.fn(),homeManagedSkills:vi.fn(),prepareAttachment:vi.fn(),claudeLogin:null as 'local' | 'api' | null}));
+const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),modelCatalog:vi.fn(),homeSkillCatalog:vi.fn(),prepareAttachment:vi.fn(),claudeLogin:null as 'local' | 'api' | null}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
 vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'login',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[...(m.subscribed?[{id:"codex",login:"subscription"}]:[]),...(agent.claudeLogin?[{id:"claude",login:agent.claudeLogin}]:[])]}})}));
@@ -22,13 +22,17 @@ function render(element: React.ReactElement) {
 }
 beforeEach(()=>{vi.clearAllMocks();m.subscribed=false;agent.modelCatalog.mockResolvedValue({status:"loading",models:[]});navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.pluginPromptRequest=null;navigation.currentProjectId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
 afterEach(()=>{cleanup();localStorage.removeItem('willyou-m14-home-selection');agent.create.mockReset();agent.submit.mockReset();agent.claudeLogin=null;});
-it('opens and filters managed Skills with $ in the new task draft before creating a task', async () => {
-  agent.homeManagedSkills.mockResolvedValue([{ name: 'source-driven-ui-test' }, { name: 'format-doc' }]);
+it('combines selected executor Skills and WillYou-managed Skills before the first message', async () => {
+  agent.homeSkillCatalog.mockResolvedValue({
+    managed: [{ name: 'source-driven-ui-test' }],
+    native: [{ name: 'source-driven-ui-test' }, { name: 'format-doc' }],
+  });
   render(<HomeView />);
   const input = screen.getByTestId('home-input');
   fireEvent.change(input, { target: { value: '$' } });
-  expect(await screen.findByRole('option', { name: /format-doc/ })).toBeTruthy();
-  expect(agent.homeManagedSkills).toHaveBeenCalledWith('p1', 'dir1');
+  expect(await screen.findByRole('option', { name: /format-doc.*执行器/ })).toBeTruthy();
+  expect(agent.homeSkillCatalog).toHaveBeenCalledWith('p1', 'dir1', 'profile', true);
+  expect(screen.getAllByRole('option', { name: /source-driven-ui-test/ })).toHaveLength(1);
   fireEvent.change(input, { target: { value: '$source' } });
   expect(screen.queryByRole('option', { name: /format-doc/ })).toBeNull();
   expect(screen.getByRole('option', { name: /source-driven-ui-test/ })).toBeTruthy();

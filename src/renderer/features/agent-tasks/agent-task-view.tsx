@@ -24,7 +24,7 @@ import { agentPermissionSchema } from '@shared/agent-permissions';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
-import { ComposerMenu, useManagedSkillLookup } from './composer-menu-view';
+import { ComposerMenu, useComposerSkills } from './composer-menu-view';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
@@ -872,7 +872,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
   const selectingSkill = trigger?.kind === '$';
-  const managedSkills = useManagedSkillLookup(selectingSkill, { taskId });
+  const skillCatalog = useComposerSkills(selectingSkill, { taskId });
   const textarea = useRef<HTMLTextAreaElement>(null);
   // D06-78: when the terminal drawer closes, its focused xterm is removed and focus falls to <body>. Hand it back to the
   // composer, but only if it really fell to the page; never steal focus the user already moved elsewhere.
@@ -1219,7 +1219,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
   // 目标命令只在运行冻结的能力允许时出现（复核 CR15）。
   const catalog: Catalog = snap.run && !snap.run.goal ? { ...rawCatalog, commands: rawCatalog.commands.filter(c => c.replace(/^\//, '') !== 'goal') } : rawCatalog;
-  const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query, managedSkills.items) : fileItems(fileHits);
+  const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query, skillCatalog.managed) : fileItems(fileHits);
   const activeMenuIndex = Math.min(menuIndex, Math.max(0, menuItems.length - 1));
   const refreshTrigger = (value: string, caret: number) => { const t = findTrigger(value, caret); setTrigger(t); setMenuIndex(0); };
   const pick = (item: MenuItem) => {
@@ -1596,7 +1596,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
             void stop();
           }}>
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
-          <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={managedSkills.empty} />
+          <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={skillCatalog.empty} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
             onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}

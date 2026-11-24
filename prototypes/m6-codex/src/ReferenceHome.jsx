@@ -25,7 +25,7 @@ export function ReferenceHome({ attachmentsSlot = null, onPasteFiles = null, onP
       boxRef.current?.setSelectionRange(caret, caret);
     });
   };
-  const skillOptions = skill ? mentionItems(skill, null, true) : [];
+  const skillOptions = skill ? mentionItems(skill, null) : [];
   // 输入框随内容增高，最多 10 行（22px 行高），再多出现竖向滚动条（用户 2026-11-11 参照 Codex 要求）
   const boxRef = useRef(null);
   const setBox = el => { boxRef.current = el; if (typeof inputRef === 'function') inputRef(el); else if (inputRef) inputRef.current = el; };
@@ -43,7 +43,7 @@ export function ReferenceHome({ attachmentsSlot = null, onPasteFiles = null, onP
           e.currentTarget.value = '';
           if (files.length) onPickFiles(files);
         }} />}
-        {skill && <MentionMenu trig={skill} active={activeSkill} setActive={setActiveSkill} onPick={pickSkill} managedOnly />}
+        {skill && <MentionMenu trig={skill} active={activeSkill} setActive={setActiveSkill} onPick={pickSkill} />}
         <textarea ref={setBox} onPaste={onPasteFiles ? e => { if (onPasteFiles(e)) e.preventDefault(); } : undefined} aria-label="任务描述" placeholder="随心输入" value={prompt} onChange={e => { setPrompt(e.currentTarget.value); updateSkill(e.currentTarget); }} onSelect={e => updateSkill(e.currentTarget)} onBlur={() => setSkill(null)} onKeyDown={e => {
           if (skill && e.key === 'Escape') { e.preventDefault(); setSkill(null); return; }
           if (skillOptions.length && !e.nativeEvent.isComposing) {

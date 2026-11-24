@@ -145,6 +145,29 @@ function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp 
   };
 }
 
+it('lists enabled Codex skills from the configured user and project directories before starting a run', async () => {
+  const f = fixture('codex', '0.171.0');
+  try {
+    const skill = (root: string, name: string) => {
+      const directory = join(root, name);
+      mkdirSync(directory, { recursive: true });
+      const path = join(directory, 'SKILL.md');
+      writeFileSync(path, `---\nname: ${name}\ndescription: Local test skill\n---\n`);
+      return path;
+    };
+    mkdirSync(join(f.root, '.git'));
+    skill(join(f.home, '.agents/skills'), 'personal-codex');
+    skill(join(f.root, '.agents/skills'), 'project-codex');
+    skill(join(f.home, '.claude/skills'), 'personal-claude');
+    const disabled = skill(join(f.home, '.codex/skills'), 'disabled-codex');
+    writeFileSync(join(f.home, '.codex/config.toml'), `[skills]\nconfig=[{path=${JSON.stringify(disabled)},enabled=false}]\n`);
+    const result = f.workspace.homeSkillCatalog(f.project.id, f.project.dirs[0].id, 'fixture-profile', true);
+    expect(result.native).toEqual(expect.arrayContaining([{ name: 'personal-codex' }, { name: 'project-codex' }]));
+    expect(result.native.some(skill => skill.name === 'personal-claude' || skill.name === 'disabled-codex')).toBe(false);
+    expect(f.instances).toHaveLength(0);
+  } finally { await f.close(); }
+});
+
 it.each([['claude', '2.1.329'], ['codex', '0.171.0'], ['codex', '0.999.0']] as const)(
   'provides %s %s the active project resources without an application bridge',
   async (kind, version) => {

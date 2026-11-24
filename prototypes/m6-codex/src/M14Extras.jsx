@@ -149,15 +149,15 @@ export function slashBlocked(text, caps) { const m = /^(\/[a-z]+)\b/.exec(text.t
 export function mentionTrigger(text) { const m = /(^|\s)([@$/])([^\s@$/]*)$/.exec(text); return m ? { ch: m[2], q: m[3], start: text.length - m[3].length - 1 } : null; }
 // 命令只列当前执行器支持的项（caps 来自执行器能力声明；评审 RV14）
 const cmdOk = (c, caps) => !c[3] || !!caps?.[c[3]];
-function matchSkills(query, managedOnly = false) {
+function matchSkills(query) {
   const rank = name => name === query ? 0 : name.startsWith(query) ? 1 : 2;
-  return SKILLS.filter(([source, name]) => (!managedOnly || source === 'WillYou 纳管') && name.includes(query)).sort((a, b) =>
+  return SKILLS.filter(([, name]) => name.includes(query)).sort((a, b) =>
     rank(a[1]) - rank(b[1]) || Number(b[0] === 'WillYou 纳管') - Number(a[0] === 'WillYou 纳管') || a[1].localeCompare(b[1]));
 }
-export function MentionMenu({ trig, onPick, active, setActive, caps, managedOnly }) {
+export function MentionMenu({ trig, onPick, active, setActive, caps }) {
   const q = trig.q.toLowerCase();
   const items = trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ group: f.endsWith('/') ? '文件夹' : '文件', label: f, insert: '@' + f, chip: { kind: 'file', name: f } }))
-    : trig.ch === '$' ? matchSkills(q, managedOnly).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: '$' + n, chip: { kind: 'skill', name: n } }))
+    : trig.ch === '$' ? matchSkills(q).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: '$' + n, chip: { kind: 'skill', name: n } }))
     : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: n }));
   useEffect(() => { setActive(0); }, [trig.ch, trig.q]); // eslint-disable-line react-hooks/exhaustive-deps
   if (trig.ch === '$') {
@@ -178,7 +178,7 @@ export function MentionMenu({ trig, onPick, active, setActive, caps, managedOnly
       : <p>{trig.ch === '@' ? '没有匹配的文件或文件夹' : '没有匹配的命令'}</p>}
   </div>;
 }
-export function mentionItems(trig, caps, managedOnly) { const q = trig.q.toLowerCase(); return trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ insert: '@' + f, chip: { kind: 'file', name: f } })) : trig.ch === '$' ? matchSkills(q, managedOnly).map(s => ({ insert: '$' + s[1], chip: { kind: 'skill', name: s[1] } })) : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(c => ({ insert: c[1] })); }
+export function mentionItems(trig, caps) { const q = trig.q.toLowerCase(); return trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ insert: '@' + f, chip: { kind: 'file', name: f } })) : trig.ch === '$' ? matchSkills(q).map(s => ({ insert: '$' + s[1], chip: { kind: 'skill', name: s[1] } })) : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(c => ({ insert: c[1] })); }
 // C2／C3 输入框里的附件（照 Codex）：图片是缩略图卡片，文件是“预览＋文件名”卡片；技能、插件引用是小标签
 export function ComposerChips({ chips, onRemove, onRetry }) {
   if (!chips.length) return null;

@@ -108,8 +108,8 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       command: (e, taskId: string, name: string, args?: string) => run(e, w => w.tasks.command(taskId, name, args)),
       searchFiles: (e, taskId: string | null, cwd: string | null, query: string) => run(e, w => w.tasks.searchFiles(taskId, cwd, query)),
       managedSkills: (e, taskId: string) => run(e, w => w.tasks.managedSkills(taskId)),
-      homeManagedSkills: (e, projectId: string | null, dirId: string | null) => run(e, w =>
-        w.tasks.managedSkillsForDirectory(projectId && dirId ? w.projectCwd(projectId, dirId) : undefined)),
+      homeSkillCatalog: (e, projectId: string | null, dirId: string | null, profileId: string | null, carryExtensions: boolean) => run(e, w =>
+        w.homeSkillCatalog(projectId, dirId, profileId, carryExtensions)),
     }),
   };
 }

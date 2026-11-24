@@ -26,30 +26,36 @@ export function ComposerMenu({ items, index, onPick, skills, empty }: { items: M
   </div>;
 }
 
-type SkillScope = { taskId: string } | { projectId: string; dirId: string } | null;
-type Lookup = { scopeKey: string; items: { name: string }[]; failed?: boolean };
+type SkillScope = { taskId: string } | { projectId: string | null; dirId: string | null; profileId: string | null; carryExtensions: boolean };
+type Choice = { name: string };
+type Lookup = { scopeKey: string; managed: Choice[]; native: Choice[]; failed?: boolean };
 
-export function useManagedSkillLookup(active: boolean, scope: SkillScope) {
-  const taskId = scope && 'taskId' in scope ? scope.taskId : null;
-  const projectId = scope && 'projectId' in scope ? scope.projectId : null;
-  const dirId = scope && 'dirId' in scope ? scope.dirId : null;
-  const scopeKey = JSON.stringify([taskId, projectId, dirId]);
+export function useComposerSkills(active: boolean, scope: SkillScope) {
+  const taskId = 'taskId' in scope ? scope.taskId : null;
+  const projectId = 'projectId' in scope ? scope.projectId : null;
+  const dirId = 'dirId' in scope ? scope.dirId : null;
+  const profileId = 'profileId' in scope ? scope.profileId : null;
+  const carryExtensions = 'carryExtensions' in scope && scope.carryExtensions;
+  const scopeKey = JSON.stringify([taskId, projectId, dirId, profileId, carryExtensions]);
   const [lookup, setLookup] = useState<Lookup | null>(null);
   useEffect(() => {
     setLookup(null);
     if (!active) return;
     let current = true;
-    const result = taskId ? rpc.agentTasks.managedSkills(taskId) : rpc.agentTasks.homeManagedSkills(projectId, dirId);
+    const result = taskId
+      ? rpc.agentTasks.managedSkills(taskId).then(managed => ({ managed, native: [] }))
+      : rpc.agentTasks.homeSkillCatalog(projectId, dirId, profileId, carryExtensions);
     void result.then(
-      items => { if (current) setLookup({ scopeKey, items }); },
-      () => { if (current) setLookup({ scopeKey, items: [], failed: true }); },
+      skills => { if (current) setLookup({ scopeKey, ...skills }); },
+      () => { if (current) setLookup({ scopeKey, managed: [], native: [], failed: true }); },
     );
     return () => { current = false; };
-  }, [active, scopeKey, taskId, projectId, dirId]);
+  }, [active, scopeKey, taskId, projectId, dirId, profileId, carryExtensions]);
   const current = lookup?.scopeKey === scopeKey ? lookup : null;
   return {
-    items: current?.items,
+    managed: current?.managed,
+    native: current?.native,
     loading: active && !current,
-    empty: active ? !current ? '正在读取技能…' : current.failed ? '暂时无法读取纳管技能' : '没有匹配的技能' : undefined,
+    empty: active ? !current ? '正在读取技能…' : current.failed ? '暂时无法读取技能' : '没有匹配的技能' : undefined,
   };
 }

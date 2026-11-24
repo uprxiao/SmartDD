@@ -39,6 +39,9 @@ export interface ProfileLaunchInput {
   carryExtensions?: boolean;
 }
 
+export const managedCodexRoot = (userData: string, profileId: string) =>
+  join(userData, 'agents', 'codex', createHash('sha256').update(profileId).digest('hex').slice(0, 32));
+
 /** Codex 全局参数里只保留 -c 与 --disable 两类（成对）；-m 改为模型参数，沙箱与审批参数丢弃。 */
 export function codexArgsToDriver(args: readonly string[]): { extraArgs: string[]; model?: string } {
   const extraArgs: string[] = []; let model: string | undefined;
@@ -97,7 +100,7 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   }
   if (p.runner === 'codex') {
     const { extraArgs, model } = codexArgsToDriver(p.args);
-    const stateRoot = managed ? join(i.userData, 'agents', 'codex', createHash('sha256').update(i.config.id).digest('hex').slice(0, 32)) : env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
+    const stateRoot = managed ? managedCodexRoot(i.userData, i.config.id) : env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
     if (managed) {
       env.CODEX_HOME = stateRoot; p.env.CODEX_HOME = stateRoot; plan.codexRoot = stateRoot;
       // D06-72: Codex also discovers Skills from shared folders under HOME, so a managed run gets a private HOME.

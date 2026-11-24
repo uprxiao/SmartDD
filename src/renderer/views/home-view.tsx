@@ -17,7 +17,7 @@ import { AgentModelPicker, modelCatalogQuery } from '@renderer/features/agent-ta
 import { readHomeSelection, type HomeSelection } from '@renderer/features/agent-tasks/home-selection';
 import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agent-tasks/attachment-chips';
 import { applyItem, findTrigger, skillItems, type MenuItem, type MenuTrigger } from '@renderer/features/agent-tasks/composer-menu';
-import { ComposerMenu, useManagedSkillLookup } from '@renderer/features/agent-tasks/composer-menu-view';
+import { ComposerMenu, useComposerSkills } from '@renderer/features/agent-tasks/composer-menu-view';
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
@@ -161,9 +161,11 @@ export const HomeView = observer(function HomeView() {
   const [skillTrigger, setSkillTrigger] = useState<MenuTrigger | null>(null);
   const [skillIndex, setSkillIndex] = useState(0);
   const selectingSkill = navigation.currentViewId === 'home' && skillTrigger !== null;
-  const managedSkills = useManagedSkillLookup(selectingSkill,
-    projectId && dir?.status.available ? { projectId, dirId: dir.id } : null);
-  const skills = selectingSkill ? skillItems({ commands: [], skills: [] }, skillTrigger.query, managedSkills.items) : [];
+  const skillCatalog = useComposerSkills(selectingSkill, {
+    projectId, dirId: dir?.status.available ? dir.id : null,
+    profileId: profile?.id ?? null, carryExtensions: !profile || homeSelection.extensions[profile.id] !== false,
+  });
+  const skills = selectingSkill ? skillItems({ commands: [], skills: skillCatalog.native ?? [] }, skillTrigger.query, skillCatalog.managed) : [];
   const activeSkill = Math.min(skillIndex, Math.max(0, skills.length - 1));
   const updateSkillTrigger = (input: HTMLTextAreaElement) => {
     const trigger = findTrigger(input.value, input.selectionStart);
@@ -346,7 +348,7 @@ export const HomeView = observer(function HomeView() {
           e.currentTarget.value = '';
           if (files.length) addFiles(files);
         }} />
-        <ComposerMenu items={skills} index={activeSkill} onPick={pickSkill} skills={selectingSkill} empty={managedSkills.empty} />
+        <ComposerMenu items={skills} index={activeSkill} onPick={pickSkill} skills={selectingSkill} empty={skillCatalog.empty} />
         <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')}
           onChange={e => { setMessage(e.currentTarget.value); updateSkillTrigger(e.currentTarget); }}
           onSelect={e => updateSkillTrigger(e.currentTarget)}
@@ -354,7 +356,7 @@ export const HomeView = observer(function HomeView() {
           onKeyDown={e => {
             if (e.nativeEvent.isComposing || e.keyCode === 229) return;
             if (selectingSkill && e.key === 'Escape') { e.preventDefault(); setSkillTrigger(null); return; }
-            if (managedSkills.loading && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); return; }
+            if (skillCatalog.loading && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); return; }
             if (skills.length) {
               if (e.key === 'ArrowDown') { e.preventDefault(); setSkillIndex((activeSkill + 1) % skills.length); return; }
               if (e.key === 'ArrowUp') { e.preventDefault(); setSkillIndex((activeSkill - 1 + skills.length) % skills.length); return; }
