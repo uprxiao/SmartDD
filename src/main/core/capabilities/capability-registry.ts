@@ -9,6 +9,9 @@ import type { CapabilityRegistryView, ManagedCapabilityView } from '@shared/mana
 import { discoverCapabilities, type DiscoveryContext } from './discovery';
 import type { DiscoveredCapability } from '@shared/capabilities';
 import { applyMcpNativePolicy, mcpReferenceNames, McpSourceError, parseMcpSource, resolveMcpSource, validateManagedMcpDefinition, type McpSource, type McpNativePolicy } from './mcp-source';
+import { skillAdapters } from './skill-adapters';
+
+const skillAgents = skillAdapters.map(({ runner, label }) => ({ runner, label }));
 
 type Row = typeof capabilityRegistry.$inferSelect;
 export interface CapabilityScanContext extends DiscoveryContext { projectRoot?: string; configurationId?:string; sourceEnvironment?:Record<string,string>;secretEnvNames?:string[] }
@@ -20,7 +23,7 @@ function sourceIdentity(item:DiscoveredCapability,context:CapabilityScanContext,
   // hook-provided WillYou plugin skills below use the protected `plugin` scope.
   const sourceScope:ManagedCapabilityView['sourceScope']=hostNames.has(item.name)?'host':item.source.includes('project')?'project':'user';
   const localRoot=item.path.match(/^(.*?)\/(?:\.claude|\.agents|\.codex)\//)?.[1]??(item.path.endsWith('/.mcp.json')?dirname(item.path):null);
-  const projectRoot=sourceScope==='project'?physical(localRoot??context.projectRoot??context.cwd):null;
+  const projectRoot=sourceScope==='project'?physical(item.projectRoot??localRoot??context.projectRoot??context.cwd):null;
   const inlineIdentity=item.kind==='mcp'?context.configurationId??(item.path==='profile arguments'?createHash('sha256').update(JSON.stringify(context.args??[])).digest('hex'):null):null;
   const key=[item.kind,resolve(item.path),item.kind==='mcp'?item.name:null,projectRoot,inlineIdentity];
   let environmentIdentity:unknown=null;
@@ -70,7 +73,7 @@ export class CapabilityRegistryService {
     const rows=this.db.select().from(capabilityRegistry).all();
     const pluginItems:ManagedCapabilityView[]=(this.hooks.pluginSkills?.()??[]).map(item=>({id:createHash('sha256').update(JSON.stringify(['plugin',item.appId,item.id])).digest('hex'),kind:'skill',name:item.id,runner:'codex',sourcePath:item.path,sourceScope:'plugin',projectRoot:null,sourceLabel:item.pluginName,version:item.version,managed:false,enabled:item.enabled,autoApprove:false,present:true,status:'plugin',issues:[],loaded:'unverified'}));
     const items=[...rows.map(row=>this.view(row,rows)),...pluginItems];
-    return {items,autoManage:this.db.select().from(capabilityRegistryPreferences).get()?.autoManage??false,newCount:items.filter(x=>x.status==='new').length};
+    return {items,skillAgents,autoManage:this.db.select().from(capabilityRegistryPreferences).get()?.autoManage??false,newCount:items.filter(x=>x.status==='new').length};
   }
   scan():CapabilityRegistryView {
     const found=new Map<string,Omit<Row,'managed'|'enabled'|'autoApprove'|'discoveredAt'>>(),at=this.now();
@@ -156,8 +159,9 @@ export class CapabilityRegistryService {
     if(typeof approved!=='boolean')throw new Error('审批设置无效');const row=this.requireManaged(id);if(row.kind!=='mcp')throw new Error('只有 MCP 可以配置工具审批');
     this.db.update(capabilityRegistry).set({autoApprove:approved}).where(eq(capabilityRegistry.id,id)).run();return this.list();
   }
-  selected(projectRoot:string):ManagedCapabilityView[]{
-    const applicable=this.list().items.filter(x=>x.present&&(!x.projectRoot||x.projectRoot===physical(projectRoot))&&!['host','plugin','invalid'].includes(x.status));
+  selected(projectRoot?:string):ManagedCapabilityView[]{
+    const root=projectRoot?physical(projectRoot):null;
+    const applicable=this.list().items.filter(x=>x.present&&(!x.projectRoot||x.projectRoot===root)&&!['host','plugin','invalid'].includes(x.status));
     return applicable.filter(x=>x.managed&&x.enabled&&!applicable.some(other=>other.id!==x.id&&other.kind===x.kind&&other.name===x.name));
   }
   /** Fresh main-process resolution only. Raw MCP values are neither persisted

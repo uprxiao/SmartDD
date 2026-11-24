@@ -71,12 +71,13 @@ export interface RpcDeps {
 
 export function createRpcRouter(d: RpcDeps) {
   const notices = codexConfigNotices(d.client.db);
+  const agentTasks = d.agentWorkspace?.tasks;
   return createRPCRouter({
     files: createFileController(d.files, d.trustedRenderer, new FileWorkspacePersistence(d.client.db), new FileTerminalService({
       access: d.ptyAccess, roots: d.files.roots, taskProject: (terminalKey) => d.agentWorkspace?.terminals?.project(terminalKey) ?? null,
       source: (owner, target, identity) => d.files.terminalSource(owner, target, identity),
       bracketedPaste: (ptyId) => d.ptys.bracketedPaste(ptyId), write: (ptyId, data) => d.ptys.writeControlled(ptyId, data),
-    })),
+    }), agentTasks ? ({ taskId, turnId, index }) => agentTasks.messageAttachmentFile(taskId, turnId, index) : undefined),
     app: createRPCController({
       getInfo: () => ({
         version: app.getVersion(),

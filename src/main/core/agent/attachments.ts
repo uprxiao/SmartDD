@@ -1,8 +1,10 @@
 // 输入框附件（需求 R01、用例 A75）：项目内文件按路径引用；项目外文件复制为附件并注明，不放开 Agent 对项目外的读取；
 // 附件随所属输入冻结（排队、编辑、发送都处理整份输入）。
 import { randomUUID } from 'node:crypto';
-import { closeSync, constants, copyFileSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, realpathSync, statSync, writeFileSync } from 'node:fs';
-import { basename, extname, join, relative, sep } from 'node:path';
+import { closeSync, constants, copyFileSync, fstatSync, mkdirSync, openSync, readSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { open, realpath } from 'node:fs/promises';
+import { basename, dirname, extname, isAbsolute, join, relative, sep } from 'node:path';
+import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { DriverError } from './driver';
 
 export const ATTACHMENT_LIMIT = 20 * 1024 * 1024;
@@ -23,7 +25,14 @@ export interface Attachment {
   storedPath?: string;
 }
 
-const safeName = (name: string) => basename(name).replace(/[\x00-\x1f/\\:]/g, '_').slice(0, 120) || 'attachment';
+const safeName = (name: string) => {
+  const clean = basename(name).replace(/[\x00-\x1f/\\:]/g, '_');
+  const limit = 120;
+  if (clean.length <= limit) return clean || 'attachment';
+  const extension = extname(clean);
+  const suffix = extension.length < limit ? extension : '';
+  return clean.slice(0, limit - suffix.length).replace(/[\uD800-\uDBFF]$/, '') + suffix;
+};
 const mimeOf = (name: string, given?: string) => IMAGE_MIME[extname(name).toLowerCase()] ?? (given && /^[\w.+-]+\/[\w.+-]+$/.test(given) ? given : 'application/octet-stream');
 
 export function prepareAttachment(input: { cwd: string; userData: string; name: string; mime?: string; sourcePath?: string; dataBase64?: string }): Attachment {
@@ -73,6 +82,29 @@ export function verifyAttachments(list: unknown, cwd: string, userData: string):
   });
 }
 
+/** Resolve a file reference already recorded in an accepted turn. */
+export async function resolveAttachmentFile(attachment: Attachment, cwd: string, userData: string) {
+  const isReference = attachment.kind === 'path';
+  if (isReference ? !attachment.relativePath || isAbsolute(attachment.relativePath) : !attachment.storedPath) {
+    throw new DriverError('REJECTED', '文件附件不可用');
+  }
+  const parent = isReference ? cwd : userData;
+  const canonical = await realpath(parent).catch(() => { throw new DriverError('REJECTED', '附件文件已找不到'); });
+  const expected = isReference ? join(canonical, attachment.relativePath!) : attachment.storedPath!;
+  const path = await realpath(expected).catch(() => { throw new DriverError('REJECTED', '附件文件已找不到'); });
+  const root = isReference ? canonical : dirname(path);
+  const within = relative(root, path);
+  if (isReference) {
+    if ((attachment.root && attachment.root !== root) || path !== expected ||
+      !within || within === '..' || within.startsWith('..' + sep) || isAbsolute(within)) {
+      throw new DriverError('REJECTED', '项目附件的原路径已变化');
+    }
+  } else if (dirname(root) !== join(canonical, 'agent-attachments') || basename(root) !== attachment.id || path !== expected) {
+    throw new DriverError('REJECTED', '文件不属于该附件副本');
+  }
+  return { root, relativePath: within.split(sep).join('/'), mimeType: attachment.mime };
+}
+
 /**
  * 冻结图片副本（复核 CR01）：提交时把项目内图片按已解析的真实路径、以 O_NOFOLLOW 读出并复制进私有目录，
  * 之后派发只读副本；排队期间项目内文件被换成软链或删除都不会读到根外内容。
@@ -110,4 +142,50 @@ export function attachmentNote(list: Attachment[], attachImages = true): string 
   return `\n\n附件：\n${lines.join('\n')}`;
 }
 
-export const readImageBase64 = (a: Attachment, cwd: string) => readFileSync(a.kind === 'path' ? join(cwd, a.relativePath!) : a.storedPath!).toString('base64');
+export async function readAttachmentImage(attachment: Attachment, userData: string, draftCwd: string | null, offset: number, revision?: string) {
+  const mime = attachmentImageMime(attachment.name, attachment.mime);
+  if (!attachment.image || !mime) throw new DriverError('UNSUPPORTED', '此附件没有内置图片预览');
+  if (!Number.isSafeInteger(offset) || offset < 0) throw new DriverError('REJECTED', '图片偏移无效');
+
+  let path: string;
+  if (attachment.storedPath) {
+    const root = join(await realpath(userData), 'agent-attachments');
+    path = await realpath(attachment.storedPath);
+    const parts = relative(root, path).split(sep);
+    if (parts.length !== 2 || !/^(?:frozen-)?[a-f0-9-]{36}$/.test(parts[0])) {
+      throw new DriverError('REJECTED', '图片副本不在附件目录内');
+    }
+  } else if (draftCwd && attachment.kind === 'path' && attachment.relativePath && !isAbsolute(attachment.relativePath)) {
+    const root = await realpath(draftCwd);
+    path = await realpath(join(root, attachment.relativePath));
+    const within = relative(root, path);
+    if ((attachment.root && attachment.root !== root) || !within || within === '..' || within.startsWith('..' + sep) || isAbsolute(within)) {
+      throw new DriverError('REJECTED', '草稿图片不在任务目录内');
+    }
+  } else {
+    throw new DriverError('REJECTED', '图片副本不可用');
+  }
+
+  const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  try {
+    const stat = await file.stat();
+    const version = [stat.dev, stat.ino, stat.size, stat.mtimeMs, stat.ctimeMs].join(':');
+    if (!stat.isFile() || !stat.size || stat.size > ATTACHMENT_LIMIT) throw new DriverError('REJECTED', '图片为空或超过 20 MB');
+    if ((revision !== undefined && revision !== version) || offset >= stat.size) throw new DriverError('STATE', '图片内容已变化');
+    // Base64 编码后的分块小于 128 KiB，整张图不进入任务快照。
+    const bytes = Buffer.alloc(Math.min(95 * 1024, stat.size - offset));
+    let read = 0;
+    while (read < bytes.length) {
+      const { bytesRead } = await file.read(bytes, read, bytes.length - read, offset + read);
+      if (!bytesRead) throw new DriverError('STATE', '图片内容已变化');
+      read += bytesRead;
+    }
+    const after = await file.stat();
+    if (after.size !== stat.size || after.mtimeMs !== stat.mtimeMs || after.ctimeMs !== stat.ctimeMs) {
+      throw new DriverError('STATE', '图片内容已变化');
+    }
+    return { base64: bytes.toString('base64'), mime, revision: version, next: offset + read, totalBytes: stat.size };
+  } finally {
+    await file.close();
+  }
+}

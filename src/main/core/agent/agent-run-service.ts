@@ -194,6 +194,7 @@ export class AgentRunService {
           if (this.runs.get(runId) !== run || run.closing) return undefined;
           run.models = models.slice(0, 200).map(model => ({
             id: model.id.slice(0, 256), name: model.name.slice(0, 160),
+            ...(model.resolvedId ? { resolvedId: model.resolvedId.slice(0, 256) } : {}),
             efforts: model.efforts.slice(0, 12).map(effort => effort.slice(0, 24)),
             defaultEffort: model.defaultEffort?.slice(0, 24),
             ...(model.isDefault ? { isDefault: true } : {}),
@@ -364,6 +365,11 @@ export class AgentRunService {
           break;
         case 'node.message': store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node:${e.nodeId}:${e.key}`, nodeId: e.nodeId, type: 'subagent_message', payload: e.payload, terminalState: 'completed' }); break;
         case 'node.state': {
+          if (e.replacesNodeId) {
+            run.nativeNodes?.delete(e.replacesNodeId);
+            store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${e.replacesNodeId}`,
+              nodeId: e.replacesNodeId, type: 'subagent_status', payload: { state: 'rebound' }, terminalState: 'unconfirmed' });
+          }
           if (e.state === 'running') (run.nativeNodes ??= new Set()).add(e.nodeId); else run.nativeNodes?.delete(e.nodeId);
           if (run.userStop && !run.userStop.turnId && !run.nativeNodes?.size) run.userStop = undefined;
           store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${e.nodeId}`, nodeId: e.nodeId, type: 'subagent_status', payload: { state: e.state, nativeRunId: e.nativeRunId }, terminalState: e.state === 'running' ? null : e.state === 'completed' ? 'completed' : 'failed' }); break;
@@ -469,7 +475,12 @@ export class AgentRunService {
     run.turnId = turnId;
     run.turnTier = tier.tier;
     try {
-      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
+      const names = new Set(Array.from(input.text.matchAll(/(?:^|\s)\$([\w.-]+)(?=\s|$)/g), match => match[1]));
+      const skills = run.integration?.managedSkills?.filter(skill => names.has(skill.name)) ?? [];
+      const text = skills.length
+        ? `用户选用了这些 WillYou 技能。请先读取对应的 SKILL.md，再按说明处理请求。\n${skills.map(skill => `${skill.name} ${JSON.stringify(skill.path)}`).join('\n')}\n\n${input.text}`
+        : input.text;
+      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
       run.appliedTier = tier.tier; run.appliedModel = input.model; run.appliedEffort = input.effort; if (input.model) run.sentModel = true;
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };

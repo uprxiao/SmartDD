@@ -9,8 +9,9 @@ import { AgentProjectResources } from './project-resources';
 import { TurnDiffs } from './turn-diffs';
 // M14 统一 Agent 工作区的主进程装配：配置档案解析、本机程序发现、托管文件落盘与事件推送。
 import { randomUUID } from 'node:crypto';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { nativeExecutableIdentity, withShellProxy } from '../ai/runner-detect';
+import { claudeAccountSignature, type AgentToolService } from '../ai/agent-tools';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema, type CodeAgentTool, type RunConfigView } from '@shared/ai-agents';
 import { ApplicationError } from '@shared/applications';
@@ -20,6 +21,7 @@ import type { ProviderService } from '../ai/provider-service';
 import type { McpProjectionService } from '../capabilities/mcp-projection';
 import { MCP_CAPABILITY, type CapabilityService } from '../capabilities/capability-service';
 import { discoverCapabilities, type NativeDiscoveryDetails } from '../capabilities/discovery';
+import { skillAdapter } from '../capabilities/skill-adapters';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { AgentStore, sha256, type StoredEvent } from './agent-store';
@@ -31,10 +33,11 @@ import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
 import { DriverError, type DriverOpenOptions } from './driver';
 import { previewCodexModels } from './drivers/codex-app-server';
+import { previewClaudeModels } from './drivers/claude-sdk';
 import { antigravityArgs, previewAntigravityModels } from './drivers/antigravity-acp';
-import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
+import { claudeCatalogScope, SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
 import type { AgentModelCatalog, AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
-import { providerModelOptions } from '@shared/agent-model-choice';
+import { isClaudeSubscription, providerModelOptions } from '@shared/agent-model-choice';
 import { tiersFor } from './permissions';
 import { AgentManualTerminals } from './manual-terminal';
 import { canonicalPath } from './identity';
@@ -63,6 +66,7 @@ export function registeredProjectCwd(sqlite: BetterSqlite3.Database, projectId: 
 export interface AgentWorkspaceDeps {
   sqlite: BetterSqlite3.Database;
   agents: AgentService;
+  agentTools?: Pick<AgentToolService, 'claudeCatalogCheck'>;
   providers: ProviderService;
   capabilities: CapabilityService;
   userData: string;
@@ -74,6 +78,7 @@ export interface AgentWorkspaceDeps {
   ptys?: import('./manual-terminal').TerminalPtys;
   mcpProjection?: Pick<McpProjectionService, 'prepare'>;
   skillProjection?: Pick<import('../capabilities/skill-projection').SkillProjectionService, 'prepare'>;
+  capabilityRegistry?: Pick<import('../capabilities/capability-registry').CapabilityRegistryService, 'selected'>;
 }
 
 export function driverForKind(kind: string): DriverId {
@@ -181,7 +186,10 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
         const projectResourcesAllowed = kind !== 'antigravity' && role?.access !== 'read';
         const extensionsAllowed = projectResourcesAllowed && delivery === 'verified';
-        const skills = extensionsAllowed ? d.skillProjection?.prepare({
+        const skillAdapterForRun = skillAdapter(kind);
+        const skillsAllowed = role?.access !== 'read' && probe.capabilities.skills.state === 'enabled'
+          && (extensionsAllowed || skillAdapterForRun?.isolatedHome);
+        const skills = skillsAllowed ? d.skillProjection?.prepare({
           runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
         }) : undefined;
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
@@ -249,13 +257,15 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
             await result.cancelBeforeFork();
             throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
           }
-          if (!result && !projectRuntime) return undefined;
+          if (!result && !projectRuntime && !skills?.references.length) return undefined;
           return {
             ...result, projectRuntime, projectContextMcp,
             env: { ...actual.env, ...result?.env, ...projected?.env, ...projectRuntime?.env },
             extraArgs: [...(kind === 'antigravity' ? [] : actual.extraArgs), ...(result?.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
             claudeMcp: projected?.claude,
             plugins: skillPlugin ? [...(result?.plugins ?? []), { type: 'local' as const, path: skillPlugin }] : result?.plugins,
+            skillRoots: skills?.privateRoots.length ? skills.privateRoots : result?.skillRoots,
+            managedSkills: skills?.references,
           };
         } catch (error) {
           projectRuntime?.release();
@@ -265,7 +275,11 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     };
   };
   const tasks = new AgentTaskService({
-    store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind),
+    store, runs, resolveLaunch, profileDriver: id => {
+      const profile = config(id);
+      if (!profile.available) throw new DriverError('REJECTED', '智能体当前不可用，请重新检测或登录');
+      return driverForKind(profile.kind);
+    },
     profileName: id => d.agents.configs().find(c => c.id === id)?.name ?? '已删除的配置',
     profileModelSettings: id => {
       const profile = d.agents.configs().find(c => c.id === id);
@@ -274,7 +288,35 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
       return { defaultModel: profile.defaultModel, providerBacked: profile.source === 'provider', options: providerModelOptions(provider, profile) };
     },
     userData: d.userData,
+    capabilityRegistry: d.capabilityRegistry,
   });
+  const homeSkillCatalog = (projectId: string | null, dirId: string | null, profileId: string | null, carryExtensions: boolean) => {
+    const cwd = projectId && dirId ? registeredProjectCwd(d.sqlite, projectId, dirId) : undefined;
+    const managed = tasks.managedSkillsForDirectory(cwd);
+    const profile = profileId ? config(profileId) : undefined;
+    if (!profile?.available || profile.loggedOut) return { managed: [], native: [] };
+    const adapter = skillAdapter(profile.kind);
+    if (!adapter) return { managed: [], native: [] };
+    const tool = d.agents.tools().find(t => t.id === profile.toolId);
+    if (!tool?.installed || tool.kind !== profile.kind) return { managed, native: [] };
+
+    // Use the selected executor's local paths. Opening the draft menu does not launch a CLI or resolve keys.
+    const env = d.baseEnv();
+    const paths = adapter.draftCatalog?.({ home: env.HOME ?? homedir(), env, userData: d.userData,
+      profileId: profile.id, nativeLogin: profile.source === 'login', carryExtensions });
+    if (!paths) return { managed, native: [] };
+    const native = discoverCapabilities({
+      runner: profile.kind, cwd: cwd ?? paths.home, home: paths.home, stateRoot: paths.stateRoot,
+      claudeConfigExplicit: paths.claudeConfigExplicit,
+      path: env.PATH ?? '', nativeVersion: tool.version ?? undefined,
+    }).filter(skill => {
+      if (skill.kind !== 'skill' || skill.validity === 'invalid' || skill.enabled === false || basename(skill.path) !== 'SKILL.md') return false;
+      if (paths.scope === 'all') return true;
+      const projectSkill = skill.source.startsWith('project');
+      return paths.scope === 'project' ? projectSkill : !projectSkill;
+    }).map(({ name }) => ({ name }));
+    return { managed, native };
+  };
   const ownedCommand = ownedWorkspaceCommand({processes:d.processes,env:d.baseEnv,blocked:(options,_proof,detail)=>{if(options.taskId)store.addHostItem(options.taskId,null,'system_notice',{code:'host_job_drain_unknown',detail});}});
   const git = new GitWorkspaces({ store, command:(cwd,command,args,timeout,options)=>options?ownedCommand(cwd,command,args,timeout,options):runWorkspaceCommand(cwd,command,args,timeout), home: d.baseEnv().HOME ?? homedir(), recoverySafe: async taskId => {
     const rows = store.sqlite.prepare('SELECT run_id,state,pid FROM capability_runs WHERE task_id=?').all(taskId) as { run_id: string; state: string; pid: number | null }[];
@@ -299,6 +341,8 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const liveOutput = new AgentLiveOutput(d.emitLive);
   const live: LiveListener = ({ taskId, runId, event }) => {
     if (event.type === 'message.delta') liveOutput.append({ taskId, runId, itemKey: event.nativeItemId, text: event.text });
+    if (event.type === 'command.output') d.emitLive({ taskId, runId, itemKey: event.nativeItemId, text: event.preview.text,
+      commandRevision: event.preview.revision, previewIncomplete: event.preview.truncated });
     if (event.type === 'turn.completed' || event.type === 'exit') liveOutput.end(runId);
   };
   const unsubscribeLive = runs.onLive(live);
@@ -308,7 +352,9 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const profiles = () => d.agents.configs().filter(c => c.source !== 'legacy' && codeAgentKindSchema.safeParse(c.kind).success).map(c => {
     const driverId = driverForKind(c.kind);
     const provider = c.providerId ? d.agents.providers().find(p => p.id === c.providerId) : undefined;
+    const tool = d.agents.tools().find(t => t.id === c.toolId);
     return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const,
+      claudeSubscription: isClaudeSubscription(c, tool?.login),
       provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, c),
     };
   });
@@ -329,15 +375,47 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (!recoveryAbort.signal.aborted) void readSubscriptionCatalog(profile, tool, d.baseEnv().HOME ?? homedir()).catch(() => {});
   };
   const modelCatalog = async (scope: AgentModelScope, profileId: string, mode?: CatalogReadMode): Promise<AgentModelCatalog> => {
-    const profile = config(profileId);
+    const initialProfile = config(profileId);
+    const checkingClaude = initialProfile.kind === 'claude' && initialProfile.source === 'login' && !!d.agentTools;
+    const checked = checkingClaude ? await d.agentTools?.claudeCatalogCheck(initialProfile.toolId) : undefined;
+    const profile = checkingClaude ? config(profileId) : initialProfile;
+    if (checkingClaude && checked?.tool.id !== profile.toolId) return { status: 'unavailable', models: [] };
     const antigravity = profile.kind === 'antigravity' && profile.source === 'provider';
-    if (!antigravity && (profile.kind !== 'codex' || profile.source !== 'login')) return { status: 'ready', models: [] };
+    const nativeLogin = profile.source === 'login' && (profile.kind === 'codex' || profile.kind === 'claude');
+    if (!antigravity && !nativeLogin) return { status: 'ready', models: [] };
     if (profile.loggedOut || !profile.available) return { status: 'unavailable', models: [] };
     const task = scope.kind === 'task' ? store.task(scope.taskId) : undefined;
     if (scope.kind !== 'project' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
     const cwd = scope.kind === 'project' ? registeredProjectCwd(d.sqlite, scope.projectId, scope.dirId) : canonicalPath(task!.cwd);
-    const tool = d.agents.tools().find(item => item.id === profile.toolId);
+    const tool = checked?.tool ?? d.agents.tools().find(item => item.id === profile.toolId);
     if (!tool) throw new DriverError('REJECTED', '执行器不可用');
+    if (profile.kind === 'claude') {
+      if (!tool.installed || !isClaudeSubscription(profile, tool.login)) return { status: 'unavailable', models: [] };
+      const account = checked?.catalogAccount;
+      const baseEnv = d.baseEnv();
+      const launch = resolveProfileLaunch({ config: profile, tool, cwd, userData: d.userData, runId: randomUUID(), baseEnv });
+      const { key, previousKey } = claudeCatalogScope(profile.id, launch, tool, cwd);
+      return modelCatalogs.read(key, async observer => {
+        const native = await probeDriver('claude-sdk', { env: baseEnv, executable: launch.command, detect });
+        if (!native.realpath || native.state === 'unsupported') throw new DriverError('UNSUPPORTED', native.reason ?? 'Claude Code 不可用');
+        const signal = AbortSignal.any([recoveryAbort.signal, AbortSignal.timeout(5000)]);
+        const env = withShellProxy(native.shellPath ? { ...launch.env, PATH: native.shellPath } : launch.env, native.shellProxy);
+        let activeSignature: string | undefined;
+        const models = await previewClaudeModels({ executable: { path: native.realpath, version: native.version ?? 'unknown' },
+          cwd, env, settingSources: launch.settingSources, onAccount: account
+            ? active => { activeSignature = claudeAccountSignature(active); } : undefined }, signal);
+        const current = await d.agentTools?.claudeCatalogCheck(tool.id);
+        if ((activeSignature && activeSignature !== account?.signature)
+          || (checked && (!current?.tool.installed || current.tool.login !== tool.login
+            || (current.tool.customPath || current.tool.executable) !== launch.command
+            || current.tool.version !== tool.version || current.catalogAccount?.key !== account?.key))
+          || key !== claudeCatalogScope(profile.id, launch, tool, cwd).key) {
+          throw new DriverError('STATE', 'Claude Code 登录或配置已变化，请重新读取模型目录');
+        }
+        if (account && activeSignature) observer.account?.(account.key);
+        return { confirmed: true, models };
+      }, mode, account?.key, previousKey);
+    }
     if (antigravity) {
       const provider = d.agents.providers().find(item => item.id === profile.providerId);
       if (!provider?.hasKey || !provider.endpoints.gemini) return { status: 'unavailable', models: [] };
@@ -372,6 +450,6 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskProject: taskId => store.task(taskId)?.project_id ?? null, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
   const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData });
   tasks.attachAttachmentCleanup((taskId,data)=>projectResources.discardAttachments(taskId,data));
-  return { store, runs, tasks, profiles, terminals, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await tasks.closePrewarms(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
+  return { store, runs, tasks, profiles, terminals, homeSkillCatalog, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await tasks.closePrewarms(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

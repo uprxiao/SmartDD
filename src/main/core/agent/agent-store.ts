@@ -397,6 +397,7 @@ export class AgentStore {
         this.settleTurnTools(emit, { taskId, turnId: t.turn_id });
         emit(taskId, 'turn.ended', { turnId: t.turn_id, status: 'unknown' });
       }
+      this.settleBackgroundTools(emit, runId);
       emit(taskId, 'run.ended', { runId, state, errorCode, retiredRequests: retired });
     });
   }
@@ -477,23 +478,32 @@ export class AgentStore {
     this.tx(emit => {
       if (this.sqlite.prepare("UPDATE agent_turns SET status=?,ended_at=?,error_code=? WHERE turn_id=? AND status IN ('accepted','dispatching','started')").run(status, now(), errorCode, turnId).changes) {
         this.sqlite.prepare("UPDATE agent_requests SET status='retired',updated_at=? WHERE class='native' AND status='pending' AND json_extract(origin_json,'$.turnId')=?").run(now(), turnId);
-        this.settleTurnTools(emit, { taskId: turn.task_id, turnId });
+        this.settleTurnTools(emit, { taskId: turn.task_id, turnId }, true);
         emit(turn.task_id, 'turn.ended', { turnId, status, errorCode });
       }
     });
   }
 
   /** Preserve the last native payload and its body revision, including any artifact. */
-  private settleTurnTools(emit: EmitEvent, turn?: { taskId: string; turnId: string }) {
+  private settleTurnTools(emit: EmitEvent, turn?: { taskId: string; turnId: string }, keepBackground = false) {
     const scope = turn
       ? 'task_id=? AND turn_id=?'
       : "turn_id IN (SELECT turn_id FROM agent_turns WHERE status IN ('completed','failed','interrupted','unknown','canceled'))";
     const rows = this.sqlite.prepare(`UPDATE agent_items SET terminal_state='unconfirmed',updated_at=?
       WHERE terminal_state IS NULL AND node_id IS NULL AND ${scope}
         AND type IN (${TURN_TOOL_TYPES.map(() => '?').join(',')})
+        ${keepBackground ? "AND (type <> 'command_execution' OR json_extract(payload_ref,'$.background') IS NOT 1)" : ''}
       RETURNING task_id,item_id,type,revision`)
       .all(now(), ...(turn ? [turn.taskId, turn.turnId] : []), ...TURN_TOOL_TYPES) as
       { task_id: string; item_id: string; type: string; revision: number }[];
+    for (const row of rows) emit(row.task_id, 'item.updated', { type: row.type, terminal: 'unconfirmed' }, row.item_id, row.revision);
+  }
+
+  private settleBackgroundTools(emit: EmitEvent, runId: string) {
+    const rows = this.sqlite.prepare(`UPDATE agent_items SET terminal_state='unconfirmed',updated_at=?
+      WHERE run_id=? AND terminal_state IS NULL AND type IN ('subagent','command_execution')
+        AND json_extract(payload_ref,'$.background')=1
+      RETURNING task_id,item_id,type,revision`).all(now(), runId) as { task_id: string; item_id: string; type: string; revision: number }[];
     for (const row of rows) emit(row.task_id, 'item.updated', { type: row.type, terminal: 'unconfirmed' }, row.item_id, row.revision);
   }
 
@@ -502,7 +512,9 @@ export class AgentStore {
     return this.itemTx((written, replaced, emit) => {
       const existing = this.sqlite.prepare('SELECT item_id,revision,payload_ref,terminal_state FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number; payload_ref: string; terminal_state: string | null } | undefined;
       if (existing) {
-        if (existing.terminal_state && !i.terminalState && TURN_TOOL_TYPES.includes(i.type)) return existing.item_id;
+        const confirmedInBackground = existing.terminal_state === 'unconfirmed' && i.type === 'command_execution'
+          && (i.payload as { background?: boolean } | null)?.background === true;
+        if (existing.terminal_state && !i.terminalState && TURN_TOOL_TYPES.includes(i.type) && !confirmedInBackground) return existing.item_id;
         const revision = existing.revision + 1;
         const old = AgentStore.artifactOf(existing.payload_ref); if (old) replaced.push(old.file);
         this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(this.itemBody(i.taskId, existing.item_id, revision, i.payload, written), revision, i.terminalState ?? null, now(), existing.item_id);
@@ -697,6 +709,14 @@ export class AgentStore {
     return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at,liked FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
       .map(timelineItem);
   }
+
+  activeBackgroundItems(taskId: string, runId: string) {
+    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at,liked
+      FROM agent_items WHERE task_id=? AND run_id=? AND terminal_state IS NULL
+        AND type IN ('subagent','command_execution') AND json_extract(payload_ref,'$.background')=1
+      ORDER BY ordinal LIMIT 32`).all(taskId, runId) as TimelineRow[];
+    return rows.map(timelineItem);
+  }
   historyItems(taskId: string, itemIds: string[]) {
     if (!itemIds.length) return [];
     const params = itemIds.map(() => '?').join(',');
@@ -741,6 +761,7 @@ export class AgentStore {
           this.sqlite.prepare("UPDATE agent_turns SET status='unknown',ended_at=?,error_code='HOST_RESTARTED' WHERE turn_id=?").run(now(), t.turn_id);
           emit(r.task_id, 'turn.ended', { turnId: t.turn_id, status: 'unknown', errorCode: 'HOST_RESTARTED' });
         }
+        this.settleBackgroundTools(emit, r.run_id);
         emit(r.task_id, 'run.ended', { runId: r.run_id, state: 'orphaned', errorCode: 'HOST_RESTARTED' });
       }
       // Repair historical turns that ended before the host settled their foreground tools.

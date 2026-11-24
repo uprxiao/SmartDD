@@ -11,7 +11,7 @@ import { runBundledMigrations } from '../../db/migrations';
 import * as schema from '../../db/schema';
 import { SecretsStore } from '../../secrets';
 import { AgentService } from './agent-service';
-import { AgentToolService, parseCliLogin, probeNativeCli, type CliProbeResult } from './agent-tools';
+import { AgentToolService, claudeAccountSignature, parseCliLogin, probeNativeCli, type CliProbeResult } from './agent-tools';
 
 describe('CLI login output is parsed without exposing output/credential values', () => {
   const result = (stdout = '', stderr = '', code = 0): CliProbeResult => ({ stdout, stderr, code });
@@ -32,6 +32,25 @@ describe('CLI login output is parsed without exposing output/credential values',
       {loggedIn:true,authMethod:'oauth_token',apiKeySource:'ANTHROPIC_API_KEY'},
       {loggedIn:false,authMethod:'api_key',apiKeySource:'ANTHROPIC_API_KEY'},
     ]) expect(parseCliLogin('claude',result(JSON.stringify(row)))).not.toHaveProperty('loginSourceEnv');
+  });
+  it('recognizes Claude subscriptions and derives an account scope without exposing account details', () => {
+    const subscription = { loggedIn: true, authMethod: 'claude.ai', apiProvider: 'firstParty', subscriptionType: 'pro',
+      email: 'reader@example.test', orgId: 'public-test-org', orgName: 'Reader Org' };
+    const parse = (fields = {}) => parseCliLogin('claude', result(JSON.stringify({ ...subscription, ...fields })));
+    const parsed = parse();
+    expect(parsed).toMatchObject({ login: 'subscription', error: null, catalogAccount: { key: expect.stringMatching(/^[0-9a-f]{64}$/) } });
+    expect(JSON.stringify(parsed)).not.toMatch(/reader@example\.test|public-test-org|Reader Org/);
+    expect(parse({ email: 'other@example.test' }).catalogAccount?.key).not.toBe(parsed.catalogAccount?.key);
+    expect(parse({ orgId: 'other-org' }).catalogAccount?.key).not.toBe(parsed.catalogAccount?.key);
+    expect(parse({ subscriptionType: 'max' }).catalogAccount?.key).not.toBe(parsed.catalogAccount?.key);
+    const sdk = { email: subscription.email, organization: subscription.orgName, subscriptionType: 'Claude Pro', apiProvider: 'firstParty' as const };
+    expect(claudeAccountSignature(sdk)).toBe(parsed.catalogAccount?.signature);
+    expect(claudeAccountSignature({ ...sdk, email: 'other@example.test' })).not.toBe(parsed.catalogAccount?.signature);
+    expect(claudeAccountSignature({ ...sdk, apiProvider: 'gateway' })).toBeUndefined();
+    expect(parse({ orgId: undefined })).toEqual({ login: 'subscription', error: null });
+    expect(parse({ authMethod: 'console' })).toEqual({ login: 'local', error: null });
+    expect(parse({ apiProvider: 'bedrock' })).toEqual({ login: 'local', error: null });
+    expect(parse({ subscriptionType: null })).toEqual({ login: 'local', error: null });
   });
   it('does not treat invalid JSON, timeout or an error as authenticated, and returns no raw output', () => {
     for (const value of [result('PUBLIC_TEST'), result('{}'), result('', 'PUBLIC_TEST', 7), { ...result(), timedOut: true }]) {
@@ -70,6 +89,37 @@ describe('Tool discovery publishes data but never creates an agent automatically
     const tools = new AgentToolService(agents, { env: () => ({}), discover, probe: failing, executable: async () => true });
     const results = await tools.refresh(); expect(results.every((row) => !row.tool.installed)).toBe(true);
     expect(failing.mock.calls).toHaveLength(2); expect(JSON.stringify(results)).not.toContain('PUBLIC_TEST_FAILURE');
+  });
+
+  it('makes the fresh Claude account available while an unrelated tool is still being detected', async () => {
+    agents.recordTool({ id:'tool-codex', kind:'codex', executable:'/test/codex', customPath:null, version:'9.9.9', installed:true, login:'subscription' });
+    let finishCodex!: () => void;
+    const codexPending = new Promise<void>(resolve => { finishCodex = resolve; });
+    const auth = async (path: string, args: string[], env: Record<string, string>) => {
+      if (path.endsWith('/codex')) await codexPending;
+      if (args[0] !== '--version' && path.endsWith('/claude')) {
+        return { code: 0, stderr: '', stdout: JSON.stringify({ loggedIn: true, authMethod: 'claude.ai', apiProvider: 'firstParty',
+          subscriptionType: 'pro', email: 'reader@example.test', orgId: 'org-id', orgName: 'Example' }) };
+      }
+      return probe(path, args, env);
+    };
+    const tools = new AgentToolService(agents, { env: () => ({}), discover, probe: auth, executable: async () => true });
+    const refresh = tools.refresh();
+    try {
+      const checked = await Promise.race([
+        tools.claudeCatalogCheck('tool-claude').then(value => ({ value })),
+        new Promise<{ value: undefined }>(resolve => setTimeout(() => resolve({ value: undefined }), 400)),
+      ]);
+      expect(checked.value).toMatchObject({
+        tool: { login: 'subscription', executable: '/test/claude' },
+        catalogAccount: { key: expect.any(String) },
+      });
+      expect(agents.tools().map(tool => tool.id)).toEqual(['tool-codex']);
+    } finally {
+      finishCodex();
+      await refresh;
+    }
+    expect(agents.tools().find(tool => tool.id === 'tool-claude')?.login).toBe('subscription');
   });
 
   it('retains the previous good path if a new custom selection is not executable', async () => {

@@ -43,9 +43,9 @@ export const Workspace = observer(function Workspace() {
   const resourceProject = (view === 'agentTask' ? agentTasksStore.tasks.find(task => task.taskId === navigation.currentAgentTaskId)?.projectId : null)
     ?? navigation.currentProjectId ?? navigation.homePreset?.projectId;
   const railSelection: RailIconName | null = view === 'home' || view === 'project' ? 'home'
-    : scheduled ? 'clock' : settings ? 'settings' : apps ? 'grid' : null;
-  const railButton = (name: RailIconName, label: string, onClick: () => void) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`}
-    data-testid={name === 'settings' ? 'nav-settings' : undefined} aria-label={label} aria-current={railSelection === name ? 'page' : undefined}
+    : scheduled ? 'clock' : settings ? 'settings' : apps ? 'puzzle' : null;
+  const railButton = (name: RailIconName, label: string, onClick: () => void, testId?: string) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`}
+    data-testid={testId} aria-label={label} aria-current={railSelection === name ? 'page' : undefined}
     title={label} onClick={onClick}><RailIcon name={name} selected={railSelection === name} /></button>;
   return (
     <div className={`app codex-frame ${apps ? 'apps-mode' : settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && view === 'project' ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
@@ -57,11 +57,14 @@ export const Workspace = observer(function Workspace() {
       {view === 'home' && !panelInTitlebar && <HomeTitlebarActions />}
       {view === 'agentTask' && <div ref={setTaskTitlebar} className="agent-task-titlebar" data-testid="agent-task-titlebar" />}
       {panelInTitlebar && <div ref={setPanelTitlebar} className="agent-workspace-titlebar" />}
-    <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
-        {railButton('home', t('nav.home'), () => navigation.newTask())}
-        {railButton('clock', t('m6.scheduled'), () => navigation.navigate('scheduled'))}
-        {railButton('settings', t('nav.settings'), () => navigation.openSettings('general'))}
-        {railButton('grid', t('settings.sections.applications'), () => navigation.openApplications('catalog',resourceProject??undefined))}
+      <nav className="app-rail" aria-label={t('m6.navigation')}>
+        <div className="rail-links">
+          {railButton('home', t('nav.home'), () => navigation.newTask())}
+          {railButton('clock', t('m6.scheduled'), () => navigation.navigate('scheduled'))}
+          {railButton('puzzle', t('settings.sections.applications'), () => navigation.openApplications('catalog', resourceProject ?? undefined), 'nav-apps')}
+        </div>
+        <div className="rail-bottom">
+          {railButton('settings', t('nav.settings'), () => navigation.openSettings('general'), 'nav-settings')}
         </div>
       </nav>
       {!settings && !scheduled && !apps && isLeftOpen && <LeftSidebar key="sidebar" />}

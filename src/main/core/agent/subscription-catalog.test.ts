@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { expect, it, vi } from 'vitest';
-import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
+import { claudeCatalogScope, SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
 import type { CatalogObserver, CodexCatalogResult } from './drivers/codex-catalog';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -55,6 +55,87 @@ it('opens a fresh on-disk directory without a native request and displays stale 
   expect(await cold.modelsForRun('changed-login-file', 'verified-account')).toBeUndefined();
   expect(refresh).toHaveBeenCalledOnce();
   db.close();
+});
+
+it('restores the last confirmed models and efforts for a verified Claude account across database reopen', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'willyou-claude-cache-'));
+  try {
+    const path = join(root, 'settings.sqlite');
+    const models = [{ id: 'opus', name: 'Opus', efforts: ['medium', 'high'], defaultEffort: 'medium' }];
+    const db = new Database(path);
+    db.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)');
+    await new SubscriptionCatalogs(db).read('claude:scope', async observer => {
+      observer.account?.('account-a');
+      return { models, confirmed: true };
+    }, 'wait');
+    db.close();
+
+    const reopened = new Database(path);
+    try {
+      const probe = vi.fn(async () => { throw new Error('catalog unavailable'); });
+      expect(await new SubscriptionCatalogs(reopened).read('claude:scope', probe, 'peek', 'account-a')).toEqual({ status: 'ready', models });
+      expect(probe).not.toHaveBeenCalled();
+      expect((await new SubscriptionCatalogs(reopened).read('claude:scope', probe, 'wait', 'account-b')).models).toEqual([]);
+      expect((await new SubscriptionCatalogs(reopened).read('claude:other-project', probe, 'wait', 'account-a')).models).toEqual([]);
+      const stale = new SubscriptionCatalogs(reopened);
+      const signalFailure = vi.fn(() => Promise.reject(new Error('offline')));
+      expect((await stale.read('claude:scope', signalFailure, 'retry', 'account-a')).models).toEqual(models);
+      await new Promise(resolve => setImmediate(resolve));
+      expect(await stale.read('claude:scope', probe, 'peek', 'account-a')).toEqual({ status: 'unavailable', models });
+      expect(await new SubscriptionCatalogs(reopened).read('claude:scope', probe, 'peek', 'account-a')).toEqual({ status: 'ready', models });
+    } finally { reopened.close(); }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+it('reuses a confirmed disk catalog when the app PATH changes but Claude is already resolved', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'willyou-claude-path-'));
+  try {
+    const db = new Database(join(root, 'settings.sqlite'));
+    try {
+      db.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)');
+      const command = join(root, 'claude');
+      writeFileSync(command, 'fixture Claude');
+      const tool = { login: 'subscription' as const, version: '2.1.331' };
+      const scope = (PATH: string, executable = command) => claudeCatalogScope('profile', {
+        command: executable, stateRoot: join(root, '.claude'), env: { HOME: root, PATH },
+      }, tool, root);
+      const account = 'verified-account';
+      const models = [{ id: 'opus', name: 'Opus', efforts: ['medium', 'high'] }];
+      await new SubscriptionCatalogs(db).read(scope('/shell/bin:/usr/bin').key, async observer => {
+        observer.account?.(account);
+        return { confirmed: true, models };
+      }, 'wait', account);
+      const probe = vi.fn(async () => { throw new Error('unexpected live catalog request'); });
+      expect(await new SubscriptionCatalogs(db).read(scope('/usr/bin:/bin').key, probe, 'peek', account)).toEqual({ status: 'ready', models });
+      expect(probe).not.toHaveBeenCalled();
+      expect(scope('/shell/bin:/usr/bin', 'claude').key).not.toBe(scope('/usr/bin:/bin', 'claude').key);
+      writeFileSync(command, 'updated fixture Claude');
+      expect((await new SubscriptionCatalogs(db).read(scope('/usr/bin:/bin').key, probe, 'wait', account)).models).toEqual([]);
+    } finally { db.close(); }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+it('adopts an exactly matching previous Claude cache without extending its freshness', async () => {
+  const db = new Database(':memory:');
+  try {
+    db.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)');
+    const checkedAt = Date.now() - 10 * 60_000;
+    const account = 'account-a';
+    const models = [{ id: 'opus', name: 'Opus', efforts: ['medium', 'high'] }];
+    await new SubscriptionCatalogs(db).read('claude:previous', async observer => {
+      observer.account?.(account);
+      return { confirmed: true, models };
+    }, 'wait', account);
+    db.prepare('UPDATE app_settings SET updated_at=?').run(checkedAt);
+
+    const probe = vi.fn(() => new Promise<CodexCatalogResult>(() => {}));
+    const reopened = new SubscriptionCatalogs(db);
+    expect(await reopened.read('claude:stable', probe, 'peek', 'account-b', 'claude:previous')).toEqual({ status: 'loading', models: [] });
+    expect(await reopened.read('claude:stable', probe, 'peek', account, 'claude:previous')).toEqual({ status: 'refreshing', models });
+    expect(await new SubscriptionCatalogs(db).read('claude:stable', probe, 'peek', account)).toEqual({ status: 'refreshing', models });
+    expect(probe).toHaveBeenCalledTimes(3);
+    expect(db.prepare('SELECT DISTINCT updated_at FROM app_settings').all()).toEqual([{ updated_at: checkedAt }]);
+  } finally { db.close(); }
 });
 
 it('shares cold probes, serves partial rows, then restores only a verified matching account on restart', async () => {

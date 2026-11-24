@@ -28,6 +28,7 @@ export interface RunIntegration extends Partial<ApplicationRunLifecycle> {
   claudeSettings?:Record<string,unknown>;extraArgs?: string[]; env?: Record<string, string>; mcpServers?: DriverOpenOptions['mcpServers'];
   claudeMcp?: DriverOpenOptions['claudeMcp'];
   skillRoots?: DriverOpenOptions['skillRoots']; plugins?: DriverOpenOptions['plugins'];
+  managedSkills?: readonly { name: string; path: string }[];
   beforeThreadOpen?(): Promise<void>;
   assertCurrent?(): void;
 }

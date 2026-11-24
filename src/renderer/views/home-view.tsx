@@ -4,7 +4,7 @@ import {showBrowserPresentation} from '@renderer/features/browser/store';
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, Wrench } from 'lucide-react';
+import { ArrowUp, CircleAlert, Folder, FolderTree, Info, Loader2, Monitor, Paperclip, Plus, Settings } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -16,18 +16,23 @@ import { newClientInputId } from '@renderer/features/agent-tasks/agent-ids';
 import { AgentModelPicker, modelCatalogQuery } from '@renderer/features/agent-tasks/agent-model-picker';
 import { readHomeSelection, type HomeSelection } from '@renderer/features/agent-tasks/home-selection';
 import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agent-tasks/attachment-chips';
+import { applyItem, findTrigger, skillItems, type MenuItem, type MenuTrigger } from '@renderer/features/agent-tasks/composer-menu';
+import { ComposerMenu, useComposerSkills } from '@renderer/features/agent-tasks/composer-menu-view';
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
 import { homeAgents, homeAgentId, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
-import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, modelEffortKey, offersCodexLoginDefault, providerModelOptions } from '@shared/agent-model-choice';
+import {
+  CLAUDE_LOGIN_EFFORT, CLAUDE_LOGIN_FALLBACK, CLAUDE_LOGIN_UNAVAILABLE, CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL,
+  claudeSubscriptionDefault, isClaudeSubscription, modelEffortKey, offersCodexLoginDefault, providerModelOptions,
+} from '@shared/agent-model-choice';
 import { agentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { Button } from '@renderer/lib/ui/button';
 import { Dialog, DialogContent, DialogContentArea, DialogFooter, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { Field } from './projects/form-parts';
 import { ProjectDialog } from './projects/project-dialogs';
 import { cn } from '@renderer/utils/utils';
@@ -56,6 +61,7 @@ export const HomeView = observer(function HomeView() {
   const [launching, setLaunching] = useState(false);
   const launchToken = useRef<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const attachmentInput = useRef<HTMLInputElement>(null);
   const { data: project } = useProject(projectId);
   useLayoutEffect(()=>{
     const el=inputRef.current;if(!el)return;
@@ -124,25 +130,58 @@ export const HomeView = observer(function HomeView() {
   const isCodexLogin = profile?.kind === 'codex' && profile.source === 'login';
   const isCodexSubscription = (candidate: NonNullable<typeof profile>) => candidate.kind === 'codex' && candidate.source === 'login'
     && agents?.tools.some(tool => tool.id === candidate.toolId && tool.login === 'subscription') === true;
+  const claudeSubscription = isClaudeSubscription(profile, agents?.tools.find(tool => tool.id === profile?.toolId)?.login);
   const catalogScope = catalogProject && catalogDir ? {kind:'project' as const,projectId:catalogProject,dirId:catalogDir} : undefined;
-  const catalog = useQuery({...modelCatalogQuery(catalogScope, profileId ?? ''), enabled:!!(catalogScope && isCodexLogin && profile?.available)});
+  const catalog = useQuery({...modelCatalogQuery(catalogScope, profileId ?? ''), enabled:!!(catalogScope && (isCodexLogin || claudeSubscription) && profile?.available)});
   const hasModelChoice = !!profileId && Object.hasOwn(homeSelection.models, profileId);
   const implicitCodexChoice = !!profile && isCodexSubscription(profile) && !hasModelChoice;
+  const implicitClaudeChoice = claudeSubscription && !hasModelChoice;
   const offeredDefault = implicitCodexChoice && offersCodexLoginDefault(catalog.data?.models);
-  const defaultNotice = implicitCodexChoice && catalog.data?.status === 'ready' && !offeredDefault ? CODEX_LOGIN_FALLBACK : undefined;
-  const selectedModel = hasModelChoice && profileId ? homeSelection.models[profileId] : offeredDefault ? CODEX_LOGIN_MODEL : undefined;
+  const claudeDefault = implicitClaudeChoice && !catalog.isError && catalog.data?.status !== 'unavailable'
+    ? claudeSubscriptionDefault(catalog.data?.models) : undefined;
+  const defaultNotice = implicitCodexChoice && catalog.data?.status === 'ready' && !offeredDefault ? CODEX_LOGIN_FALLBACK
+    : implicitClaudeChoice && !claudeDefault && catalog.data?.status === 'ready' ? CLAUDE_LOGIN_FALLBACK
+    : implicitClaudeChoice && (catalog.isError || catalog.data?.status === 'unavailable') ? CLAUDE_LOGIN_UNAVAILABLE
+    : undefined;
+  const implicitSelection = offeredDefault ? { id: CODEX_LOGIN_MODEL, defaultEffort: CODEX_LOGIN_EFFORT }
+    : claudeDefault ? { id: claudeDefault.id, defaultEffort: CLAUDE_LOGIN_EFFORT } : undefined;
+  const selectedModel = hasModelChoice && profileId ? homeSelection.models[profileId] : implicitSelection?.id;
   const profileDefaultModel = (id: string) => profiles?.find(p => p.id === id)?.defaultModel ??
     (id === profileId ? catalog.data?.models.find(item => item.isDefault)?.id : undefined);
   const selectedEffort = hasModelChoice && profileId
     ? homeSelection.modelEfforts
       ? homeSelection.modelEfforts[modelEffortKey(profileId, selectedModel || profileDefaultModel(profileId))]
       : homeSelection.efforts[profileId]
-    : offeredDefault ? CODEX_LOGIN_EFFORT : undefined;
+    : implicitSelection?.defaultEffort;
 
   const selectedProvider=agents?.providers.find(p=>p.id===profile?.providerId);
   const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;
   const dirProblem = project && project.id === projectId && (!dir ? t('home.noDir') : !dir.status.available ? t('home.dirUnavailable', { path: dir.path }) : '');
   const ready = Boolean(projectId && profile && dir && dir.status.available && permissions.value) && !launching;
+  const [skillTrigger, setSkillTrigger] = useState<MenuTrigger | null>(null);
+  const [skillIndex, setSkillIndex] = useState(0);
+  const selectingSkill = navigation.currentViewId === 'home' && skillTrigger !== null;
+  const skillCatalog = useComposerSkills(selectingSkill, {
+    projectId, dirId: dir?.status.available ? dir.id : null,
+    profileId: profile?.id ?? null, carryExtensions: !profile || homeSelection.extensions[profile.id] !== false,
+  });
+  const skills = selectingSkill ? skillItems({ commands: [], skills: skillCatalog.native ?? [] }, skillTrigger.query, skillCatalog.managed) : [];
+  const activeSkill = Math.min(skillIndex, Math.max(0, skills.length - 1));
+  const updateSkillTrigger = (input: HTMLTextAreaElement) => {
+    const trigger = findTrigger(input.value, input.selectionStart);
+    setSkillTrigger(trigger?.kind === '$' ? trigger : null);
+    setSkillIndex(0);
+  };
+  const pickSkill = (item: MenuItem) => {
+    if (!skillTrigger) return;
+    const { text, caret } = applyItem(message, skillTrigger, item);
+    setMessage(text);
+    setSkillTrigger(null);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(caret, caret);
+    });
+  };
 
   // M14 首页附件：随新任务第一条消息发送；准备中或失败时“启动任务”与 ⌘Enter 都不创建任务、不清空（用例 A75）。
   const [chips, setChips] = useState<Chip[]>([]);
@@ -153,7 +192,6 @@ export const HomeView = observer(function HomeView() {
   const preparing = useRef(new Set<string>());
   const discardChip = (chip: Chip) => {
     preparing.current.delete(chip.localId);
-    if (chip.preview) URL.revokeObjectURL(chip.preview);
     if (chip.data?.storedPath) void rpc.agentTasks.discardAttachment(null,chip.data).catch(e=>setError(rpcErrorMessage(e)));
   };
   const removeChip = (id: string) => {
@@ -169,9 +207,9 @@ export const HomeView = observer(function HomeView() {
   const addFiles = (files: File[]) => {
     if (!dir) return;
     for (const file of files) {
-      const localId = crypto.randomUUID(), preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      const localId = crypto.randomUUID();
       preparing.current.add(localId);
-      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
+      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', file }]);
       void prepareChip(file, f => rpc.agentTasks.prepareAttachment(null, dir.path, f))
         .then(data => {
           if (!preparing.current.delete(localId)) {
@@ -194,19 +232,28 @@ export const HomeView = observer(function HomeView() {
       const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
       const revision = navigation.homeInputRevision(projectId);
       const presetAtLaunch = navigation.homePreset;
+      const originalBrowserRevision=browserViewRevision();
       // A cold directory is resolved by the active executor after the first message is saved.
       const initialCodexDefault = implicitCodexChoice && (catalog.data?.status !== 'ready' || offeredDefault);
-      const model = initialCodexDefault ? CODEX_LOGIN_MODEL : homeSelection.models[profile.id] || undefined;
-      const effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : hasModelChoice ? selectedEffort : undefined;
+      let model = initialCodexDefault ? CODEX_LOGIN_MODEL : selectedModel || undefined;
+      let effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : selectedEffort;
       if (implicitCodexChoice && !initialCodexDefault) toast.message(CODEX_LOGIN_FALLBACK);
+      if (implicitClaudeChoice && !claudeDefault) {
+        const result = catalogScope && !catalog.isError && (!catalog.data || catalog.data.status === 'loading' || catalog.data.status === 'refreshing')
+          ? await rpc.agentTasks.modelCatalog(catalogScope, profile.id, 'wait').catch(() => undefined)
+          : catalog.data;
+        const preferred = result && result.status !== 'unavailable' ? claudeSubscriptionDefault(result.models) : undefined;
+        model = preferred?.id;
+        effort = preferred ? CLAUDE_LOGIN_EFFORT : undefined;
+        if (!preferred) toast.message(result?.status === 'ready' ? CLAUDE_LOGIN_FALLBACK : CLAUDE_LOGIN_UNAVAILABLE);
+      }
       const carryExtensions = homeSelection.extensions[profile.id] !== false;
       const chipIds = new Set(chips.map(chip => chip.localId));
-      const modelChoice = implicitCodexChoice ? 'subscription-default' : [model, effort];
+      const modelChoice = implicitCodexChoice || implicitClaudeChoice ? 'subscription-default' : [model, effort];
       const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, modelChoice, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
       const previous = navigation.homeLaunchAttempts.get(projectId);
       const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
       navigation.homeLaunchAttempts.set(projectId, attempt);
-      const originalBrowserRevision=browserViewRevision();
       const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, effort, initialCodexDefault, carryExtensions, extensionPreferences: homeSelection.extensions });
       if (created.tierNotice) toast.message(created.tierNotice);
       const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
@@ -220,7 +267,6 @@ export const HomeView = observer(function HomeView() {
       const sameAttachments = current.chips.length === chipIds.size && current.chips.every(chip => chipIds.has(chip.localId));
       const sameDraft = navigation.homeInputRevision(projectId) === revision && sameAttachments;
       if (sameScope) {
-        for (const chip of chips) if (chip.preview) URL.revokeObjectURL(chip.preview);
         setChips(currentChips => currentChips.filter(chip => !chipIds.has(chip.localId)));
       }
       if (sameDraft) navigation.setHomeInput(projectId, '');
@@ -236,26 +282,24 @@ export const HomeView = observer(function HomeView() {
     }
   };
 
-  const suggestions = [
-    { Icon: Compass, key: 'explore' },
-    { Icon: Hammer, key: 'build' },
-    { Icon: ClipboardCheck, key: 'review' },
-    { Icon: Wrench, key: 'fix' },
-  ] as const;
-
   const projectPicker = <Select value={projectId} onValueChange={(v) => { if(!projectId&&v&&message){const existing=navigation.homeInput(String(v));navigation.setHomeInput(String(v),existing?existing+'\n'+message:message);navigation.setHomeInput(null,'');}setProjectId(v as string | null); setDirId(null); if (v) navigation.newTask(String(v)); }}>
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
   const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => {
     const provider = agents?.providers.find(item => item.id === p.providerId);
+    const tool = agents?.tools.find(item => item.id === p.toolId);
     return { profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, codexSubscription: isCodexSubscription(p), extensionSupport: p.kind === 'codex' ? 'partial' : 'full',
+      claudeSubscription: isClaudeSubscription(p, tool?.login),
       provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, p) };
   })} profileId={profileId} model={selectedModel} effort={selectedEffort} extensions={homeSelection.extensions}
-    modelEfforts={offeredDefault ? { ...homeSelection.modelEfforts, [modelEffortKey(profileId, CODEX_LOGIN_MODEL)]: CODEX_LOGIN_EFFORT } : homeSelection.modelEfforts}
+    modelEfforts={!hasModelChoice && implicitSelection
+      ? { ...homeSelection.modelEfforts, [modelEffortKey(profileId, implicitSelection.id)]: implicitSelection.defaultEffort }
+      : homeSelection.modelEfforts}
     profileChoices={Object.fromEntries(Object.entries(homeSelection.models).map(([id, model]) => [id, { model, effort: homeSelection.modelEfforts ? undefined : homeSelection.efforts[id] }]))}
     nativeModels={catalog.data?.models} scope={catalogScope} defaultNotice={defaultNotice}
-    defaultPending={implicitCodexChoice && !!catalogScope && !offeredDefault && !catalog.isError && (catalog.isPending || catalog.data?.status === 'loading' || catalog.data?.status === 'refreshing')}
+    defaultPending={(implicitCodexChoice || implicitClaudeChoice) && !!catalogScope && !implicitSelection && !catalog.isError
+      && (catalog.isPending || catalog.data?.status === 'loading' || catalog.data?.status === 'refreshing')}
     onPick={(id, model, effort) => {
       profileChosen.current = true;
       setProfileId(id);
@@ -290,13 +334,30 @@ export const HomeView = observer(function HomeView() {
       </div>
       <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
         <AttachmentChips chips={chips} onRemove={removeChip} onRetry={id => { const c = chips.find(x => x.localId === id); removeChip(id); if (c?.file) addFiles([c.file]); }} />
-        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
+        <input ref={attachmentInput} type="file" hidden multiple onChange={e => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          e.currentTarget.value = '';
+          if (files.length) addFiles(files);
+        }} />
+        <ComposerMenu items={skills} index={activeSkill} onPick={pickSkill} skills={selectingSkill} empty={skillCatalog.empty} />
+        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')}
+          onChange={e => { setMessage(e.currentTarget.value); updateSkillTrigger(e.currentTarget); }}
+          onSelect={e => updateSkillTrigger(e.currentTarget)}
+          onBlur={() => setSkillTrigger(null)}
+          onKeyDown={e => {
+            if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+            if (selectingSkill && e.key === 'Escape') { e.preventDefault(); setSkillTrigger(null); return; }
+            if (skillCatalog.loading && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); return; }
+            if (skills.length) {
+              if (e.key === 'ArrowDown') { e.preventDefault(); setSkillIndex((activeSkill + 1) % skills.length); return; }
+              if (e.key === 'ArrowUp') { e.preventDefault(); setSkillIndex((activeSkill - 1 + skills.length) % skills.length); return; }
+              if ((e.key === 'Tab' || e.key === 'Enter') && !e.shiftKey) { e.preventDefault(); pickSkill(skills[activeSkill]); return; }
+            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void launch(); }
+          }} />
         <div className="reference-composer-toolbar">
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
-            <DropdownMenuItem onClick={() => setCreatingProject(true)}><Plus />{t('projects.new')}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setLaunchSettings(true)}><Folder />{t('home.pickProject')}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigation.openSettings('aiProfiles')}><Settings />{t('settings.sections.aiProfiles')}</DropdownMenuItem><DropdownMenuSeparator />
-            {suggestions.map(({ Icon, key }) => <DropdownMenuItem key={key} data-testid="home-suggestion" onClick={() => { setMessage(t(`home.suggestions.${key}.prompt`)); inputRef.current?.focus(); }}><Icon />{t(`home.suggestions.${key}.title`)}</DropdownMenuItem>)}
+            <DropdownMenuItem disabled={!dir?.status.available || launching} onClick={() => attachmentInput.current?.click()}><Paperclip />{t('home.addAttachments')}</DropdownMenuItem>
           </DropdownMenuContent></DropdownMenu>
           <HomePermissionPicker kind={profile?.kind??'claude'} disabled={!profile||launching} />
           <div className="reference-home-picker composer-profile">{profilePicker}</div>

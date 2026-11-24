@@ -98,7 +98,11 @@ export async function runDiffJob(job:DiffJob,control:DiffControl={}):Promise<unk
   const counts=await command(workTree,['--literal-pathspecs','diff','--no-ext-diff','--no-textconv','--no-renames','--numstat',job.before.commit,job.after.commit,'--',job.path],env);if(counts.length>8192||Number(info.added)+Number(info.removed)>10000)return{...info,patch:null,reason:'差异过大，不在面板预览'};
   const patch=await command(workTree,['--literal-pathspecs','diff','--no-ext-diff','--no-textconv','--no-renames','--no-color',job.before.commit,job.after.commit,'--',job.path],env);if(patch.length>1024*1024)return {...info,patch:null,reason:'差异超过 1 MiB 预览上限'};
   const body=async(ref:TreeRef)=>{const row=(await command(workTree,['--literal-pathspecs','ls-tree','-z',ref.commit,'--',job.path!],env)).toString().split('\0')[0];if(!row)return '';const oid=row.split(/\s+/)[2];const size=Number((await command(workTree,['cat-file','-s',oid],env)).toString());if(!Number.isSafeInteger(size)||size>1024*1024)throw Error('文件超过 1 MiB 差异正文预览上限');return new TextDecoder('utf-8',{fatal:true}).decode(await command(workTree,['cat-file','blob',oid],env));};
-  try{return{...info,patch:patch.toString('utf8'),beforeText:await body(job.before),afterText:await body(job.after)};}catch{return{...info,patch:null,reason:'文件过大或不是可解码的 UTF-8 文本，不提供正文预览'};}
+  let text:string;
+  try{text=new TextDecoder('utf-8',{fatal:true}).decode(patch);}
+  catch{return{...info,patch:null,reason:'差异无法解码为 UTF-8 文本'};}
+  try{return{...info,patch:text,beforeText:await body(job.before),afterText:await body(job.after)};}
+  catch{return{...info,patch:text,reason:'完整文件上下文不可用，显示差异片段'};}
  }
  const deadline=Date.now()+(job.timeoutMs??120000);
  const limits={files:20481,bytes:10*1024**3,storage:1024**3,reserve:2*1024**3,...job.limits};

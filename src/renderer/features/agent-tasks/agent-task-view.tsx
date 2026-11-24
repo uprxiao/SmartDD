@@ -14,8 +14,9 @@ import { BrowserCheckpointCard } from '@renderer/features/browser/checkpoint-car
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, WifiOff, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
+import { AgentCommandDetails } from './agent-command-details';
 import { AgentModelPicker } from './agent-model-picker';
 import { ComposerPrimaryAction, ComposerStopIcon, QueuedSendIcon } from './composer-primary-action';
 import { ANTIGRAVITY_FULL_ACCESS_WARNING, FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
@@ -23,17 +24,21 @@ import { PermissionPicker } from '@renderer/features/agents/permission-picker';
 import { agentPermissionSchema } from '@shared/agent-permissions';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
+import { attachmentImageBlob, MessageWithAttachments } from './attachment-images';
+import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
+import { ComposerMenu, useComposerSkills } from './composer-menu-view';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { AgentDialog } from '@renderer/features/agents/ui';
-import { Fragment, createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, createContext, useContext, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
+import type { AgentActivityStatus, AgentRetryProgress } from '@shared/agent-activity';
 import type { MailSendReview } from '@shared/mail-execution';
 import { BrowserAccessReview, MailReviewCard, mailEdits, type MailEdits } from './agent-business-review';
 import { toast } from 'sonner';
-import { agentTaskEvent, agentTaskLiveEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
+import { agentTaskEvent, agentTaskLiveEvent, agentToolsChangedEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
 import { useProject } from '@renderer/lib/hooks/useProjects';
@@ -56,6 +61,34 @@ const LIVE_PREVIEW_ITEMS = 2_000;
 const liveEncoder = new TextEncoder();
 const emptyLive = { items: {} as Record<string, string>, bytes: 0, incomplete: false };
 const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
+const COMPACTION_LABEL: Record<AgentActivityStatus, string> = {
+  running: '正在压缩上下文…', completed: '上下文已压缩', failed: '上下文压缩失败', interrupted: '上下文压缩已中断',
+};
+const RETRY_LABEL: Record<AgentActivityStatus, string> = {
+  running: '模型请求异常，正在重试', completed: '模型请求已恢复', failed: '模型请求重试失败', interrupted: '模型请求重试已中断',
+};
+
+function activityStatus(status: AgentActivityStatus, turnStatus?: TurnGroup['status']): AgentActivityStatus {
+  if (status !== 'running') return status;
+  // A task reopened after a lost process may have only the last live activity revision.
+  if (turnStatus === 'interrupted' || turnStatus === 'unknown' || turnStatus === 'canceled') return 'interrupted';
+  if (turnStatus === 'completed' || turnStatus === 'failed') return 'failed';
+  return 'running';
+}
+
+function subscribeToNetwork(onChange: () => void) {
+  window.addEventListener('offline', onChange);
+  window.addEventListener('online', onChange);
+  return () => {
+    window.removeEventListener('offline', onChange);
+    window.removeEventListener('online', onChange);
+  };
+}
+
+function TaskOfflineNotice() {
+  const offline = useSyncExternalStore(subscribeToNetwork, () => navigator.onLine === false);
+  return offline ? <div className="agent-offline-notice" role="status"><WifiOff size={15} aria-hidden />网络已断开</div> : null;
+}
 
 async function changedHistoryIds(taskId: string, from: number, through: number, cached: ReadonlySet<string>, active: () => boolean) {
   const changed = new Set<string>();
@@ -146,13 +179,6 @@ function Markdown({ text,itemId }: { text: string;itemId?:string }) {
 }
 
 const DEFAULT_COMMANDS: Record<string, string[]> = { 'codex-app-server': ['goal', 'compact', 'review'], 'claude-sdk': ['goal', 'compact', 'init'] };
-/** 输入框选用菜单（/命令、@文件、$Skill）；方向键选择，Enter／Tab 选用，Esc 关闭。 */
-function ComposerMenu({ items, index, onPick }: { items: MenuItem[]; index: number; onPick: (i: MenuItem) => void }) {
-  if (!items.length) return null;
-  return <div className="agent-menu" role="listbox">{items.map((it, i) => <button key={it.key} type="button" role="option" aria-selected={i === index} className={i === index ? 'on' : ''} onMouseDown={e => { e.preventDefault(); onPick(it); }}>
-    <b>{it.label}</b>{it.detail && <small>{it.detail}</small>}</button>)}</div>;
-}
-
 type RangeChunk = { chunk: string; next: number; done: boolean; revision?: number };
 /**
  * 按字节偏移分段读取完整正文并解析（复核 NR06、FR02）。首段带回修订号，后续段按该修订读取；
@@ -271,7 +297,9 @@ function ReplyActions({ item, copy, stamp }: { item: TimelineItem; copy?: () => 
   </div>;
 }
 
-function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalReply?: boolean; completedAt?: string | null }) {
+function ItemRow({ item, finalReply, completedAt, turnStatus }: {
+  item: TimelineItem; finalReply?: boolean; completedAt?: string | null; turnStatus?: TurnGroup['status'];
+}) {
   const useTaskId=useContext(TaskScope);
   const archived=useContext(ArchivedScope);
   const relations=useContext(RelationsScope);
@@ -305,10 +333,15 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       const message = String(p.text ?? '');
       const fold = !truncated && !isIncomplete(p) && (message.length > 600 || message.split('\n', 9).length > 8);
       const preview = message.slice(0, 600).split('\n').slice(0, 8).join('\n').replace(/[\uD800-\uDBFF]$/, '');
-      return <div className="agent-user"><div className="agent-user-bubble">{fold && !showMessage ? preview + '…' : message}
+      const body = <div className="agent-user-message">
+        {fold && !showMessage ? preview + '…' : message}
         {fold && <button type="button" className="agent-inline-action agent-fold" aria-expanded={showMessage} onClick={() => setShowMessage(!showMessage)}>{showMessage ? '收起全文' : '显示全文'}</button>}
         <Completeness truncated={truncated} payload={p} onExpand={() => { setShowMessage(true); void load(); }}/>
-        {p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}
+      </div>;
+      return <div className="agent-user"><div className="agent-user-bubble">
+        {Array.isArray(p.attachments) && p.attachments.length > 0
+          ? <MessageWithAttachments attachments={p.attachments} taskId={useTaskId} turnId={item.turnId}>{body}</MessageWithAttachments>
+          : body}
         {!archived && item.turnId && actions?.unsent(item.turnId) && <div className="agent-inline-actions"><span>发送失败</span>
           <button type="button" disabled={actions.busy} onClick={() => actions.retry(item.turnId!)}>重试</button>
           <button type="button" disabled={actions.busy} onClick={() => actions.restore(item.turnId!)}>放回输入框</button>
@@ -374,6 +407,20 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {RESULT_STATUS[p.status] ?? p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => openRelatedTask(useTaskId,p.childTaskId,archived)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
     }
     case 'error': {
+      const retry = p.retry as AgentRetryProgress | undefined;
+      const count = retry?.attempt ? ` · ${retry.attempt}${retry.maxAttempts ? `/${retry.maxAttempts}` : ' 次'}` : '';
+      if (retry && !p.limited) {
+        const status = activityStatus(retry.status, turnStatus);
+        const delay = status === 'running' && retry.retryDelayMs
+          ? ` · ${retry.retryDelayMs < 1000 ? retry.retryDelayMs + ' 毫秒' : retry.retryDelayMs / 1000 + ' 秒'}后重试`
+          : '';
+        return <div className="agent-retry-activity" data-status={status}>
+          <div role="status">{status === 'running' && <Loader2 size={13} className="spin" aria-hidden />}{RETRY_LABEL[status]}{count}{delay}</div>
+          {status === 'failed' && (p.message || p.code) && <details>
+            <summary>查看错误详情</summary><pre>{String(p.message ?? p.code)}</pre>{more}
+          </details>}
+        </div>;
+      }
       if (!p.limited) return <div className="agent-error agent-error-details">
         <details><summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary>
           <pre>{String(p.message ?? p.code ?? '未提供错误详情')}</pre>
@@ -383,11 +430,17 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       const { kind, resetAt } = p.limited;
       const resume = actions?.continuation(item.itemId);
       return <div className="agent-limit-card" role="status"><TriangleAlert size={16}/><div><b>{LIMIT_LABEL[kind] ?? '受限'}</b>
+        {retry && <small>{RETRY_LABEL.failed}{count}</small>}
         <small>{kind === 'output' ? '部分回答已保留，可手动继续。' : `本轮已暂停，部分结果已保留。${resetAt ? `可在 ${resetAt} 后` : '稍后'}手动继续（不会自动换账号或到点重跑）。`}</small>{more}</div>
         {resume && <button type="button" className="agent-inline-action" disabled={actions?.busy} onClick={resume}>继续</button>}
       </div>;
     }
-    case 'compaction': return <div className="agent-divider">上下文已压缩</div>;
+    case 'compaction': {
+      const status = activityStatus(p.status ?? 'completed', turnStatus);
+      return <div className="agent-divider agent-compaction-activity" role="status" data-status={status} title={p.message}>
+        <span>{status === 'running' && <Loader2 size={13} className="spin" aria-hidden />}{COMPACTION_LABEL[status]}</span>
+      </div>;
+    }
     case 'provider_switch': return <div className="agent-divider">此处切换到 {p.toName ?? p.to}{more}</div>;
     case 'handoff': return <details className="agent-notice"><summary>{p.kind === 'full' ? '已准备全量交接' : '已准备增量交接'}{p.omissions?.length ? ` · ${p.omissions.length} 项因预算未覆盖` : ''}</summary><pre>{p.text}</pre>{p.omissions?.map((x: any) => <div key={x.itemId}>{x.itemId}：{x.reason}</div>)}{more}</details>;
     case 'omission_notice': return <div className="agent-limited">{p.detail}{more}</div>;
@@ -493,18 +546,31 @@ const WORK_ICONS: Record<string, typeof Brain> = {
   web_search:Globe, tool_call:Wrench, subagent:Network,
 };
 
-function WorkItem({ it, inGroup = false }: { it: TimelineItem; inGroup?: boolean }) {
+function WorkItem({ it, now, inGroup = false }: { it: TimelineItem; now: number; inGroup?: boolean }) {
   const { payload: p, truncated, load } = useFullPayload(it);
   const viewProcess = useContext(NativeProcessScope);
+  const taskId = useContext(TaskScope);
+  const [commandOpen, setCommandOpen] = useState(false);
   const Icon = WORK_ICONS[it.type] ?? Info;
-  const standaloneCommand = it.type === 'command_execution' && !inGroup;
+  const isCommand = it.type === 'command_execution';
+  const subagentStatus = it.type === 'subagent' && (it.terminal === 'unconfirmed' ? '结果未确认'
+    : p.status === 'running' && !it.terminal ? '运行中' : p.status === 'completed' ? '已完成'
+      : p.status === 'interrupted' ? '已停止' : p.status === 'failed' ? '失败' : '');
   const entry = { ...it, payload: p };
-  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${standaloneCommand ? ' agent-work-command-row' : ''}`}>
-    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, standaloneCommand)}</span>{standaloneCommand && <ChevronRight size={13} aria-hidden/>}</summary>
-    {standaloneCommand && <div className="agent-work-command">{workLabel(entry)}</div>}
-    {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
-    {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}
-    <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
+  const completeness = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
+  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${isCommand ? ' agent-work-command-row' : ''}`}
+    onToggle={isCommand ? event => { if (event.target === event.currentTarget) setCommandOpen(event.currentTarget.open); } : undefined}>
+    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, isCommand && !inGroup)}</span>{subagentStatus && <small>{subagentStatus}</small>}{isCommand && <ChevronRight size={13} aria-hidden/>}</summary>
+    {isCommand ? commandOpen && <>
+      <AgentCommandDetails command={String(p.command ?? p.input?.command ?? '')} output={String(p.output ?? '')}
+        outputTruncated={p.outputTruncated} exitCode={typeof p.exitCode === 'number' ? p.exitCode : undefined} running={p.status === 'running' && !it.terminal}
+        taskId={taskId} runId={it.runId} itemKey={p.outputKey} startedAt={it.createdAt} heartbeatAt={p.heartbeatAt} elapsedSeconds={p.elapsedSeconds} now={now}/>
+      {completeness}
+    </> : <>
+      {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
+      {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}
+      {completeness}
+    </>}
   </details>;
 }
 
@@ -514,16 +580,16 @@ function WorkHeadingLabel({ heading }: { heading: WorkHeading }) {
   return <><Icon size={15} aria-hidden/>{heading.text}</>;
 }
 
-function WorkContents({ items }: { items: TimelineItem[] }) {
+function WorkContents({ items, now }: { items: TimelineItem[]; now: number }) {
   return <div className="agent-work-rows">{workSegments(items).map(segment => {
     if (segment.kind === 'single') return segment.item.type === 'assistant_message'
       ? <ItemRow key={segment.item.itemId} item={segment.item}/>
-      : <WorkItem key={segment.item.itemId} it={segment.item}/>;
+      : <WorkItem key={segment.item.itemId} it={segment.item} now={now}/>;
     const [first] = segment.items;
-    if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first}/>;
+    if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first} now={now}/>;
     return <details className="agent-work-row agent-work-group" key={first.itemId}>
       <summary><Wrench size={14} aria-hidden/><span>{summarizeTools(segment.items)}</span><ChevronRight size={13} aria-hidden/></summary>
-      {segment.items.map(item => <WorkItem key={item.itemId} it={item} inGroup/>)}
+      {segment.items.map(item => <WorkItem key={item.itemId} it={item} now={now} inGroup/>)}
     </details>;
   })}</div>;
 }
@@ -531,7 +597,7 @@ function WorkContents({ items }: { items: TimelineItem[] }) {
 const countsAsActivity = (row: TurnGroup['rows'][number]) => row.kind !== 'item'
   || !['user_message', 'system_notice', 'files_changed', 'handoff'].includes(row.item.type);
 
-function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stopping: boolean; showActivity: boolean }) {
+function TurnRows({ group, stopping, showActivity, liveChildIds, now }: { group: TurnGroup; stopping: boolean; showActivity: boolean; liveChildIds: ReadonlySet<string>; now: number }) {
   const completed = group.status === 'completed';
   const running = showActivity || group.status === 'dispatching' || group.status === 'started';
   const [choice, setChoice] = useState<{ completed: boolean; open: boolean }>();
@@ -570,9 +636,9 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
   const rows = group.rows.map((row, index) => {
     if (row.kind === 'footer') return null;
     const visible = open || !isProcess(row);
-    const content = !visible ? null : row.kind === 'work'
-      ? <WorkContents items={row.items}/>
-      : <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt}/>;
+    const work = row.kind === 'work' ? (visible ? row.items : row.items.filter(item => liveChildIds.has(item.itemId))) : [];
+    const content = row.kind === 'work' ? (work.length > 0 && <WorkContents items={work} now={now}/>)
+      : visible && <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt} turnStatus={group.status}/>;
     return <Fragment key={row.kind === 'item' ? row.item.itemId : row.id}>
       {content}
       {index === firstUser && summary}
@@ -877,6 +943,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const [trigger, setTrigger] = useState<MenuTrigger | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
+  const selectingSkill = trigger?.kind === '$';
+  const skillCatalog = useComposerSkills(selectingSkill, { taskId });
   const textarea = useRef<HTMLTextAreaElement>(null);
   // D06-78: when the terminal drawer closes, its focused xterm is removed and focus falls to <body>. Hand it back to the
   // composer, but only if it really fell to the page; never steal focus the user already moved elsewhere.
@@ -1046,7 +1114,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     const offWindowShown = events.on(windowShownEvent, recoverTimeline);
     window.addEventListener('focus', onVisible); document.addEventListener('visibilitychange', onVisible);
     const offLive = events.on(agentTaskLiveEvent, e => {
-      if (e.taskId !== taskId) return;
+      if (e.taskId !== taskId || e.commandRevision !== undefined) return;
       setLive(current => {
         if (current.incomplete) return current;
         const existing = Object.hasOwn(current.items, e.itemKey);
@@ -1063,7 +1131,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       if (s.seq < seqRef.current) return;
       applySnapshot(s);
     })();
-    void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
+    const loadProfiles = () => { void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {}); };
+    const offToolsChanged = events.on(agentToolsChangedEvent, loadProfiles);
+    loadProfiles();
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => {
       alive = false;
@@ -1074,6 +1144,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       offEvent();
       offLive();
       offWindowShown();
+      offToolsChanged();
       clearInterval(tick);
       window.removeEventListener('focus', onVisible);
       document.removeEventListener('visibilitychange', onVisible);
@@ -1177,7 +1248,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       const nextChips: Chip[] = attachments.map(a => ({ localId:a.id, name:a.name, status:'ready', data:a }));
       for (const chip of currentChips) {
         if (chip.status === 'preparing') removedWhilePreparing.current.add(chip.localId);
-        if (chip.preview) URL.revokeObjectURL(chip.preview);
       }
       textRef.current = nextText; setText(nextText);
       chipsRef.current = nextChips; setChips(nextChips);
@@ -1212,7 +1282,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     if (!composerReady) return;
     const target={taskId,projectId:composerProject,insert:(value:string)=>insertDraftRef.current(value),focus:()=>textarea.current?.focus(),attachFile:async(file:import('@shared/files').FileDocument,baseHash:string,signal:AbortSignal)=>{
       const original=await rpc.files.read(file.ref);signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');if(original.document.revision.hash!==baseHash)throw Error('图片内容已变化，请重新打开后附加');
-      const data=await rpc.agentTasks.prepareAttachment(taskId,null,{name:file.name,mime:file.content?.kind==='image'?file.content.mime:undefined,dataBase64:original.base64});signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');editedRef.current=true;setChips(value=>[...value,{localId:data.id,name:data.name,status:'ready',data}]);saveDraft(textRef.current);
+      const data=await rpc.agentTasks.prepareAttachment(taskId,null,{name:file.name,mime:file.content?.kind==='image'?file.content.mime:undefined,dataBase64:original.base64});signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');
+      const mime = attachmentImageMime(data.name, data.mime);
+      const previewBlob = mime ? attachmentImageBlob(original.base64, mime) : undefined;
+      editedRef.current=true;setChips(value=>[...value,{localId:data.id,name:data.name,status:'ready',data,previewBlob}]);saveDraft(textRef.current);
     }};return agentComposerTargets.register(target);
   },[taskId,composerProject,composerReady]);
 
@@ -1220,7 +1293,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
   // 目标命令只在运行冻结的能力允许时出现（复核 CR15）。
   const catalog: Catalog = snap.run && !snap.run.goal ? { ...rawCatalog, commands: rawCatalog.commands.filter(c => c.replace(/^\//, '') !== 'goal') } : rawCatalog;
-  const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query) : fileItems(fileHits);
+  const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query, skillCatalog.managed) : fileItems(fileHits);
+  const activeMenuIndex = Math.min(menuIndex, Math.max(0, menuItems.length - 1));
   const refreshTrigger = (value: string, caret: number) => { const t = findTrigger(value, caret); setTrigger(t); setMenuIndex(0); };
   const pick = (item: MenuItem) => {
     if (!trigger) return;
@@ -1291,14 +1365,19 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const canForceStop = stopping && !stopping.closing && now >= stopping.forceAt;
   const activeTurnId = groups.findLast(group => group.status === 'dispatching' || group.status === 'started')?.turnId
     ?? snap.preparingTurnId;
+  const backgroundWork = (snap.backgroundWork ?? []) as TimelineItem[];
+  const liveChildIds = new Set(backgroundWork.filter(item => item.type === 'subagent').map(item => item.itemId));
+  const backgroundOnly = !activeTurnId && !snap.run?.busy && backgroundWork.length > 0;
+  const backgroundCommands = backgroundWork.length - liveChildIds.size;
+  const backgroundLabel = [liveChildIds.size ? `${liveChildIds.size} 个子 Agent` : '',
+    backgroundCommands ? `${backgroundCommands} 条命令` : ''].filter(Boolean).join(' · ');
   const liveText = Object.values(live.items).join('');
 
   const addFiles = (files: File[]) => {
     for (const file of files) {
       const localId = crypto.randomUUID();
-      const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
       editedRef.current = true;
-      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
+      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', file }]);
       void prepareChip(file, f => rpc.agentTasks.prepareAttachment(taskId, null, f))
         .then(data => {
           if (removedWhilePreparing.current.delete(localId)) {
@@ -1320,7 +1399,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const removeChip = (localId: string) => {
     const chip=chipsRef.current.find(item=>item.localId===localId);
     if(chip?.status==='preparing')removedWhilePreparing.current.add(localId);
-    if(chip?.preview)URL.revokeObjectURL(chip.preview);
     if(chip?.data?.storedPath)void rpc.agentTasks.discardAttachment(taskId,chip.data).catch(e=>toast.error(rpcErrorMessage(e)));
     setChips(cs=>cs.filter(c=>c.localId!==localId));
     setTimeout(()=>saveDraft(textRef.current),0);
@@ -1437,7 +1515,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       if (sendingRef.current || textRef.current || chipsRef.current.length) { toast.warning('请先处理输入框里的草稿'); return; }
       const { value } = await readInput(turnId, null);
       if (sendingRef.current || textRef.current || chipsRef.current.length) { toast.warning('请先处理输入框里的草稿'); return; }
-      const restored: Chip[] = value.attachments.map((attachment: PreparedAttachment) => ({ localId: attachment.id, data: attachment, name: attachment.name, status: 'ready' }));
+      const restored: Chip[] = value.attachments.map((attachment: PreparedAttachment, index: number) => ({
+        localId: attachment.id, data: attachment, name: attachment.name, status: 'ready', previewSource: { kind: 'message', turnId, index },
+      }));
       textRef.current = value.text; setText(value.text);
       chipsRef.current = restored; setChips(restored);
       saveDraft(value.text); textarea.current?.focus();
@@ -1480,9 +1560,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const resumeGoal = canContinue && snap.selection.driverId === 'codex-app-server' && snap.run?.goal !== false
     && snap.goal?.status === 'paused' && snap.goal.pausedReason !== 'waiting_children';
   const composerAction = composerStopping || (working && !hasDraftContent) ? 'stop'
-    : hasDraftContent ? working && !blocking ? 'queue' : 'send'
+    : hasDraftContent ? working && !blocking && !backgroundOnly ? 'queue' : 'send'
     : resumeQueue || resumeGoal ? 'resume' : 'send';
-  const composerLabel = composerAction === 'stop' ? composerStopping ? '正在停止…' : '停止本轮'
+  const stopLabel = backgroundOnly ? '停止后台工作' : '停止本轮';
+  const composerLabel = composerAction === 'stop' ? composerStopping ? '正在停止…' : stopLabel
     : composerAction === 'resume' ? resumeQueue ? '继续排队消息' : '继续目标'
     : composerAction === 'queue' ? '加入队列' : '发送';
   const canEscapeStop = working && !composerStopping && !requests.length && !snap.requestsTotal
@@ -1490,9 +1571,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const taskHeader = <header className="agent-task-head" aria-label="当前任务">
     {titlebarTarget && snap.projectId && <TaskProjectBreadcrumb projectId={snap.projectId} />}
     <h1 title={snap.title}>{snap.title}</h1>
-    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}
+    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : backgroundOnly && snap.status === 'working' ? '后台运行中' : STATUS_LABEL[snap.status]}</span>}
     {!archived && working && composerAction !== 'stop' && <button type="button" className="agent-head-btn agent-header-stop"
-      title="停止本轮" aria-label="停止本轮" onClick={() => void stop()}><ComposerStopIcon /></button>}
+      title={stopLabel} aria-label={stopLabel} onClick={() => void stop()}><ComposerStopIcon /></button>}
     <span className="push" />
     {lineageToggle}
     {archived ? <>
@@ -1529,16 +1610,20 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       }}>回到最新记录</button></div>}
       {groups.map(group => {
         const active = group.turnId !== null && group.turnId === activeTurnId;
-        return <TurnRows key={group.key} group={group} stopping={active && !!stopping}
+        return <TurnRows key={group.key} group={group} stopping={active && !!stopping} liveChildIds={liveChildIds} now={now}
           showActivity={active && !archived && !stopping && snap.status === 'working' && !liveText && !live.incomplete}/>;
       })}
       {working && (liveText || live.incomplete) && <div className="agent-assistant streaming">{liveText && <Markdown text={liveText} />}{live.incomplete && <p role="status">部分内容未在流式预览中显示，完成后可查看全文。</p>}</div>}
+      {!archived && backgroundOnly && <section className="agent-background-work" aria-label="后台工作">
+        <header><Clock3 size={14} aria-hidden/><b>后台仍在运行</b><span>{backgroundLabel}</span></header>
+        {backgroundWork.filter(item => item.type === 'command_execution' || !byItemId.has(item.itemId)).map(item =>
+          <WorkItem key={item.itemId} it={byItemId.get(item.itemId) ?? item} now={now}/>)}
+      </section>}
       {!!relations?.childrenTotal && <AgentChildSummary taskId={taskId} value={relations} readOnly={archived} reload={() => void reload()} />}
       {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
       {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
       {!archived && !snap.goal && !snap.goalPending && snap.goalUnknown && <div className="agent-goal" data-testid="agent-goal-unknown"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalUnknown.kind === 'set' ? snap.goalUnknown.objective : '清除目标'}</b><small>状态未知 · 执行器的回复无法识别</small></div><div className="agent-goal-actions"><button type="button" onClick={() => void goalOp('clear')}>清除</button></div></div>}
       {snap.selection.pendingSwitch && <div className="agent-limited">本轮和已有排队输入结束后切换到 {profiles.find(p => p.profileId === snap.selection.pendingSwitch?.profileId)?.name ?? snap.selection.pendingSwitch.profileId}</div>}
-      {snap.switching && <div className="agent-limited">正在切换执行器，等待原运行退出…</div>}
       <div ref={setMailSlot} className="agent-mail-slot"/>
     </TimelineActionScope.Provider></div></div>
     <div className="agent-bottom">
@@ -1585,6 +1670,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
         <button type="button" className="agent-inline-action" onClick={() => setTerminalOpen(true)}>打开终端</button>
       </div>}
       {archived ? <div className="agent-composer agent-archive-composer"><textarea rows={3} disabled aria-label="已归档任务输入" placeholder="恢复后可以继续此会话" /></div> : <>
+        <TaskOfflineNotice />
         {/* 2026-11-20 对齐 T3：请求面板在输入框上方，输入框与模型／档位／执行器入口始终保留（A72）。 */}
         {requests.length > 0 && <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />}
         <form className="agent-composer" onSubmit={e => { e.preventDefault(); if (!composerStopping) void send(); }}
@@ -1596,40 +1682,44 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
             e.stopPropagation();
             void stop();
           }}>
-          <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
-          <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
+          <AttachmentChips chips={chips} taskId={taskId} onRemove={removeChip} onRetry={retryChip} />
+          <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={skillCatalog.empty} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
-            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
+            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && !backgroundOnly && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working && !backgroundOnly ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
+              if (e.key === 'Escape' && (menuItems.length || selectingSkill) && !e.nativeEvent.isComposing) {
+                e.preventDefault(); setTrigger(null); return;
+              }
               if (menuItems.length && !e.nativeEvent.isComposing) {
-                if (e.key === 'ArrowDown') { e.preventDefault(); setMenuIndex(i => (i + 1) % menuItems.length); return; }
-                if (e.key === 'ArrowUp') { e.preventDefault(); setMenuIndex(i => (i - 1 + menuItems.length) % menuItems.length); return; }
-                if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pick(menuItems[Math.min(menuIndex, menuItems.length - 1)]); return; }
-                if (e.key === 'Escape') { e.preventDefault(); setTrigger(null); return; }
+                if (e.key === 'ArrowDown') { e.preventDefault(); setMenuIndex((activeMenuIndex + 1) % menuItems.length); return; }
+                if (e.key === 'ArrowUp') { e.preventDefault(); setMenuIndex((activeMenuIndex - 1 + menuItems.length) % menuItems.length); return; }
+                if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pick(menuItems[activeMenuIndex]); return; }
               }
               if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!composerStopping) void send(); } }} />
           <div className="agent-composer-bar">
             <PermissionPicker task testId="task-permission" selected={selectedPermission}
               effective={effectivePermission} allowAuto={profile?.tiers.includes('auto') ?? snap.selection.driverId === 'codex-app-server'}
               changing={snap.run?.tierChanging} deferred={!!snap.run?.busy && selectedPermission !== effectivePermission}
-              disabled={!!snap.parentTaskId || snap.switching} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined}
+              disabled={!!snap.parentTaskId} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined}
               onPick={tier => {
                 if (tier === selectedPermission) return;
                 if (tier === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true);
                 else void setSelection({ tier });
               }}/>
             <span className="push" />
-            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
+            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
               onPick={async (id, model, effort) => {
                 const scope = timelineScope.current;
                 try {
                   const result = await rpc.agentTasks.switchProfile(taskId, id, snap.selectionRevision, model, effort);
                   if (scope !== timelineScope.current) return false;
                   setSnap(current => !current || current.selectionRevision >= result.revision
-                    ? current : { ...current, selection: result.selection, selectionRevision: result.revision });
+                    ? current : { ...current, selection: result.selection, selectionRevision: result.revision,
+                      run: current.selection.profileId === result.selection.profileId ? current.run : null });
                   if (!result.ok) toast.warning('选择已在别处变化，请重试');
                   else if (result.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换');
+                  if (result.ok && id !== snap.selection.profileId) textarea.current?.focus();
                   void reload();
                   return result.ok;
                 } catch (e) { toast.error(rpcErrorMessage(e)); return false; }

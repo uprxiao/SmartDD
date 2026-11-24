@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { parse as parseToml } from 'smol-toml';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
-import { planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
+import { managedCodexRoot, planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
 import { RUNTIME_ISOLATION } from '../capabilities/capability-service';
 import type { DriverId } from './capabilities';
 import { antigravityArgs } from './drivers/antigravity-acp';
@@ -97,7 +97,7 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   }
   if (p.runner === 'codex') {
     const { extraArgs, model } = codexArgsToDriver(p.args);
-    const stateRoot = managed ? join(i.userData, 'agents', 'codex', createHash('sha256').update(i.config.id).digest('hex').slice(0, 32)) : env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
+    const stateRoot = managed ? managedCodexRoot(i.userData, i.config.id) : env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
     if (managed) {
       env.CODEX_HOME = stateRoot; p.env.CODEX_HOME = stateRoot; plan.codexRoot = stateRoot;
       // D06-72: Codex also discovers Skills from shared folders under HOME, so a managed run gets a private HOME.

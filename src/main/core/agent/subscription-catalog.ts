@@ -6,6 +6,7 @@ import type Database from 'better-sqlite3';
 import type { CodeAgentTool } from '@shared/ai-agents';
 import { agentModelsSchema, type AgentModelCatalog, type AgentModelOption, type CatalogReadMode } from '@shared/agent-model-choice';
 import { projectLayers } from '../capabilities/discovery';
+import { CLAUDE_MODEL_VARIABLES } from '../ai/agent-launch-plan';
 import type { ProfileLaunch } from './profile-launch';
 import { DriverError } from './driver';
 import type { CatalogObserver, CodexCatalogResult } from './drivers/codex-catalog';
@@ -55,23 +56,42 @@ export function subscriptionCatalogScope(profileId: string, launch: ProfileLaunc
   return { key, localLoginBound };
 }
 
+export function claudeCatalogScope(profileId: string, launch: Pick<ProfileLaunch, 'command' | 'stateRoot' | 'env'>, tool: Pick<CodeAgentTool, 'login' | 'version'>, cwd: string) {
+  const home = launch.env.HOME ?? homedir();
+  const paths = [join(launch.stateRoot, 'settings.json'), join(launch.stateRoot, '.credentials.json'),
+    ...projectLayers(cwd, home).flatMap(dir => ['settings.json', 'settings.local.json'].map(file => join(dir, '.claude', file)))];
+  const env = ['ANTHROPIC_BASE_URL', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN',
+    'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', ...CLAUDE_MODEL_VARIABLES];
+  const executable = [cwd, launch.stateRoot, launch.command, fileStamp(launch.command), tool.login, tool.version];
+  const config = [env.map(name => launch.env[name]), paths.map(path => [path, fileStamp(path)])];
+  const keyForPath = (path: string | null | undefined) => cacheKey('claude:', profileId, JSON.stringify([...executable, path, ...config]));
+  const previousKey = keyForPath(launch.env.PATH);
+  return isAbsolute(launch.command) ? { key: keyForPath(null), previousKey } : { key: previousKey };
+}
+
 export class SubscriptionCatalogs {
   private readonly entries = new Map<string, Entry>();
   constructor(private readonly db: Database.Database) {}
 
-  async read(key: string, probe: Probe, mode: CatalogReadMode = 'peek', localLoginBound = false): Promise<AgentModelCatalog> {
-    let entry = this.entries.get(key);
+  async read(key: string, probe: Probe, mode: CatalogReadMode = 'peek', localLoginBound: boolean | string = false, previousKey?: string): Promise<AgentModelCatalog> {
+    const verifiedAccount = typeof localLoginBound === 'string' ? localLoginBound : undefined;
+    const entryKey = verifiedAccount ? cacheKey('', key, verifiedAccount) : key;
+    let entry = this.entries.get(entryKey);
     if (!entry) {
       if (this.entries.size >= 32) {
         const idle = [...this.entries].find(([, v]) => !v.pending);
         if (idle) this.entries.delete(idle[0]);
       }
-      const account = localLoginBound ? this.lastAccount(key) : undefined;
-      const saved = account && this.restore(cacheKey(PREFIX, key, account));
+      const account = verifiedAccount ?? (localLoginBound ? this.lastAccount(key) : undefined);
+      let saved = account ? this.restore(cacheKey(PREFIX, key, account)) : undefined;
+      if (!saved && verifiedAccount && previousKey && previousKey !== key) {
+        saved = this.restore(cacheKey(PREFIX, previousKey, verifiedAccount));
+        if (saved) this.save(key, verifiedAccount, saved.models, saved.checkedAt);
+      }
       entry = saved
         ? { snapshot: { status: 'ready', models: saved.models }, account, verified: true, refreshAt: saved.checkedAt + FRESH_FOR }
-        : { snapshot: { status: 'loading', models: [] }, verified: false, refreshAt: 0 };
-      this.entries.set(key, entry);
+        : { snapshot: { status: 'loading', models: [] }, account, verified: false, refreshAt: 0 };
+      this.entries.set(entryKey, entry);
     }
     if (!entry.pending && (mode === 'retry' || Date.now() >= entry.refreshAt)) {
       if ([...this.entries.values()].filter(v => v.pending).length >= 8) {
@@ -165,13 +185,12 @@ export class SubscriptionCatalogs {
     } catch { return undefined; }
   }
 
-  private save(key: string, account: string, models: AgentModelOption[]) {
+  private save(key: string, account: string, models: AgentModelOption[], checkedAt = Date.now()) {
     try {
       this.db.transaction(() => {
         const write = this.db.prepare('INSERT INTO app_settings(key,value,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at');
-        const now = Date.now();
-        write.run(cacheKey(PREFIX, key, account), JSON.stringify(models), now);
-        write.run(cacheKey(SCOPE_PREFIX, key), JSON.stringify(account), now);
+        write.run(cacheKey(PREFIX, key, account), JSON.stringify(models), checkedAt);
+        write.run(cacheKey(SCOPE_PREFIX, key), JSON.stringify(account), checkedAt);
         const trim = this.db.prepare('DELETE FROM app_settings WHERE key IN (SELECT key FROM app_settings WHERE key GLOB ? ORDER BY updated_at DESC, key DESC LIMIT -1 OFFSET 32)');
         trim.run(PREFIX + '*');
         trim.run(SCOPE_PREFIX + '*');

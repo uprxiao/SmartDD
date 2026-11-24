@@ -30,6 +30,7 @@ export interface DiscoveredCapability {
   name: string;
   runner: Runner;
   source: string;
+  projectRoot?: string;
   path: string;
   version: string | null;
   enabled: boolean | null;

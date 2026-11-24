@@ -1,9 +1,22 @@
 // 输入框附件卡片与准备逻辑（任务区与首页共用；无事件订阅等副作用）。
-import { FileText, Loader2, RotateCw, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { RotateCw, X } from 'lucide-react';
 import { rpc } from '@renderer/lib/ipc';
+import { attachmentImageMime, type AttachmentImageSource } from '@shared/agent-attachment-image';
+import { AttachmentThumbnail, useAttachmentGallery } from './attachment-images';
+import { FileAttachmentRow } from './file-attachment-row';
 
 export type PreparedAttachment = Awaited<ReturnType<typeof rpc.agentTasks.prepareAttachment>>;
-export interface Chip { localId: string; name: string; status: 'preparing' | 'ready' | 'failed'; error?: string; preview?: string; data?: PreparedAttachment; file?: File }
+export interface Chip {
+  localId: string;
+  name: string;
+  status: 'preparing' | 'ready' | 'failed';
+  error?: string;
+  data?: PreparedAttachment;
+  file?: File;
+  previewBlob?: Blob;
+  previewSource?: AttachmentImageSource;
+}
 
 /** 读取粘贴的文件：有本机路径的按路径准备（项目内引用、项目外复制），剪贴板图片等按内容准备。 */
 export async function prepareChip(file: File, prepare: (f: { name: string; mime?: string; sourcePath?: string; dataBase64?: string }) => Promise<PreparedAttachment>): Promise<PreparedAttachment> {
@@ -14,14 +27,35 @@ export async function prepareChip(file: File, prepare: (f: { name: string; mime?
   return prepare({ name: file.name || `粘贴的图片.${(file.type.split('/')[1] || 'png')}`, mime: file.type, dataBase64: btoa(bin) });
 }
 
-/** 附件卡片（照 Codex：图片缩略图／“预览＋文件名”，悬停出现移除）。 */
-export function AttachmentChips({ chips, onRemove, onRetry }: { chips: Chip[]; onRemove: (id: string) => void; onRetry: (id: string) => void }) {
+export function AttachmentChips({ chips, taskId, onRemove, onRetry }: { chips: Chip[]; taskId?: string; onRemove: (id: string) => void; onRetry: (id: string) => void }) {
+  const gallery = useAttachmentGallery(chips.map(chip => chip.localId));
   if (!chips.length) return null;
-  return <div className="agent-chips">{chips.map(c => <div key={c.localId} className={`agent-chip ${c.status}`} title={c.error ?? (c.data?.kind === 'path' ? `项目文件：${c.data.relativePath}` : c.data?.kind === 'file' ? '项目外文件，已复制为附件' : c.name)}>
-    {c.preview ? <img src={c.preview} alt="" /> : <span className="agent-chip-icon">{c.status === 'preparing' ? <Loader2 size={14} className="spin" /> : <FileText size={14} />}</span>}
-    <span className="agent-chip-name">{c.name}{c.data?.kind === 'file' && !c.data.image ? ' · 副本' : ''}</span>
-    {c.status === 'failed' && <button type="button" title="重试" onClick={() => onRetry(c.localId)}><RotateCw size={12} /></button>}
-    <button type="button" className="agent-chip-remove" title="移除" onClick={() => onRemove(c.localId)}><X size={12} /></button>
-  </div>)}</div>;
+  const images: ReactNode[] = [], files: ReactNode[] = [];
+  for (const chip of chips) {
+    const mime = attachmentImageMime(chip.name, chip.data?.mime || chip.file?.type);
+    const blob = chip.previewBlob ?? chip.file;
+    const source = chip.previewSource ?? (chip.data && { kind: 'draft' as const, attachmentId: chip.data.id });
+    const image = chip.status !== 'failed' && mime && (blob || taskId && source);
+    const title = chip.error ?? (chip.data?.kind === 'path' ? `项目文件：${chip.data.relativePath}` : chip.name);
+    const remove = <button type="button" className={image ? 'agent-chip-remove' : 'agent-file-attachment-action'} aria-label={'移除 ' + chip.name} title="移除" onClick={() => onRemove(chip.localId)}><X size={13} /></button>;
+    if (image) {
+      images.push(<div key={chip.localId} className="agent-chip agent-image-chip" title={title}>
+        <AttachmentThumbnail id={chip.localId} name={chip.name} blob={blob} taskId={taskId} source={source}
+          register={gallery.register} open={gallery.open} />
+        {remove}
+      </div>);
+      continue;
+    }
+    files.push(<FileAttachmentRow key={chip.localId} name={chip.name} title={title} status={chip.status} copied={chip.data?.kind === 'file' && !chip.data.image}
+      actions={<>
+        {chip.status === 'failed' && <button type="button" className="agent-file-attachment-action" aria-label={'重试 ' + chip.name} title="重试" onClick={() => onRetry(chip.localId)}><RotateCw size={13} /></button>}
+        {remove}
+      </>} />);
+  }
+  return <div className="agent-chips">
+    {images.length > 0 && <div className="agent-draft-pictures">{images}</div>}
+    {files.length > 0 && <div className="agent-draft-files">{files}</div>}
+    {gallery.dialog}
+  </div>;
 }
 

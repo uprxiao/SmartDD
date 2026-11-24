@@ -142,30 +142,43 @@ export function AttachmentChips({ items, small }) {
 // ---------- 输入框 ----------
 // C1 “@ 文件／$ Skill／/ 命令”菜单（T3 ComposerCommandMenu）
 const FILES = ['scripts/build.mjs', 'scripts/release/notes.mjs', 'src/main.ts', 'src/renderer/App.tsx', 'tests/release/arch.test.mjs', 'docs/', 'docs/需求.md', 'package.json', 'electron-builder.config.cjs'];
-const SKILLS = [['项目', 'willyou-project-db-diagnostics', '按项目配置做只读数据库诊断'], ['项目', 'willyou-remote-password-ssh', '使用项目服务器配置执行 SSH 排查'], ['WillYou 插件', 'willyou-browser-reproduce-bug', '在内置浏览器复现并验证 Bug'], ['个人', 'source-driven-ui-test', '从源码生成页面测试'], ['执行器自带', 'code-review', 'Claude Code 自带的代码审查']];
+const SKILLS = [['项目', 'willyou-project-db-diagnostics', '按项目配置做只读数据库诊断'], ['项目', 'willyou-remote-password-ssh', '使用项目服务器配置执行 SSH 排查'], ['WillYou 插件', 'willyou-browser-reproduce-bug', '在内置浏览器复现并验证 Bug'], ['WillYou 纳管', 'source-driven-ui-test', '从源码生成页面测试'], ['执行器自带', 'code-review', 'Claude Code 自带的代码审查']];
 const COMMANDS = [['执行器自带', '/compact', '压缩上下文（执行器公布时才出现）', 'compact'], ['WillYou', '/model', '切换智能体与模型'], ['WillYou', '/terminal', '打开手动终端'], ['WillYou', '/delegate', '把一项工作委派给子任务'], ['执行器自带', '/goal', '设定目标，跨多轮工作直到完成', 'goal'], ['执行器自带', '/review', 'Codex 自带：审查当前改动', 'review'], ['执行器自带', '/init', 'Claude Code 自带：生成 CLAUDE.md', 'init']];
 // 手输命令与菜单共用同一能力判定（评审 RR08）：返回被拦下的命令名，或 null
 export function slashBlocked(text, caps) { const m = /^(\/[a-z]+)\b/.exec(text.trim()); if (!m) return null; const c = COMMANDS.find(x => x[1] === m[1]); return c && c[3] && !caps?.[c[3]] ? m[1] : null; }
 export function mentionTrigger(text) { const m = /(^|\s)([@$/])([^\s@$/]*)$/.exec(text); return m ? { ch: m[2], q: m[3], start: text.length - m[3].length - 1 } : null; }
 // 命令只列当前执行器支持的项（caps 来自执行器能力声明；评审 RV14）
 const cmdOk = (c, caps) => !c[3] || !!caps?.[c[3]];
+function matchSkills(query) {
+  const rank = name => name === query ? 0 : name.startsWith(query) ? 1 : 2;
+  return SKILLS.filter(([, name]) => name.includes(query)).sort((a, b) =>
+    rank(a[1]) - rank(b[1]) || Number(b[0] === 'WillYou 纳管') - Number(a[0] === 'WillYou 纳管') || a[1].localeCompare(b[1]));
+}
 export function MentionMenu({ trig, onPick, active, setActive, caps }) {
   const q = trig.q.toLowerCase();
   const items = trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ group: f.endsWith('/') ? '文件夹' : '文件', label: f, insert: '@' + f, chip: { kind: 'file', name: f } }))
-    : trig.ch === '$' ? SKILLS.filter(s => s[1].includes(q)).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: '$' + n, chip: { kind: 'skill', name: n } }))
+    : trig.ch === '$' ? matchSkills(q).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: '$' + n, chip: { kind: 'skill', name: n } }))
     : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: n }));
   useEffect(() => { setActive(0); }, [trig.ch, trig.q]); // eslint-disable-line react-hooks/exhaustive-deps
-  const title = trig.ch === '@' ? '文件和文件夹' : trig.ch === '$' ? 'Skill' : '命令';
+  if (trig.ch === '$') {
+    return items.length ? <div className="m14-mention m14-mention-skills" role="listbox" aria-label="选择技能">
+      {items.map((it, i) => <button key={it.label} type="button" role="option" aria-selected={i === active} className={i === active ? 'on' : ''} onMouseEnter={() => setActive(i)} onMouseDown={e => { e.preventDefault(); onPick(it); }}>
+        <Zap size={14} aria-hidden /><span title={it.insert}>{it.insert}</span>
+        {it.desc && <small title={it.desc}>{it.desc}</small>}<span className="m14-mention-skill-source">{it.group}</span>
+      </button>)}
+    </div> : <div className="m14-mention" role="status"><p>没有匹配的技能</p></div>;
+  }
+  const title = trig.ch === '@' ? '文件和文件夹' : '命令';
   let last = null;
   return <div className="m14-mention" role="listbox" aria-label={title}>
     <div className="m14-mention-title">{title}<span>↑↓ 选择 · Enter 插入 · Esc 关闭</span></div>
     {items.length ? items.map((it, i) => { const head = it.group !== last ? (last = it.group) : null; return <div key={it.label}>{head && <div className="m14-mention-group">{head}</div>}
       <button role="option" aria-selected={i === active} className={i === active ? 'on' : ''} onMouseEnter={() => setActive(i)} onMouseDown={e => { e.preventDefault(); onPick(it); }}>
-        {trig.ch === '@' ? <FileText size={13} /> : trig.ch === '$' ? <Zap size={13} /> : <Slash size={13} />}<span>{it.label}</span>{it.desc && <small>{it.desc}</small>}</button></div>; })
-      : <p>{trig.ch === '@' ? '没有匹配的文件或文件夹' : trig.ch === '$' ? '没有匹配的 Skill' : '没有匹配的命令'}</p>}
+        {trig.ch === '@' ? <FileText size={13} /> : <Slash size={13} />}<span>{it.label}</span>{it.desc && <small>{it.desc}</small>}</button></div>; })
+      : <p>{trig.ch === '@' ? '没有匹配的文件或文件夹' : '没有匹配的命令'}</p>}
   </div>;
 }
-export function mentionItems(trig, caps) { const q = trig.q.toLowerCase(); return trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ insert: '@' + f, chip: { kind: 'file', name: f } })) : trig.ch === '$' ? SKILLS.filter(s => s[1].includes(q)).map(s => ({ insert: '$' + s[1], chip: { kind: 'skill', name: s[1] } })) : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(c => ({ insert: c[1] })); }
+export function mentionItems(trig, caps) { const q = trig.q.toLowerCase(); return trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ insert: '@' + f, chip: { kind: 'file', name: f } })) : trig.ch === '$' ? matchSkills(q).map(s => ({ insert: '$' + s[1], chip: { kind: 'skill', name: s[1] } })) : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(c => ({ insert: c[1] })); }
 // C2／C3 输入框里的附件（照 Codex）：图片是缩略图卡片，文件是“预览＋文件名”卡片；技能、插件引用是小标签
 export function ComposerChips({ chips, onRemove, onRetry }) {
   if (!chips.length) return null;
@@ -183,7 +196,9 @@ export function ComposerChips({ chips, onRemove, onRetry }) {
 }
 // ⌘V 粘贴：图片→缩略图卡片；文件→目录内按路径引用，目录外复制为附件（浏览器拿不到真实路径，原型一律按“项目外文件”演示）
 export function pasteToChips(e, setChips, onToast) {
-  const files = [...(e.clipboardData?.files ?? [])];
+  return addFilesToChips(Array.from(e.clipboardData?.files ?? []), setChips, onToast);
+}
+export function addFilesToChips(files, setChips, onToast) {
   if (!files.length) return false;
   for (const f of files) {
     const id = 'p' + Date.now() + Math.random();
@@ -191,7 +206,7 @@ export function pasteToChips(e, setChips, onToast) {
     setChips(cs => [...cs, { id, kind: image ? 'image' : 'file', attach: !image, name: f.name || (image ? '粘贴的图片.png' : '粘贴的文件'), state: 'preparing', note: image ? null : '项目外文件，已复制为附件' }]);
     setTimeout(() => setChips(cs => cs.map(c => c.id === id ? { ...c, state: null } : c)), 900);
   }
-  onToast?.(`已粘贴 ${files.length} 个${files.every(f => f.type.startsWith('image/')) ? '图片' : '文件'}（未发送）`);
+  onToast?.(`已添加 ${files.length} 个${files.every(f => f.type.startsWith('image/')) ? '图片' : '文件'}（未发送）`);
   return true;
 }
 // C4 执行器状态横幅（T3 ProviderStatusBanner）／C6 新会话提示（ComposerFreshSession）／D4 错误与断线（ThreadErrorBanner、系统横幅）／C11 草稿冲突

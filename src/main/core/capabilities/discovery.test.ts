@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { discoverCapabilities, type DiscoveryContext } from './discovery';
+import { discoverCapabilities, type DiscoveryContext, type NativeDiscoveryDetails } from './discovery';
 
 let tmp: string;
 let c: DiscoveryContext;
@@ -141,6 +141,26 @@ describe('read-only capability discovery', () => {
 });
 
 describe('host-only native launch details',()=>{
+  it('uses the marketplace and directory names for Claude plugins without an optional manifest', () => {
+    c.runner = 'claude';
+    file('custom/plugins/installed_plugins.json', JSON.stringify({ plugins: {
+      'swift-lsp@claude-plugins-official': [{ installPath: join(tmp, 'cache/swift-lsp/1.0.0') }],
+    } }));
+    file('cache/swift-lsp/1.0.0/.lsp.json', '{}');
+    file('local-plugin/commands/hello.md', 'hello');
+    const details: NativeDiscoveryDetails = { userSkillConfig: [], plugins: [], issues: [] };
+    discoverCapabilities({ ...c, args: ['--plugin-dir', join(tmp, 'local-plugin')], details });
+    expect(details.issues).toEqual([]);
+    expect(details.plugins).toEqual([
+      { name: 'swift-lsp', path: join(tmp, 'cache/swift-lsp/1.0.0') },
+      { name: 'local-plugin', path: join(tmp, 'local-plugin') },
+    ]);
+    file('cache/swift-lsp/1.0.0/.claude-plugin/plugin.json', '{malformed');
+    const malformed: NativeDiscoveryDetails = { userSkillConfig: [], plugins: [], issues: [] };
+    discoverCapabilities({ ...c, details: malformed });
+    expect(malformed.issues).toContain('plugin_namespace_unverified');
+    expect(malformed.plugins).toEqual([]);
+  });
   it('preserves the final whole Skill configuration array, including fields unrelated to managed Skills',()=>{
     file('custom/config.toml','[skills]\nconfig=[{path="/old-user",enabled=true}]\n');
     file('repo/.codex/config.toml','[skills]\nconfig=[{path="/project-user",enabled=false,custom="unchanged"}]\n');

@@ -1,9 +1,9 @@
-// 输入框选用菜单的纯逻辑（需求 R01）：/命令只列当前执行器公布或宿主支持的项，@文件按任务目录查找，$Skill 列执行器公布的 Skill。
+// 输入框选用菜单的纯逻辑（需求 R01）。$Skill 合并执行器公布的技能和当前任务可用的纳管技能。
 // 选用只把引用插入草稿，不自动发送。
 
 export type MenuKind = '/' | '@' | '$';
 export interface MenuTrigger { kind: MenuKind; query: string; start: number; end: number }
-export interface MenuItem { key: string; label: string; detail?: string; insert: string; action?: 'terminal' | 'model' }
+export interface MenuItem { key: string; label: string; detail?: string; source?: string; insert: string; action?: 'terminal' | 'model' }
 
 /** 找光标所在的触发词：/ 只在输入开头，@ 与 $ 需在行首或空白之后。 */
 export function findTrigger(text: string, caret: number): MenuTrigger | null {
@@ -35,9 +35,32 @@ export function commandItems(catalog: Catalog, query: string): MenuItem[] {
   // 命令按前缀匹配（输入 /in 只出 /init，不出 /terminal）。
   return [...HOST, ...native].filter(i => i.label.slice(1).toLowerCase().startsWith(q)).slice(0, 30);
 }
-export function skillItems(catalog: Catalog, query: string): MenuItem[] {
+export function skillItems(catalog: Catalog, query: string, managed: { name: string }[] = []): MenuItem[] {
+  const byName = new Map<string, Catalog['skills'][number]>();
+  for (const skill of catalog.skills) {
+    const previous = byName.get(skill.name);
+    if (!previous?.description) byName.set(skill.name, skill);
+  }
+  const managedNames = new Set(managed.map(skill => skill.name));
+  for (const skill of managed) {
+    if (!byName.has(skill.name)) byName.set(skill.name, skill);
+  }
+
   const q = query.toLowerCase();
-  return catalog.skills.filter(s => s.name.toLowerCase().includes(q)).slice(0, 30).map(s => ({ key: `s:${s.name}`, label: `$${s.name}`, detail: s.description, insert: `$${s.name} ` }));
+  return Array.from(byName.values(), skill => {
+    const name = skill.name.toLowerCase();
+    const position = name.indexOf(q);
+    const rank = name === q ? 0 : position === 0 ? 1 : 2;
+    return { ...skill, position, rank, managed: managedNames.has(skill.name) };
+  }).filter(skill => skill.position !== -1)
+    .sort((a, b) => a.rank - b.rank || Number(b.managed) - Number(a.managed) || a.name.localeCompare(b.name))
+    .map(skill => ({
+      key: `s:${skill.name}`,
+      label: `$${skill.name}`,
+      detail: skill.description,
+      ...(skill.managed ? { source: 'WillYou 纳管' } : {}),
+      insert: `$${skill.name} `,
+    }));
 }
 export function fileItems(paths: string[]): MenuItem[] {
   return paths.map(p => ({ key: `f:${p}`, label: p.split('/').pop() ?? p, detail: p, insert: `@${p} ` }));

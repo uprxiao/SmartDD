@@ -3,11 +3,15 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import type { McpServerStatus, OnElicitation } from '@anthropic-ai/claude-agent-sdk';
+import type { AccountInfo, McpServerStatus, OnElicitation } from '@anthropic-ai/claude-agent-sdk';
+import { claudeEffortSchema } from '@shared/ai-agents';
+import { CLAUDE_LOGIN_MODEL } from '@shared/agent-model-choice';
 import {isHostBusinessCli} from '../host-cli-command';
+import { claudeBackgroundLaunch } from '../claude-background';
 import { CLAUDE_TIERS } from '../permissions';
-import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
+import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverEvent, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import type { Tier } from '../permissions';
+import { ClaudeTaskOutputs } from './claude-task-output';
 
 // 只依赖 SDK 的最小形状，便于测试注入替身；生产由 loadSdk 动态加载锁定版本。
 export interface SdkQuery extends AsyncIterable<any> {
@@ -15,7 +19,8 @@ export interface SdkQuery extends AsyncIterable<any> {
   stopTask?(taskId: string): Promise<void>;
   setPermissionMode(mode: string): Promise<void>;
   setModel?(model?: string): Promise<void>;
-  supportedModels?(): Promise<{ value: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
+  supportedModels?(): Promise<{ value: string; resolvedModel?: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
+  accountInfo?(): Promise<AccountInfo>;
   mcpServerStatus?(): Promise<McpServerStatus[]>;
   applyFlagSettings?(settings: { effortLevel: string | null }): Promise<void>;
   close?(): void;
@@ -25,6 +30,9 @@ export const loadSdk = async (): Promise<SdkQueryFn> => (await import('@anthropi
 
 type PermissionResult = { behavior: 'allow'; updatedInput?: Record<string, unknown> } | { behavior: 'deny'; message: string; interrupt?: boolean };
 interface PendingRequest { resolve(r: PermissionResult): void; input: Record<string, unknown> }
+type NodeEvent = Extract<DriverEvent, { type: 'node.state' }>;
+type NativeTask = NonNullable<NodeEvent['nativeTask']>;
+type ClaudeNodeState = { nodeId: string; runId?: string; state: NodeEvent['state']; task?: NativeTask };
 
 /** 可推送的异步队列，作为 SDK 的流式输入。 */
 class InputQueue<T> implements AsyncIterable<T> {
@@ -38,6 +46,62 @@ class InputQueue<T> implements AsyncIterable<T> {
   }
 }
 
+async function readClaudeModels(query: SdkQuery, signal: AbortSignal, onAccount?: (account: AccountInfo) => void): Promise<DriverModel[]> {
+  if (!query.supportedModels) return [];
+  signal.throwIfAborted();
+  let cancel!: () => void;
+  const cancelled = new Promise<never>((_, reject) => {
+    cancel = () => reject(signal.reason);
+    signal.addEventListener('abort', cancel, { once: true });
+  });
+  try {
+    // Both SDK calls use the same initialized process. Missing identity still permits a live directory.
+    const accountInfo = onAccount && query.accountInfo ? query.accountInfo().catch(() => undefined) : undefined;
+    const [rows, account] = await Promise.race([Promise.all([query.supportedModels(), accountInfo]), cancelled]);
+    if (account && onAccount) onAccount(account);
+    const models = new Map<string, DriverModel>();
+    for (const row of rows) {
+      if (typeof row?.value !== 'string' || !row.value || row.value.length > 256 || models.has(row.value)) continue;
+      const resolvedId = typeof row.resolvedModel === 'string' && row.resolvedModel.length <= 256 ? row.resolvedModel || undefined : undefined;
+      const isDefault = row.value === 'default';
+      const label = typeof row.displayName === 'string' && row.displayName ? row.displayName : row.value;
+      const name = row.value === CLAUDE_LOGIN_MODEL || (row.value === 'opus' && resolvedId === CLAUDE_LOGIN_MODEL)
+        ? 'Claude Opus 5.5' : label;
+      const efforts = row.supportsEffort && query.applyFlagSettings && Array.isArray(row.supportedEffortLevels)
+        ? [...new Set(row.supportedEffortLevels.filter(level => claudeEffortSchema.safeParse(level).success))] : [];
+      models.set(row.value, { id: row.value, resolvedId, name: name.slice(0, 160), efforts, ...(isDefault ? { isDefault: true } : {}) });
+      if (models.size === 200) break;
+    }
+    return [...models.values()];
+  } finally {
+    signal.removeEventListener('abort', cancel);
+  }
+}
+
+/** Initialize a catalog-only SDK process without submitting a user turn or persisting a session. */
+export async function previewClaudeModels(
+  options: Pick<DriverOpenOptions, 'executable' | 'cwd' | 'env' | 'settingSources'> & { onAccount?: (account: AccountInfo) => void },
+  signal: AbortSignal,
+  sdk: () => Promise<SdkQueryFn> = loadSdk,
+) {
+  const queryFn = await sdk();
+  signal.throwIfAborted();
+  const input = new InputQueue<never>();
+  const active = queryFn({ prompt: input, options: {
+    pathToClaudeCodeExecutable: options.executable.path, cwd: options.cwd, env: options.env,
+    settingSources: options.settingSources, persistSession: false, strictMcpConfig: true,
+    tools: [], settings: { disableAllHooks: true, syncClaudeAiPlugins: false },
+  } });
+  const drain = (async () => { for await (const _ of active) { /* Initialization output has no user content. */ } })().catch(() => {});
+  try {
+    return await readClaudeModels(active, signal, options.onAccount);
+  } finally {
+    input.end();
+    active.close?.();
+    await drain;
+  }
+}
+
 /** 有图片时用内容块（base64 图片）；只有文字时保持字符串。 */
 const userContent = (input: TurnInput) => input.images?.length
   ? [{ type: 'text', text: input.text }, ...input.images.map(i => ({ type: 'image', source: { type: 'base64', media_type: i.mime, data: readFileSync(i.path).toString('base64') } }))]
@@ -48,7 +112,9 @@ const requestKind = (tool: string): DriverRequestKind =>
 
 export class ClaudeSdkInstance implements DriverInstance {
   private openOptions?:DriverOpenOptions;
-  private readonly nodeStates = new Map<string, { taskId: string; runId?: string; terminal: boolean }>();
+  private readonly nodeStates = new Map<string, ClaudeNodeState>();
+  private readonly nativeCalls = new Map<string, NativeTask['kind']>();
+  private readonly commandOutputs = new ClaudeTaskOutputs((nativeItemId, preview) => this.emitter.emit({ type: 'command.output', nativeItemId, preview }));
   readonly driverId = 'claude-sdk' as const;
   private readonly emitter = new Emitter();
   private query?: SdkQuery;
@@ -74,11 +140,10 @@ export class ClaudeSdkInstance implements DriverInstance {
   constructor(private readonly sdk: () => Promise<SdkQueryFn> = loadSdk) {}
 
   on = this.emitter.on.bind(this.emitter);
+  commandPreview(nativeItemId: string) { return this.commandOutputs.preview(nativeItemId); }
 
   async modelCatalog(): Promise<DriverModel[]> {
-    if (!this.query?.supportedModels) return [];
-    const models = await this.query.supportedModels();
-    return models.slice(0, 200).map(m => ({ id: m.value, name: m.displayName, efforts: m.supportsEffort && this.query?.applyFlagSettings ? m.supportedEffortLevels ?? [] : [] }));
+    return this.query ? readClaudeModels(this.query, AbortSignal.timeout(5000)) : [];
   }
   async injectHistory(text: string) {
     if (!this.input || this.activeTurn || this.ended || this.exited) throw new DriverError('STATE', '历史交接需要空闲会话');
@@ -191,6 +256,7 @@ export class ClaudeSdkInstance implements DriverInstance {
 
   private onExit(code: number | null, signal: string | null) {
     if (this.exited) return;
+    this.commandOutputs.close();
     this.exited = true; this.historyPending?.reject(new DriverError('EXITED', '历史追加期间执行器退出'));
     for (const [key, p] of this.pending) { p.resolve({ behavior: 'deny', message: '执行器已退出' }); this.pending.delete(key); this.emitter.emit({ type: 'request.resolved', requestKey: key }); }
     for (const finish of this.pendingElicitations.values()) finish(true);
@@ -200,7 +266,7 @@ export class ClaudeSdkInstance implements DriverInstance {
 
   private async consume() {
     try {
-      for await (const m of this.query!) this.onMessage(m);
+      for await (const m of this.query!) await this.onMessage(m);
     } catch (e) {
       this.historyPending?.reject(new DriverError('EXITED', '历史追加期间 SDK 流异常'));
       this.emitter.emit({ type: 'diagnostic', message: `SDK 流异常：${(e as Error).message}` });
@@ -208,6 +274,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     }
     // 流结束后本实例不可再用（复核 CR07／NR04）：结束原生进程，退出事件让宿主把这次运行退役；下一次提交会恢复会话。
     this.ended = true;
+    this.commandOutputs.close();
     if (!this.exited) this.emitter.emit({ type: 'unusable', reason: 'SDK 流已结束' });
   }
 
@@ -229,14 +296,99 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (this.stopPending) { this.stopPending = false; void this.interrupt(); }
   }
 
-  private onMessage(m: any) {
-    this.emitter.emit({ type: 'native', name: m?.type === 'system' ? `system/${m.subtype}` : String(m?.type ?? 'unknown'), payload: m });
-    if (m?.type === 'system' && ['task_started', 'task_notification'].includes(m.subtype) && typeof m.task_id === 'string') {
-      const id = String(m.tool_use_id ?? m.task_id), runId = typeof m.run_id === 'string' ? m.run_id : undefined, old = this.nodeStates.get(id), running = m.subtype === 'task_started';
-      const late = old && (old.runId && runId && runId < old.runId || old.terminal && running && (!runId || runId === old.runId));
-      if (!late) { this.nodeStates.set(id, { taskId: m.task_id, runId, terminal: !running }); this.emitter.emit({ type: 'node.state', nodeId: id, nativeRunId: runId, state: running ? 'running' : m.status === 'failed' ? 'failed' : m.status === 'stopped' ? 'interrupted' : 'completed' }); }
-      this.emitter.emit({ type: 'node.message', nodeId: id, key: String(m.uuid ?? `${m.subtype}:${runId ?? m.task_id}`), payload: m });
+  private publishNode(node: ClaudeNodeState, previousNodeId?: string) {
+    this.emitter.emit({ type: 'node.state', nodeId: node.nodeId, nativeRunId: node.runId, state: node.state,
+      ...(node.task ? { nativeTask: node.task } : {}),
+      ...(previousNodeId && previousNodeId !== node.nodeId ? { replacesNodeId: previousNodeId } : {}) });
+  }
+
+  private followCommand(nodeId: string, taskId: string) {
+    if (this.openOptions && this.sessionId) this.commandOutputs.start(nodeId, this.sessionId, taskId, this.openOptions.cwd, this.openOptions.env);
+  }
+
+  private async onNativeTask(m: any) {
+    if (this.exited || typeof m.task_id !== 'string' || typeof m.session_id === 'string' && m.session_id !== this.sessionId) return;
+    const old = this.nodeStates.get(m.task_id);
+    const runId = typeof m.run_id === 'string' ? m.run_id : old?.runId;
+    if (old?.runId && runId && runId < old.runId) return;
+    const toolId = typeof m.tool_use_id === 'string' ? m.tool_use_id : undefined;
+    const nodeId = old && old.nodeId !== m.task_id ? old.nodeId : toolId ?? m.task_id;
+    const kind = old?.task?.kind ?? (m.task_type === 'local_bash' ? 'command'
+      : ['local_agent', 'remote_agent', 'in_process_teammate', 'local_workflow'].includes(m.task_type) ? 'subagent' : this.nativeCalls.get(nodeId));
+    if (m.subtype === 'task_updated') {
+      const background = m.patch?.is_backgrounded;
+      if (!old || old.state !== 'running' || !old.task || typeof background !== 'boolean' || background === old.task.background) return;
+      old.task = { ...old.task, background };
+      this.publishNode(old);
+      return;
     }
+    const running = m.subtype === 'task_started';
+    if (old && old.state !== 'running' && (running || old.nodeId === nodeId) && (!runId || runId === old.runId)) return;
+    if (!running && !['completed', 'failed', 'stopped'].includes(m.status)) return;
+    const background = typeof m.is_backgrounded === 'boolean' ? m.is_backgrounded : old?.task?.background;
+    const task: NativeTask | undefined = kind ? { kind, background } : undefined;
+    const state = running ? 'running' : m.status === 'failed' ? 'failed' : m.status === 'stopped' ? 'interrupted' : 'completed';
+    const node = { nodeId, runId, state, task } as const;
+    this.nodeStates.set(m.task_id, node);
+    if (task?.kind === 'command') {
+      if (running && nodeId !== m.task_id && !m.parent_task_id && !m.parent_tool_use_id) {
+        this.followCommand(nodeId, m.task_id);
+      } else if (!running) {
+        const preview = await this.commandOutputs.finish(nodeId);
+        if (this.exited) return;
+        if (preview) { task.output = preview.text; task.outputTruncated = preview.truncated; }
+      }
+    }
+    if (task && typeof m.summary === 'string') task.summary = m.summary;
+    this.publishNode(node, old?.nodeId);
+    this.emitter.emit({ type: 'node.message', nodeId, key: String(m.uuid ?? `${m.subtype}:${runId ?? m.task_id}`), payload: m });
+  }
+
+  private onNativeToolResults(m: any) {
+    const content = m.message?.content;
+    if (!Array.isArray(content)) return;
+    const results = content.filter(block => block?.type === 'tool_result');
+    for (const block of results) {
+      const nodeId = block.tool_use_id;
+      if (typeof nodeId !== 'string') continue;
+      const known = [...this.nodeStates].find(([, state]) => state.nodeId === nodeId);
+      const kind = known?.[1].task?.kind ?? this.nativeCalls.get(nodeId);
+      this.nativeCalls.delete(nodeId);
+      if (!kind) continue;
+      const output = typeof block.content === 'string' ? block.content
+        : Array.isArray(block.content) ? block.content.map((entry: { text?: string }) => entry?.text ?? '').join('\n') : '';
+      const launch = !block.is_error && claudeBackgroundLaunch(kind, results.length === 1 ? m.tool_use_result : undefined, output);
+      if (launch) {
+        const taskId = known?.[0] ?? launch.taskId;
+        if (!taskId) continue;
+        const old = this.nodeStates.get(taskId);
+        if (old && old.nodeId !== taskId && old.nodeId !== nodeId) continue;
+        if (old && old.nodeId === nodeId && old.task?.background === true) continue;
+        const node: ClaudeNodeState = { nodeId, runId: old?.runId, state: old?.state ?? 'running', task: { ...old?.task, kind, background: true } };
+        this.nodeStates.set(taskId, node);
+        if (kind === 'command' && node.state === 'running' && !m.parent_tool_use_id) this.followCommand(nodeId, taskId);
+        this.publishNode(node, old?.nodeId);
+      } else if (known?.[1].state === 'running' && (known[1].task?.background !== true || block.is_error)) {
+        const node = known[1];
+        node.state = block.is_error ? 'failed' : 'completed';
+        this.commandOutputs.stop(nodeId);
+        this.publishNode(node);
+      }
+    }
+  }
+
+  private async onMessage(m: any) {
+    if (m?.type === 'tool_progress' && typeof m.session_id === 'string' && m.session_id !== this.sessionId) return;
+    // Auto-compaction or a retry can be the first frame of a resumed turn.
+    if (m?.type === 'system' && !m.parent_tool_use_id && !this.historyPending
+      && (m.subtype === 'compact_boundary' || m.subtype === 'api_retry'
+        || m.subtype === 'status' && (m.status === 'compacting' || m.compact_result)))
+      this.markStarted();
+    this.emitter.emit({ type: 'native', name: m?.type === 'system' ? `system/${m.subtype}` : String(m?.type ?? 'unknown'),
+      payload: m, ...(this.activeTurn?.interrupted ? { turnInterrupted: true } : {}) });
+    if (m?.type === 'tool_progress') return;
+    if (m?.type === 'system' && ['task_started', 'task_updated', 'task_notification'].includes(m.subtype)) await this.onNativeTask(m);
+    if (m?.type === 'user') this.onNativeToolResults(m);
     if (typeof m?.parent_tool_use_id === 'string' && m.parent_tool_use_id) {
       if (m.type !== 'stream_event') this.emitter.emit({ type: 'node.message', nodeId: m.parent_tool_use_id, key: String(m.uuid ?? `${m.type}:${JSON.stringify(m).slice(0, 80)}`), payload: m });
       if (m.type === 'assistant') this.emitter.emit({ type: 'item.completed', nativeItemId: String(m.uuid ?? randomUUID()), itemType: 'assistant', payload: { content: m.message?.content, model: m.message?.model, parentToolUseId: m.parent_tool_use_id } });
@@ -268,6 +420,11 @@ export class ClaudeSdkInstance implements DriverInstance {
       // 原生子 Agent 的流式正文不进主任务（复核 CR13）。
       if (!parent) this.emitter.emit({ type: 'message.delta', nativeItemId: String(m.uuid ?? m.event.index ?? 'text'), text: String(m.event.delta.text ?? '') });
     } else if (m?.type === 'assistant' && m.message) {
+      for (const block of Array.isArray(m.message.content) ? m.message.content : []) {
+        if (block?.type !== 'tool_use' || typeof block.id !== 'string') continue;
+        if (block.name === 'Bash') this.nativeCalls.set(block.id, 'command');
+        if (block.name === 'Agent' || block.name === 'Task') this.nativeCalls.set(block.id, 'subagent');
+      }
       // 兼容 CLI 的目标确认文字：只认宿主发出 /goal 命令的那一轮、该轮第一段回复；普通回答不能改变目标状态（复核 NR13）。
       const trusted = !parent && !!this.activeTurn && this.goalCommandTurn === this.activeTurn.nativeTurnId;
       if (trusted) this.goalCommandTurn = null;
@@ -391,7 +548,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (!t) {
       const stopTask = this.query?.stopTask?.bind(this.query);
       if (!stopTask) return;
-      const background = new Set([...this.nodeStates.values()].filter(node => !node.terminal).map(node => node.taskId));
+      const background = [...this.nodeStates].filter(([, node]) => node.state === 'running').map(([taskId]) => taskId);
       const outcomes = await Promise.allSettled([...background].map(taskId => stopTask(taskId)));
       for (const outcome of outcomes) {
         if (outcome.status === 'rejected') this.emitter.emit({ type: 'diagnostic', message: `后台工作中断失败：${(outcome.reason as Error).message}` });
@@ -404,6 +561,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   async close() {
+    this.commandOutputs.close();
     if (!this.query) return;
     for (const finish of this.pendingElicitations.values()) finish(true);
     this.input?.end();

@@ -126,6 +126,26 @@ it('keeps reply likes local and reversible without changing the reply time or bo
   expect(getReply()).toEqual(initial);
 });
 
+it('validates a saved Claude model ID against the native alias before sending the first effort', async () => {
+  const { svc, store, insts } = setup({
+    modelCatalog: async () => [{ id:'opus', resolvedId:'claude-opus-5-5', name:'Opus', efforts:['medium'] }],
+  });
+  const model = 'claude-opus-5-5';
+  const { taskId } = svc.create({ projectId:null, dirId:null, cwd:'/w', title:'Claude subscription', profileId:'cc', tier:'ask', model, effort:'medium' });
+  const { turnId } = await svc.submit(taskId, { clientInputId:id(976), text:'first turn', expectedSelectionRevision:1 });
+  await until(() => store.turn(turnId)?.status === 'started' && !svc.isDispatching(taskId));
+  expect(insts[0].opened?.model).toBe(model);
+  expect(insts[0].turns[0]).toMatchObject({ model, effort:'medium' });
+  insts[0].finish();
+  await until(() => store.turn(turnId)?.status === 'completed');
+
+  const current = svc.snapshot(taskId);
+  expect(svc.setSelection(taskId, { model:null, effort:null }, current.selectionRevision).ok).toBe(true);
+  const next = await svc.submit(taskId, { clientInputId:id(977), text:'executor default', expectedSelectionRevision:svc.snapshot(taskId).selectionRevision });
+  await until(() => store.turn(next.turnId)?.status === 'started');
+  expect(insts[0].turns[1]).toMatchObject({ model:undefined, effort:undefined });
+});
+
 it('sends the first Claude turn with the selected DeepSeek level and keeps each model setting on resume', async () => {
   const flash = 'deepseek-flash', pro = 'deepseek-v4-pro', other = 'unverified';
   const models = [flash, pro, other];
@@ -502,8 +522,16 @@ it('A05 dispatches another foreground turn while an earlier native background no
   const first = await svc.submit(taskId, { clientInputId: id(51), text: 'Start background work', expectedSelectionRevision: 1 });
   await until(() => insts[0]?.turns.length === 1);
   const runId = runs.runForTask(taskId)!.runId;
-  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'running' });
+  insts[0].emit({ type: 'item.completed', nativeItemId: 'launch', itemType: 'assistant', payload: {
+    content: [{ type: 'tool_use', id: 'background-job', name: 'Bash', input: { command: 'git pull', run_in_background: true } }],
+  } });
+  insts[0].emit({ type: 'node.state', nodeId: 'native-task-id', state: 'running' });
+  insts[0].emit({ type: 'node.state', nodeId: 'background-job', replacesNodeId: 'native-task-id', state: 'running', nativeTask: { kind: 'command', background: true } });
   insts[0].finish();
+  const parent = svc.snapshot(taskId);
+  expect(parent).toMatchObject({ status: 'working', run: { busy: false }, backgroundWork: [
+    { runId, turnId: first.turnId, terminal: null, payload: { status: 'running', background: true } },
+  ] });
   const second = await svc.submit(taskId, { clientInputId: id(52), text: 'Follow up in the foreground', expectedSelectionRevision: 1 });
   await until(() => insts[0]?.turns.length === 2);
   expect(after).toHaveBeenCalledWith(taskId, first.turnId, true);
@@ -511,8 +539,14 @@ it('A05 dispatches another foreground turn while an earlier native background no
   expect(runs.runForTask(taskId)?.runId).toBe(runId);
   expect(runs.nativeBusy(runId)).toBe(true);
   expect(store.turn(second.turnId)?.status).toBe('started');
-  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'completed' });
+  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'completed', nativeTask: { kind: 'command', background: true, output: 'Updated\n' } });
   insts[0].finish();
+  const settled = svc.snapshot(taskId);
+  expect(settled.backgroundWork ?? []).toEqual([]);
+  expect(runs.nativeBusy(runId)).toBe(false);
+  expect(settled.items.find(item => item.itemId === parent.backgroundWork?.[0].itemId)).toMatchObject({
+    turnId: first.turnId, terminal: 'completed', payload: { status: 'completed', output: 'Updated\n' },
+  });
 });
 
 it('A44 bounds event catch-up to its captured watermark and only refreshes explicitly requested history in the same task', () => {
@@ -692,6 +726,72 @@ describe('输入框命令', () => {
     expect(insts[1].turns[0].text).toBe('/compact');
     await expect(svc.command(cc, 'bad name')).rejects.toThrow('命令无效');
   });
+});
+
+it('previews a saved draft and reads the original image from its own message after the project file changes', async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-image-preview-')));
+  const cwd = join(root, 'project'), userData = join(root, 'data');
+  mkdirSync(cwd); mkdirSync(userData);
+  const { svc, runs } = setup({ userData });
+  const create = (title: string) => svc.create({ projectId: null, dirId: null, cwd, title, profileId: 'cx', tier: 'ask' }).taskId;
+  const taskId = create('image owner'), other = create('other task');
+  const photo = join(cwd, 'shot.png');
+  const original = Buffer.alloc(120 * 1024, 42);
+  writeFileSync(photo, original);
+  try {
+    const attachment = svc.prepareAttachment(taskId, null, { name: 'shot.png', sourcePath: photo });
+    const draft = { kind: 'draft', attachmentId: attachment.id } as const;
+    svc.saveDraft(taskId, { text: 'saved', attachments: [attachment] }, 0);
+    const firstDraft = await svc.attachmentImage(taskId, draft, 0);
+    expect(firstDraft).toMatchObject({ mime: 'image/png', totalBytes: original.length });
+    expect(JSON.stringify(firstDraft).length).toBeLessThan(128 * 1024);
+
+    const { turnId } = await svc.submit(taskId, { clientInputId: id(1), text: 'image', expectedSelectionRevision: 1, attachments: [attachment] });
+    writeFileSync(photo, 'changed after send');
+    await expect(svc.attachmentImage(taskId, draft, firstDraft.next, firstDraft.revision)).rejects.toThrow('图片内容已变化');
+    const message = { kind: 'message', turnId, index: 0 } as const;
+    const first = await svc.attachmentImage(taskId, message, 0);
+    const second = await svc.attachmentImage(taskId, message, first.next, first.revision);
+    expect(Buffer.concat([Buffer.from(first.base64, 'base64'), Buffer.from(second.base64, 'base64')])).toEqual(original);
+    await expect(svc.attachmentImage(other, message, 0)).rejects.toThrow('图片附件不可用');
+    await expect(svc.attachmentImage(taskId, { ...message, index: 5 }, 0)).rejects.toThrow('图片附件不可用');
+  } finally {
+    await runs.closeAll();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it('resolves same-name attachment references and copies from the exact historical turn', async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-file-preview-')));
+  const cwd = join(root, 'project'), userData = join(root, 'data');
+  mkdirSync(cwd); mkdirSync(userData);
+  const { svc, store } = setup({ userData });
+  const create = () => svc.create({ projectId: null, dirId: null, cwd, title: 'File preview', profileId: 'cx', tier: 'ask' }).taskId;
+  const taskId = create();
+  try {
+    const internal = join(cwd, 'note.md'), outside = join(root, 'note.md');
+    writeFileSync(internal, 'PROJECT_NOTE');
+    writeFileSync(outside, 'COPIED_NOTE');
+    const attachments = [internal, outside].map(sourcePath => svc.prepareAttachment(taskId, null, {
+      name: 'note.md', mime: 'text/markdown', sourcePath,
+    }));
+    const longName = `${'long-note-'.repeat(16)}.md`;
+    const longCopy = svc.prepareAttachment(taskId, null, { name: longName, dataBase64: Buffer.from('LONG_NOTE').toString('base64') });
+    expect(longCopy.name).toBe(`${longName.slice(0, 117)}.md`);
+    const { turn: { turn_id: turnId } } = store.acceptTurn({ taskId, clientInputId: id(831), text: 'Notes', sourceKind: 'user', attachments: [...attachments, longCopy] });
+    const project = await svc.messageAttachmentFile(taskId, turnId, 0);
+    expect(project).toEqual({ root: cwd, relativePath: 'note.md', mimeType: 'text/markdown' });
+    const copy = await svc.messageAttachmentFile(taskId, turnId, 1);
+    expect(copy.root).toBe(join(userData, 'agent-attachments', attachments[1].id));
+    expect(readFileSync(join(copy.root, copy.relativePath), 'utf8')).toBe('COPIED_NOTE');
+    await expect(svc.messageAttachmentFile(create(), turnId, 0)).rejects.toThrow('文件附件不可用');
+    await expect(svc.messageAttachmentFile(taskId, turnId, 2)).resolves.toMatchObject({ relativePath: longCopy.name });
+    await expect(svc.messageAttachmentFile(taskId, turnId, 3)).rejects.toThrow('文件附件不可用');
+    rmSync(internal);
+    await expect(svc.messageAttachmentFile(taskId, turnId, 0)).rejects.toThrow('附件文件已找不到');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 describe('复核 1620 回归', () => {

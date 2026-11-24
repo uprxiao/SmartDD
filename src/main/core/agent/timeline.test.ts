@@ -1,6 +1,166 @@
 import { describe, expect, it } from 'vitest';
 import { TimelineProjector } from './timeline';
 
+describe('Claude 后台工作和命令进度', () => {
+  const scenario = (name: 'Agent' | 'Bash', input: Record<string, unknown>) => {
+    const projector = new TimelineProjector('claude-sdk');
+    const toolId = 'toolu_native_1';
+    projector.project({ type: 'item.completed', nativeItemId: 'assistant-1', itemType: 'assistant',
+      payload: { content: [{ type: 'tool_use', id: toolId, name, input }] } });
+    const result = (content: string, tool_use_result?: object) => projector.project({ type: 'native', name: 'user',
+      payload: { type: 'user', tool_use_result, message: { content: [{ type: 'tool_result', tool_use_id: toolId, content }] } } });
+    return { projector, toolId, result };
+  };
+
+  it('keeps an asynchronously launched Agent running through the parent result until the native outcome', () => {
+    const { projector, toolId, result } = scenario('Agent', { description: '分析 DS-Bot', run_in_background: true });
+    const nativeTask = { kind: 'subagent', background: true } as const;
+    projector.project({ type: 'node.state', nodeId: toolId, state: 'running', nativeRunId: 'first', nativeTask });
+    expect(result('Async agent launched successfully.', { isAsync: true, status: 'async_launched', agentId: 'child' }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true } }]);
+    projector.project({ type: 'turn.completed', nativeTurnId: 'parent', status: 'completed' });
+    expect(projector.project({ type: 'item.completed', nativeItemId: 'child-progress', itemType: 'assistant',
+      payload: { parentToolUseId: toolId, content: [{ type: 'text', text: '正在读源码' }] } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true, childLog: ['正在读源码'] } }]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'completed', nativeRunId: 'first',
+      nativeTask: { ...nativeTask, summary: '分析完成' } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: 'completed', payload: { status: 'completed', output: '分析完成' } }]);
+    expect(result('Async agent launched successfully.', { isAsync: true })).toEqual([]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'running', nativeRunId: 'first', nativeTask })).toEqual([]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'running', nativeRunId: 'second', nativeTask }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true } }]);
+  });
+
+  it('records liveness without inventing output and settles a background Bash from its final native result', () => {
+    const { projector, toolId, result } = scenario('Bash', { command: 'git pull -q' });
+    expect(projector.project({ type: 'native', name: 'tool_progress', payload: { type: 'tool_progress', tool_name: 'Bash',
+      tool_use_id: `${toolId}-heartbeat-0`, parent_tool_use_id: toolId, heartbeat: true, elapsed_time_seconds: 30 } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', heartbeatAt: expect.any(Number), elapsedSeconds: 30 } }]);
+    expect(result('Command running in background with ID: bash-task.', { backgroundTaskId: 'bash-task' }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true } }]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'completed',
+      nativeTask: { kind: 'command', background: true, output: 'pulled successfully\n' } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: 'completed', payload: { status: 'completed', output: 'pulled successfully\n' } }]);
+  });
+
+  it('keeps foreground stdout with a launch-like prefix in the final command result', () => {
+    const { toolId, result } = scenario('Bash', { command: 'printf fixture' });
+    const stdout = 'Command running in background with ID: example';
+    expect(result(stdout, { stdout, stderr: '' })).toMatchObject([
+      { key: `tool:${toolId}`, terminal: 'completed', payload: { output: stdout, status: 'completed' } },
+    ]);
+  });
+});
+
+describe('回合活动的原生事件回放', () => {
+  const turn = { nativeTurnId: 'turn-1', clientInputId: 'input-1' };
+
+  it('Claude 从压缩开始到完成只更新一条记录，后续压缩使用新记录', () => {
+    const projector = new TimelineProjector('claude-sdk');
+    const system = (subtype: string, uuid: string, fields: object = {}) =>
+      projector.project({ type: 'native', name: `system/${subtype}`,
+        payload: { type: 'system', subtype, uuid, ...fields } });
+    projector.project({ type: 'turn.started', ...turn });
+    const [started] = system('status', 'start-1', { status: 'compacting' });
+    expect(started).toMatchObject({ type: 'compaction', terminal: null, payload: { status: 'running' } });
+    expect(system('status', 'start-1', { status: 'compacting' })).toEqual([]);
+    const [completed] = system('status', 'status-1', { status: null, compact_result: 'success' });
+    expect(completed).toMatchObject({ key: started.key, terminal: 'completed', payload: { status: 'completed' } });
+    const boundary = system('compact_boundary', 'boundary-1', { compact_metadata: { trigger: 'auto' } });
+    expect(boundary.every(item => item.key === started.key)).toBe(true);
+    expect(system('compact_boundary', 'boundary-1')).toEqual([]);
+    const [next] = system('status', 'start-2', { status: 'compacting' });
+    expect(next.key).not.toBe(started.key);
+    expect(system('status', 'fail-2', { status: null, compact_result: 'failed', compact_error: 'timeout' }))
+      .toMatchObject([{ key: next.key, terminal: 'failed', payload: { status: 'failed', message: 'timeout' } }]);
+  });
+
+  it('Codex 同一原生条目原位更新，停止时结束仍在压缩的记录', () => {
+    const projector = new TimelineProjector('codex-app-server');
+    const started = (id: string, turnId = turn.nativeTurnId) => projector.project({
+      type: 'native', name: 'item/started', payload: { turnId, item: { id, type: 'contextCompaction' } },
+    });
+    projector.project({ type: 'turn.started', ...turn });
+    const [first] = started('compact-1');
+    expect(first).toMatchObject({ type: 'compaction', terminal: null, payload: { status: 'running' } });
+    expect(projector.project({ type: 'native', name: 'item/completed',
+      payload: { turnId: turn.nativeTurnId, item: { id: 'compact-1', type: 'contextCompaction' } } }))
+      .toMatchObject([{ key: first.key, terminal: 'completed', payload: { status: 'completed' } }]);
+    expect(started('compact-1')).toEqual([]);
+    const [second] = started('compact-2');
+    expect(projector.project({ type: 'turn.completed', nativeTurnId: turn.nativeTurnId, status: 'interrupted' }))
+      .toMatchObject([{ key: second.key, terminal: 'failed', payload: { status: 'interrupted' } }]);
+    projector.project({ type: 'turn.started', nativeTurnId: 'turn-2', clientInputId: 'input-2' });
+    expect(started('stale')).toEqual([]);
+  });
+
+  it('Codex 断流重试保持一条记录，真正恢复或限流失败后原位结算', () => {
+    const projector = new TimelineProjector('codex-app-server');
+    const report = (message: string, willRetry: boolean, httpStatusCode: number | null = null) =>
+      projector.project({ type: 'native', name: 'error', payload: { turnId: turn.nativeTurnId, willRetry,
+        error: { message, codexErrorInfo: { responseStreamDisconnected: { httpStatusCode } } } } });
+    const output = (turnId: string) => projector.project({ type: 'native', name: 'item/agentMessage/delta',
+      payload: { turnId, itemId: 'reply', delta: '继续输出' } });
+    projector.project({ type: 'turn.started', ...turn });
+    const [retry] = report('Reconnecting... 1/5', true);
+    expect(retry).toMatchObject({ type: 'error', terminal: null, payload: { retry: { status: 'running', attempt: 1, maxAttempts: 5 } } });
+    expect(report('Reconnecting... 2/5', true)).toMatchObject([{ key: retry.key, terminal: null,
+      payload: { retry: { status: 'running', attempt: 2, maxAttempts: 5 } } }]);
+    expect(output('earlier-turn')).toEqual([]);
+    expect(output(turn.nativeTurnId)).toMatchObject([{ key: retry.key, terminal: 'completed',
+      payload: { retry: { status: 'completed', attempt: 2 } } }]);
+    expect(output(turn.nativeTurnId)).toEqual([]);
+    const [again] = report('Reconnecting... 1/5', true);
+    expect(report('Too Many Requests', false, 429)).toMatchObject([{ key: again.key, terminal: 'failed',
+      payload: { retry: { status: 'failed' }, limited: { kind: 'rate' } } }]);
+  });
+
+  it('Claude 只按主回合输出结束重试，流中断也会收尾', () => {
+    const projector = new TimelineProjector('claude-sdk');
+    const retry = (attempt: number) => projector.project({ type: 'native', name: 'system/api_retry',
+      payload: { type: 'system', subtype: 'api_retry', uuid: `retry-${attempt}`,
+        attempt, max_retries: 4, retry_delay_ms: 750, error_status: 503, error: 'overloaded' } });
+    const assistant = (model: string, parent_tool_use_id: string | null) => projector.project({
+      type: 'native', name: 'assistant', payload: { type: 'assistant', parent_tool_use_id,
+        message: { model, content: [{ type: 'text', text: '继续输出' }] } } });
+    projector.project({ type: 'turn.started', ...turn });
+    const [first] = retry(1);
+    expect(first).toMatchObject({ type: 'error', terminal: null,
+      payload: { retry: { status: 'running', attempt: 1, maxAttempts: 4, retryDelayMs: 750 } } });
+    expect(retry(2)).toMatchObject([{ key: first.key, payload: { retry: { status: 'running', attempt: 2 } } }]);
+    expect(assistant('<synthetic>', null)).toEqual([]);
+    expect(assistant('claude', 'child')).toEqual([]);
+    expect(assistant('claude', null)).toMatchObject([{ key: first.key, terminal: 'completed',
+      payload: { retry: { status: 'completed' } } }]);
+    const [later] = retry(3);
+    expect(projector.project({ type: 'exit', code: 1, signal: null })).toMatchObject([{ key: later.key,
+      terminal: 'failed', payload: { retry: { status: 'interrupted' } } }]);
+  });
+
+  it('Claude 将停止后报告的压缩失败更新为中断', () => {
+    const projector = new TimelineProjector('claude-sdk');
+    projector.project({ type: 'turn.started', ...turn });
+    const [started] = projector.project({ type: 'native', name: 'system/status',
+      payload: { type: 'system', subtype: 'status', status: 'compacting', uuid: 'compact-start' } });
+    expect(projector.project({ type: 'native', name: 'system/status', turnInterrupted: true,
+      payload: { type: 'system', subtype: 'status', status: null, compact_result: 'failed', uuid: 'compact-stop' } }))
+      .toMatchObject([{ key: started.key, terminal: 'failed', payload: { status: 'interrupted' } }]);
+    expect(projector.project({ type: 'turn.completed', nativeTurnId: turn.nativeTurnId, status: 'interrupted' })).toEqual([]);
+  });
+
+  it('其他驱动可以用同一活动契约，只结算本轮已经开始的活动', () => {
+    const projector = new TimelineProjector('antigravity-acp');
+    projector.project({ type: 'turn.started', ...turn });
+    const [retry] = projector.project({ type: 'activity', nativeTurnId: turn.nativeTurnId,
+      activity: { kind: 'retry', status: 'running' } });
+    expect(retry).toMatchObject({ type: 'error', terminal: null, payload: { retry: { status: 'running' } } });
+    expect(projector.project({ type: 'activity', nativeTurnId: 'other-turn',
+      activity: { kind: 'retry', status: 'completed' } })).toEqual([]);
+    expect(projector.project({ type: 'turn.completed', nativeTurnId: turn.nativeTurnId, status: 'failed', error: '连接失败' }))
+      .toMatchObject([{ key: retry.key, terminal: 'failed', payload: { retry: { status: 'failed' }, message: '连接失败' } }]);
+  });
+});
+
 it('keeps Antigravity effort fallback in the diagnostics for the affected turn', () => {
   const projector = new TimelineProjector('antigravity-acp');
   expect(projector.project({
@@ -237,6 +397,7 @@ describe('复核 1755 投影回归', () => {
   });
   it('A60 marks Codex retries that ended on HTTP 429 as a rate limit (D06-63)', () => {
     const p = new TimelineProjector('codex-app-server');
+    p.project({ type: 'turn.started', nativeTurnId: 'turn', clientInputId: 'input' });
     const error = (info: unknown, willRetry = false) => p.project({
       type: 'native', name: 'error',
       payload: { turnId: 'turn', error: { message: 'exceeded retry limit, last status: 429 Too Many Requests', codexErrorInfo: info, additionalDetails: null }, willRetry },

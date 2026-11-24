@@ -6,6 +6,7 @@ import type { ViewerOpenInput, ViewerResourceInput, ViewerWriteInput } from '@sh
 import type { IpcMainInvokeEvent } from 'electron';
 import { BrowserWindow, dialog, shell } from 'electron';
 import { dirname, extname, join } from 'node:path';
+import { z } from 'zod';
 import { officeLossyCopySchema,type OfficeLossyCopyInput } from '@shared/file-office-fidelity';
 import { FileError, fileScopeSchema, type FileCheckpointInput, type FileDraftResolution, type FileRef, type FileSaveInput, type FileScope, type FileOpenRequest, type RootRequest, type FileSearchRequest, type FileCloseReply, type FileDiagramRequest } from '@shared/files';
 import { fileHtmlEvent, fileViewerUiEvent, fileSearchEvent, fileWatchEvent, fileWorkspaceEvent } from '@shared/events';
@@ -28,7 +29,15 @@ import { discoverLanguageServers } from './lsp/discovery';
 import type { TerminalBindingInput, TerminalPrepareInput, TerminalInsertionInput } from '@shared/file-terminal';
 import type { MarkdownRemoteImageRequest } from '@shared/markdown-remote-image';
 
-export function createFileController(service: FileService, trusted: (event: IpcMainInvokeEvent) => boolean, workspace?: FileWorkspacePersistence, terminal?: FileTerminalService) {
+const agentAttachmentRequest = z.object({
+  taskId: z.string().min(1).max(128),
+  turnId: z.string().min(1).max(128),
+  index: z.number().int().min(0).max(19),
+}).strict();
+type AgentAttachmentRequest = z.infer<typeof agentAttachmentRequest>;
+type LookupAgentAttachment = (request: AgentAttachmentRequest) => Promise<Parameters<FileService['openTaskAttachment']>[2]>;
+
+export function createFileController(service: FileService, trusted: (event: IpcMainInvokeEvent) => boolean, workspace?: FileWorkspacePersistence, terminal?: FileTerminalService, lookupAgentAttachment?: LookupAgentAttachment) {
   const owners = new Map<number, Set<string>>();
   const workspaceReaders = new Map<string, { event: IpcMainInvokeEvent; scopes: Set<string> }>();
   const copying = new Set<string>();
@@ -46,6 +55,21 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     keys.add(key); return key;
   };
   return createScopedRPCController({
+    openAgentAttachment: async (event: IpcMainInvokeEvent, raw: AgentAttachmentRequest) => {
+      const id = owner(event), request = agentAttachmentRequest.parse(raw);
+      if (!lookupAgentAttachment) throw new FileError('UNSUPPORTED', '任务附件不可用');
+      const source = await lookupAgentAttachment(request);
+      const frameIsCurrent = () => owners.get(event.sender.id)?.has(id) && owner(event) === id;
+      if (!frameIsCurrent()) throw new FileError('CANCELLED', '附件预览窗口已关闭');
+      const document = await service.openTaskAttachment(id, request.taskId, source);
+      try {
+        if (!frameIsCurrent()) throw new FileError('CANCELLED', '附件预览窗口已关闭');
+        return document;
+      } catch (error) {
+        service.closeDocument(id, document.ref);
+        throw error;
+      }
+    },
     languageConfiguration: (event: IpcMainInvokeEvent) => { owner(event); return service.languages.configuration(); },
     languageDiscover: (event: IpcMainInvokeEvent) => { owner(event); return discoverLanguageServers(); },
     languageContext: async (event: IpcMainInvokeEvent, ref: FileRef) => { const source = await service.lspSource(owner(event), ref); return { projectId: source.projectId, language: source.language }; },

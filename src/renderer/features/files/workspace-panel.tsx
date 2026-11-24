@@ -260,7 +260,7 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
   </aside>;
 }
 
-function FileContent({ buffer, wrap, onLink, onOpenImage, imageContext, onDownload, blame, metadataRevision }: { buffer: FileBuffer; wrap: boolean; onLink: (href: string) => void; onOpenImage: (href: string) => Promise<void>; imageContext: boolean; onDownload?: () => Promise<void>; blame: boolean; metadataRevision: number }) {
+export function FileContent({ buffer, wrap, onLink, onOpenImage, imageContext, onDownload, blame, metadataRevision }: { buffer: FileBuffer; wrap: boolean; onLink: (href: string) => void; onOpenImage: (href: string) => Promise<void>; imageContext: boolean; onDownload?: () => Promise<void>; blame: boolean; metadataRevision: number }) {
   const content = buffer.content;
   if (content.kind === 'pdf') return <FilePdfPreview buffer={buffer} review={Boolean(buffer.navigationView)} onDownload={onDownload} />;
   if (content.kind === 'notebook') return <FileNotebookPreview buffer={buffer} onDownload={onDownload} />;

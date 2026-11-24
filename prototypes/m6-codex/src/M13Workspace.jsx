@@ -236,7 +236,7 @@ function Capabilities({ store, caps, setCaps, plugins, autoManage, setAutoManage
   const list = filterCapabilities(all, { type, filter, query });
   return <>
     <div className="m10-page-head"><div><h1>技能</h1><p>你在 Claude Code 或 Codex 中安装的 Skill、配置的 MCP，会被自动发现；纳管后同步配置给另一个工具，所有项目默认可用。安装与首次认证仍在来源 CLI 中完成。</p></div>
-      <div className="m10-head-actions"><label className="m10-search"><Search size={15} /><input aria-label="搜索技能" placeholder="搜索" value={query} onChange={e => setQuery(e.target.value)} /></label>
+      <div className="m10-head-actions">
         <button className="m10-button secondary" disabled={scanning} onClick={() => { setScanning(true); setTimeout(() => {
           setScanning(false);
           const fresh = DISCOVERY_QUEUE.filter(d => !caps.some(c => c.id === d.id));
@@ -252,7 +252,13 @@ function Capabilities({ store, caps, setCaps, plugins, autoManage, setAutoManage
     {totalNew > 0 && <div className="m13-discover"><Sparkles size={18} /><div><strong>发现 {totalNew} 个新项</strong><p>纳管后会同步配置到另一个工具；同名冲突等需要处理的项不会被一起纳管。</p></div><button className="m10-button primary" onClick={() => { const r = manageAll(caps); setCaps(r.items); notify(`已纳管：${r.managed.join('、')}；${sessionEffect('cap-on', affect('manage', caps.filter(c => r.managed.includes(c.name))))}`); }}>一键纳管</button></div>}
     <div className="m13-toolbar"><div className="m10-tabs" role="tablist">{[['skill', 'Skill'], ['mcp', 'MCP']].map(([v, t]) => <button key={v} role="tab" aria-selected={type === v} onClick={() => setType(v)}>{t}<span className="m13-count">{countBy(all, v).all}</span></button>)}</div>
       <label className="m13-switch-row"><span>以后自动纳管</span><button role="switch" aria-checked={autoManage} className={'m13-switch' + (autoManage ? ' on' : '')} onClick={() => { setAutoManage(!autoManage); notify(autoManage ? '已关闭自动纳管' : '已开启：新发现项自动纳管，同名冲突仍会停下来让你选择'); }}><i /></button></label></div>
-    <div className="m13-filters">{[['all', '全部', counts.all], ['new', '新发现', counts.new], ['managed', '已纳管', counts.managed], ['attention', '需处理', counts.attention]].map(([v, t, n]) => <button key={v} aria-pressed={filter === v} onClick={() => setFilter(v)}>{t}<span>{n}</span></button>)}</div>
+    <div className="m13-filter-bar" role="group" aria-label="筛选从 CLI 发现的技能">
+      <div className="m13-filters">{[['all', '全部', counts.all], ['new', '新发现', counts.new], ['managed', '已纳管', counts.managed], ['attention', '需处理', counts.attention]].map(([v, t, n]) => <button key={v} aria-pressed={filter === v} onClick={() => setFilter(v)}>{t}<span>{n}</span></button>)}</div>
+      <label className="m10-search">
+        <Search size={15} aria-hidden="true" />
+        <input type="search" aria-label="搜索 Skill 或 MCP" placeholder="搜索 Skill 或 MCP" value={query} onChange={e => setQuery(e.target.value)} />
+      </label>
+    </div>
     <div className="m13-cap-list">{list.map(c => <button key={c.id} className="m13-cap" onClick={() => c.state === 'plugin' ? notify(`${c.name} 随${c.pluginName}插件安装、更新和卸载，请在插件详情中管理`) : setModal({ type: 'capability', id: c.id })}>
       <span className="m13-cap-icon">{c.type === 'skill' ? <Sparkles size={16} /> : <Server size={16} />}</span>
       <span className="m13-cap-main"><b>{c.name}</b><small>{c.desc}</small><small className="m13-cap-scope">{scopeLabel(c, projects)}</small></span>

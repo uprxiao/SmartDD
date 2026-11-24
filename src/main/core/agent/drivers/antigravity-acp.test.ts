@@ -1,11 +1,11 @@
 import { once } from 'node:events';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { expect, test } from 'vitest';
 import { antigravityAcpDriver, antigravityArgs, inspectAntigravity, previewAntigravityModels } from './antigravity-acp';
-import type { DriverEvent, DriverInstance, TurnStatus } from '../driver';
+import type { DriverEvent, DriverInstance, DriverOpenOptions, TurnStatus } from '../driver';
 import { until } from '../test-doubles';
 
 const executable = process.env.SMARTDD_F35_AGY_BIN;
@@ -28,6 +28,83 @@ function finished(driver: DriverInstance) {
     const timer = setTimeout(() => { release(); reject(new Error('ACP 回合未返回终态')); }, 12_000);
   });
 }
+
+test.skipIf(!executable)('real Agy reads a projected Skill and resumes the same session with a fresh Skill directory', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'willyou-agy-skill-test-'));
+  const cwd = join(home, 'project');
+  const nativeDir = join(home, '.gemini');
+  const origin = join(home, 'skill-source');
+  const name = 'willyou-test-projection';
+  const target = join(home, 'run-one', 'agy-gemini', 'skills', name);
+  const targetFile = join(target, 'SKILL.md');
+  const description = 'WY-FIXTURE-DESCRIPTION-903';
+  const instruction = 'WY-FIXTURE-INSTRUCTION-903';
+  const requests: { latest: string; advertised: boolean }[] = [];
+  const server = createServer(async (req, res) => {
+    let raw = '';
+    for await (const bytes of req) raw += bytes;
+    const payload = JSON.parse(raw);
+    const latest = JSON.stringify(payload.contents.at(-1));
+    const advertised = JSON.stringify(payload.systemInstruction ?? payload.system_instruction ?? {}).includes(description);
+    requests.push({ latest, advertised });
+    const part = latest.includes('functionResponse')
+      ? { text: latest.includes(instruction) ? 'fixture read' : 'fixture missed' }
+      : advertised && /(?:natural|explicit)-probe/.test(latest)
+        ? { functionCall: { name: 'read_file', args: { Path: targetFile, StartLine: 1, EndLine: 6 } },
+          thoughtSignature: 'd2lsbHlvdS1za2lsbC10ZXN0' }
+        : { text: 'fixture done' };
+    const response = { candidates: [{ index: 0, content: { role: 'model', parts: [part] }, finishReason: 'STOP' }], modelVersion: carbon };
+    res.writeHead(200, { 'content-type': 'text/event-stream' }).end(`data: ${JSON.stringify(response)}\n\n`);
+  });
+  let driver: DriverInstance | undefined;
+  try {
+    await Promise.all([cwd, origin, dirname(target)].map(path => mkdir(path, { recursive: true })));
+    await writeFile(join(origin, 'SKILL.md'), `---\nname: ${name}\ndescription: ${description}\n---\n\n${instruction}\n`);
+    await symlink(origin, target, 'dir');
+    server.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('测试服务没有 TCP 地址');
+    const options: DriverOpenOptions = {
+      executable: { path: executable!, version: '1.5.14' }, cwd, model: carbon, tier: 'ask',
+      extraArgs: antigravityArgs(nativeDir),
+      env: { HOME: home, TMPDIR: home, PATH: '/usr/bin:/bin', HTTP_PROXY: 'http://127.0.0.1:1',
+        HTTPS_PROXY: 'http://127.0.0.1:1', NO_PROXY: '127.0.0.1', GEMINI_API_KEY: 'WY-LOCAL-ONLY',
+        GOOGLE_GEMINI_BASE_URL: `http://127.0.0.1:${address.port}` },
+    };
+    driver = antigravityAcpDriver.create();
+    const opened = await driver.open({ ...options, skillRoots: [{ name, path: target }] });
+    const current = driver;
+    current.on(event => {
+      if (event.type === 'request' && event.kind === 'tool_approval') {
+        const approved = JSON.stringify(event.payload).includes(targetFile);
+        void current.respond(event.requestKey, { behavior: approved ? 'allow' : 'deny' }).catch(() => {});
+      }
+    });
+    for (const text of ['natural-probe: use the fixture skill', `explicit-probe: read "${targetFile}"\n$${name}`]) {
+      const requestOffset = requests.length;
+      const turn = finished(driver);
+      await driver.startTurn({ clientInputId: text.slice(0, 8), text, tier: 'ask' });
+      expect(await turn).toMatchObject({ status: 'completed', answer: 'fixture read' });
+      expect(requests.slice(requestOffset)).toContainEqual({ latest: expect.stringContaining(text.slice(0, 8)), advertised: true });
+    }
+    await driver.close();
+    driver = antigravityAcpDriver.create();
+    const resumed = await driver.open({ ...options, resumeNativeId: opened.nativeId });
+    expect(resumed.nativeId).toBe(opened.nativeId);
+    const requestOffset = requests.length;
+    const turn = finished(driver);
+    await driver.startTurn({ clientInputId: 'resumed', text: 'after-resume', tier: 'ask' });
+    expect(await turn).toMatchObject({ status: 'completed', answer: 'fixture done' });
+    const resumedRequests = requests.slice(requestOffset);
+    expect(resumedRequests.length).toBeGreaterThan(0);
+    expect(resumedRequests.every(request => !request.advertised)).toBe(true);
+  } finally {
+    await driver?.close();
+    server.close();
+    await rm(home, { recursive: true, force: true });
+  }
+}, 45_000);
 
 test.skipIf(!executable)('real agy negotiates ACP, applies model options, resumes and distinguishes a native failure from ordinary text', async () => {
   const home = await mkdtemp(join(tmpdir(), 'willyou-f35-native-test-'));

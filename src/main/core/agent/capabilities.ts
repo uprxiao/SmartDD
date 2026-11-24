@@ -31,6 +31,7 @@ export const CAPABILITY_TABLE: Record<DriverId, Partial<Record<CapabilityName, C
     basic: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 ACP 握手与会话', core: true },
     resume: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 原生恢复', core: false },
     mcp: { minVersion: '1.5.14', knownIncompatible: [], evidence: 'F35 宿主桥', core: false },
+    skills: { minVersion: '1.5.14', knownIncompatible: [], evidence: '隔离 ACP 技能加载及续聊验证', core: false },
   },
   'claude-sdk': {
     basic: { minVersion: '2.1.321', knownIncompatible: [], evidence: '验证账 Q01–Q05；SDK 0.3.321', core: true },

@@ -11,8 +11,8 @@ import type { OfficeSource,OfficePersistence } from './office/service';
 import { FilePptxService } from './office/pptx-service';
 import { createHash, randomUUID } from 'node:crypto';
 import { basename, join, posix } from 'node:path';
-import { FILE_LIMITS, FileError, fileCheckpointSchema, fileDraftResolutionSchema, filePathSchema, fileRefSchema, fileSaveSchema, fileScopeSchema, fileOpenSchema, type FileOpenRequest, type FileCheckpointInput, type FileCheckpointReceipt, type FileDocument, type FileDraftResolution, type FileEntry, type FileRead, type FileRef, type FileRevision, type FileSaveInput, type FileSaveReceipt, type FileScope, type RootRequest, type FileWatchUpdate } from '@shared/files';
-import { NativeFileBroker, type NativeFileResult } from './native-broker';
+import { FILE_LIMITS, FileError, fileAttachmentHintSchema, fileCheckpointSchema, fileDraftResolutionSchema, filePathSchema, fileRefSchema, fileSaveSchema, fileScopeSchema, fileOpenSchema, type FileOpenRequest, type FileCheckpointInput, type FileCheckpointReceipt, type FileDocument, type FileDraftResolution, type FileEntry, type FileRead, type FileRef, type FileRevision, type FileSaveInput, type FileSaveReceipt, type FileScope, type RootRequest, type FileWatchUpdate } from '@shared/files';
+import { NativeFileBroker, type NativeFileResult, type RootDescriptor } from './native-broker';
 import { FileRootsService, identityKey, scopeKey, type RootLease } from './roots';
 import { FileRecoveryStore, recoveryProjectKey } from './recovery-store';
 import { fileRecoveryInspectionSchema, type FileRecoveryInspectionInput, type FileRecoveryInspection } from '@shared/file-recovery';
@@ -139,6 +139,7 @@ export class FileService {
 
   viewerSource(owner: string, ref: FileRef) {
     const { record, lease } = this.requireDocument(owner, ref);
+    if (lease.documentPath) throw new FileError('PERMISSION', '任务附件仅使用内置预览');
     return {
       name: basename(record.relativePath), source: lease.source, rootPath: lease.canonicalPath,
       signal: AbortSignal.any([record.abort.signal, lease.abort.signal]),
@@ -333,12 +334,16 @@ export class FileService {
 
   openScope(owner: string, scope: FileScope) {
     if (isNonLocalFileSource(scope)) throw new FileError('UNSUPPORTED', NONLOCAL_WORKSPACE_MESSAGE);
-    this.closeScope(owner, scope); return this.roots.open(owner, scope);
+    this.closeScope(owner, scope, true); return this.roots.open(owner, scope);
   }
-  closeScope(owner: string, input: FileScope): void {
+  closeScope(owner: string, input: FileScope, keepAttachmentPreviews = false): void {
     const scope = fileScopeSchema.parse(input);
     this.roots.closeScope(owner, scope);
-    for (const [id, record] of this.documents) if (record.owner === owner && record.scopeKey === scopeKey(scope)) { record.abort.abort(); this.documents.delete(id); }
+    for (const [id, record] of this.documents) {
+      if (record.owner !== owner || record.scopeKey !== scopeKey(scope) || (keepAttachmentPreviews && record.issuedRoot.documentPath)) continue;
+      record.abort.abort();
+      this.documents.delete(id);
+    }
   }
 
   async list(owner: string, input: DirectoryListRequest): Promise<FileEntry[]> {
@@ -383,8 +388,27 @@ export class FileService {
     this.roots.require(owner, request);
     return this.document(owner, lease, result, undefined, request.readOnly, request.attachment);
   }
+  /** The caller resolves the path from the original task turn in the main process. */
+  async openTaskAttachment(owner: string, taskId: string, source: { root: string; relativePath: string; mimeType: string }): Promise<FileDocument> {
+    const relativePath = filePathSchema.parse(source.relativePath);
+    const hint = fileAttachmentHintSchema.parse({ mimeType: source.mimeType });
+    await this.recovery.ready();
+    const descriptor = await this.broker.request<RootDescriptor>({ operation: 'inspect-root', path: source.root });
+    if (descriptor.path !== source.root) throw new FileError('STALE_ROOT', '附件目录已变化');
+    // Only the resulting document ID grants access. The root is never exposed by the root registry.
+    const lease: RootLease = {
+      lease: randomUUID(), generation: 0, owner, scope: { kind: 'task', taskId }, projectId: null,
+      source: 'task-cwd', sourceId: taskId, label: '任务附件', path: source.root,
+      sourcePath: source.root, canonicalPath: descriptor.path, identity: descriptor.identity,
+      descriptor, abort: new AbortController(), documentPath: relativePath,
+    };
+    const result = await this.readRequest<NativeFileResult>('stat', lease, relativePath);
+    if (result.relativePath !== relativePath) throw new FileError('CHANGED', '附件原路径已变化');
+    return this.document(owner, lease, result, undefined, true, hint);
+  }
   async related(owner: string, input: FileRef, href: string): Promise<FileDocument> {
     const { record, lease } = this.requireDocument(owner, input);
+    if (lease.documentPath) throw new FileError('UNTRUSTED', '附件预览仅能读取当前附件');
     if (typeof href !== 'string' || href.length > 32768 || /[\u0000-\u001f\\]/.test(href) || /^[a-z][\w+.-]*:|^\/\//i.test(href)) throw new FileError('INVALID_INPUT', '文档引用不是可解析的本机文件路径');
     let path: string;
     try { path = decodeURIComponent(href.split(/[?#]/, 1)[0]); } catch { throw new FileError('INVALID_INPUT', '文档引用包含无效路径编码'); }
@@ -584,8 +608,8 @@ export class FileService {
   }
 
   private requireDocument(owner: string, input: FileRef): { record: DocumentRecord; lease: RootLease } {
-    const { record } = this.requireIssuedDocument(owner, input);
-    return { record, lease: this.roots.require(owner, input) };
+    const { record, lease } = this.requireIssuedDocument(owner, input);
+    return { record, lease: lease.documentPath ? lease : this.roots.require(owner, input) };
   }
   private requireIssuedDocument(owner: string, input: FileRef): { record: DocumentRecord; lease: RootLease } {
     const ref = fileRefSchema.parse(input), record = this.documents.get(ref.id);
@@ -599,7 +623,7 @@ export class FileService {
     const name = basename(result.relativePath), sample = result.sampleBase64 ?? result.base64?.slice(0, 5464) ?? '';
     const content = classifyFile(name, Buffer.from(sample, 'base64')), hint = previous?.attachment ?? attachmentHint;
     const attachment = readOnly && hint ? { ...(hint.mimeType !== undefined ? { mimeType: hint.mimeType } : {}), textKind: content.kind === 'text' ? attachmentTextKind(name, hint.mimeType) : null } : undefined;
-    this.documents.set(id, { owner, scopeKey: scopeKey(lease.scope), lease: lease.lease, issuedRoot: lease, generation: lease.generation, relativePath: result.relativePath, documentKey, revision: result.revision, content, writable, readOnly, ...(attachment ? { attachment } : {}), abort: previous?.abort ?? new AbortController() });
+    this.documents.set(id, { owner, scopeKey: scopeKey(lease.scope), lease: lease.lease, issuedRoot: lease, generation: lease.generation, relativePath: result.relativePath, documentKey, revision: result.revision, content, writable, readOnly, ...(attachment ? { attachment } : {}), abort: previous?.abort ?? (lease.documentPath ? lease.abort : new AbortController()) });
     return { ref: { id, lease: lease.lease, generation: lease.generation }, documentKey, name, relativePath: result.relativePath, absolutePath: join(lease.canonicalPath, result.relativePath), revision: result.revision, writable, sourceReadOnly: readOnly, content, ...(attachment ? { attachment } : {}) };
   }
   /** A missing capability remains bound to its former physical file. Reading a
@@ -617,6 +641,9 @@ export class FileService {
       throw error;
     }
     const current = this.requireDocument(owner, ref).record;
+    if (lease.documentPath && (result.relativePath !== current.relativePath || identityKey(current.revision) !== identityKey(result.revision))) {
+      throw new FileError('CHANGED', '附件文件已变化，请从消息中重新打开');
+    }
     if (!current.missingIdentity && identityKey(current.revision) !== identityKey(result.revision)) {
       // An atomic external replacement may legitimately refresh a clean view.
       // If the original inode still exists under another name in this parent,
@@ -636,8 +663,10 @@ export class FileService {
     return result;
   }
   private async readRequest<T>(operation: string, lease: RootLease, relativePath: string, extra: Record<string, unknown> = {}, signal?: AbortSignal): Promise<T> {
+    if (lease.documentPath && relativePath !== lease.documentPath) throw new FileError('UNTRUSTED', '附件预览仅能读取当前附件');
     try { return await this.broker.request<T>({ operation, root: lease.descriptor, relativePath, protected: this.recovery.protectedIdentities(), ...extra }, { signal: signal ? AbortSignal.any([lease.abort.signal, signal]) : lease.abort.signal }); }
     catch (error) {
+      if (lease.documentPath) throw error;
       if (await this.roots.observeFailure(lease, error)) throw new FileError('STALE_ROOT', '原目录已失效；手工草稿仍保留，请恢复原目录后重新关联');
       this.roots.require(lease.owner, lease); throw error;
     }

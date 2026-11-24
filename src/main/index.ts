@@ -10,6 +10,7 @@ import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
 import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification, shell } from 'electron';
 import {
+  agentToolsChangedEvent,
   aiProfilesChangedEvent,
   applicationsChangedEvent,
   browserChangedEvent,
@@ -160,7 +161,7 @@ async function main(): Promise<void> {
   const agents = new AgentService(client.db, secrets);
   const providers = new ProviderService(client.db, secrets, agents);
   const agentTransfer = new AgentTransferService(client.db,secrets,agents,providers);
-  const agentTools = new AgentToolService(agents, { env: baseEnv });
+  const agentTools = new AgentToolService(agents, { env: baseEnv, onChanged: () => events.emit(agentToolsChangedEvent, undefined) });
   void agentTools.refresh().catch(() => console.warn('[agents] Tool detection incomplete; retry from agent settings'));
   const projectTransfer = new ProjectTransferService({ db: client.db, secrets, projects, profiles: aiProfiles, userData: app.getPath('userData'), appVersion: app.getVersion(), env: baseEnv });
   try { projectTransfer.recover(); }
@@ -191,7 +192,7 @@ async function main(): Promise<void> {
   let browserLoginChanged:((taskId:string)=>void)|undefined;
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
-  const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,capabilities,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,
+  const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,agentTools,providers,capabilities,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,capabilityRegistry,
     host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e),ptys});
   const fileBroker = new NativeFileBroker(app.isPackaged ? join(process.resourcesPath, 'native/willyou-files') : join(app.getAppPath(), 'out/native/willyou-files'));
   const fileSources = new FileSourceResolver(client.db);agentWorkspace.attachFiles(fileSources);

@@ -9,39 +9,55 @@ import type { Runner } from '@shared/types';
 import type { CapabilityRegistryService } from './capability-registry';
 import { ManagedSkillLinks } from './managed-skill-links';
 import { projectLayers } from './discovery';
+import { skillAdapter } from './skill-adapters';
 
 const canonical=(path:string)=>{try{return realpathSync(path);}catch{return resolve(path);}};
 const present=(path:string)=>{try{return lstatSync(path);}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;}};
 export interface SkillProjectionInput {runner:Runner;home:string;stateRoot:string;cwd:string;runRoot:string;nativeLogin:boolean}
-export interface SkillProjectionResult {args:string[];configured:string[];issues:{id:string;reason:string}[]}
+export interface SkillProjectionResult {
+  args: string[];
+  configured: string[];
+  issues: {id: string; reason: string}[];
+  privateRoots: {name: string; path: string}[];
+  references: {name: string; path: string}[];
+}
 
 /** R03 placement: source is never written, Claude native login only receives an
  * owned per-run plugin, and project capabilities never enter a shared root. */
 export class SkillProjectionService {
   constructor(private readonly db:AppDb,private readonly registry:CapabilityRegistryService){}
   prepare(input:SkillProjectionInput):SkillProjectionResult {
-    const result:SkillProjectionResult={args:[],configured:[],issues:[]};let plugin=false;
+    const result:SkillProjectionResult={args:[],configured:[],issues:[],privateRoots:[],references:[]};let plugin=false;
+    const adapter = skillAdapter(input.runner);
+    if (!adapter) return result;
     for(const item of this.registry.selected(input.cwd).filter(x=>x.kind==='skill')){
       try{
-        if(input.runner==='claude'&&input.nativeLogin&&!item.projectRoot&&canonical(dirname(item.sourcePath))===canonical(join(input.stateRoot,'skills',item.name))){result.configured.push(item.id);continue;}
-        const perRun=input.runner==='claude'&&(input.nativeLogin||Boolean(item.projectRoot));
-        const root=input.runner==='codex'?join(item.projectRoot??input.home,'.agents/skills'):perRun?join(input.runRoot,'willyou-run/skills'):join(input.stateRoot,'skills');
-        if(input.runner==='codex'){
-          const roots=[join(input.home,'.agents/skills'),join(input.stateRoot,'skills'),'/etc/codex/skills',...projectLayers(input.cwd,input.home).map(p=>join(p,'.agents/skills'))];
+        const placement = adapter.placement(input, item.projectRoot);
+        const { root } = placement;
+        if(placement.kind==='claude-plugin'&&input.nativeLogin&&!item.projectRoot&&canonical(dirname(item.sourcePath))===canonical(join(input.stateRoot,'skills',item.name))){
+          result.configured.push(item.id);
+          result.references.push({ name: item.name, path: item.sourcePath });
+          continue;
+        }
+        if(placement.kind==='directory'&&placement.checkNativeRoots){
+          const roots=[...adapter.userRoots(input),...projectLayers(input.cwd,input.home).flatMap(adapter.projectRoots)];
           for(const other of roots){
             const target=join(other,item.name);if(canonical(other)===canonical(root)||!present(target))continue;
             if(canonical(target)!==canonical(dirname(item.sourcePath)))throw new Error('其他 Codex 加载目录存在同名 Skill，保留原件');
           }
         }
-        if(item.projectRoot&&input.runner==='codex'&&this.tracked(item.projectRoot,join(root,item.name)))throw new Error('目标路径已被 Git 跟踪，保留原件');
+        if(placement.kind==='directory'&&placement.projectRoot&&this.tracked(placement.projectRoot,join(root,item.name)))throw new Error('目标路径已被 Git 跟踪，保留原件');
         const links=new ManagedSkillLinks(root),linked=links.link(item.name,dirname(item.sourcePath));
-        if(linked.state==='linked'&&!perRun){
+        if(linked.state==='linked'&&placement.kind==='directory'){
           const id=createHash('sha256').update(JSON.stringify([canonical(root),item.name])).digest('hex');
-          this.db.insert(capabilitySkillPlacements).values({id,capabilityId:item.id,targetRoot:root,name:item.name,projectRoot:input.runner==='codex'?item.projectRoot:null})
+          this.db.insert(capabilitySkillPlacements).values({id,capabilityId:item.id,targetRoot:root,name:item.name,projectRoot:placement.projectRoot??null})
             .onConflictDoUpdate({target:capabilitySkillPlacements.id,set:{capabilityId:item.id}}).run();
-          if(item.projectRoot&&input.runner==='codex'&&!this.exclude(item.projectRoot,linked.target,id,true))result.issues.push({id:item.id,reason:'当前项目不是 Git 仓库；本方链接会出现在项目目录'});
+          if(placement.projectRoot&&!this.exclude(placement.projectRoot,linked.target,id,true))result.issues.push({id:item.id,reason:'当前项目不是 Git 仓库；本方链接会出现在项目目录'});
         }
-        if(perRun)plugin=true;result.configured.push(item.id);
+        if(placement.kind==='claude-plugin')plugin=true;
+        if(placement.kind==='private-directory')result.privateRoots.push({ name: item.name, path: linked.target });
+        result.configured.push(item.id);
+        result.references.push({ name: item.name, path: join(linked.target, 'SKILL.md') });
       }catch(error){result.issues.push({id:item.id,reason:error instanceof Error?error.message:'Skill 配置失败'});}
     }
     if(plugin){const root=join(input.runRoot,'willyou-run');mkdirSync(join(root,'.claude-plugin'),{recursive:true,mode:0o700});writeFileSync(join(root,'.claude-plugin/plugin.json'),JSON.stringify({name:'willyou-run',version:'1.0.0'}),{flag:'wx',mode:0o600});result.args.push('--plugin-dir',root);}

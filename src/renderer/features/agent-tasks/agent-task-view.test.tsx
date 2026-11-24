@@ -4,9 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
+import type { AgentLiveFrame } from '@shared/events';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
-vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), managedSkills: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
+const imageRead = vi.hoisted(() => vi.fn());
+const commandPreview = vi.hoisted(() => vi.fn());
+vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: Object.assign(mocks, { attachmentImage: imageRead, commandPreview }) }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey', () => ({ useAppSettingsKey: () => ({ value: { fullConfirmed: true }, update: vi.fn() }) }));
@@ -22,7 +25,7 @@ function render(element: React.ReactElement) {
   const client = new QueryClient({defaultOptions:{queries:{retry:false, gcTime:0}}});
   return renderView(element, {wrapper: ({children}) => <QueryClientProvider client={client}>{children}</QueryClientProvider>});
 }
-afterEach(() => cleanup());
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.profiles.mockResolvedValue([]);
@@ -40,6 +43,148 @@ beforeEach(() => {
 });
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
+
+it('shows real heartbeat liveness and command output before the Bash tool finishes', async () => {
+  const nativeOutput = new Set<(frame: AgentLiveFrame) => void>();
+  const now = Date.now();
+  const started = new Date(now - 31000).toISOString();
+  const command = { ...item('command_execution', { command: 'printf fixture', status: 'running', outputKey: 'call',
+    heartbeatAt: now - 1000, elapsedSeconds: 30 }), itemId: 'command', turnId: 'running', runId: 'run', createdAt: started, terminal: null };
+  mocks.on.mockImplementation((event, cb) => {
+    if (event.name === 'agentTasks:live') nativeOutput.add(cb);
+    return () => { nativeOutput.delete(cb); };
+  });
+  commandPreview.mockResolvedValue(null);
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [command], status: 'working', run: { runId: 'run', busy: true },
+    turns: [{ turn_id: 'running', status: 'started', started_at: started }] }));
+  render(<AgentTaskView taskId="task"/>);
+  fireEvent.click((await screen.findByText('正在运行 1 条命令')).closest('summary')!);
+  const details = await screen.findByRole('region', { name: '命令详情' });
+  expect(within(details).getByText(/已运行/)).toBeTruthy();
+  expect(within(details).getByText(/最近心跳/)).toBeTruthy();
+  expect(within(details).getByText('等待输出')).toBeTruthy();
+  const emit = (frame: AgentLiveFrame) => act(() => { for (const listener of nativeOutput) listener(frame); });
+  const frame = { taskId: 'task', runId: 'run', itemKey: 'call', text: '首段输出\n', commandRevision: 1 };
+  emit({ ...frame, runId: 'other-run', text: '其他任务的输出' });
+  expect(screen.queryByText('其他任务的输出')).toBeNull();
+  emit(frame);
+  expect(within(details).getByLabelText('命令输出').textContent).toBe('首段输出\n');
+  expect(screen.getByText('正在运行 1 条命令')).toBeTruthy();
+});
+
+it('keeps a live native child outside the finished fold and gives background commands their own details', async () => {
+  const start = '2026-11-24T00:00:00Z', end = '2026-11-24T00:00:03Z';
+  const entries = [item('user_message', { text: '更新并分析' }),
+    item('subagent', { name: 'Agent', status: 'running', background: true, input: { description: '分析 DS-Bot' } }),
+    item('command_execution', { name: 'Bash', status: 'running', background: true, input: { command: 'git pull -q' } }),
+    item('assistant_message', { text: '分析已开始，等待更新。' })].map((entry, ordinal) => ({
+    ...entry, itemId: String(ordinal), ordinal, turnId: 'parent', runId: 'run', terminal: ordinal === 1 || ordinal === 2 ? null : 'completed',
+  }));
+  const turns = [{ turn_id: 'parent', status: 'completed', accepted_at: start, started_at: start, ended_at: end }];
+  let state = snapshot({ items: entries, turns, backgroundWork: entries.slice(1, 3), status: 'working', run: { runId: 'run', busy: false } });
+  let publish!: (event: { taskId: string; seq: number }) => void;
+  mocks.on.mockImplementation((event, cb) => { if (event.name === 'agentTasks:event') publish = cb; return () => {}; });
+  mocks.snapshot.mockImplementation(async () => state);
+  render(<AgentTaskView taskId="task"/>);
+  expect((await screen.findByRole('button', { name: '用时 3 秒' })).getAttribute('aria-expanded')).toBe('false');
+  expect(screen.getByRole('button', { name: '复制回复' })).toBeTruthy();
+  expect(screen.getByText('子 Agent 分析 DS-Bot')).toBeTruthy();
+  const background = screen.getByRole('region', { name: '后台工作' });
+  expect(within(background).getByText('后台仍在运行')).toBeTruthy();
+  fireEvent.click(within(background).getByText('正在运行 1 条命令').closest('summary')!);
+  expect((await within(background).findByLabelText('完整命令')).textContent).toBe('git pull -q');
+  state = snapshot({ items: entries.map(entry => ({ ...entry, terminal: 'completed', payload: { ...entry.payload, status: 'completed' } })),
+    turns, backgroundWork: [], status: 'completed', run: { runId: 'run', busy: false }, seq: 2 });
+  await act(async () => publish({ taskId: 'task', seq: 2 }));
+  await waitFor(() => expect(screen.queryByRole('region', { name: '后台工作' })).toBeNull());
+  expect(screen.queryByText('子 Agent 分析 DS-Bot')).toBeNull();
+});
+
+it.each(['claude-sdk', 'codex-app-server', 'antigravity-acp'])('shows local offline and online transitions without losing the task for %s', async driverId => {
+  let online = true;
+  const connection = vi.spyOn(navigator, 'onLine', 'get').mockImplementation(() => online);
+  try {
+    mocks.snapshot.mockResolvedValue(snapshot({
+      selection: { driverId, profileId: 'p', tier: 'ask' },
+      items: [item('assistant_message', { text: '已经收到的工作记录' })],
+      status: 'working', run: { runId: 'active', busy: true },
+    }));
+    render(<AgentTaskView taskId="task" />);
+    const history = await screen.findByText('已经收到的工作记录');
+    expect(screen.queryByText('网络已断开')).toBeNull();
+    online = false;
+    fireEvent(window, new Event('offline'));
+    expect(screen.getByText('网络已断开')).toBeTruthy();
+    expect(screen.getByText('已经收到的工作记录')).toBe(history);
+    online = true;
+    fireEvent(window, new Event('online'));
+    expect(screen.queryByText('网络已断开')).toBeNull();
+    expect(screen.getByText('已经收到的工作记录')).toBe(history);
+    expect(mocks.submit).not.toHaveBeenCalled();
+  } finally {
+    connection.mockRestore();
+  }
+});
+
+it('updates compaction and retry in place while keeping the same process record', async () => {
+  const turnId = 'active-turn';
+  const compaction = { ...item('compaction', { status: 'running' }), turnId, itemId: 'compact', ordinal: 2, terminal: null };
+  const retry = { ...item('error', { retry: { status: 'running', attempt: 1, maxAttempts: 4 }, message: 'Service unavailable' }),
+    turnId, itemId: 'retry', ordinal: 3, terminal: null };
+  const previous = { ...item('assistant_message', { text: '已经开始检查' }), turnId, ordinal: 1 };
+  const turns = [{ turn_id: turnId, status: 'started', accepted_at: '2026-11-24T00:00:00Z', started_at: '2026-11-24T00:00:00Z', ended_at: null }];
+  const busy = { status: 'working', run: { runId: 'active', busy: true }, turns };
+  let state = snapshot({ ...busy, items: [previous, compaction, retry] });
+  let publish!: (event: { taskId: string; seq: number }) => void;
+  mocks.on.mockImplementation((event, cb) => { if (event.name === 'agentTasks:event') publish = cb; return () => {}; });
+  mocks.snapshot.mockImplementation(async () => state);
+  render(<AgentTaskView taskId="task" />);
+  const compactLine = await screen.findByText('正在压缩上下文…');
+  const retryLine = screen.getByText(/模型请求异常，正在重试.*1\/4/);
+  state = snapshot({ ...busy, seq: 2, items: [previous,
+    { ...compaction, revision: 2, terminal: 'completed', payload: { status: 'completed' } },
+    { ...retry, revision: 2, terminal: 'completed', payload: { ...retry.payload, retry: { status: 'completed', attempt: 2, maxAttempts: 4 } } },
+  ] });
+  await act(async () => publish({ taskId: 'task', seq: 2 }));
+  expect(await screen.findByText('上下文已压缩')).toBe(compactLine);
+  expect(screen.getByText(/模型请求已恢复/)).toBe(retryLine);
+  expect(screen.getByText('已经开始检查')).toBeTruthy();
+  expect(screen.queryByText(/正在重试/)).toBeNull();
+});
+
+it('keeps legacy compaction history and closes activity from a lost process on reopen', async () => {
+  const turnId = 'lost-turn';
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [
+    { ...item('compaction', {}), itemId: 'legacy' },
+    { ...item('compaction', { status: 'running' }), turnId, itemId: 'compact', ordinal: 2, terminal: null },
+    { ...item('error', { retry: { status: 'running', attempt: 1 } }), turnId, itemId: 'retry', ordinal: 3, terminal: null },
+  ], turns: [{ turn_id: turnId, status: 'unknown', accepted_at: '2026-11-24T00:00:00Z',
+    started_at: '2026-11-24T00:00:00Z', ended_at: '2026-11-24T00:00:05Z' }] }));
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByText('上下文已压缩');
+  expect(screen.getByText('上下文压缩已中断')).toBeTruthy();
+  expect(screen.getByText(/模型请求重试已中断/)).toBeTruthy();
+  expect(screen.queryByText(/正在重试|正在压缩/)).toBeNull();
+});
+
+it('refreshes the managed Skill list when reopening $ in the same task', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({
+    run: { catalog: { commands: [], skills: [{ name: 'open-source-radar' }] } },
+  }));
+  mocks.managedSkills.mockResolvedValueOnce([]).mockResolvedValueOnce([{ name: 'source-driven-ui-test' }]);
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入');
+  fireEvent.change(input, { target: { value: '$source' } });
+  await waitFor(() => expect(mocks.managedSkills).toHaveBeenCalledWith('task'));
+  expect(screen.queryByRole('option', { name: /source-driven-ui-test/ })).toBeNull();
+  fireEvent.change(input, { target: { value: '' } });
+  fireEvent.change(input, { target: { value: '$source' } });
+  const fresh = await screen.findByRole('option', { name: /source-driven-ui-test.*WillYou 纳管/ });
+  expect(screen.getAllByRole('option')[0]).toBe(fresh);
+  fireEvent.keyDown(input, { key: 'Tab' });
+  expect((input as HTMLTextAreaElement).value).toBe('$source-driven-ui-test ');
+  expect(mocks.submit).not.toHaveBeenCalled();
+});
 
 it('switches the single composer button between stop and queue, with a separate stop action in the task header', async () => {
   mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', run: { runId: 'active', busy: true, steer: true } }));
@@ -685,9 +830,9 @@ it('FR05：初始化前粘贴的附件，在同水位初始化快照到达后保
   await act(async () => { h.fire(20); await new Promise(r => setTimeout(r, 120)); });
   const input = await screen.findByPlaceholderText('随心输入');
   fireEvent.paste(input, { clipboardData: { files: [new File(['x'], 'note.txt', { type: 'text/plain' })] } });
-  await screen.findByText('note.txt');
+  await screen.findByRole('button', { name: '移除 note.txt' });
   await act(async () => h.resolve(snapshot({ seq: 20, draft: { draft: { text: '', attachments: [] }, revision: 2 } })));
-  expect(screen.queryByText('note.txt')).not.toBeNull();
+  expect(screen.queryByRole('button', { name: '移除 note.txt' })).not.toBeNull();
 });
 
 it('A43 retains draft attachment references until the last attempted write settles on navigation', async () => {
@@ -696,7 +841,8 @@ it('A43 retains draft attachment references until the last attempted write settl
   let acknowledge!: () => void;
   mocks.saveDraft.mockImplementation(() => new Promise(resolve => { acknowledge = () => resolve({ ok: true, revision: 2 }); }));
   const { unmount } = render(<AgentTaskView taskId="task" />);
-  await screen.findByText('kept.txt · 副本');
+  const fileRow = (await screen.findByRole('button', { name: '移除 kept.txt' })).closest<HTMLElement>('.agent-file-attachment')!;
+  expect(within(fileRow).getByText('副本')).toBeTruthy();
   const editorId = mocks.holdDraftAttachments.mock.calls[0][1];
   expect(mocks.holdDraftAttachments).toHaveBeenCalledWith('task', editorId, [attachment.storedPath]);
   fireEvent.change(screen.getByPlaceholderText('随心输入'), { target: { value: 'new draft' } });
@@ -978,12 +1124,12 @@ it('G2 discards a private attachment that finishes preparing after the user remo
   render(<AgentTaskView taskId="task"/>);
   const input=await screen.findByPlaceholderText('随心输入');
   fireEvent.paste(input,{clipboardData:{files:[new File(['x'],'late.txt',{type:'text/plain'})]}});
-  await screen.findByText('late.txt');
+  await screen.findByRole('button', { name: '移除 late.txt' });
   fireEvent.click(screen.getByTitle('移除'));
   const prepared={id:'prepared',kind:'file',name:'late.txt',storedPath:'/fixture/private-copy',mime:'text/plain',size:1,image:false};
   await act(async()=>finish(prepared));
   expect(mocks.discardAttachment).toHaveBeenCalledWith('task',prepared);
-  expect(screen.queryByText('late.txt')).toBeNull();
+  expect(screen.queryByRole('button', { name: '移除 late.txt' })).toBeNull();
 });
 
 it('renders lists, bold text and routed links in an Agent reply', async () => {
@@ -1261,7 +1407,7 @@ it('F14 pauses autosave on a conflict and keeps local edits until replacing text
   expect(draftWrites()).toHaveLength(1);
   fireEvent.click(useOther);
   fireEvent.click(screen.getByRole('button',{name:'确认替换'}));
-  await screen.findByText('另一份.txt');
+  await screen.findByRole('button', { name: '移除 另一份.txt' });
   expect(editor.value).toBe('另一份正文');
   expect(mocks.draftBody).toHaveBeenCalledExactlyOnceWith(taskId,0,2);
   fireEvent.change(editor,{target:{value:'基于另一份继续修改'}});
@@ -1314,7 +1460,7 @@ it('V03 combines completed reads and commands on one row, with process prose bet
   expect(runningDetails.open).toBe(false);
   fireEvent.click(runningCommand);
   expect(runningDetails.open).toBe(true);
-  expect(within(runningDetails).getByText('正在运行 pnpm test')).toBeTruthy();
+  expect((await within(runningDetails).findByLabelText('完整命令')).textContent).toBe('pnpm test');
   fireEvent.click(runningCommand);
   expect(runningDetails.open).toBe(false);
 });
@@ -1343,11 +1489,29 @@ it('folds a single completed command independently from its turn and final reply
   expect(details.open).toBe(false);
   fireEvent.click(command);
   expect(details.open).toBe(true);
-  expect(within(details).getByText('运行了 pwd')).toBeTruthy();
-  expect(within(details).getByText('/fixture/work')).toBeTruthy();
+  expect((await within(details).findByLabelText('完整命令')).textContent).toBe('pwd');
+  expect(within(details).getByLabelText('命令输出').textContent).toBe('/fixture/work');
   fireEvent.click(clock);
   expect(screen.queryByText('运行了 1 条命令')).toBeNull();
   expect(screen.getByText('目录已确认')).toBe(reply);
+});
+
+it('keeps the complete script and output in separately labeled areas of an expanded command',async()=>{
+ const command='printf "first\\n"\nprintf "second\\n"';
+ const output='first\nsecond\n';
+ mocks.snapshot.mockResolvedValue(snapshot({
+  status:'working',turns:[{turn_id:'command-detail',status:'started'}],
+  items:[{...item('command_execution',{command,output,exitCode:2,status:'failed'}),turnId:'command-detail',terminal:'failed'}],
+ }));
+ render(<AgentTaskView taskId="task"/>);
+ const summary=await screen.findByText('1 条命令运行失败');
+ expect(screen.queryByLabelText('完整命令')).toBeNull();
+ fireEvent.click(summary.closest('summary')!);
+ expect((await screen.findByLabelText('完整命令')).textContent).toBe(command);
+ expect(screen.getByLabelText('命令输出').textContent).toBe(output);
+ expect(screen.getByText('退出码 2')).toBeTruthy();
+ fireEvent.click(summary.closest('summary')!);
+ await waitFor(()=>expect(screen.queryByLabelText('命令输出')).toBeNull());
 });
 
 it('V19 marks failure, opens error details, and separately calls out unknown delivery without offering a resend', async () => {
@@ -1397,9 +1561,51 @@ it('A60 shows an unconfirmed command result, retaining its partial output after 
     turns:[{turn_id:'ended',status:'interrupted',started_at:started,ended_at:ended}],
   }));
   render(<AgentTaskView taskId="task"/>);
-  const label = await screen.findByText('未收到工具结果 · ls');
+  const label = await screen.findByText('1 条命令未收到结果');
   expect(screen.queryByText('正在运行 ls')).toBeNull();
-  expect(label.closest('details')?.textContent).toContain('partial output');
+  fireEvent.click(label.closest('summary')!);
+  expect((await screen.findByLabelText('命令输出')).textContent).toContain('partial output');
+});
+
+it('shows sent images, file attachments, then message text and keeps image sources separate', async () => {
+  let urlNumber = 0;
+  vi.stubGlobal('URL', class extends URL {
+    static createObjectURL() { return 'blob:http://localhost/picture-' + ++urlNumber; }
+    static revokeObjectURL = vi.fn();
+  });
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+  imageRead.mockResolvedValue({ mime: 'image/png', base64: 'YWJj', totalBytes: 3, next: 3, revision: 'r' });
+  const pending = { id: 'draft-shot', name: '待发送.png', image: true, kind: 'path', mime: 'image/png', relativePath: 'pending.png' };
+  const sent = { name: '历史图片.png', image: true, kind: 'file' };
+  const second = { name: '第二张图片.png', image: true, kind: 'file' };
+  const note = { name: 'notes.txt', kind: 'file' };
+  mocks.snapshot.mockResolvedValue(snapshot({
+    draft: { revision: 1, draft: { text: '', attachments: [pending] } },
+    items: [{ ...item('user_message', { text: '旧消息', attachments: [sent, note, second] }), turnId: 'older' }],
+  }));
+  render(<AgentTaskView taskId="task" />);
+  const sentImage = await screen.findByRole('img', { name: sent.name });
+  const secondImage = await screen.findByRole('img', { name: second.name });
+  const messageText = screen.getByText('旧消息');
+  expect(sentImage.compareDocumentPosition(secondImage)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(secondImage.compareDocumentPosition(messageText)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  const file = screen.getByRole('button', { name: '预览附件 ' + note.name });
+  expect(secondImage.compareDocumentPosition(file)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(file.compareDocumentPosition(messageText)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  fireEvent.load(sentImage);
+  fireEvent.click(screen.getByRole('button', { name: '预览图片 ' + sent.name }));
+  const dialog = await screen.findByRole('dialog', { name: '图片预览' });
+  expect(within(dialog).getByRole('img', { name: sent.name })).toHaveProperty('src', sentImage.getAttribute('src'));
+  fireEvent.keyDown(dialog, { key: 'Escape' });
+  expect(screen.queryByRole('dialog', { name: '图片预览' })).toBeNull();
+
+  await screen.findByRole('img', { name: pending.name });
+  expect(imageRead).toHaveBeenCalledWith('task', { kind: 'draft', attachmentId: pending.id }, 0, undefined);
+  expect(imageRead).toHaveBeenCalledWith('task', { kind: 'message', turnId: 'older', index: 0 }, 0, undefined);
+  expect(imageRead).toHaveBeenCalledWith('task', { kind: 'message', turnId: 'older', index: 2 }, 0, undefined);
+  fireEvent.click(screen.getByRole('button', { name: '移除 ' + pending.name }));
+  expect(screen.queryByRole('img', { name: pending.name })).toBeNull();
+  expect(screen.getByRole('img', { name: sent.name })).toBeTruthy();
 });
 
 describe.each([
@@ -1431,10 +1637,12 @@ describe.each([
     if (status === 'failed') expect(heading.closest('.agent-turn-failed')).toBeTruthy();
     if (withTools) {
       const control = within(turn).getByRole('button',{name:title});
-      expect(within(turn).getByText('运行了 读第二份')).toBeTruthy();
+      const commands = within(turn).getAllByText('运行了 1 条命令');
+      expect(commands).toHaveLength(2);
+      fireEvent.click(commands[1].closest('summary')!);
+      expect((await within(turn).findByLabelText('完整命令')).textContent).toContain('读第二份');
       fireEvent.click(control);
-      expect(within(turn).queryByText('运行了 读第一份')).toBeNull();
-      expect(within(turn).queryByText('运行了 读第二份')).toBeNull();
+      expect(within(turn).queryByText('运行了 1 条命令')).toBeNull();
     } else {
       expect(within(turn).queryByRole('button',{name:title})).toBeNull();
     }

@@ -14,6 +14,33 @@ let base:string,files:FileService,broker:NativeFileBroker;
 describe.skipIf(!process.env.SMARTDD_FILES_NATIVE_PATH)('Local attachment presentation authority',()=>{
  beforeEach(()=>{base=realpathSync(mkdtempSync(join(tmpdir(),'willyou-attachment-routing-')));mkdirSync(join(base,'root'));mkdirSync(join(base,'recovery'));broker=new NativeFileBroker(process.env.SMARTDD_FILES_NATIVE_PATH!);const resolver={sources:()=>[{kind:'project-directory' as const,id:'root',projectId:'attachments',path:join(base,'root'),label:'Synthetic attachments'}]};files=new FileService(new FileRootsService(resolver,broker),broker,new FileRecoveryStore(broker,join(base,'recovery'),resolver))});
  afterEach(async()=>{files.closeOwner('attachments');await files.watcher.dispose();broker.dispose();rmSync(base,{recursive:true,force:true})});
+ it('opens a message attachment as one read-only document without issuing a browsable root', async () => {
+   const owner = 'attachments', root = join(base, 'root');
+   writeFileSync(join(root, 'note.md'), '# Attachment only');
+   writeFileSync(join(root, 'sibling.txt'), 'SYNTHETIC_SIBLING');
+   const document = await files.openTaskAttachment(owner, 'task-1', { root, relativePath: 'note.md', mimeType: 'text/markdown' });
+   expect(document).toMatchObject({ sourceReadOnly: true, writable: false, attachment: { textKind: 'markdown' } });
+   const read = await files.read(owner, document.ref);
+   expect(Buffer.from(read.base64, 'base64').toString()).toBe('# Attachment only');
+   const { lease, generation } = document.ref;
+   await expect(files.list(owner, { lease, generation, relativePath: '' })).rejects.toMatchObject({ code: 'UNTRUSTED' });
+   await expect(files.open(owner, { lease, generation, relativePath: 'sibling.txt' })).rejects.toMatchObject({ code: 'UNTRUSTED' });
+   await expect(files.related(owner, document.ref, 'sibling.txt')).rejects.toMatchObject({ code: 'UNTRUSTED' });
+   await expect(files.read('other owner', document.ref)).rejects.toMatchObject({ code: 'UNTRUSTED' });
+   files.closeDocument(owner, document.ref);
+   await expect(files.read(owner, document.ref)).rejects.toMatchObject({ code: 'UNTRUSTED' });
+ });
+ it('keeps linked resources outside the single-file scope of an HTML message attachment', async () => {
+   const owner = 'attachments', root = join(base, 'root');
+   writeFileSync(join(root, 'report.html'), '<link rel="stylesheet" href="sibling.css"><p>Report</p>');
+   writeFileSync(join(root, 'sibling.css'), 'p { color: navy; }');
+   const document = await files.openTaskAttachment(owner, 'task-1', { root, relativePath: 'report.html', mimeType: 'text/html' });
+   const source = files.htmlSource(owner, document.ref);
+   const signal = new AbortController().signal;
+   const original = await source.read(source.path, 1024, signal);
+   expect(Buffer.from(original.bytes).toString()).toContain('<p>Report</p>');
+   await expect(source.read('sibling.css', 1024, signal)).rejects.toMatchObject({ code: 'UNTRUSTED' });
+ });
  it('derives readonly text presentation from suffix before MIME and retains it over read/refresh',async()=>{
   const root=(await files.openScope('attachments',{kind:'project',projectId:'attachments'})).roots[0];
   const fixtures=[

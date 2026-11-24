@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, GripVertical, Plus, Star, Terminal } from 'lucide-react';
 import { codeAgentKindSchema, type CodeAgentTool, type ProviderView, type RunConfigView } from '@shared/ai-agents';
+import { isClaudeSubscription } from '@shared/agent-model-choice';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { Ellipsis } from 'lucide-react';
 import { AgentIcon, ProviderIcon, ToolIcon } from './icons';
@@ -16,6 +17,8 @@ export function AgentList({configs,providers,tools,actions}:{configs:RunConfigVi
   if(!configs.length)return <div className="m13-empty"><Terminal size={20}/><h3>还没有智能体</h3><p>选一个 Code Agent，再选订阅或供应商。</p><button className="m10-button primary" onClick={actions.create}><Plus size={14}/>新建智能体</button></div>;
   return <div className="m13-agent-list m13-sortable">{configs.map((c,index)=>{
     const p=providers.find(p=>p.id===c.providerId),tool=tools.find(t=>t.id===c.toolId),m=p?.models.find(m=>m.id===c.defaultModel);
+    const loginDescription = c.loggedOut ? 'CLI 已退出登录，重新登录后自动恢复'
+      : isClaudeSubscription(c, tool?.login) ? '模型与推理强度由本机 Claude Code 提供' : 'CLI 默认模型 · 使用本机 CLI 自己的登录';
     const missing=!tool?.installed,legacy=c.source==='legacy',kind=codeAgentKindSchema.safeParse(c.kind).data,status=kind&&m?(m.availability[kind]??'untested'):undefined;
     const blocked=c.isDefault?'默认智能体必须在首页显示':c.loggedOut?'重新登录后才能在首页显示':missing?`${agentLabels[c.kind]??c.kind} 未安装`:'';
     return <div key={c.id} className={'m13-agent-row m13-agent-item'+(c.loggedOut||missing?' dim':'')+(drag===c.id?' dragging':'')+(over===c.id&&drag&&drag!==c.id?' drop-target':'')} data-agent={c.id}
@@ -26,7 +29,7 @@ export function AgentList({configs,providers,tools,actions}:{configs:RunConfigVi
       <span className={'m13-grip'+(c.isDefault?' locked':'')} title={c.isDefault?'默认智能体固定排在第一位':'拖动调整顺序（即首页下拉中的顺序）'} aria-hidden="true"><GripVertical size={14}/></span>
       <AgentIcon tool={c.kind} provider={p?{catalog:p.preset,name:p.name}:null} legacy={legacy} size={28}/>
       <span className="m13-cap-main"><b>{c.name}{c.isDefault&&<Pill tone="ok"><Star size={11}/>默认</Pill>}{c.loggedOut&&<Pill tone="warn">已退出登录</Pill>}{p&&!p.hasKey&&<Pill tone="warn">供应商需要 Key</Pill>}{missing&&<Pill tone="warn">{agentLabels[c.kind]??c.kind} 未安装</Pill>}{m?.offline&&<Pill tone="warn">默认模型已下线，请改选</Pill>}{legacy&&<Pill>旧配置</Pill>}</b>
-        <small>{legacy?`${agentLabels[c.kind]??c.kind} · 保留原环境变量与参数`:c.source==='login'?(c.loggedOut?'CLI 已退出登录，重新登录后自动恢复':'CLI 默认模型 · 使用本机 CLI 自己的登录'):p?<>{m?.name??c.defaultModel}{status&&status!=='available'&&<span className={'m13-avail-tag '+(status==='unavailable'?'bad':'untested')}> · {status==='unavailable'?'不可用':'未测试'}</span>}{c.models.length>1&&<span className="m13-more-models" title={c.models.filter(id=>id!==c.defaultModel).map(id=>p.models.find(m=>m.id===id)?.name??id).join('、')}> · 另 {c.models.length-1} 个模型可切换</span>}</>:'供应商已删除'}</small></span>
+        <small>{legacy?`${agentLabels[c.kind]??c.kind} · 保留原环境变量与参数`:c.source==='login'?loginDescription:p?<>{m?.name??c.defaultModel}{status&&status!=='available'&&<span className={'m13-avail-tag '+(status==='unavailable'?'bad':'untested')}> · {status==='unavailable'?'不可用':'未测试'}</span>}{c.models.length>1&&<span className="m13-more-models" title={c.models.filter(id=>id!==c.defaultModel).map(id=>p.models.find(m=>m.id===id)?.name??id).join('、')}> · 另 {c.models.length-1} 个模型可切换</span>}</>:'供应商已删除'}</small></span>
       <span className="m13-home-toggle" title={blocked}><span>首页</span><AgentSwitch on={c.homeVisible&&!c.loggedOut&&!missing} label={(c.homeVisible?'不在首页显示 ':'在首页显示 ')+c.name} disabled={Boolean(blocked)} title={blocked} onChange={()=>actions.toggleVisible(c)}/></span>
       <DropdownMenu><DropdownMenuTrigger className="m10-icon" aria-label={c.name+' 更多操作'}><Ellipsis size={16}/></DropdownMenuTrigger><DropdownMenuContent align="end">
         {!c.isDefault&&c.available&&c.homeVisible&&<DropdownMenuItem onClick={()=>actions.setDefault(c)}>设为默认</DropdownMenuItem>}
