@@ -540,8 +540,27 @@ export function App() {
       </div>}
     </header>}
     <nav className="app-rail" aria-label="应用导航">
-      <div className="rail-links">{railButton('home', '工作台', () => nav('home'))}{railButton('clock', '定时任务', () => nav('scheduled'))}{m13Active ? railButton('settings', '设置', () => nav('settings/general')) : railButton('bot', 'AI 工具', () => nav('settings/ai'))}{!m13Active && <button type="button" className={'rail-link ' + (isApps ? 'selected' : '')} aria-label="应用接入" title="应用接入" aria-current={isApps ? 'page' : undefined} onClick={() => nav('apps')}><Link2 size={21} strokeWidth={1.7} /></button>}<button type="button" className={'rail-link ' + (isM13 ? 'selected' : '')} aria-label="插件与能力（M13 预览）" title="插件与能力（M13 预览）" aria-current={isM13 ? 'page' : undefined} onClick={() => nav('m13/plugins')}><M13Puzzle size={21} strokeWidth={1.7} /></button>{!m13Active && <>{railButton('more', '预览说明', () => setModal({ type: 'preview' }))}<span className="rail-separator" />{railButton('branch', '项目资源', () => project.id ? nav('project/' + project.id) : setModal({ type: 'project' }))}</>}{!m13Active && railButton('grid', 'Skill 与 MCP', () => nav('settings/skills'))}</div>
-      <div className="rail-bottom">{!m13Active && <IconButton icon={Download} label="版本信息" className="rail-download" onClick={() => nav('settings/about')} />}<button className="rail-avatar" aria-label="设置" title="设置" onClick={() => nav('settings/general')}><img src="/assets/app-icon.png" alt="" /></button></div>
+      <div className="rail-links">
+        {railButton('home', '工作台', () => nav('home'))}
+        {railButton('clock', '定时任务', () => nav('scheduled'))}
+        {m13Active
+          ? !m14Preview && railButton('settings', '设置', () => nav('settings/general'))
+          : railButton('bot', 'AI 工具', () => nav('settings/ai'))}
+        {!m13Active && <button type="button" className={'rail-link ' + (isApps ? 'selected' : '')} aria-label="应用接入" title="应用接入" aria-current={isApps ? 'page' : undefined} onClick={() => nav('apps')}><Link2 size={21} strokeWidth={1.7} /></button>}
+        <button type="button" className={'rail-link ' + (isM13 ? 'selected' : '')} aria-label="插件与能力（M13 预览）" title="插件与能力（M13 预览）" aria-current={isM13 ? 'page' : undefined} onClick={() => nav('m13/plugins')}><M13Puzzle size={21} strokeWidth={1.7} /></button>
+        {!m13Active && <>
+          {railButton('more', '预览说明', () => setModal({ type: 'preview' }))}
+          <span className="rail-separator" />
+          {railButton('branch', '项目资源', () => project.id ? nav('project/' + project.id) : setModal({ type: 'project' }))}
+          {railButton('grid', 'Skill 与 MCP', () => nav('settings/skills'))}
+        </>}
+      </div>
+      <div className="rail-bottom">
+        {!m13Active && <IconButton icon={Download} label="版本信息" className="rail-download" onClick={() => nav('settings/about')} />}
+        {m14Preview && m13Active
+          ? railButton('settings', '设置', () => nav('settings/general'))
+          : <button className="rail-avatar" aria-label="设置" title="设置" onClick={() => nav('settings/general')}><img src="/assets/app-icon.png" alt="" /></button>}
+      </div>
     </nav>
     <ReferenceSidebar agentMode={m14Preview} taskStatus={m14Preview ? m14SidebarStatus : null} projects={projects} tasks={tasks} route={route} collapsed={collapsed} closedProjects={closedProjects} activeProject={isProject ? activeProject.id : route === 'home' ? projectId : null} activeTaskId={taskId}
       onToggleProject={key => setClosedProjects(old => old.includes(key) ? old.filter(p => p !== key) : [...old, key])}

@@ -24,7 +24,7 @@ import { PermissionPicker } from '@renderer/features/agents/permission-picker';
 import { agentPermissionSchema } from '@shared/agent-permissions';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
-import { attachmentImageBlob, MessageAttachments } from './attachment-images';
+import { attachmentImageBlob, MessageWithAttachments } from './attachment-images';
 import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
 import { ComposerMenu, useComposerSkills } from './composer-menu-view';
@@ -302,11 +302,15 @@ function ItemRow({ item, finalReply, completedAt }: { item: TimelineItem; finalR
       const message = String(p.text ?? '');
       const fold = !truncated && !isIncomplete(p) && (message.length > 600 || message.split('\n', 9).length > 8);
       const preview = message.slice(0, 600).split('\n').slice(0, 8).join('\n').replace(/[\uD800-\uDBFF]$/, '');
-      return <div className="agent-user"><div className="agent-user-bubble">{fold && !showMessage ? preview + '…' : message}
+      const body = <div className="agent-user-message">
+        {fold && !showMessage ? preview + '…' : message}
         {fold && <button type="button" className="agent-inline-action agent-fold" aria-expanded={showMessage} onClick={() => setShowMessage(!showMessage)}>{showMessage ? '收起全文' : '显示全文'}</button>}
         <Completeness truncated={truncated} payload={p} onExpand={() => { setShowMessage(true); void load(); }}/>
-        {Array.isArray(p.attachments) && p.attachments.length > 0 &&
-          <MessageAttachments attachments={p.attachments} taskId={useTaskId} turnId={item.turnId} />}
+      </div>;
+      return <div className="agent-user"><div className="agent-user-bubble">
+        {Array.isArray(p.attachments) && p.attachments.length > 0
+          ? <MessageWithAttachments attachments={p.attachments} taskId={useTaskId} turnId={item.turnId}>{body}</MessageWithAttachments>
+          : body}
         {!archived && item.turnId && actions?.unsent(item.turnId) && <div className="agent-inline-actions"><span>发送失败</span>
           <button type="button" disabled={actions.busy} onClick={() => actions.retry(item.turnId!)}>重试</button>
           <button type="button" disabled={actions.busy} onClick={() => actions.restore(item.turnId!)}>放回输入框</button>

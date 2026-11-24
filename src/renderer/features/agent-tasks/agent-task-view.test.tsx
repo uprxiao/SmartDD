@@ -1441,7 +1441,7 @@ it('A60 shows an unconfirmed command result, retaining its partial output after 
   expect((await screen.findByLabelText('命令输出')).textContent).toContain('partial output');
 });
 
-it('shows a restored draft image and a sent image with separate preview sources', async () => {
+it('shows sent images before message text and keeps draft and message preview sources separate', async () => {
   let urlNumber = 0;
   vi.stubGlobal('URL', class extends URL {
     static createObjectURL() { return 'blob:http://localhost/picture-' + ++urlNumber; }
@@ -1451,23 +1451,31 @@ it('shows a restored draft image and a sent image with separate preview sources'
   imageRead.mockResolvedValue({ mime: 'image/png', base64: 'YWJj', totalBytes: 3, next: 3, revision: 'r' });
   const pending = { id: 'draft-shot', name: '待发送.png', image: true, kind: 'path', mime: 'image/png', relativePath: 'pending.png' };
   const sent = { name: '历史图片.png', image: true, kind: 'file' };
+  const second = { name: '第二张图片.png', image: true, kind: 'file' };
+  const note = { name: 'notes.txt', kind: 'file' };
   mocks.snapshot.mockResolvedValue(snapshot({
     draft: { revision: 1, draft: { text: '', attachments: [pending] } },
-    items: [{ ...item('user_message', { text: '旧消息', attachments: [sent, { name: 'notes.txt', kind: 'file' }] }), turnId: 'older' }],
+    items: [{ ...item('user_message', { text: '旧消息', attachments: [sent, note, second] }), turnId: 'older' }],
   }));
   render(<AgentTaskView taskId="task" />);
   const sentImage = await screen.findByRole('img', { name: sent.name });
+  const secondImage = await screen.findByRole('img', { name: second.name });
+  const messageText = screen.getByText('旧消息');
+  const file = screen.getByText(note.name);
+  expect(sentImage.compareDocumentPosition(secondImage)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(secondImage.compareDocumentPosition(messageText)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(messageText.compareDocumentPosition(file)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   fireEvent.load(sentImage);
   fireEvent.click(screen.getByRole('button', { name: '预览图片 ' + sent.name }));
   const dialog = await screen.findByRole('dialog', { name: '图片预览' });
   expect(within(dialog).getByRole('img', { name: sent.name })).toHaveProperty('src', sentImage.getAttribute('src'));
   fireEvent.keyDown(dialog, { key: 'Escape' });
   expect(screen.queryByRole('dialog', { name: '图片预览' })).toBeNull();
-  expect(screen.getByText('notes.txt')).toBeTruthy();
 
   await screen.findByRole('img', { name: pending.name });
   expect(imageRead).toHaveBeenCalledWith('task', { kind: 'draft', attachmentId: pending.id }, 0, undefined);
   expect(imageRead).toHaveBeenCalledWith('task', { kind: 'message', turnId: 'older', index: 0 }, 0, undefined);
+  expect(imageRead).toHaveBeenCalledWith('task', { kind: 'message', turnId: 'older', index: 2 }, 0, undefined);
   fireEvent.click(screen.getByRole('button', { name: '移除 ' + pending.name }));
   expect(screen.queryByRole('img', { name: pending.name })).toBeNull();
   expect(screen.getByRole('img', { name: sent.name })).toBeTruthy();

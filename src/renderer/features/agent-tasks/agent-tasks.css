@@ -227,7 +227,8 @@
 .agent-attachment-placeholder span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .agent-user-attachments { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin-top: 8px; font-size: 12px; }
 .agent-message-pictures { width: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
-.agent-message-pictures:empty { display: none; }
+.agent-message-pictures:empty,.agent-user-attachments:empty { display: none; }
+.agent-message-pictures:not(:empty) + .agent-user-message:not(:empty) { margin-top: 8px; }
 .agent-message-pictures .agent-attachment-thumbnail { width: min(108px, 100%); height: 80px; border: 1px solid var(--border); background: var(--background); border-radius: 8px; }
 .agent-message-pictures .agent-attachment-thumbnail:only-child { width: min(200px, 100%); height: auto; aspect-ratio: 4/3; }
 .agent-message-pictures .agent-attachment-thumbnail:only-child img { object-fit: contain; }

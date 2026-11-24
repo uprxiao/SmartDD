@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ImageIcon, Loader2 } from 'lucide-react';
 import { rpc } from '@renderer/lib/ipc';
@@ -131,23 +131,27 @@ interface MessageAttachment {
   relativePath?: string;
 }
 
-export function MessageAttachments({ attachments, taskId, turnId }: {
+export function MessageWithAttachments({ attachments, taskId, turnId, children }: {
   attachments: MessageAttachment[];
   taskId: string;
   turnId?: string | null;
+  children: ReactNode;
 }) {
   const gallery = useAttachmentGallery(attachments.map((_, index) => String(index)));
-  return <div className="agent-user-attachments">
+  return <>
     <div className="agent-message-pictures">
       {attachments.map((attachment, index) => attachment.image && turnId
         ? <AttachmentThumbnail key={index} id={String(index)} name={attachment.name} taskId={taskId}
           source={{ kind: 'message', turnId, index }} register={gallery.register} open={gallery.open}/>
         : null)}
     </div>
-    {attachments.map((attachment, index) => !attachment.image || !turnId
-      ? <span key={index} className="agent-message-file" title={attachment.relativePath ?? attachment.name}>
-        {attachment.relativePath ?? attachment.name}
-      </span> : null)}
+    {children}
+    <div className="agent-user-attachments">
+      {attachments.map((attachment, index) => !attachment.image || !turnId
+        ? <span key={index} className="agent-message-file" title={attachment.relativePath ?? attachment.name}>
+          {attachment.relativePath ?? attachment.name}
+        </span> : null)}
+    </div>
     {gallery.dialog}
-  </div>;
+  </>;
 }
