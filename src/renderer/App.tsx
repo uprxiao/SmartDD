@@ -13,6 +13,7 @@ import { events } from '@renderer/lib/ipc';
 import { TaskSearchDialog } from '@renderer/lib/layout/task-search';
 import { Workspace } from '@renderer/lib/layout/workspace';
 import { useProfileHealthEvents } from '@renderer/lib/profile-health';
+import { useAgentToolEvents } from '@renderer/lib/hooks/useAgents';
 import { ThemeProvider } from '@renderer/lib/theme';
 import { Toaster } from '@renderer/lib/ui/sonner';
 import { TooltipProvider } from '@renderer/lib/ui/tooltip';
@@ -25,6 +26,7 @@ const queryClient = createRendererQueryClient();
 // Needs the query client, so it lives inside the provider.
 function ProfileHealthEvents() {
   useProfileHealthEvents();
+  useAgentToolEvents();
   return null;
 }
 

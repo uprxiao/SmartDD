@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { access, stat } from 'node:fs/promises';
 import { constants } from 'node:fs';
@@ -9,12 +9,23 @@ import { detectRunner, type DetectOptions } from './runner-detect';
 import type { AgentService } from './agent-service';
 import { probeDriver, type DriverProbe } from '../agent/discovery';
 import { RUNNERS } from '@shared/ai-profiles';
+import type { AccountInfo } from '@anthropic-ai/claude-agent-sdk';
 
 export interface CliProbeResult { code: number | null; stdout: string; stderr: string; timedOut?: boolean }
-export interface CliLoginResult { login: CliLogin; error: string | null; loginSourceEnv?: CodeAgentTool['loginSourceEnv'] }
+interface ClaudeCatalogAccount { key: string; signature: string }
+export interface CliLoginResult { login: CliLogin; error: string | null; loginSourceEnv?: CodeAgentTool['loginSourceEnv']; catalogAccount?: ClaudeCatalogAccount }
 export interface ToolDetection { tool: CodeAgentTool; error: string | null }
+type InspectedTool = ToolDetection & Pick<CliLoginResult, 'catalogAccount'>;
 
 function plain(value: string): string { return value.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '').trim(); }
+
+export function claudeAccountSignature(account: AccountInfo): string | undefined {
+  const email = typeof account.email === 'string' ? account.email.trim().toLowerCase() : '';
+  const org = typeof account.organization === 'string' ? account.organization.trim() : '';
+  const plan = typeof account.subscriptionType === 'string' ? account.subscriptionType.trim().toLowerCase().replace(/^claude\s+/, '') : '';
+  if (account.apiProvider !== 'firstParty' || !email || !org || !plan) return undefined;
+  return createHash('sha256').update(JSON.stringify(['claude.ai', email, org, plan])).digest('hex');
+}
 
 /** Only known, verified protocol values get a subscription/API label. Raw output never leaves main. */
 export function parseCliLogin(kind: CodeAgentKind, result: CliProbeResult): CliLoginResult {
@@ -39,7 +50,18 @@ export function parseCliLogin(kind: CodeAgentKind, result: CliProbeResult): CliL
       const loginSourceEnv = row.authMethod === 'api_key' && row.apiKeySource === 'ANTHROPIC_API_KEY' ? 'ANTHROPIC_API_KEY' as const : undefined;
       return { login: 'api', error: null, ...(loginSourceEnv ? { loginSourceEnv } : {}) };
     }
-    // Claude subscription/Console output has not been calibrated: do not guess.
+    if (row.loggedIn === true && row.authMethod === 'claude.ai' && row.apiProvider === 'firstParty'
+      && typeof row.subscriptionType === 'string' && row.subscriptionType.trim()) {
+      const orgId = typeof row.orgId === 'string' ? row.orgId.trim() : '';
+      const signature = claudeAccountSignature({
+        apiProvider: row.apiProvider, subscriptionType: row.subscriptionType,
+        email: typeof row.email === 'string' ? row.email : undefined,
+        organization: typeof row.orgName === 'string' ? row.orgName : undefined,
+      });
+      const catalogAccount = orgId && signature
+        ? { key: createHash('sha256').update(JSON.stringify([signature, orgId])).digest('hex'), signature } : undefined;
+      return { login: 'subscription', error: null, ...(catalogAccount ? { catalogAccount } : {}) };
+    }
     return { login: 'local', error: null };
   } catch { return { login: 'none', error: '登录状态格式无法识别，请重新检测' }; }
 }
@@ -61,6 +83,7 @@ export function probeNativeCli(executable: string, args: string[], base: Record<
 
 type Dependencies = {
   env: () => Record<string, string>;
+  onChanged?: () => void;
   discover?: typeof detectRunner;
   probe?: typeof probeNativeCli;
   executable?: (path: string) => Promise<boolean>;
@@ -69,19 +92,22 @@ type Dependencies = {
 
 export class AgentToolService {
   private tail: Promise<unknown> = Promise.resolve();
+  private readonly catalogAccounts = new Map<string, ClaudeCatalogAccount>();
   constructor(private readonly agents: AgentService, private readonly dependencies: Dependencies) {}
 
   refresh(): Promise<ToolDetection[]> { return this.serialize(() => this.refreshNow()); }
+  whenIdle(): Promise<unknown> { return this.tail; }
+  claudeCatalogAccount(toolId: string): ClaudeCatalogAccount | undefined { return this.catalogAccounts.get(toolId); }
 
   customPath(kind: string, path: string | null,toolId?:string): Promise<ToolDetection> { return this.serialize(() => this.customPathNow(kind, path,toolId)); }
 
   private async refreshNow(): Promise<ToolDetection[]> {
     const stored = this.agents.tools(), requests = [...stored.filter((tool) => codeAgentKindSchema.safeParse(tool.kind).success)];
     for (const kind of codeAgentKindSchema.options) if (!requests.some((tool) => tool.kind === kind)) requests.push({ id: `tool-${kind}`, kind, executable: RUNNERS[kind].command, customPath: null, version: null, installed: false, login: 'none' });
-    const env = this.detectEnv(), results: ToolDetection[] = [];
+    const env = this.detectEnv(), results: InspectedTool[] = [];
     for (const request of requests) results.push(await this.inspect(request, env));
-    this.agents.recordTools(results.map((result) => result.tool));
-    return results;
+    this.record(results);
+    return results.map(({ tool, error }) => ({ tool, error }));
   }
 
   private async customPathNow(kindInput: string, path: string | null,toolId?:string): Promise<ToolDetection> {
@@ -92,8 +118,17 @@ export class AgentToolService {
     const request: CodeAgentTool = { ...(existing ?? { id: `tool-${kind}`, kind, version: null, installed: false, login: 'none' }), executable: path ?? RUNNERS[kind].command, customPath: path };
     const result = await this.inspect(request, this.detectEnv());
     // A rejected file selection must not discard the user's last working tool.
-    if (result.tool.installed || path === null) this.agents.recordTool(result.tool);
-    return result;
+    if (result.tool.installed || path === null) this.record([result]);
+    return { tool: result.tool, error: result.error };
+  }
+
+  private record(results: InspectedTool[]) {
+    this.agents.recordTools(results.map(({ tool }) => tool));
+    for (const { tool, catalogAccount } of results) {
+      if (catalogAccount) this.catalogAccounts.set(tool.id, catalogAccount);
+      else this.catalogAccounts.delete(tool.id);
+    }
+    this.dependencies.onChanged?.();
   }
 
   private serialize<T>(action: () => Promise<T>): Promise<T> {
@@ -108,7 +143,7 @@ export class AgentToolService {
     return env;
   }
 
-  private async inspect(request: CodeAgentTool, env: Record<string, string>): Promise<ToolDetection> {
+  private async inspect(request: CodeAgentTool, env: Record<string, string>): Promise<InspectedTool> {
     const kind = codeAgentKindSchema.parse(request.kind);
     if (kind === 'antigravity') {
       const options = { env, executable: request.customPath };
@@ -135,6 +170,6 @@ export class AgentToolService {
     if (!numericVersion) return missing('无法识别 Code Agent 版本');
     const login = parseCliLogin(kind, await probe(discovered.path, kind === 'claude' ? ['auth', 'status'] : ['login', 'status'], env));
     const tool = { ...request, executable: discovered.path, version: numericVersion, installed: true, login: login.login, loginSourceEnv: login.loginSourceEnv };
-    return { tool, error: login.error };
+    return { tool, error: login.error, catalogAccount: login.catalogAccount };
   }
 }

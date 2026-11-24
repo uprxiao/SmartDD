@@ -11,6 +11,7 @@ import { TurnDiffs } from './turn-diffs';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { nativeExecutableIdentity, withShellProxy } from '../ai/runner-detect';
+import { claudeAccountSignature, type AgentToolService } from '../ai/agent-tools';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema, type CodeAgentTool, type RunConfigView } from '@shared/ai-agents';
 import { ApplicationError } from '@shared/applications';
@@ -64,6 +65,7 @@ export function registeredProjectCwd(sqlite: BetterSqlite3.Database, projectId: 
 export interface AgentWorkspaceDeps {
   sqlite: BetterSqlite3.Database;
   agents: AgentService;
+  agentTools?: Pick<AgentToolService, 'whenIdle' | 'claudeCatalogAccount'>;
   providers: ProviderService;
   capabilities: CapabilityService;
   userData: string;
@@ -332,7 +334,11 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (!recoveryAbort.signal.aborted) void readSubscriptionCatalog(profile, tool, d.baseEnv().HOME ?? homedir()).catch(() => {});
   };
   const modelCatalog = async (scope: AgentModelScope, profileId: string, mode?: CatalogReadMode): Promise<AgentModelCatalog> => {
-    const profile = config(profileId);
+    let profile = config(profileId);
+    if (profile.kind === 'claude' && profile.source === 'login' && d.agentTools) {
+      await d.agentTools.whenIdle();
+      profile = config(profileId);
+    }
     const antigravity = profile.kind === 'antigravity' && profile.source === 'provider';
     const nativeLogin = profile.source === 'login' && (profile.kind === 'codex' || profile.kind === 'claude');
     if (!antigravity && !nativeLogin) return { status: 'ready', models: [] };
@@ -344,17 +350,26 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (!tool) throw new DriverError('REJECTED', '执行器不可用');
     if (profile.kind === 'claude') {
       if (!isClaudeSubscription(profile, tool.login)) return { status: 'unavailable', models: [] };
+      const account = d.agentTools?.claudeCatalogAccount(tool.id);
       const baseEnv = d.baseEnv();
       const launch = resolveProfileLaunch({ config: profile, tool, cwd, userData: d.userData, runId: randomUUID(), baseEnv });
-      return modelCatalogs.read(claudeCatalogScope(profile.id, launch, tool, cwd), async () => {
+      const key = claudeCatalogScope(profile.id, launch, tool, cwd);
+      return modelCatalogs.read(key, async observer => {
         const native = await probeDriver('claude-sdk', { env: baseEnv, executable: launch.command, detect });
         if (!native.realpath || native.state === 'unsupported') throw new DriverError('UNSUPPORTED', native.reason ?? 'Claude Code 不可用');
         const signal = AbortSignal.any([recoveryAbort.signal, AbortSignal.timeout(5000)]);
         const env = withShellProxy(native.shellPath ? { ...launch.env, PATH: native.shellPath } : launch.env, native.shellProxy);
+        let activeSignature: string | undefined;
         const models = await previewClaudeModels({ executable: { path: native.realpath, version: native.version ?? 'unknown' },
-          cwd, env, settingSources: launch.settingSources }, signal);
+          cwd, env, settingSources: launch.settingSources, onAccount: account
+            ? active => { activeSignature = claudeAccountSignature(active); } : undefined }, signal);
+        if ((activeSignature && activeSignature !== account?.signature)
+          || account?.key !== d.agentTools?.claudeCatalogAccount(tool.id)?.key || key !== claudeCatalogScope(profile.id, launch, tool, cwd)) {
+          throw new DriverError('STATE', 'Claude Code 登录或配置已变化，请重新读取模型目录');
+        }
+        if (account && activeSignature) observer.account?.(account.key);
         return { confirmed: true, models };
-      }, mode);
+      }, mode, account?.key);
     }
     if (antigravity) {
       const provider = d.agents.providers().find(item => item.id === profile.providerId);

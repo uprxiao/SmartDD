@@ -38,6 +38,7 @@ export interface AiProfilesChange {
 }
 /** Profiles or their health changed (a test started/finished, a task saw an API answer). */
 export const aiProfilesChangedEvent = defineEvent<AiProfilesChange>('aiProfiles:changed');
+export const agentToolsChangedEvent = defineEvent<void>('agents:tools-changed');
 export const menuOpenSettingsEvent = defineEvent<void>('menu:openSettings');
 export const menuToggleLeftSidebarEvent = defineEvent<void>('menu:toggleLeftSidebar');
 export const windowShownEvent = defineEvent<void>('window:shown');

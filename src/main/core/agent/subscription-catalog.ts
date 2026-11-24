@@ -6,6 +6,7 @@ import type Database from 'better-sqlite3';
 import type { CodeAgentTool } from '@shared/ai-agents';
 import { agentModelsSchema, type AgentModelCatalog, type AgentModelOption, type CatalogReadMode } from '@shared/agent-model-choice';
 import { projectLayers } from '../capabilities/discovery';
+import { CLAUDE_MODEL_VARIABLES } from '../ai/agent-launch-plan';
 import type { ProfileLaunch } from './profile-launch';
 import { DriverError } from './driver';
 import type { CatalogObserver, CodexCatalogResult } from './drivers/codex-catalog';
@@ -59,8 +60,10 @@ export function claudeCatalogScope(profileId: string, launch: ProfileLaunch, too
   const home = launch.env.HOME ?? homedir();
   const paths = [join(launch.stateRoot, 'settings.json'), join(launch.stateRoot, '.credentials.json'),
     ...projectLayers(cwd, home).flatMap(dir => ['settings.json', 'settings.local.json'].map(file => join(dir, '.claude', file)))];
+  const env = ['ANTHROPIC_BASE_URL', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN',
+    'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', ...CLAUDE_MODEL_VARIABLES];
   return cacheKey('claude:', profileId, JSON.stringify([cwd, launch.stateRoot, launch.command, fileStamp(launch.command),
-    tool.login, tool.version, launch.env.PATH, launch.env.ANTHROPIC_BASE_URL, launch.env.ANTHROPIC_MODEL,
+    tool.login, tool.version, launch.env.PATH, env.map(name => launch.env[name]),
     paths.map(path => [path, fileStamp(path)])]));
 }
 
@@ -68,19 +71,21 @@ export class SubscriptionCatalogs {
   private readonly entries = new Map<string, Entry>();
   constructor(private readonly db: Database.Database) {}
 
-  async read(key: string, probe: Probe, mode: CatalogReadMode = 'peek', localLoginBound = false): Promise<AgentModelCatalog> {
-    let entry = this.entries.get(key);
+  async read(key: string, probe: Probe, mode: CatalogReadMode = 'peek', localLoginBound: boolean | string = false): Promise<AgentModelCatalog> {
+    const verifiedAccount = typeof localLoginBound === 'string' ? localLoginBound : undefined;
+    const entryKey = verifiedAccount ? cacheKey('', key, verifiedAccount) : key;
+    let entry = this.entries.get(entryKey);
     if (!entry) {
       if (this.entries.size >= 32) {
         const idle = [...this.entries].find(([, v]) => !v.pending);
         if (idle) this.entries.delete(idle[0]);
       }
-      const account = localLoginBound ? this.lastAccount(key) : undefined;
+      const account = verifiedAccount ?? (localLoginBound ? this.lastAccount(key) : undefined);
       const saved = account && this.restore(cacheKey(PREFIX, key, account));
       entry = saved
         ? { snapshot: { status: 'ready', models: saved.models }, account, verified: true, refreshAt: saved.checkedAt + FRESH_FOR }
-        : { snapshot: { status: 'loading', models: [] }, verified: false, refreshAt: 0 };
-      this.entries.set(key, entry);
+        : { snapshot: { status: 'loading', models: [] }, account, verified: false, refreshAt: 0 };
+      this.entries.set(entryKey, entry);
     }
     if (!entry.pending && (mode === 'retry' || Date.now() >= entry.refreshAt)) {
       if ([...this.entries.values()].filter(v => v.pending).length >= 8) {

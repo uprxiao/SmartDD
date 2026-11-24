@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { McpServerStatus } from '@anthropic-ai/claude-agent-sdk';
 import type { DriverEvent } from '../driver';
 import { until } from '../test-doubles';
@@ -57,9 +57,12 @@ function make(turns: Turn[], mcpServerStatus?: () => Promise<McpServerStatus[]>)
 
 it('initializes a Claude catalog without sending a prompt and retains the callable aliases and per-model efforts', async () => {
   const sdk = fakeSdk([]);
-  const models = await previewClaudeModels({ executable:exe, cwd:'/project', env:{}, settingSources:['user'] }, AbortSignal.timeout(1000),
+  const account = { email: 'fixture@example.test', organization: 'Fixture', subscriptionType: 'Claude Pro' };
+  const onAccount = vi.fn();
+  const models = await previewClaudeModels({ executable:exe, cwd:'/project', env:{}, settingSources:['user'], onAccount }, AbortSignal.timeout(1000),
     async () => args => ({
       ...sdk.fn(args),
+      accountInfo: async () => account,
       supportedModels: async () => [
         {value:'default', resolvedModel:'claude-haiku-5-5', displayName:'Default (recommended)'},
         {value:'opus', resolvedModel:'claude-opus-5-5', displayName:'Opus', supportsEffort:true, supportedEffortLevels:['medium','high','medium','invalid']},
@@ -72,6 +75,7 @@ it('initializes a Claude catalog without sending a prompt and retains the callab
     {id:'opus', resolvedId:'claude-opus-5-5', name:'Claude Opus 5.5', efforts:['medium','high']},
     {id:'haiku', name:'Haiku', efforts:[]},
   ]);
+  expect(onAccount).toHaveBeenCalledExactlyOnceWith(account);
   expect(sdk.state.options).toMatchObject({ settingSources:['user'], persistSession:false, strictMcpConfig:true, tools:[], settings:{disableAllHooks:true} });
   expect(sdk.state.prompts).toEqual([]);
   expect(sdk.state.closed).toBe(true);

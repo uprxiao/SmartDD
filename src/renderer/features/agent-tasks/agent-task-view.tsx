@@ -33,7 +33,7 @@ import { createPortal } from 'react-dom';
 import type { MailSendReview } from '@shared/mail-execution';
 import { BrowserAccessReview, MailReviewCard, mailEdits, type MailEdits } from './agent-business-review';
 import { toast } from 'sonner';
-import { agentTaskEvent, agentTaskLiveEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
+import { agentTaskEvent, agentTaskLiveEvent, agentToolsChangedEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
 import { useProject } from '@renderer/lib/hooks/useProjects';
@@ -1063,7 +1063,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       if (s.seq < seqRef.current) return;
       applySnapshot(s);
     })();
-    void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
+    const loadProfiles = () => { void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {}); };
+    const offToolsChanged = events.on(agentToolsChangedEvent, loadProfiles);
+    loadProfiles();
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => {
       alive = false;
@@ -1074,6 +1076,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       offEvent();
       offLive();
       offWindowShown();
+      offToolsChanged();
       clearInterval(tick);
       window.removeEventListener('focus', onVisible);
       document.removeEventListener('visibilitychange', onVisible);

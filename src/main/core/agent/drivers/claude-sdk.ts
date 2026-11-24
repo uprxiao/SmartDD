@@ -3,7 +3,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import type { McpServerStatus, OnElicitation } from '@anthropic-ai/claude-agent-sdk';
+import type { AccountInfo, McpServerStatus, OnElicitation } from '@anthropic-ai/claude-agent-sdk';
 import { claudeEffortSchema } from '@shared/ai-agents';
 import { CLAUDE_LOGIN_MODEL } from '@shared/agent-model-choice';
 import {isHostBusinessCli} from '../host-cli-command';
@@ -18,6 +18,7 @@ export interface SdkQuery extends AsyncIterable<any> {
   setPermissionMode(mode: string): Promise<void>;
   setModel?(model?: string): Promise<void>;
   supportedModels?(): Promise<{ value: string; resolvedModel?: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
+  accountInfo?(): Promise<AccountInfo>;
   mcpServerStatus?(): Promise<McpServerStatus[]>;
   applyFlagSettings?(settings: { effortLevel: string | null }): Promise<void>;
   close?(): void;
@@ -40,7 +41,7 @@ class InputQueue<T> implements AsyncIterable<T> {
   }
 }
 
-async function readClaudeModels(query: SdkQuery, signal: AbortSignal): Promise<DriverModel[]> {
+async function readClaudeModels(query: SdkQuery, signal: AbortSignal, onAccount?: (account: AccountInfo) => void): Promise<DriverModel[]> {
   if (!query.supportedModels) return [];
   signal.throwIfAborted();
   let cancel!: () => void;
@@ -49,7 +50,10 @@ async function readClaudeModels(query: SdkQuery, signal: AbortSignal): Promise<D
     signal.addEventListener('abort', cancel, { once: true });
   });
   try {
-    const rows = await Promise.race([query.supportedModels(), cancelled]);
+    // Both SDK calls use the same initialized process. Missing identity still permits a live directory.
+    const accountInfo = onAccount && query.accountInfo ? query.accountInfo().catch(() => undefined) : undefined;
+    const [rows, account] = await Promise.race([Promise.all([query.supportedModels(), accountInfo]), cancelled]);
+    if (account && onAccount) onAccount(account);
     const models = new Map<string, DriverModel>();
     for (const row of rows) {
       if (typeof row?.value !== 'string' || !row.value || row.value.length > 256 || models.has(row.value)) continue;
@@ -71,7 +75,7 @@ async function readClaudeModels(query: SdkQuery, signal: AbortSignal): Promise<D
 
 /** Initialize a catalog-only SDK process without submitting a user turn or persisting a session. */
 export async function previewClaudeModels(
-  options: Pick<DriverOpenOptions, 'executable' | 'cwd' | 'env' | 'settingSources'>,
+  options: Pick<DriverOpenOptions, 'executable' | 'cwd' | 'env' | 'settingSources'> & { onAccount?: (account: AccountInfo) => void },
   signal: AbortSignal,
   sdk: () => Promise<SdkQueryFn> = loadSdk,
 ) {
@@ -85,7 +89,7 @@ export async function previewClaudeModels(
   } });
   const drain = (async () => { for await (const _ of active) { /* Initialization output has no user content. */ } })().catch(() => {});
   try {
-    return await readClaudeModels(active, signal);
+    return await readClaudeModels(active, signal, options.onAccount);
   } finally {
     input.end();
     active.close?.();

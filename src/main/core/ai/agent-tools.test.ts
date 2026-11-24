@@ -11,7 +11,7 @@ import { runBundledMigrations } from '../../db/migrations';
 import * as schema from '../../db/schema';
 import { SecretsStore } from '../../secrets';
 import { AgentService } from './agent-service';
-import { AgentToolService, parseCliLogin, probeNativeCli, type CliProbeResult } from './agent-tools';
+import { AgentToolService, claudeAccountSignature, parseCliLogin, probeNativeCli, type CliProbeResult } from './agent-tools';
 
 describe('CLI login output is parsed without exposing output/credential values', () => {
   const result = (stdout = '', stderr = '', code = 0): CliProbeResult => ({ stdout, stderr, code });
@@ -32,6 +32,25 @@ describe('CLI login output is parsed without exposing output/credential values',
       {loggedIn:true,authMethod:'oauth_token',apiKeySource:'ANTHROPIC_API_KEY'},
       {loggedIn:false,authMethod:'api_key',apiKeySource:'ANTHROPIC_API_KEY'},
     ]) expect(parseCliLogin('claude',result(JSON.stringify(row)))).not.toHaveProperty('loginSourceEnv');
+  });
+  it('recognizes Claude subscriptions and derives an account scope without exposing account details', () => {
+    const subscription = { loggedIn: true, authMethod: 'claude.ai', apiProvider: 'firstParty', subscriptionType: 'pro',
+      email: 'reader@example.test', orgId: 'public-test-org', orgName: 'Reader Org' };
+    const parse = (fields = {}) => parseCliLogin('claude', result(JSON.stringify({ ...subscription, ...fields })));
+    const parsed = parse();
+    expect(parsed).toMatchObject({ login: 'subscription', error: null, catalogAccount: { key: expect.stringMatching(/^[0-9a-f]{64}$/) } });
+    expect(JSON.stringify(parsed)).not.toMatch(/reader@example\.test|public-test-org|Reader Org/);
+    expect(parse({ email: 'other@example.test' }).catalogAccount?.key).not.toBe(parsed.catalogAccount?.key);
+    expect(parse({ orgId: 'other-org' }).catalogAccount?.key).not.toBe(parsed.catalogAccount?.key);
+    expect(parse({ subscriptionType: 'max' }).catalogAccount?.key).not.toBe(parsed.catalogAccount?.key);
+    const sdk = { email: subscription.email, organization: subscription.orgName, subscriptionType: 'Claude Pro', apiProvider: 'firstParty' as const };
+    expect(claudeAccountSignature(sdk)).toBe(parsed.catalogAccount?.signature);
+    expect(claudeAccountSignature({ ...sdk, email: 'other@example.test' })).not.toBe(parsed.catalogAccount?.signature);
+    expect(claudeAccountSignature({ ...sdk, apiProvider: 'gateway' })).toBeUndefined();
+    expect(parse({ orgId: undefined })).toEqual({ login: 'subscription', error: null });
+    expect(parse({ authMethod: 'console' })).toEqual({ login: 'local', error: null });
+    expect(parse({ apiProvider: 'bedrock' })).toEqual({ login: 'local', error: null });
+    expect(parse({ subscriptionType: null })).toEqual({ login: 'local', error: null });
   });
   it('does not treat invalid JSON, timeout or an error as authenticated, and returns no raw output', () => {
     for (const value of [result('PUBLIC_TEST'), result('{}'), result('', 'PUBLIC_TEST', 7), { ...result(), timedOut: true }]) {

@@ -57,6 +57,36 @@ it('opens a fresh on-disk directory without a native request and displays stale 
   db.close();
 });
 
+it('restores the last confirmed models and efforts for a verified Claude account across database reopen', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'willyou-claude-cache-'));
+  try {
+    const path = join(root, 'settings.sqlite');
+    const models = [{ id: 'opus', name: 'Opus', efforts: ['medium', 'high'], defaultEffort: 'medium' }];
+    const db = new Database(path);
+    db.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)');
+    await new SubscriptionCatalogs(db).read('claude:scope', async observer => {
+      observer.account?.('account-a');
+      return { models, confirmed: true };
+    }, 'wait');
+    db.close();
+
+    const reopened = new Database(path);
+    try {
+      const probe = vi.fn(async () => { throw new Error('catalog unavailable'); });
+      expect(await new SubscriptionCatalogs(reopened).read('claude:scope', probe, 'peek', 'account-a')).toEqual({ status: 'ready', models });
+      expect(probe).not.toHaveBeenCalled();
+      expect((await new SubscriptionCatalogs(reopened).read('claude:scope', probe, 'wait', 'account-b')).models).toEqual([]);
+      expect((await new SubscriptionCatalogs(reopened).read('claude:other-project', probe, 'wait', 'account-a')).models).toEqual([]);
+      const stale = new SubscriptionCatalogs(reopened);
+      const signalFailure = vi.fn(() => Promise.reject(new Error('offline')));
+      expect((await stale.read('claude:scope', signalFailure, 'retry', 'account-a')).models).toEqual(models);
+      await new Promise(resolve => setImmediate(resolve));
+      expect(await stale.read('claude:scope', probe, 'peek', 'account-a')).toEqual({ status: 'unavailable', models });
+      expect(await new SubscriptionCatalogs(reopened).read('claude:scope', probe, 'peek', 'account-a')).toEqual({ status: 'ready', models });
+    } finally { reopened.close(); }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
 it('shares cold probes, serves partial rows, then restores only a verified matching account on restart', async () => {
   const db = new Database(':memory:');
   db.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)');
