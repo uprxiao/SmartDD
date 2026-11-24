@@ -772,9 +772,9 @@ it('FR05：初始化前粘贴的附件，在同水位初始化快照到达后保
   await act(async () => { h.fire(20); await new Promise(r => setTimeout(r, 120)); });
   const input = await screen.findByPlaceholderText('随心输入');
   fireEvent.paste(input, { clipboardData: { files: [new File(['x'], 'note.txt', { type: 'text/plain' })] } });
-  await screen.findByText('note.txt');
+  await screen.findByRole('button', { name: '移除 note.txt' });
   await act(async () => h.resolve(snapshot({ seq: 20, draft: { draft: { text: '', attachments: [] }, revision: 2 } })));
-  expect(screen.queryByText('note.txt')).not.toBeNull();
+  expect(screen.queryByRole('button', { name: '移除 note.txt' })).not.toBeNull();
 });
 
 it('A43 retains draft attachment references until the last attempted write settles on navigation', async () => {
@@ -783,7 +783,8 @@ it('A43 retains draft attachment references until the last attempted write settl
   let acknowledge!: () => void;
   mocks.saveDraft.mockImplementation(() => new Promise(resolve => { acknowledge = () => resolve({ ok: true, revision: 2 }); }));
   const { unmount } = render(<AgentTaskView taskId="task" />);
-  await screen.findByText('kept.txt · 副本');
+  const fileRow = (await screen.findByRole('button', { name: '移除 kept.txt' })).closest<HTMLElement>('.agent-file-attachment')!;
+  expect(within(fileRow).getByText('副本')).toBeTruthy();
   const editorId = mocks.holdDraftAttachments.mock.calls[0][1];
   expect(mocks.holdDraftAttachments).toHaveBeenCalledWith('task', editorId, [attachment.storedPath]);
   fireEvent.change(screen.getByPlaceholderText('随心输入'), { target: { value: 'new draft' } });
@@ -1065,12 +1066,12 @@ it('G2 discards a private attachment that finishes preparing after the user remo
   render(<AgentTaskView taskId="task"/>);
   const input=await screen.findByPlaceholderText('随心输入');
   fireEvent.paste(input,{clipboardData:{files:[new File(['x'],'late.txt',{type:'text/plain'})]}});
-  await screen.findByText('late.txt');
+  await screen.findByRole('button', { name: '移除 late.txt' });
   fireEvent.click(screen.getByTitle('移除'));
   const prepared={id:'prepared',kind:'file',name:'late.txt',storedPath:'/fixture/private-copy',mime:'text/plain',size:1,image:false};
   await act(async()=>finish(prepared));
   expect(mocks.discardAttachment).toHaveBeenCalledWith('task',prepared);
-  expect(screen.queryByText('late.txt')).toBeNull();
+  expect(screen.queryByRole('button', { name: '移除 late.txt' })).toBeNull();
 });
 
 it('renders lists, bold text and routed links in an Agent reply', async () => {
@@ -1348,7 +1349,7 @@ it('F14 pauses autosave on a conflict and keeps local edits until replacing text
   expect(draftWrites()).toHaveLength(1);
   fireEvent.click(useOther);
   fireEvent.click(screen.getByRole('button',{name:'确认替换'}));
-  await screen.findByText('另一份.txt');
+  await screen.findByRole('button', { name: '移除 另一份.txt' });
   expect(editor.value).toBe('另一份正文');
   expect(mocks.draftBody).toHaveBeenCalledExactlyOnceWith(taskId,0,2);
   fireEvent.change(editor,{target:{value:'基于另一份继续修改'}});
@@ -1508,7 +1509,7 @@ it('A60 shows an unconfirmed command result, retaining its partial output after 
   expect((await screen.findByLabelText('命令输出')).textContent).toContain('partial output');
 });
 
-it('shows sent images before message text and keeps draft and message preview sources separate', async () => {
+it('shows sent images, file attachments, then message text and keeps image sources separate', async () => {
   let urlNumber = 0;
   vi.stubGlobal('URL', class extends URL {
     static createObjectURL() { return 'blob:http://localhost/picture-' + ++urlNumber; }
@@ -1528,10 +1529,11 @@ it('shows sent images before message text and keeps draft and message preview so
   const sentImage = await screen.findByRole('img', { name: sent.name });
   const secondImage = await screen.findByRole('img', { name: second.name });
   const messageText = screen.getByText('旧消息');
-  const file = screen.getByText(note.name);
   expect(sentImage.compareDocumentPosition(secondImage)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   expect(secondImage.compareDocumentPosition(messageText)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-  expect(messageText.compareDocumentPosition(file)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  const file = screen.getByRole('button', { name: '预览附件 ' + note.name });
+  expect(secondImage.compareDocumentPosition(file)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(file.compareDocumentPosition(messageText)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   fireEvent.load(sentImage);
   fireEvent.click(screen.getByRole('button', { name: '预览图片 ' + sent.name }));
   const dialog = await screen.findByRole('dialog', { name: '图片预览' });

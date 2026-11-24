@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, copyFileSync, fstatSync, mkdirSync, openSync, readSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { open, realpath } from 'node:fs/promises';
-import { basename, extname, isAbsolute, join, relative, sep } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, relative, sep } from 'node:path';
 import { attachmentImageMime } from '@shared/agent-attachment-image';
 import { DriverError } from './driver';
 
@@ -25,7 +25,14 @@ export interface Attachment {
   storedPath?: string;
 }
 
-const safeName = (name: string) => basename(name).replace(/[\x00-\x1f/\\:]/g, '_').slice(0, 120) || 'attachment';
+const safeName = (name: string) => {
+  const clean = basename(name).replace(/[\x00-\x1f/\\:]/g, '_');
+  const limit = 120;
+  if (clean.length <= limit) return clean || 'attachment';
+  const extension = extname(clean);
+  const suffix = extension.length < limit ? extension : '';
+  return clean.slice(0, limit - suffix.length).replace(/[\uD800-\uDBFF]$/, '') + suffix;
+};
 const mimeOf = (name: string, given?: string) => IMAGE_MIME[extname(name).toLowerCase()] ?? (given && /^[\w.+-]+\/[\w.+-]+$/.test(given) ? given : 'application/octet-stream');
 
 export function prepareAttachment(input: { cwd: string; userData: string; name: string; mime?: string; sourcePath?: string; dataBase64?: string }): Attachment {
@@ -73,6 +80,29 @@ export function verifyAttachments(list: unknown, cwd: string, userData: string):
     if (!real || !r || r.startsWith('..')) throw new DriverError('REJECTED', `附件副本已丢失：${a.name ?? ''}`);
     return { id: a.id, kind: 'file', name: safeName(a.name ?? 'attachment'), mime: mimeOf(stored, a.mime), size: statSync(real).size, image: mimeOf(stored, a.mime).startsWith('image/'), storedPath: real } as Attachment;
   });
+}
+
+/** Resolve a file reference already recorded in an accepted turn. */
+export async function resolveAttachmentFile(attachment: Attachment, cwd: string, userData: string) {
+  const isReference = attachment.kind === 'path';
+  if (isReference ? !attachment.relativePath || isAbsolute(attachment.relativePath) : !attachment.storedPath) {
+    throw new DriverError('REJECTED', '文件附件不可用');
+  }
+  const parent = isReference ? cwd : userData;
+  const canonical = await realpath(parent).catch(() => { throw new DriverError('REJECTED', '附件文件已找不到'); });
+  const expected = isReference ? join(canonical, attachment.relativePath!) : attachment.storedPath!;
+  const path = await realpath(expected).catch(() => { throw new DriverError('REJECTED', '附件文件已找不到'); });
+  const root = isReference ? canonical : dirname(path);
+  const within = relative(root, path);
+  if (isReference) {
+    if ((attachment.root && attachment.root !== root) || path !== expected ||
+      !within || within === '..' || within.startsWith('..' + sep) || isAbsolute(within)) {
+      throw new DriverError('REJECTED', '项目附件的原路径已变化');
+    }
+  } else if (dirname(root) !== join(canonical, 'agent-attachments') || basename(root) !== attachment.id || path !== expected) {
+    throw new DriverError('REJECTED', '文件不属于该附件副本');
+  }
+  return { root, relativePath: within.split(sep).join('/'), mimeType: attachment.mime };
 }
 
 /**

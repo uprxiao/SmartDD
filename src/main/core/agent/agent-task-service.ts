@@ -10,7 +10,7 @@ import { DriverError } from './driver';
 import { AgentStore, INPUT_TEXT_LIMIT, sha256, type AgentSelection, type StoredEvent } from './agent-store';
 import { AgentRunService, type OpenRunInput, type RunHandle } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
-import { attachmentNote, freezeImages, prepareAttachment, readAttachmentImage, verifyAttachments, type Attachment } from './attachments';
+import { attachmentNote, freezeImages, prepareAttachment, readAttachmentImage, resolveAttachmentFile, verifyAttachments, type Attachment } from './attachments';
 import type { AttachmentImageSource } from '@shared/agent-attachment-image';
 import type { CapabilityName, CapabilityResult } from './capabilities';
 import { searchProjectFiles } from './file-search';
@@ -557,15 +557,26 @@ export class AgentTaskService {
     return prepared;
   }
 
+  private sentAttachment(taskId: string, turnId: string, index: number): Attachment | undefined {
+    const turn = this.d.store.inputForTurn(turnId);
+    if (turn?.task_id !== taskId || turn.source_kind !== 'user' || turn.status === 'canceled') return;
+    return (JSON.parse(turn.input_ref) as { attachments?: Attachment[] }).attachments?.[index];
+  }
+
+  async messageAttachmentFile(taskId: string, turnId: string, index: number) {
+    if (!this.d.userData) throw new DriverError('UNSUPPORTED', '附件不可用');
+    const { task } = this.selection(taskId, true);
+    const attachment = this.sentAttachment(taskId, turnId, index);
+    if (!attachment || attachment.image) throw new DriverError('REJECTED', '文件附件不可用');
+    return resolveAttachmentFile(attachment, task.cwd, this.d.userData);
+  }
+
   async attachmentImage(taskId: string, source: AttachmentImageSource, offset: number, revision?: string) {
     if (!this.d.userData) throw new DriverError('UNSUPPORTED', '附件不可用');
     const { task } = this.selection(taskId, true);
     let attachment: Attachment | undefined;
     if (source?.kind === 'message' && typeof source.turnId === 'string' && Number.isSafeInteger(source.index) && source.index >= 0) {
-      const turn = this.d.store.inputForTurn(source.turnId);
-      if (turn?.task_id === taskId && turn.source_kind === 'user' && turn.status !== 'canceled') {
-        attachment = (JSON.parse(turn.input_ref) as { attachments?: Attachment[] }).attachments?.[source.index];
-      }
+      attachment = this.sentAttachment(taskId, source.turnId, source.index);
     } else if (source?.kind === 'draft' && typeof source.attachmentId === 'string' && !task.archived_at) {
       const draft = this.d.store.draft(taskId)?.draft as { attachments?: Attachment[] } | undefined;
       attachment = Array.isArray(draft?.attachments) ? draft.attachments.find(value => value?.id === source.attachmentId) : undefined;

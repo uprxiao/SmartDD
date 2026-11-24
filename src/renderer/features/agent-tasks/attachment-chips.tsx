@@ -1,8 +1,10 @@
 // 输入框附件卡片与准备逻辑（任务区与首页共用；无事件订阅等副作用）。
-import { FileText, Loader2, RotateCw, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { RotateCw, X } from 'lucide-react';
 import { rpc } from '@renderer/lib/ipc';
 import { attachmentImageMime, type AttachmentImageSource } from '@shared/agent-attachment-image';
 import { AttachmentThumbnail, useAttachmentGallery } from './attachment-images';
+import { FileAttachmentRow } from './file-attachment-row';
 
 export type PreparedAttachment = Awaited<ReturnType<typeof rpc.agentTasks.prepareAttachment>>;
 export interface Chip {
@@ -28,23 +30,31 @@ export async function prepareChip(file: File, prepare: (f: { name: string; mime?
 export function AttachmentChips({ chips, taskId, onRemove, onRetry }: { chips: Chip[]; taskId?: string; onRemove: (id: string) => void; onRetry: (id: string) => void }) {
   const gallery = useAttachmentGallery(chips.map(chip => chip.localId));
   if (!chips.length) return null;
+  const images: ReactNode[] = [], files: ReactNode[] = [];
+  for (const chip of chips) {
+    const mime = attachmentImageMime(chip.name, chip.data?.mime || chip.file?.type);
+    const blob = chip.previewBlob ?? chip.file;
+    const source = chip.previewSource ?? (chip.data && { kind: 'draft' as const, attachmentId: chip.data.id });
+    const image = chip.status !== 'failed' && mime && (blob || taskId && source);
+    const title = chip.error ?? (chip.data?.kind === 'path' ? `项目文件：${chip.data.relativePath}` : chip.name);
+    const remove = <button type="button" className={image ? 'agent-chip-remove' : 'agent-file-attachment-action'} aria-label={'移除 ' + chip.name} title="移除" onClick={() => onRemove(chip.localId)}><X size={13} /></button>;
+    if (image) {
+      images.push(<div key={chip.localId} className="agent-chip agent-image-chip" title={title}>
+        <AttachmentThumbnail id={chip.localId} name={chip.name} blob={blob} taskId={taskId} source={source}
+          register={gallery.register} open={gallery.open} />
+        {remove}
+      </div>);
+      continue;
+    }
+    files.push(<FileAttachmentRow key={chip.localId} name={chip.name} title={title} status={chip.status} copied={chip.data?.kind === 'file' && !chip.data.image}
+      actions={<>
+        {chip.status === 'failed' && <button type="button" className="agent-file-attachment-action" aria-label={'重试 ' + chip.name} title="重试" onClick={() => onRetry(chip.localId)}><RotateCw size={13} /></button>}
+        {remove}
+      </>} />);
+  }
   return <div className="agent-chips">
-    {chips.map(chip => {
-      const mime = attachmentImageMime(chip.name, chip.data?.mime || chip.file?.type);
-      const blob = chip.previewBlob ?? chip.file;
-      const source = chip.previewSource ?? (chip.data && { kind: 'draft' as const, attachmentId: chip.data.id });
-      const image = chip.status !== 'failed' && mime && (blob || taskId && source);
-      return <div key={chip.localId} className={`agent-chip ${chip.status}${image ? ' agent-image-chip' : ''}`}
-        title={chip.error ?? (chip.data?.kind === 'path' ? `项目文件：${chip.data.relativePath}` : chip.name)}>
-        {image ? <AttachmentThumbnail id={chip.localId} name={chip.name} blob={blob} taskId={taskId} source={source}
-          register={gallery.register} open={gallery.open} /> : <>
-          <span className="agent-chip-icon">{chip.status === 'preparing' ? <Loader2 size={14} className="spin" /> : <FileText size={14} />}</span>
-          <span className="agent-chip-name">{chip.name}{chip.data?.kind === 'file' && !chip.data.image ? ' · 副本' : ''}</span>
-        </>}
-        {chip.status === 'failed' && <button type="button" title="重试" onClick={() => onRetry(chip.localId)}><RotateCw size={12} /></button>}
-        <button type="button" className="agent-chip-remove" aria-label={`移除 ${chip.name}`} title="移除" onClick={() => onRemove(chip.localId)}><X size={12} /></button>
-      </div>;
-    })}
+    {images.length > 0 && <div className="agent-draft-pictures">{images}</div>}
+    {files.length > 0 && <div className="agent-draft-files">{files}</div>}
     {gallery.dialog}
   </div>;
 }

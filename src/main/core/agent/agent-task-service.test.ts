@@ -747,6 +747,39 @@ it('previews a saved draft and reads the original image from its own message aft
   }
 });
 
+it('resolves same-name attachment references and copies from the exact historical turn', async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-file-preview-')));
+  const cwd = join(root, 'project'), userData = join(root, 'data');
+  mkdirSync(cwd); mkdirSync(userData);
+  const { svc, store } = setup({ userData });
+  const create = () => svc.create({ projectId: null, dirId: null, cwd, title: 'File preview', profileId: 'cx', tier: 'ask' }).taskId;
+  const taskId = create();
+  try {
+    const internal = join(cwd, 'note.md'), outside = join(root, 'note.md');
+    writeFileSync(internal, 'PROJECT_NOTE');
+    writeFileSync(outside, 'COPIED_NOTE');
+    const attachments = [internal, outside].map(sourcePath => svc.prepareAttachment(taskId, null, {
+      name: 'note.md', mime: 'text/markdown', sourcePath,
+    }));
+    const longName = `${'long-note-'.repeat(16)}.md`;
+    const longCopy = svc.prepareAttachment(taskId, null, { name: longName, dataBase64: Buffer.from('LONG_NOTE').toString('base64') });
+    expect(longCopy.name).toBe(`${longName.slice(0, 117)}.md`);
+    const { turn: { turn_id: turnId } } = store.acceptTurn({ taskId, clientInputId: id(831), text: 'Notes', sourceKind: 'user', attachments: [...attachments, longCopy] });
+    const project = await svc.messageAttachmentFile(taskId, turnId, 0);
+    expect(project).toEqual({ root: cwd, relativePath: 'note.md', mimeType: 'text/markdown' });
+    const copy = await svc.messageAttachmentFile(taskId, turnId, 1);
+    expect(copy.root).toBe(join(userData, 'agent-attachments', attachments[1].id));
+    expect(readFileSync(join(copy.root, copy.relativePath), 'utf8')).toBe('COPIED_NOTE');
+    await expect(svc.messageAttachmentFile(create(), turnId, 0)).rejects.toThrow('文件附件不可用');
+    await expect(svc.messageAttachmentFile(taskId, turnId, 2)).resolves.toMatchObject({ relativePath: longCopy.name });
+    await expect(svc.messageAttachmentFile(taskId, turnId, 3)).rejects.toThrow('文件附件不可用');
+    rmSync(internal);
+    await expect(svc.messageAttachmentFile(taskId, turnId, 0)).rejects.toThrow('附件文件已找不到');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 describe('复核 1620 回归', () => {
   it('CR01：排队期间项目内图片被换成指向根外的软链，派发仍只读接受时冻结的副本', async () => {
     const { rmSync, symlinkSync, readFileSync } = await import('node:fs');

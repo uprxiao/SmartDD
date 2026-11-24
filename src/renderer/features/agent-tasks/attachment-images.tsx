@@ -4,6 +4,8 @@ import { ImageIcon, Loader2 } from 'lucide-react';
 import { rpc } from '@renderer/lib/ipc';
 import type { AttachmentImageSource } from '@shared/agent-attachment-image';
 import { RoutedImageGallery as ImageGallery } from '../../../../prototypes/m6-codex/src/ImageGalleryRoute.jsx';
+import { FileAttachmentRow } from './file-attachment-row';
+import { panelsFor } from './workspace-panels-store';
 
 interface Picture {
   id: string;
@@ -145,13 +147,17 @@ export function MessageWithAttachments({ attachments, taskId, turnId, children }
           source={{ kind: 'message', turnId, index }} register={gallery.register} open={gallery.open}/>
         : null)}
     </div>
-    {children}
     <div className="agent-user-attachments">
-      {attachments.map((attachment, index) => !attachment.image || !turnId
-        ? <span key={index} className="agent-message-file" title={attachment.relativePath ?? attachment.name}>
-          {attachment.relativePath ?? attachment.name}
-        </span> : null)}
+      {attachments.map((attachment, index) => {
+        if (attachment.image && turnId) return null;
+        const name = attachment.name || attachment.relativePath || '附件';
+        const open = turnId && taskId && !attachment.image
+          ? () => panelsFor({ kind: 'task', taskId }).showAttachment({ turnId, index, name })
+          : undefined;
+        return <FileAttachmentRow key={index} name={name} title={attachment.relativePath ?? name} onOpen={open} />;
+      })}
     </div>
+    {children}
     {gallery.dialog}
   </>;
 }

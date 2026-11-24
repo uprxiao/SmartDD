@@ -20,6 +20,8 @@ export interface RootLease extends FileRoot {
   sourcePath: string;
   descriptor: RootDescriptor;
   abort: AbortController;
+  /** A private lease for one document, never issued by FileRootsService. */
+  documentPath?: string;
 }
 export const identityKey = (identity: FileIdentity) => `${identity.device}:${identity.inode}`;
 export const scopeKey = (scope: FileScope) => scope.kind === 'task' ? `task:${scope.taskId}` : `project:${scope.projectId}`;

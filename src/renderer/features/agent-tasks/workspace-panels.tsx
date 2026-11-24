@@ -10,7 +10,10 @@ import type {FileScope} from '@shared/files';
 import {FileWorkspacePanel} from '@renderer/features/files/workspace-panel';import {AgentBrowserSurface} from '@renderer/features/browser/workspace';
 import {browserWorkspaceFor} from '@renderer/features/browser/store';
 import {AgentTerminalDrawer} from './agent-terminal';import {panelsFor,homeWorkspace,type AgentPanel} from './workspace-panels-store';
+import { MessageAttachmentPreview } from './message-attachment-preview';
+import { FileTreeIcon } from '@renderer/features/files/file-icon';
 const definitions={files:{label:'文件',key:'F',Icon:Files},browser:{label:'浏览器',key:'B',Icon:Globe},terminal:{label:'终端',key:'T',Icon:TerminalSquare},diff:{label:'差异',key:'D',Icon:FileDiff}};
+type PanelChoice = keyof typeof definitions;
 export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,projectId,readOnly=false,titlebarTarget}:{
  scope:FileScope; projectId:string|null; readOnly?:boolean; titlebarTarget?:HTMLElement|null;
 }){
@@ -20,8 +23,9 @@ export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,
  const [browseRequest, setBrowseRequest] = useState(0);
  const [tabStrip, setTabStrip] = useState<HTMLDivElement | null>(null);
  useVisibleWorkspaceTab(tabStrip);
- const tabs=readOnly?['diff' as const]:panels.tabs;
- const active=readOnly?'diff':panels.active;
+ const attachment=taskId ? panels.attachment : null;
+ const tabs: AgentPanel[]=readOnly ? (attachment ? ['diff', 'attachment'] : ['diff']) : panels.tabs;
+ const active=readOnly && panels.active!=='attachment'?'diff':panels.active;
  const projectMissing=scope.kind==='project'&&!projectId;
  const hasHomeDir=!!homeWorkspace.cwd;
  const available=(id:AgentPanel)=>readOnly?id==='diff':id==='files'||id==='terminal'&&(!!taskId||hasHomeDir)||id==='diff'&&!!taskId||id==='browser'&&!!taskId&&!!projectId;
@@ -36,7 +40,7 @@ export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,
      if(readOnly||e.defaultPrevented||e.isComposing||e.metaKey||e.ctrlKey||e.altKey)return;
      if(e.key==='Escape'&&menu){setMenu(false);return;}
      if ((!menu&&panels.tabs.length)||e.target instanceof Element&&e.target.closest('input,textarea,[contenteditable],dialog,[role=dialog]'))return;
-     const entry=(Object.keys(definitions) as AgentPanel[]).find(id=>definitions[id].key.toLowerCase()===e.key.toLowerCase()&&available(id));
+     const entry=(Object.keys(definitions) as PanelChoice[]).find(id=>definitions[id].key.toLowerCase()===e.key.toLowerCase()&&available(id));
      if(entry){e.preventDefault();add(entry);}
    };
    document.addEventListener('keydown',key);
@@ -47,6 +51,12 @@ export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,
  const header = <header className="agent-panel-header" data-testid="agent-workspace-panel-header">
    <div className="agent-panel-tabs" ref={setTabStrip} role="tablist" aria-label="工作面板">
      {tabs.map(id => {
+       if(id==='attachment')return attachment && <div key={id} className={'agent-surface-tab agent-attachment-tab'+(active===id?' on':'')}>
+         <button type="button" role="tab" aria-selected={active===id} title={attachment.name} onClick={()=>panels.open(id)}>
+           <FileTreeIcon path={attachment.name}/><span className="agent-tab-label">{attachment.name}</span>
+         </button>
+         <button type="button" aria-label="关闭附件预览" onClick={()=>panels.close(id)}><X size={10}/></button>
+       </div>;
        if(id==='files'&&!projectMissing)return <div key={id} className="agent-panel-tab-slot" ref={setFileTabsTarget}/>;
        if(id==='browser'&&taskId)return <div key={id} className="agent-panel-tab-slot" ref={setWebTabsTarget}/>;
        const { label, Icon } = definitions[id];
@@ -85,6 +95,8 @@ export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,
      }}/>}
      {tabs.includes('terminal')&&active==='terminal'&&terminal}
      {tabs.includes('diff')&&active==='diff'&&taskId&&<TurnDiffSurface key={taskId} taskId={taskId} readOnly={readOnly}/>}
+     {active==='attachment'&&taskId&&attachment&&<MessageAttachmentPreview
+       key={attachment.turnId+':'+attachment.index} taskId={taskId} attachment={attachment}/>}
    </div>
  </aside>;
 });

@@ -60,7 +60,7 @@ it('opens the attachment picker from + and passes the chosen file to the first m
     expect(openPicker.mock.contexts[0]).toBe(picker);
     expect(picker.multiple).toBe(true);
     fireEvent.change(picker, { target: { files: [file] } });
-    await screen.findByText(file.name);
+    await screen.findByRole('button', { name: '移除 ' + file.name });
     expect(agent.create).not.toHaveBeenCalled();
     expect(agent.prepareAttachment).toHaveBeenCalledWith(null, '/private/fixture', {
       name: file.name, mime: 'text/plain', sourcePath: '/private/fixture/notes.txt',
