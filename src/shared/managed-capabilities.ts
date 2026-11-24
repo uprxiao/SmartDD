@@ -23,6 +23,7 @@ export interface ManagedCapabilityView {
 }
 export interface CapabilityRegistryView {
   items: ManagedCapabilityView[];
+  skillAgents: { runner: Runner; label: string }[];
   autoManage: boolean;
   newCount: number;
 }

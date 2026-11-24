@@ -4,7 +4,7 @@ import {showBrowserPresentation} from '@renderer/features/browser/store';
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Paperclip, Plus, Settings, Wrench } from 'lucide-react';
+import { ArrowUp, CircleAlert, Folder, FolderTree, Info, Loader2, Monitor, Paperclip, Plus, Settings } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -32,7 +32,7 @@ import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { Button } from '@renderer/lib/ui/button';
 import { Dialog, DialogContent, DialogContentArea, DialogFooter, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { Field } from './projects/form-parts';
 import { ProjectDialog } from './projects/project-dialogs';
 import { cn } from '@renderer/utils/utils';
@@ -284,13 +284,6 @@ export const HomeView = observer(function HomeView() {
     }
   };
 
-  const suggestions = [
-    { Icon: Compass, key: 'explore' },
-    { Icon: Hammer, key: 'build' },
-    { Icon: ClipboardCheck, key: 'review' },
-    { Icon: Wrench, key: 'fix' },
-  ] as const;
-
   const projectPicker = <Select value={projectId} onValueChange={(v) => { if(!projectId&&v&&message){const existing=navigation.homeInput(String(v));navigation.setHomeInput(String(v),existing?existing+'\n'+message:message);navigation.setHomeInput(null,'');}setProjectId(v as string | null); setDirId(null); if (v) navigation.newTask(String(v)); }}>
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
@@ -367,11 +360,6 @@ export const HomeView = observer(function HomeView() {
         <div className="reference-composer-toolbar">
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
             <DropdownMenuItem disabled={!dir?.status.available || launching} onClick={() => attachmentInput.current?.click()}><Paperclip />{t('home.addAttachments')}</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setCreatingProject(true)}><Plus />{t('projects.new')}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setLaunchSettings(true)}><Folder />{t('home.pickProject')}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigation.openSettings('aiProfiles')}><Settings />{t('settings.sections.aiProfiles')}</DropdownMenuItem><DropdownMenuSeparator />
-            {suggestions.map(({ Icon, key }) => <DropdownMenuItem key={key} data-testid="home-suggestion" onClick={() => { setMessage(t(`home.suggestions.${key}.prompt`)); inputRef.current?.focus(); }}><Icon />{t(`home.suggestions.${key}.title`)}</DropdownMenuItem>)}
           </DropdownMenuContent></DropdownMenu>
           <HomePermissionPicker kind={profile?.kind??'claude'} disabled={!profile||launching} />
           <div className="reference-home-picker composer-profile">{profilePicker}</div>

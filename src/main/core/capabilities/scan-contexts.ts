@@ -1,17 +1,18 @@
-import { join } from 'node:path';
 import type { AiProfileView } from '@shared/ai-profiles';
 import type { CapabilityScanContext } from './capability-registry';
+import { skillAdapter, skillAdapters } from './skill-adapters';
 
 /** Discovery uses paths and public profile fields, never profile.resolve(), auth
  * helpers or the secret store. Native CLI installation is a separate concern. */
 export function capabilityScanContexts(home:string,base:Record<string,string>,profiles:(Pick<AiProfileView,'runner'|'args'>&{id?:string;env:Pick<AiProfileView['env'][number],'name'|'secret'|'value'>[]})[],projectRoots:string[]):CapabilityScanContext[]{
-  const variants=[{runner:'claude' as const,env:[],args:[] as string[]},{runner:'codex' as const,env:[],args:[] as string[]},...profiles];
+  const variants=[...skillAdapters.map(({ runner }) => ({ runner, env: [], args: [] as string[] })), ...profiles];
   const seen=new Set<string>(),result:CapabilityScanContext[]=[];
   for(const profile of variants){
-    if(profile.runner!=='claude'&&profile.runner!=='codex')continue;
+    const adapter = skillAdapter(profile.runner);
+    if (!adapter) continue;
     const env={...base,...Object.fromEntries(profile.env.filter(x=>!x.secret&&x.value!==null).map(x=>[x.name,x.value!]))};
     const actualHome=env.HOME||home;
-    const stateRoot=profile.runner==='codex'?env.CODEX_HOME||join(actualHome,'.codex'):env.CLAUDE_CONFIG_DIR||join(actualHome,'.claude');
+    const stateRoot = adapter.stateRoot(actualHome, env);
     for(const cwd of [actualHome,...projectRoots]){
       const configurationId='id'in profile?profile.id:undefined;
       const secretEnvNames=profile.env.filter(x=>x.secret).map(x=>x.name);

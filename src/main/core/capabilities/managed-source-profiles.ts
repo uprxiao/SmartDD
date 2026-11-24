@@ -17,7 +17,7 @@ export function managedSourceProfiles(userData:string,profiles:AiProfileView[],c
       if(provider.endpoints.anthropic)add('ANTHROPIC_BASE_URL',provider.endpoints.anthropic);
       add(provider.authType==='api-key'?'ANTHROPIC_API_KEY':'ANTHROPIC_AUTH_TOKEN',null,true);
       if(config.defaultModel)for(const name of CLAUDE_MODEL_VARIABLES)add(name,config.defaultModel);
-    }else add('OPENAI_API_KEY',null,true);
+    }else if(config.kind==='codex') add('OPENAI_API_KEY',null,true);
     return {...profile,args:[],env};
   });
 }

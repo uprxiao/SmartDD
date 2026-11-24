@@ -157,7 +157,7 @@ export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<
         SystemRoot: o.env.SystemRoot, WINDIR: o.env.WINDIR,
       });
       caps = evaluateCapabilities(driverId, info.version, name =>
-        capabilities[name as keyof typeof capabilities] === true && o.probe?.(name) !== false);
+        capabilities[name === 'skills' ? 'basic' : name as keyof typeof capabilities] === true && o.probe?.(name) !== false);
     } catch (error) {
       let reason = 'Antigravity 启动失败或握手前退出';
       if (error instanceof DriverError) {

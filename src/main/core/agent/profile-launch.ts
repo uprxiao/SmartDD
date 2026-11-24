@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { parse as parseToml } from 'smol-toml';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
-import { planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
+import { managedCodexRoot, planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
 import { RUNTIME_ISOLATION } from '../capabilities/capability-service';
 import type { DriverId } from './capabilities';
 import { antigravityArgs } from './drivers/antigravity-acp';
@@ -38,9 +38,6 @@ export interface ProfileLaunchInput {
   /** 订阅登录才有的“沿用我的扩展”开关；托管供应商始终隔离。 */
   carryExtensions?: boolean;
 }
-
-export const managedCodexRoot = (userData: string, profileId: string) =>
-  join(userData, 'agents', 'codex', createHash('sha256').update(profileId).digest('hex').slice(0, 32));
 
 /** Codex 全局参数里只保留 -c 与 --disable 两类（成对）；-m 改为模型参数，沙箱与审批参数丢弃。 */
 export function codexArgsToDriver(args: readonly string[]): { extraArgs: string[]; model?: string } {

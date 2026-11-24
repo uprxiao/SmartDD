@@ -139,10 +139,11 @@ describe('application child HOME isolation', () => {
   });
 });
 
-it('routes both real discovery context kinds through the child HOME while preserving the App HOME',()=>{
+it('routes registered Skill discovery through the child HOME while preserving the App HOME',()=>{
  const original=Object.freeze({HOME:'/public/system-home',PATH:'/usr/bin:/bin',SMARTDD_CLI_HOME:home});
  const contexts=capabilityScanContexts(home,applicationChildEnvironment(original),[],[home+'/project']);
- expect(new Set(contexts.map(x=>x.runner))).toEqual(new Set(['claude','codex']));
- for(const context of contexts){expect(context.home).toBe(home);expect(context.stateRoot).toBe(join(home,context.runner==='codex'?'.codex':'.claude'));expect(context.sourceEnvironment!.HOME).toBe(home);}
+ const roots: Record<string, string> = { claude: '.claude', codex: '.codex', antigravity: '.gemini' };
+ expect(new Set(contexts.map(x=>x.runner))).toEqual(new Set(Object.keys(roots)));
+ for(const context of contexts){expect(context.home).toBe(home);expect(context.stateRoot).toBe(join(home,roots[context.runner]));expect(context.sourceEnvironment!.HOME).toBe(home);}
  expect(JSON.stringify(contexts)).not.toContain('/public/system-home');expect(original.HOME).toBe('/public/system-home');
 });

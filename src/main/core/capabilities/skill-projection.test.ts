@@ -10,12 +10,38 @@ import * as schema from '../../db/schema';
 import { CapabilityRegistryService, type CapabilityScanContext } from './capability-registry';
 import { discoverCapabilities } from './discovery';
 import { SkillProjectionService, type SkillProjectionInput } from './skill-projection';
+import { capabilityScanContexts } from './scan-contexts';
 let root:string,sqlite:Database.Database,registry:CapabilityRegistryService,projection:SkillProjectionService,contexts:CapabilityScanContext[],input:SkillProjectionInput;
 const file=(path:string,content:string)=>{mkdirSync(dirname(path),{recursive:true});writeFileSync(path,content);return path;};
 const skill=(name:string,project=false)=>file(join(root,project?'project':'home', '.claude/skills',name,'SKILL.md'),`---\nname: ${name}\ndescription: public fixture\n---\nVERSION1`);
 const git=(cwd:string,...args:string[])=>{const r=spawnSync('git',['-C',cwd,...args],{encoding:'utf8',env:{PATH:process.env.PATH,HOME:root,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'}});if(r.status!==0)throw Error(r.stderr);return r.stdout.trim();};
 beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'m13-project-')));sqlite=new Database(':memory:');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema});mkdirSync(join(root,'project'),{recursive:true});contexts=[{runner:'claude',home:join(root,'home'),stateRoot:join(root,'home/.claude'),cwd:join(root,'project'),projectRoot:join(root,'project'),path:''}];registry=new CapabilityRegistryService(db,()=>contexts,()=>Date.now(),{revoke:id=>projection.revoke(id),afterScan:()=>projection.reconcileSources()});projection=new SkillProjectionService(db,registry);input={runner:'codex',home:join(root,'home'),stateRoot:join(root,'home/.codex'),cwd:join(root,'project'),runRoot:join(root,'runs/a'),nativeLogin:false};});
 afterEach(()=>{sqlite.close();rmSync(root,{recursive:true,force:true});});
+it('discovers Antigravity Skills and keeps the adopted project Skill scoped across executors', () => {
+  const home = join(root, 'home');
+  const project = join(root, 'project');
+  const other = join(root, 'other');
+  const agyUser = file(join(home, '.gemini/config/skills/agy-personal/SKILL.md'), '---\nname: agy-personal\ndescription: Personal fixture\n---\n');
+  const agyProject = file(join(project, '.agent/skills/agy-project/SKILL.md'), '---\nname: agy-project\ndescription: Project fixture\n---\n');
+  const claudeUser = skill('shared-claude');
+  contexts = capabilityScanContexts(home, {}, [], [project, other]);
+
+  expect(registry.scan().items).toEqual(expect.arrayContaining([
+    expect.objectContaining({ runner: 'antigravity', sourcePath: agyUser, projectRoot: null, status: 'new' }),
+    expect.objectContaining({ runner: 'antigravity', sourcePath: agyProject, projectRoot: project, status: 'new' }),
+  ]));
+  registry.adoptAll();
+  const agy = { ...input, runner: 'antigravity', stateRoot: join(root, 'agy-private') };
+  const first = projection.prepare(agy);
+  const second = projection.prepare({ ...agy, cwd: other, runRoot: join(root, 'runs/b') });
+  expect(first.privateRoots.map(item => item.name).sort()).toEqual(['agy-personal', 'agy-project', 'shared-claude']);
+  expect(second.privateRoots.map(item => item.name).sort()).toEqual(['agy-personal', 'shared-claude']);
+  expect(realpathSync(join(first.privateRoots.find(item => item.name === 'agy-project')!.path, 'SKILL.md'))).toBe(agyProject);
+  expect(second.privateRoots.every(item => item.path.startsWith(join(root, 'runs/b') + '/'))).toBe(true);
+  expect(registry.selected(other).map(item => item.sourcePath)).toEqual(expect.arrayContaining([agyUser, claudeUser]));
+  expect(registry.selected(other).some(item => item.sourcePath === agyProject)).toBe(false);
+  expect(projection.prepare(input).configured).toHaveLength(3);
+});
 it('projects a user Skill into Codex without copying and cancellation removes only its owned link',()=>{
   const source=skill('echo');registry.scan();const id=registry.adoptAll().items[0].id;
   expect(projection.prepare(input)).toMatchObject({configured:[id],issues:[]});const target=join(root,'home/.agents/skills/echo/SKILL.md');expect(realpathSync(target)).toBe(realpathSync(source));

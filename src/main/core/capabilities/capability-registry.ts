@@ -9,6 +9,9 @@ import type { CapabilityRegistryView, ManagedCapabilityView } from '@shared/mana
 import { discoverCapabilities, type DiscoveryContext } from './discovery';
 import type { DiscoveredCapability } from '@shared/capabilities';
 import { applyMcpNativePolicy, mcpReferenceNames, McpSourceError, parseMcpSource, resolveMcpSource, validateManagedMcpDefinition, type McpSource, type McpNativePolicy } from './mcp-source';
+import { skillAdapters } from './skill-adapters';
+
+const skillAgents = skillAdapters.map(({ runner, label }) => ({ runner, label }));
 
 type Row = typeof capabilityRegistry.$inferSelect;
 export interface CapabilityScanContext extends DiscoveryContext { projectRoot?: string; configurationId?:string; sourceEnvironment?:Record<string,string>;secretEnvNames?:string[] }
@@ -20,7 +23,7 @@ function sourceIdentity(item:DiscoveredCapability,context:CapabilityScanContext,
   // hook-provided WillYou plugin skills below use the protected `plugin` scope.
   const sourceScope:ManagedCapabilityView['sourceScope']=hostNames.has(item.name)?'host':item.source.includes('project')?'project':'user';
   const localRoot=item.path.match(/^(.*?)\/(?:\.claude|\.agents|\.codex)\//)?.[1]??(item.path.endsWith('/.mcp.json')?dirname(item.path):null);
-  const projectRoot=sourceScope==='project'?physical(localRoot??context.projectRoot??context.cwd):null;
+  const projectRoot=sourceScope==='project'?physical(item.projectRoot??localRoot??context.projectRoot??context.cwd):null;
   const inlineIdentity=item.kind==='mcp'?context.configurationId??(item.path==='profile arguments'?createHash('sha256').update(JSON.stringify(context.args??[])).digest('hex'):null):null;
   const key=[item.kind,resolve(item.path),item.kind==='mcp'?item.name:null,projectRoot,inlineIdentity];
   let environmentIdentity:unknown=null;
@@ -70,7 +73,7 @@ export class CapabilityRegistryService {
     const rows=this.db.select().from(capabilityRegistry).all();
     const pluginItems:ManagedCapabilityView[]=(this.hooks.pluginSkills?.()??[]).map(item=>({id:createHash('sha256').update(JSON.stringify(['plugin',item.appId,item.id])).digest('hex'),kind:'skill',name:item.id,runner:'codex',sourcePath:item.path,sourceScope:'plugin',projectRoot:null,sourceLabel:item.pluginName,version:item.version,managed:false,enabled:item.enabled,autoApprove:false,present:true,status:'plugin',issues:[],loaded:'unverified'}));
     const items=[...rows.map(row=>this.view(row,rows)),...pluginItems];
-    return {items,autoManage:this.db.select().from(capabilityRegistryPreferences).get()?.autoManage??false,newCount:items.filter(x=>x.status==='new').length};
+    return {items,skillAgents,autoManage:this.db.select().from(capabilityRegistryPreferences).get()?.autoManage??false,newCount:items.filter(x=>x.status==='new').length};
   }
   scan():CapabilityRegistryView {
     const found=new Map<string,Omit<Row,'managed'|'enabled'|'autoApprove'|'discoveredAt'>>(),at=this.now();

@@ -10,6 +10,9 @@ import { runBundledMigrations } from '../../db/migrations';
 import * as schema from '../../db/schema';
 import { SecretsStore } from '../../secrets';
 import { CapabilityService } from '../capabilities/capability-service';
+import { CapabilityRegistryService } from '../capabilities/capability-registry';
+import { capabilityScanContexts } from '../capabilities/scan-contexts';
+import { SkillProjectionService } from '../capabilities/skill-projection';
 import { ProjectService } from '../projects/project-service';
 import { secretKeys } from '../projects/secret-keys';
 import { evaluateCapabilities, type DriverId } from './capabilities';
@@ -29,6 +32,7 @@ class RecordingDriver implements DriverInstance {
   readonly on = this.emitter.on.bind(this.emitter);
   readonly nativeId = randomUUID();
   openOptions?: DriverOpenOptions;
+  input?: TurnInput;
   failBeforeFork = false;
 
   constructor(readonly driverId: DriverId) {}
@@ -41,6 +45,7 @@ class RecordingDriver implements DriverInstance {
   }
 
   async startTurn(input: TurnInput) {
+    this.input = input;
     const nativeTurnId = randomUUID();
     this.emitter.emit({ type: 'turn.started', nativeTurnId, clientInputId: input.clientInputId });
     setImmediate(() => this.emitter.emit({ type: 'turn.completed', nativeTurnId, status: 'completed' }));
@@ -127,19 +132,20 @@ function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp 
     host: { instanceId: randomUUID(), pid: process.pid, startedAt: null },
     emitEvent() {}, emitLive() {},
   };
-  const workspace = createAgentWorkspace(deps);
+  const skills = new CapabilityRegistryService(db, () => capabilityScanContexts(home, {}, [], [root]));
+  const workspace = createAgentWorkspace({ ...deps, capabilityRegistry: skills, skillProjection: new SkillProjectionService(db, skills) });
   const { taskId } = workspace.tasks.create({
     projectId: project.id, dirId: project.dirs[0].id, cwd: root, title: 'Fixture', profileId: config.id, tier: 'ask',
   });
-  async function submit() {
+  async function submit(text = 'Read the project fixture') {
     const { turnId } = await workspace.tasks.submit(taskId, {
-      clientInputId: randomUUID(), text: 'Read the project fixture', expectedSelectionRevision: workspace.tasks.snapshot(taskId).selectionRevision,
+      clientInputId: randomUUID(), text, expectedSelectionRevision: workspace.tasks.snapshot(taskId).selectionRevision,
     });
     await vi.waitFor(() => expect(['completed', 'failed']).toContain(workspace.store.turn(turnId)?.status));
     return workspace.store.turn(turnId);
   }
   return {
-    root, home, workspace, taskId, project, capabilities, database, server, instances, submit, secrets,
+    root, home, workspace, taskId, project, capabilities, database, server, instances, submit, secrets, skills,
     failBeforeFork() { failBeforeFork = true; },
     async close() { await workspace.closeAll(); capabilities.dispose(); sqlite.close(); rmSync(root, { recursive: true, force: true }); },
   };
@@ -165,6 +171,25 @@ it('lists enabled Codex skills from the configured user and project directories 
     expect(result.native).toEqual(expect.arrayContaining([{ name: 'personal-codex' }, { name: 'project-codex' }]));
     expect(result.native.some(skill => skill.name === 'personal-claude' || skill.name === 'disabled-codex')).toBe(false);
     expect(f.instances).toHaveLength(0);
+  } finally { await f.close(); }
+});
+
+it('makes a newly adopted Skill available in Agy and resolves only its scoped dollar reference', async () => {
+  const f = fixture('antigravity', '1.5.14');
+  try {
+    const file = join(f.home, '.claude/skills/cross-agent/SKILL.md');
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, '---\nname: cross-agent\ndescription: Run the cross-agent fixture\n---\n');
+    expect(f.workspace.homeSkillCatalog(f.project.id, f.project.dirs[0].id, 'fixture-profile', true).managed).toEqual([]);
+    f.skills.scan();
+    f.skills.adoptAll();
+    expect(f.workspace.homeSkillCatalog(f.project.id, f.project.dirs[0].id, 'fixture-profile', true).managed).toEqual([{ name: 'cross-agent' }]);
+    expect((await f.submit('Use $cross-agent and mention $not-managed'))?.status).toBe('completed');
+    const driver = f.instances[0];
+    const [root] = driver.openOptions!.skillRoots!;
+    expect(realpathSync(join(root.path, 'SKILL.md'))).toBe(realpathSync(file));
+    expect(driver.input?.text).toContain(JSON.stringify(join(root.path, 'SKILL.md')));
+    expect(driver.input?.text).toContain('\n\nUse $cross-agent and mention $not-managed');
   } finally { await f.close(); }
 });
 

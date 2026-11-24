@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { lstatSync, realpathSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import { join, sep } from 'node:path';
+import { mkdir, readFile, symlink } from 'node:fs/promises';
+import { dirname, join, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 import Database from 'better-sqlite3';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { JsonlRpcPeer, type RpcHandlers } from '../jsonl-rpc';
 import { startGeminiResponseRelay } from './gemini-response-relay';
 
 const protocolVersion = 1;
+const appDataDirectory = 'antigravity-acp';
 const authMethod = 'gemini-api-key';
 const initializeOptions = { protocolVersion, clientInfo: { name: 'WillYou', version: '1' }, clientCapabilities: {} };
 const sessionIdSchema = z.string().regex(/^[a-zA-Z0-9_-]{1,256}$/);
@@ -37,7 +38,7 @@ type Permission = z.infer<typeof permissionSchema>;
 type ActiveTurn = { id: string; text: string; thoughts: string; model?: string; cancelling: boolean; nativeLogOffset: number };
 
 export function antigravityArgs(configDir: string) {
-  return ['acp', '--gemini-dir', configDir, '--app-data-dir', 'antigravity-acp',
+  return ['acp', '--gemini-dir', configDir, '--app-data-dir', appDataDirectory,
     '--disable-telemetry=true', '--include-default-customizations=false', '--sandbox=true'];
 }
 
@@ -122,7 +123,7 @@ class AntigravityInstance implements DriverInstance {
     if (this.opening || this.process) throw new DriverError('STATE', 'Antigravity 会话已经启动');
     if (options.readOnly) throw new DriverError('UNSUPPORTED', 'Antigravity 尚无已验证的只读执行能力');
     options.assertStarting?.();
-    const args = options.extraArgs ?? ['acp'];
+    const args = [...(options.extraArgs ?? ['acp'])];
     const directoryFlag = args.indexOf('--gemini-dir');
     this.geminiDirectory = directoryFlag < 0 ? undefined : args[directoryFlag + 1];
     const opening = this.opening = new AbortController();
@@ -131,6 +132,20 @@ class AntigravityInstance implements DriverInstance {
     options.startupSignal?.addEventListener('abort', abort, { once: true });
     try {
       options.startupSignal?.throwIfAborted();
+      if (options.skillRoots?.length) {
+        const skillDir = dirname(options.skillRoots[0].path);
+        if (!this.geminiDirectory || options.skillRoots.some(skill => dirname(skill.path) !== skillDir))
+          throw new DriverError('STATE', 'Antigravity 纳管技能目录无效');
+        const appData = join(this.geminiDirectory, appDataDirectory);
+        await mkdir(appData, { recursive: true, mode: 0o700 });
+        if (!lstatSync(appData).isDirectory() || dirname(realpathSync(appData)) !== realpathSync(this.geminiDirectory))
+          throw new DriverError('STATE', 'Antigravity 会话数据目录无效');
+        // Give each process its own skills. Keep the conversation database
+        // and its native evidence in the profile directory across runs.
+        const geminiDir = dirname(skillDir);
+        await symlink(appData, join(geminiDir, appDataDirectory), 'dir');
+        args[directoryFlag + 1] = geminiDir;
+      }
       if (options.env.GOOGLE_GEMINI_BASE_URL && options.env.GEMINI_API_KEY) {
         relay = await startGeminiResponseRelay(options.env.GOOGLE_GEMINI_BASE_URL, options.env);
       }
@@ -260,7 +275,7 @@ class AntigravityInstance implements DriverInstance {
 
   private latestNativeStep(): { idx: number; type: number; httpStatus?: number; outputRetriesExhausted: boolean } | undefined {
     if (!this.geminiDirectory || !this.session) return;
-    const file = join(this.geminiDirectory, 'antigravity-acp', 'conversations', `${this.session}.db`);
+    const file = join(this.geminiDirectory, appDataDirectory, 'conversations', `${this.session}.db`);
     try {
       const path = realpathSync(file);
       if (!path.startsWith(realpathSync(this.geminiDirectory) + sep) || !lstatSync(file).isFile()) return;

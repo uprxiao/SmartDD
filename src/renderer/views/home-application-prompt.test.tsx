@@ -52,7 +52,9 @@ it('opens the attachment picker from + and passes the chosen file to the first m
   try {
     const { container } = render(<HomeView />);
     fireEvent.click(screen.getByRole('button', { name: 'm6.addContext' }));
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'home.addAttachments' }));
+    const addAttachment = await screen.findByRole('menuitem', { name: 'home.addAttachments' });
+    expect(screen.getAllByRole('menuitem')).toEqual([addAttachment]);
+    fireEvent.click(addAttachment);
     const picker = container.querySelector<HTMLInputElement>('input[type="file"]')!;
     expect(openPicker).toHaveBeenCalledOnce();
     expect(openPicker.mock.contexts[0]).toBe(picker);

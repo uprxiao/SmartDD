@@ -21,14 +21,14 @@ import type { ProviderService } from '../ai/provider-service';
 import type { McpProjectionService } from '../capabilities/mcp-projection';
 import { MCP_CAPABILITY, type CapabilityService } from '../capabilities/capability-service';
 import { discoverCapabilities, type NativeDiscoveryDetails } from '../capabilities/discovery';
+import { skillAdapter } from '../capabilities/skill-adapters';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
-import { managedClaudeRoot } from '../ai/agent-launch-plan';
 import { AgentStore, sha256, type StoredEvent } from './agent-store';
 import { AgentRunService, type LiveListener } from './agent-run-service';
 import { AgentTaskService, boundedEvent, type LaunchResolver } from './agent-task-service';
 import { createNativeCliDetector, probeAndRecord, probeDriver } from './discovery';
-import { managedCodexRoot, resolveProfileLaunch } from './profile-launch';
+import { resolveProfileLaunch } from './profile-launch';
 import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
 import { DriverError, type DriverOpenOptions } from './driver';
@@ -186,7 +186,10 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
         const projectResourcesAllowed = kind !== 'antigravity' && role?.access !== 'read';
         const extensionsAllowed = projectResourcesAllowed && delivery === 'verified';
-        const skills = extensionsAllowed ? d.skillProjection?.prepare({
+        const skillAdapterForRun = skillAdapter(kind);
+        const skillsAllowed = role?.access !== 'read' && probe.capabilities.skills.state === 'enabled'
+          && (extensionsAllowed || skillAdapterForRun?.isolatedHome);
+        const skills = skillsAllowed ? d.skillProjection?.prepare({
           runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
         }) : undefined;
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
@@ -254,13 +257,15 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
             await result.cancelBeforeFork();
             throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
           }
-          if (!result && !projectRuntime) return undefined;
+          if (!result && !projectRuntime && !skills?.references.length) return undefined;
           return {
             ...result, projectRuntime, projectContextMcp,
             env: { ...actual.env, ...result?.env, ...projected?.env, ...projectRuntime?.env },
             extraArgs: [...(kind === 'antigravity' ? [] : actual.extraArgs), ...(result?.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
             claudeMcp: projected?.claude,
             plugins: skillPlugin ? [...(result?.plugins ?? []), { type: 'local' as const, path: skillPlugin }] : result?.plugins,
+            skillRoots: skills?.privateRoots.length ? skills.privateRoots : result?.skillRoots,
+            managedSkills: skills?.references,
           };
         } catch (error) {
           projectRuntime?.release();
@@ -289,28 +294,26 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const cwd = projectId && dirId ? registeredProjectCwd(d.sqlite, projectId, dirId) : undefined;
     const managed = tasks.managedSkillsForDirectory(cwd);
     const profile = profileId ? config(profileId) : undefined;
-    if (!profile?.available || profile.loggedOut || (profile.kind !== 'codex' && profile.kind !== 'claude')) return { managed, native: [] };
+    if (!profile?.available || profile.loggedOut) return { managed: [], native: [] };
+    const adapter = skillAdapter(profile.kind);
+    if (!adapter) return { managed: [], native: [] };
     const tool = d.agents.tools().find(t => t.id === profile.toolId);
     if (!tool?.installed || tool.kind !== profile.kind) return { managed, native: [] };
 
     // Use the selected executor's local paths. Opening the draft menu does not launch a CLI or resolve keys.
     const env = d.baseEnv();
-    const accountHome = env.HOME ?? homedir();
-    const login = profile.source === 'login';
-    const codex = profile.kind === 'codex';
-    const stateRoot = codex
-      ? login ? env.CODEX_HOME ?? join(accountHome, '.codex') : managedCodexRoot(d.userData, profile.id)
-      : login ? env.CLAUDE_CONFIG_DIR ?? join(accountHome, '.claude') : managedClaudeRoot(d.userData, profile.id);
-    const home = codex && !login ? join(stateRoot, 'home') : accountHome;
+    const paths = adapter.draftCatalog?.({ home: env.HOME ?? homedir(), env, userData: d.userData,
+      profileId: profile.id, nativeLogin: profile.source === 'login', carryExtensions });
+    if (!paths) return { managed, native: [] };
     const native = discoverCapabilities({
-      runner: profile.kind, cwd: cwd ?? home, home, stateRoot,
-      claudeConfigExplicit: !login || Boolean(env.CLAUDE_CONFIG_DIR),
+      runner: profile.kind, cwd: cwd ?? paths.home, home: paths.home, stateRoot: paths.stateRoot,
+      claudeConfigExplicit: paths.claudeConfigExplicit,
       path: env.PATH ?? '', nativeVersion: tool.version ?? undefined,
     }).filter(skill => {
       if (skill.kind !== 'skill' || skill.validity === 'invalid' || skill.enabled === false || basename(skill.path) !== 'SKILL.md') return false;
-      if (codex || login && carryExtensions) return true;
+      if (paths.scope === 'all') return true;
       const projectSkill = skill.source.startsWith('project');
-      return login ? projectSkill : !projectSkill;
+      return paths.scope === 'project' ? projectSkill : !projectSkill;
     }).map(({ name }) => ({ name }));
     return { managed, native };
   };

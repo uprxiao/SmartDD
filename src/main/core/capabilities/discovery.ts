@@ -8,6 +8,7 @@ import type { DiscoveredCapability } from '@shared/capabilities';
 import type { Runner } from '@shared/types';
 import type { McpNativePolicy } from './mcp-source';
 import { discoverCodexPlugins } from './codex-plugin-discovery';
+import { skillAdapter } from './skill-adapters';
 
 type Obj = Record<string, unknown>;
 const isObject = (v: unknown): v is Obj => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -244,16 +245,28 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     }
   };
 
+  const adapter = skillAdapter(c.runner);
+  for (const root of adapter?.userRoots(c) ?? []) {
+    const scope = root === '/etc/codex/skills' ? 'system'
+      : c.runner === 'codex' && root === join(c.stateRoot, 'skills') ? 'user compatibility' : 'user';
+    scanDir(root, scope);
+  }
+  for (const project of layers) {
+    for (const root of adapter?.projectRoots(project) ?? []) {
+      const start = rows.length;
+      scanDir(root, 'project');
+      for (const entry of rows.slice(start)) entry.projectRoot = project;
+    }
+  }
+
   if (c.runner === 'claude') {
     const args=c.args??[], options=claudeDiscoveryArgs(args);
-    scanDir(join(c.stateRoot, 'skills'), 'user');
     scanDir(join(c.stateRoot, 'commands'), 'user commands', true);
     const settings: Obj[] = [];
     const globalSettings = readConfig(join(c.stateRoot, 'settings.json'));
     if (globalSettings) settings.push(globalSettings);
     else if(existsSync(join(c.stateRoot,'settings.json')))mcpPolicy.unverified=true;
     for (const p of layers) {
-      scanDir(join(p, '.claude', 'skills'), 'project');
       scanDir(join(p, '.claude', 'commands'), 'project commands', true);
       for (const file of options.userOnly?[]:['settings.json', 'settings.local.json']) {
         const config = readConfig(join(p, '.claude', file));
@@ -318,10 +331,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       }
     }
     for (const s of settings) for (const name of strings(s.disabledMcpServers)) for (const r of rows) if (r.kind === 'mcp' && r.name === name) r.enabled = false;
-  } else {
-    scanDir(join(c.home, '.agents', 'skills'), 'user');
-    scanDir(join(c.stateRoot, 'skills'), 'user compatibility');
-    scanDir('/etc/codex/skills', 'system');
+  } else if (c.runner === 'codex') {
     const args = codexConfigurationArgs(c.args ?? [], () => c.details?.issues.push('profile_configuration_unverified'));
     const configs = [{ path: join(c.stateRoot, 'config.toml'), source: 'user' }];
     if (args.profile !== null) {
@@ -336,7 +346,6 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       }
     }
     configs.push(...layers.map(p => ({ path: join(p, '.codex', 'config.toml'), source: 'project' })));
-    for (const p of layers) scanDir(join(p, '.agents', 'skills'), 'project');
     const overrides: { config: Obj; base: string;configurationPath:string|null;location:'file'|'profile-arguments' }[] = [];
     for (const file of configs) {
       const config = readConfig(file.path);

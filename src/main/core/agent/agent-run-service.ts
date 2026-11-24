@@ -470,7 +470,12 @@ export class AgentRunService {
     run.turnId = turnId;
     run.turnTier = tier.tier;
     try {
-      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
+      const names = new Set(Array.from(input.text.matchAll(/(?:^|\s)\$([\w.-]+)(?=\s|$)/g), match => match[1]));
+      const skills = run.integration?.managedSkills?.filter(skill => names.has(skill.name)) ?? [];
+      const text = skills.length
+        ? `用户选用了这些 WillYou 技能。请先读取对应的 SKILL.md，再按说明处理请求。\n${skills.map(skill => `${skill.name} ${JSON.stringify(skill.path)}`).join('\n')}\n\n${input.text}`
+        : input.text;
+      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
       run.appliedTier = tier.tier; run.appliedModel = input.model; run.appliedEffort = input.effort; if (input.model) run.sentModel = true;
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };
