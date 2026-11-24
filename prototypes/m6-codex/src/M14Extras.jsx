@@ -149,15 +149,15 @@ export function slashBlocked(text, caps) { const m = /^(\/[a-z]+)\b/.exec(text.t
 export function mentionTrigger(text) { const m = /(^|\s)([@$/])([^\s@$/]*)$/.exec(text); return m ? { ch: m[2], q: m[3], start: text.length - m[3].length - 1 } : null; }
 // 命令只列当前执行器支持的项（caps 来自执行器能力声明；评审 RV14）
 const cmdOk = (c, caps) => !c[3] || !!caps?.[c[3]];
-function matchSkills(query) {
+function matchSkills(query, managedOnly = false) {
   const rank = name => name === query ? 0 : name.startsWith(query) ? 1 : 2;
-  return SKILLS.filter(([, name]) => name.includes(query)).sort((a, b) =>
+  return SKILLS.filter(([source, name]) => (!managedOnly || source === 'WillYou 纳管') && name.includes(query)).sort((a, b) =>
     rank(a[1]) - rank(b[1]) || Number(b[0] === 'WillYou 纳管') - Number(a[0] === 'WillYou 纳管') || a[1].localeCompare(b[1]));
 }
-export function MentionMenu({ trig, onPick, active, setActive, caps }) {
+export function MentionMenu({ trig, onPick, active, setActive, caps, managedOnly }) {
   const q = trig.q.toLowerCase();
   const items = trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ group: f.endsWith('/') ? '文件夹' : '文件', label: f, insert: '@' + f, chip: { kind: 'file', name: f } }))
-    : trig.ch === '$' ? matchSkills(q).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: '$' + n, chip: { kind: 'skill', name: n } }))
+    : trig.ch === '$' ? matchSkills(q, managedOnly).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: '$' + n, chip: { kind: 'skill', name: n } }))
     : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(([g, n, d]) => ({ group: g, label: n, desc: d, insert: n }));
   useEffect(() => { setActive(0); }, [trig.ch, trig.q]); // eslint-disable-line react-hooks/exhaustive-deps
   if (trig.ch === '$') {
@@ -178,7 +178,7 @@ export function MentionMenu({ trig, onPick, active, setActive, caps }) {
       : <p>{trig.ch === '@' ? '没有匹配的文件或文件夹' : '没有匹配的命令'}</p>}
   </div>;
 }
-export function mentionItems(trig, caps) { const q = trig.q.toLowerCase(); return trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ insert: '@' + f, chip: { kind: 'file', name: f } })) : trig.ch === '$' ? matchSkills(q).map(s => ({ insert: '$' + s[1], chip: { kind: 'skill', name: s[1] } })) : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(c => ({ insert: c[1] })); }
+export function mentionItems(trig, caps, managedOnly) { const q = trig.q.toLowerCase(); return trig.ch === '@' ? FILES.filter(f => f.toLowerCase().includes(q)).map(f => ({ insert: '@' + f, chip: { kind: 'file', name: f } })) : trig.ch === '$' ? matchSkills(q, managedOnly).map(s => ({ insert: '$' + s[1], chip: { kind: 'skill', name: s[1] } })) : COMMANDS.filter(c => cmdOk(c, caps) && c[1].includes('/' + q)).map(c => ({ insert: c[1] })); }
 // C2／C3 输入框里的附件（照 Codex）：图片是缩略图卡片，文件是“预览＋文件名”卡片；技能、插件引用是小标签
 export function ComposerChips({ chips, onRemove, onRetry }) {
   if (!chips.length) return null;
@@ -196,7 +196,9 @@ export function ComposerChips({ chips, onRemove, onRetry }) {
 }
 // ⌘V 粘贴：图片→缩略图卡片；文件→目录内按路径引用，目录外复制为附件（浏览器拿不到真实路径，原型一律按“项目外文件”演示）
 export function pasteToChips(e, setChips, onToast) {
-  const files = [...(e.clipboardData?.files ?? [])];
+  return addFilesToChips(Array.from(e.clipboardData?.files ?? []), setChips, onToast);
+}
+export function addFilesToChips(files, setChips, onToast) {
   if (!files.length) return false;
   for (const f of files) {
     const id = 'p' + Date.now() + Math.random();
@@ -204,7 +206,7 @@ export function pasteToChips(e, setChips, onToast) {
     setChips(cs => [...cs, { id, kind: image ? 'image' : 'file', attach: !image, name: f.name || (image ? '粘贴的图片.png' : '粘贴的文件'), state: 'preparing', note: image ? null : '项目外文件，已复制为附件' }]);
     setTimeout(() => setChips(cs => cs.map(c => c.id === id ? { ...c, state: null } : c)), 900);
   }
-  onToast?.(`已粘贴 ${files.length} 个${files.every(f => f.type.startsWith('image/')) ? '图片' : '文件'}（未发送）`);
+  onToast?.(`已添加 ${files.length} 个${files.every(f => f.type.startsWith('image/')) ? '图片' : '文件'}（未发送）`);
   return true;
 }
 // C4 执行器状态横幅（T3 ProviderStatusBanner）／C6 新会话提示（ComposerFreshSession）／D4 错误与断线（ThreadErrorBanner、系统横幅）／C11 草稿冲突

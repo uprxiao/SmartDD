@@ -5,7 +5,7 @@ import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {HomeView} from './home-view';
 import {navigation} from '@renderer/core/navigation';
 const m=vi.hoisted(()=>({update:vi.fn(),subscribed:false,projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
-const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),modelCatalog:vi.fn(),claudeLogin:null as 'local' | 'api' | null}));
+const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),modelCatalog:vi.fn(),homeManagedSkills:vi.fn(),prepareAttachment:vi.fn(),claudeLogin:null as 'local' | 'api' | null}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
 vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'login',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[...(m.subscribed?[{id:"codex",login:"subscription"}]:[]),...(agent.claudeLogin?[{id:"claude",login:agent.claudeLogin}]:[])]}})}));
@@ -22,6 +22,53 @@ function render(element: React.ReactElement) {
 }
 beforeEach(()=>{vi.clearAllMocks();m.subscribed=false;agent.modelCatalog.mockResolvedValue({status:"loading",models:[]});navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.pluginPromptRequest=null;navigation.currentProjectId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
 afterEach(()=>{cleanup();localStorage.removeItem('willyou-m14-home-selection');agent.create.mockReset();agent.submit.mockReset();agent.claudeLogin=null;});
+it('opens and filters managed Skills with $ in the new task draft before creating a task', async () => {
+  agent.homeManagedSkills.mockResolvedValue([{ name: 'source-driven-ui-test' }, { name: 'format-doc' }]);
+  render(<HomeView />);
+  const input = screen.getByTestId('home-input');
+  fireEvent.change(input, { target: { value: '$' } });
+  expect(await screen.findByRole('option', { name: /format-doc/ })).toBeTruthy();
+  expect(agent.homeManagedSkills).toHaveBeenCalledWith('p1', 'dir1');
+  fireEvent.change(input, { target: { value: '$source' } });
+  expect(screen.queryByRole('option', { name: /format-doc/ })).toBeNull();
+  expect(screen.getByRole('option', { name: /source-driven-ui-test/ })).toBeTruthy();
+  fireEvent.keyDown(input, { key: 'Enter' });
+  expect(input).toHaveProperty('value', '$source-driven-ui-test ');
+  expect(agent.create).not.toHaveBeenCalled();
+});
+
+it('opens the attachment picker from + and passes the chosen file to the first message', async () => {
+  const file = new File(['fixture'], 'notes.txt', { type: 'text/plain' });
+  const attachment = { id: 'attachment', kind: 'path', name: file.name, relativePath: file.name, image: false };
+  agent.prepareAttachment.mockResolvedValue(attachment);
+  agent.create.mockResolvedValue({ taskId: 'attached-task' });
+  agent.submit.mockResolvedValue({});
+  vi.stubGlobal('electronAPI', { pathForFile: () => '/private/fixture/notes.txt' });
+  const openPicker = vi.spyOn(HTMLInputElement.prototype, 'click');
+  try {
+    const { container } = render(<HomeView />);
+    fireEvent.click(screen.getByRole('button', { name: 'm6.addContext' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'home.addAttachments' }));
+    const picker = container.querySelector<HTMLInputElement>('input[type="file"]')!;
+    expect(openPicker).toHaveBeenCalledOnce();
+    expect(openPicker.mock.contexts[0]).toBe(picker);
+    expect(picker.multiple).toBe(true);
+    fireEvent.change(picker, { target: { files: [file] } });
+    await screen.findByText(file.name);
+    expect(agent.create).not.toHaveBeenCalled();
+    expect(agent.prepareAttachment).toHaveBeenCalledWith(null, '/private/fixture', {
+      name: file.name, mime: 'text/plain', sourcePath: '/private/fixture/notes.txt',
+    });
+    fireEvent.change(screen.getByTestId('home-input'), { target: { value: '请读附件' } });
+    fireEvent.click(screen.getByTestId('home-launch'));
+    await waitFor(() => expect(agent.submit).toHaveBeenCalledWith('attached-task',
+      expect.objectContaining({ text: '请读附件', attachments: [attachment] })));
+  } finally {
+    openPicker.mockRestore();
+    vi.unstubAllGlobals();
+  }
+});
+
 describe('application example handoff to the real home composer',()=>{
  it.each([false,true])('M13 appends one exact plugin example without submitting, Home already mounted=%s',async alreadyMounted=>{
   navigation.setHomeInput('p1','unsent prefix');let view:ReturnType<typeof render>;

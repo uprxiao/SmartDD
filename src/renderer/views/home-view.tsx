@@ -4,7 +4,7 @@ import {showBrowserPresentation} from '@renderer/features/browser/store';
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, Wrench } from 'lucide-react';
+import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Paperclip, Plus, Settings, Wrench } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,8 @@ import { newClientInputId } from '@renderer/features/agent-tasks/agent-ids';
 import { AgentModelPicker, modelCatalogQuery } from '@renderer/features/agent-tasks/agent-model-picker';
 import { readHomeSelection, type HomeSelection } from '@renderer/features/agent-tasks/home-selection';
 import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agent-tasks/attachment-chips';
+import { applyItem, findTrigger, skillItems, type MenuItem, type MenuTrigger } from '@renderer/features/agent-tasks/composer-menu';
+import { ComposerMenu, useManagedSkillLookup } from '@renderer/features/agent-tasks/composer-menu-view';
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
@@ -59,6 +61,7 @@ export const HomeView = observer(function HomeView() {
   const [launching, setLaunching] = useState(false);
   const launchToken = useRef<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const attachmentInput = useRef<HTMLInputElement>(null);
   const { data: project } = useProject(projectId);
   useLayoutEffect(()=>{
     const el=inputRef.current;if(!el)return;
@@ -155,6 +158,28 @@ export const HomeView = observer(function HomeView() {
   const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;
   const dirProblem = project && project.id === projectId && (!dir ? t('home.noDir') : !dir.status.available ? t('home.dirUnavailable', { path: dir.path }) : '');
   const ready = Boolean(projectId && profile && dir && dir.status.available && permissions.value) && !launching;
+  const [skillTrigger, setSkillTrigger] = useState<MenuTrigger | null>(null);
+  const [skillIndex, setSkillIndex] = useState(0);
+  const selectingSkill = navigation.currentViewId === 'home' && skillTrigger !== null;
+  const managedSkills = useManagedSkillLookup(selectingSkill,
+    projectId && dir?.status.available ? { projectId, dirId: dir.id } : null);
+  const skills = selectingSkill ? skillItems({ commands: [], skills: [] }, skillTrigger.query, managedSkills.items) : [];
+  const activeSkill = Math.min(skillIndex, Math.max(0, skills.length - 1));
+  const updateSkillTrigger = (input: HTMLTextAreaElement) => {
+    const trigger = findTrigger(input.value, input.selectionStart);
+    setSkillTrigger(trigger?.kind === '$' ? trigger : null);
+    setSkillIndex(0);
+  };
+  const pickSkill = (item: MenuItem) => {
+    if (!skillTrigger) return;
+    const { text, caret } = applyItem(message, skillTrigger, item);
+    setMessage(text);
+    setSkillTrigger(null);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(caret, caret);
+    });
+  };
 
   // M14 首页附件：随新任务第一条消息发送；准备中或失败时“启动任务”与 ⌘Enter 都不创建任务、不清空（用例 A75）。
   const [chips, setChips] = useState<Chip[]>([]);
@@ -316,9 +341,31 @@ export const HomeView = observer(function HomeView() {
       </div>
       <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
         <AttachmentChips chips={chips} onRemove={removeChip} onRetry={id => { const c = chips.find(x => x.localId === id); removeChip(id); if (c?.file) addFiles([c.file]); }} />
-        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
+        <input ref={attachmentInput} type="file" hidden multiple onChange={e => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          e.currentTarget.value = '';
+          if (files.length) addFiles(files);
+        }} />
+        <ComposerMenu items={skills} index={activeSkill} onPick={pickSkill} skills={selectingSkill} empty={managedSkills.empty} />
+        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')}
+          onChange={e => { setMessage(e.currentTarget.value); updateSkillTrigger(e.currentTarget); }}
+          onSelect={e => updateSkillTrigger(e.currentTarget)}
+          onBlur={() => setSkillTrigger(null)}
+          onKeyDown={e => {
+            if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+            if (selectingSkill && e.key === 'Escape') { e.preventDefault(); setSkillTrigger(null); return; }
+            if (managedSkills.loading && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); return; }
+            if (skills.length) {
+              if (e.key === 'ArrowDown') { e.preventDefault(); setSkillIndex((activeSkill + 1) % skills.length); return; }
+              if (e.key === 'ArrowUp') { e.preventDefault(); setSkillIndex((activeSkill - 1 + skills.length) % skills.length); return; }
+              if ((e.key === 'Tab' || e.key === 'Enter') && !e.shiftKey) { e.preventDefault(); pickSkill(skills[activeSkill]); return; }
+            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void launch(); }
+          }} />
         <div className="reference-composer-toolbar">
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
+            <DropdownMenuItem disabled={!dir?.status.available || launching} onClick={() => attachmentInput.current?.click()}><Paperclip />{t('home.addAttachments')}</DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setCreatingProject(true)}><Plus />{t('projects.new')}</DropdownMenuItem>
             <DropdownMenuItem onClick={() => setLaunchSettings(true)}><Folder />{t('home.pickProject')}</DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigation.openSettings('aiProfiles')}><Settings />{t('settings.sections.aiProfiles')}</DropdownMenuItem><DropdownMenuSeparator />

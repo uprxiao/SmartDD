@@ -156,8 +156,9 @@ export class CapabilityRegistryService {
     if(typeof approved!=='boolean')throw new Error('审批设置无效');const row=this.requireManaged(id);if(row.kind!=='mcp')throw new Error('只有 MCP 可以配置工具审批');
     this.db.update(capabilityRegistry).set({autoApprove:approved}).where(eq(capabilityRegistry.id,id)).run();return this.list();
   }
-  selected(projectRoot:string):ManagedCapabilityView[]{
-    const applicable=this.list().items.filter(x=>x.present&&(!x.projectRoot||x.projectRoot===physical(projectRoot))&&!['host','plugin','invalid'].includes(x.status));
+  selected(projectRoot?:string):ManagedCapabilityView[]{
+    const root=projectRoot?physical(projectRoot):null;
+    const applicable=this.list().items.filter(x=>x.present&&(!x.projectRoot||x.projectRoot===root)&&!['host','plugin','invalid'].includes(x.status));
     return applicable.filter(x=>x.managed&&x.enabled&&!applicable.some(other=>other.id!==x.id&&other.kind===x.kind&&other.name===x.name));
   }
   /** Fresh main-process resolution only. Raw MCP values are neither persisted

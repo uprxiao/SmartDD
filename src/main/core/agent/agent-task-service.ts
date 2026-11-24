@@ -724,8 +724,11 @@ export class AgentTaskService {
   }
 
   managedSkills(taskId: string) {
-    const { task } = this.selection(taskId);
-    return (this.d.capabilityRegistry?.selected(task.cwd) ?? [])
+    return this.managedSkillsForDirectory(this.selection(taskId).task.cwd);
+  }
+
+  managedSkillsForDirectory(cwd?: string) {
+    return (this.d.capabilityRegistry?.selected(cwd) ?? [])
       .filter(item => item.kind === 'skill')
       .map(({ name }) => ({ name }));
   }

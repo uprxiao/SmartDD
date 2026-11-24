@@ -1,12 +1,31 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { MentionMenu, mentionItems, mentionTrigger } from './M14Extras.jsx';
 import { VoiceButton } from './VoicePreview';
 import { AgentIcon, PermIcon } from './m13-icons.jsx';
-import { ArrowUp, Check, ChevronDown, Folder, Monitor, Plus, Settings, ShieldCheck, Square, SquareTerminal, Zap } from 'lucide-react';
+import { ArrowUp, Check, ChevronDown, Folder, Monitor, Paperclip, Plus, Settings, ShieldCheck, Square, SquareTerminal, Zap } from 'lucide-react';
 
 const COMPOSER_LINE = 22, COMPOSER_MAX_LINES = 10;
 
-export function ReferenceHome({ attachmentsSlot = null, onPasteFiles = null, profilePicker = null, agentLabels = false, project, projects, profile, profiles, prompt, setPrompt, inputRef, onProject, onProfile, onSubmit, onSettings, onAddProject, dir, onDir, onLaunchSettings, launchError, launchFix, voiceBusy, onVoice, preparing = false, onCancelPreparation, permission, permissionOptions, onPermission }) {
+export function ReferenceHome({ attachmentsSlot = null, onPasteFiles = null, onPickFiles = null, profilePicker = null, agentLabels = false, project, projects, profile, profiles, prompt, setPrompt, inputRef, onProject, onProfile, onSubmit, onSettings, onAddProject, dir, onDir, onLaunchSettings, launchError, launchFix, voiceBusy, onVoice, preparing = false, onCancelPreparation, permission, permissionOptions, onPermission }) {
   const [menu, setMenu] = useState(null);
+  const [skill, setSkill] = useState(null);
+  const [activeSkill, setActiveSkill] = useState(0);
+  const fileInput = useRef(null);
+  const updateSkill = input => {
+    const trigger = mentionTrigger(input.value.slice(0, input.selectionStart));
+    setSkill(onPickFiles && trigger?.ch === '$' ? { ...trigger, end: input.selectionStart } : null);
+    setActiveSkill(0);
+  };
+  const pickSkill = item => {
+    setPrompt(prompt.slice(0, skill.start) + item.insert + ' ' + prompt.slice(skill.end));
+    setSkill(null);
+    requestAnimationFrame(() => {
+      boxRef.current?.focus();
+      const caret = skill.start + item.insert.length + 1;
+      boxRef.current?.setSelectionRange(caret, caret);
+    });
+  };
+  const skillOptions = skill ? mentionItems(skill, null, true) : [];
   // 输入框随内容增高，最多 10 行（22px 行高），再多出现竖向滚动条（用户 2026-11-11 参照 Codex 要求）
   const boxRef = useRef(null);
   const setBox = el => { boxRef.current = el; if (typeof inputRef === 'function') inputRef(el); else if (inputRef) inputRef.current = el; };
@@ -18,8 +37,21 @@ export function ReferenceHome({ attachmentsSlot = null, onPasteFiles = null, pro
         {menu === 'project' && <div className="reference-home-menu" role="menu"><span>选择项目</span>{projects.map(p => <button role="menuitem" key={p.id} onClick={() => { onProject(p.id); setMenu(null); }}><Folder size={15} />{p.name}{project.id === p.id && <Check size={14} />}</button>)}<div className="popup-divider" /><button role="menuitem" onClick={() => { setMenu(null); onAddProject(); }}><Plus size={15} />添加项目</button></div>}</div>
         <div className="reference-home-picker"><button aria-label="选择代码目录" title={dir?.path || '尚未选择代码目录'} onClick={() => setMenu(menu === 'directory' ? null : 'directory')}><Monitor size={16} />{project.dirs.length > 1 ? dir?.label || '代码目录' : '此计算机'}{project.dirs.length > 1 && <ChevronDown size={12} />}</button>{menu === 'directory' && <div className="reference-home-menu" role="menu"><span>代码目录</span>{project.dirs.map(d => <button key={d.id} role="menuitem" title={d.path} onClick={() => { onDir(d.id); setMenu(null); }}><Folder size={14} /><span>{d.label || d.path}{d.isDefault ? ' · 默认' : ''}</span>{dir?.id === d.id && <Check size={13} />}</button>)}<div className="popup-divider" /><button role="menuitem" onClick={() => { setMenu(null); onLaunchSettings(); }}>管理任务目录</button></div>}</div><button className="composer-settings" aria-label="任务配置" onClick={onLaunchSettings}><Settings size={16} /></button>
       </div>
-      <form className="reference-composer" onSubmit={e => { e.preventDefault(); if (!preparing) onSubmit(); }}>{attachmentsSlot}<textarea ref={setBox} onPaste={onPasteFiles ? e => { if (onPasteFiles(e)) e.preventDefault(); } : undefined} aria-label="任务描述" placeholder="随心输入" value={prompt} onChange={e => setPrompt(e.target.value)} onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); if (!preparing) onSubmit(); } }} />
-        <div className="reference-composer-toolbar"><div className="reference-home-picker"><button type="button" className="composer-add" aria-label="添加任务上下文" aria-haspopup="menu" aria-expanded={menu === 'context'} onClick={() => setMenu(menu === 'context' ? null : 'context')}><Plus size={20} /></button>{menu === 'context' && <div className="reference-home-menu" role="menu"><button type="button" role="menuitem" onClick={() => setMenu('project')}><Folder size={15} />选择项目</button><button type="button" role="menuitem" onClick={onSettings}><Settings size={15} />AI 配置</button><div className="popup-divider" />{[['调研项目', '帮我梳理项目结构和关键模块'], ['开发功能', '帮我实现以下功能：'], ['审查修改', '检查最近的代码修改，指出问题'], ['修复问题', '帮我定位并修复以下问题：']].map(([name, value]) => <button key={name} type="button" role="menuitem" onClick={() => { setPrompt(value); setMenu(null); inputRef.current?.focus(); }}>{name}</button>)}</div>}</div>
+      <form className="reference-composer" onSubmit={e => { e.preventDefault(); if (!preparing) onSubmit(); }}>{attachmentsSlot}
+        {onPickFiles && <input type="file" ref={fileInput} hidden multiple onChange={e => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          e.currentTarget.value = '';
+          if (files.length) onPickFiles(files);
+        }} />}
+        {skill && <MentionMenu trig={skill} active={activeSkill} setActive={setActiveSkill} onPick={pickSkill} managedOnly />}
+        <textarea ref={setBox} onPaste={onPasteFiles ? e => { if (onPasteFiles(e)) e.preventDefault(); } : undefined} aria-label="任务描述" placeholder="随心输入" value={prompt} onChange={e => { setPrompt(e.currentTarget.value); updateSkill(e.currentTarget); }} onSelect={e => updateSkill(e.currentTarget)} onBlur={() => setSkill(null)} onKeyDown={e => {
+          if (skill && e.key === 'Escape') { e.preventDefault(); setSkill(null); return; }
+          if (skillOptions.length && !e.nativeEvent.isComposing) {
+            if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSkill((activeSkill + 1) % skillOptions.length); return; }
+            if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSkill((activeSkill - 1 + skillOptions.length) % skillOptions.length); return; }
+            if ((e.key === 'Tab' || e.key === 'Enter') && !e.shiftKey) { e.preventDefault(); pickSkill(skillOptions[Math.min(activeSkill, skillOptions.length - 1)]); return; }
+          } if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); if (!preparing) onSubmit(); } }} />
+        <div className="reference-composer-toolbar"><div className="reference-home-picker"><button type="button" className="composer-add" aria-label="添加任务上下文" aria-haspopup="menu" aria-expanded={menu === 'context'} onClick={() => setMenu(menu === 'context' ? null : 'context')}><Plus size={20} /></button>{menu === 'context' && <div className="reference-home-menu" role="menu">{onPickFiles && <><button type="button" role="menuitem" disabled={!dir?.available || preparing} onClick={() => { setMenu(null); fileInput.current?.click(); }}><Paperclip size={15} />添加图片或文件</button><div className="popup-divider" /></>}<button type="button" role="menuitem" onClick={() => setMenu('project')}><Folder size={15} />选择项目</button><button type="button" role="menuitem" onClick={onSettings}><Settings size={15} />AI 配置</button><div className="popup-divider" />{[['调研项目', '帮我梳理项目结构和关键模块'], ['开发功能', '帮我实现以下功能：'], ['审查修改', '检查最近的代码修改，指出问题'], ['修复问题', '帮我定位并修复以下问题：']].map(([name, value]) => <button key={name} type="button" role="menuitem" onClick={() => { setPrompt(value); setMenu(null); inputRef.current?.focus(); }}>{name}</button>)}</div>}</div>
           {permissionOptions ? <div className="reference-home-picker m13-perm-picker">{/* P0.17：智能体权限（需求补记 8），按 Codex 参考图复刻；M13 预览下替换原“项目上下文”入口（与齿轮“任务配置”打开同一弹窗） */}
             <button type="button" className={'m13-perm-trigger' + (permission?.danger ? ' danger' : '')} aria-label={'权限：' + permission?.name} aria-haspopup="menu" aria-expanded={menu === 'permission'} onClick={() => setMenu(menu === 'permission' ? null : 'permission')}><PermIcon icon={permission?.icon} size={15} />{permission?.name}<ChevronDown size={12} /></button>
             {menu === 'permission' && <div className="m13-perm-menu" role="menu" aria-label="权限">
