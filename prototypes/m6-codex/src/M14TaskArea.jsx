@@ -68,13 +68,14 @@ function EntryBody({ e }) {
   if (e.kind === 'edit') return <div className="m14-log-body muted">{e.path}：<i className="add">+{e.add}</i> <i className="del">−{e.del}</i>，完整差异见本轮改动</div>;
   return null;
 }
-function WorkEntry({ e, onToggle, open }) {
+function WorkEntry({ e, onToggle, open, compactCommand = false, live = false }) {
   const Icon = ICON[e.kind] || Wrench;
   const canOpen = e.kind === 'thought' || e.kind === 'command' || e.kind === 'edit' || (e.kind === 'read' && e.output);
-  const label = e.kind === 'thought' && open ? '思考' : entryLabel(e);
+  const label = compactCommand ? live ? '正在运行 1 条命令' : e.exit != null && e.exit !== 0 ? '1 条命令运行失败' : '运行了 1 条命令'
+    : e.kind === 'thought' && open ? '思考' : entryLabel(e);
   const detail = e.kind === 'edit' ? <><i className="add">+{e.add}</i> <i className="del">−{e.del}</i></> : e.kind === 'command' && e.exit != null && e.exit !== 0 ? <span className="del">退出码 {e.exit}</span> : null;
   return <div className="m14-entry">
-    <LogRow icon={<Icon size={14} />} label={label} detail={detail} chevron={canOpen} expanded={open} onClick={canOpen ? onToggle : undefined} tone={e.kind === 'command' ? 'mono' : undefined} />
+    <LogRow icon={<Icon size={14} />} label={label} detail={detail} chevron={canOpen} expanded={open} onClick={canOpen ? onToggle : undefined} live={live} tone={e.kind === 'command' && !compactCommand ? 'mono' : undefined} />
     {open && <EntryBody e={e} />}
   </div>;
 }
@@ -187,8 +188,9 @@ function ReplyTable({ table }) {
 
 function Row({ row, ui, onLink, onToast, onOpenChild, onBranch }) {
   const { openEntries, toggleEntry, toggleGroup, toggleTurn } = ui;
+  const workingClass = 'm14-working' + (row.divider ? ' divided' : '');
   switch (row.kind) {
-    case 'working': return <div className={'m14-working' + (row.stopping ? ' stopping' : '')}><span className="m14-shine">{row.label}</span></div>;
+    case 'working': return <div className={workingClass + (row.stopping ? ' stopping' : '')}><span className="m14-shine">{row.label}</span></div>;
     case 'business': return <BusinessApprovalRow e={row.entry} mail={UICtx.mail} />;
     case 'sysnote': return <SysNoteRow e={row.entry} />;
     case 'plan': return <PlanCard e={row.entry} onToast={onToast} />;
@@ -197,10 +199,10 @@ function Row({ row, ui, onLink, onToast, onOpenChild, onBranch }) {
     case 'compaction': return <CompactionRow e={row.entry} />;
     case 'native': return <NativeSubagentRow e={row.entry} onOpen={UICtx.openNative} />;
     case 'turn-footer': return <div className={'m14-turn-footer' + (row.failed ? ' failed' : '')}>{row.label}</div>;
-    case 'turn-fold': return <button className="m14-working fold" aria-expanded={row.expanded} onClick={() => toggleTurn(row.turnId)}>{row.label}<ChevronRight size={13} className={'m14-chev' + (row.expanded ? ' open' : '')} /></button>;
-    case 'turn-header': return <div className={'m14-working' + (row.failed ? ' failed' : '')}>{row.label}</div>;
+    case 'turn-fold': return <button className={workingClass + ' fold'} aria-expanded={row.expanded} onClick={() => toggleTurn(row.turnId)}>{row.label}<ChevronRight size={13} className={'m14-chev' + (row.expanded ? ' open' : '')} /></button>;
+    case 'turn-header': return <div className={workingClass + (row.failed ? ' failed' : '')}>{row.label}</div>;
     case 'thinking': return row.label.startsWith('等待') ? <div className="m14-waiting-row"><CircleDashed size={14} /><span className="m14-shine">{row.label}</span>{ui.waiting && <span className="m14-waiting-names">{ui.waiting.join('、')}</span>}<button onClick={() => onToast('停止范围：主任务及其全部子任务（合成）')}>停止</button></div> : <LogRow icon={<Brain size={14} />} label={row.label} live />;
-    case 'work': return <WorkEntry e={row.entry} open={openEntries.has(row.entry.id)} onToggle={() => toggleEntry(row.entry.id)} />;
+    case 'work': return <WorkEntry e={row.entry} compactCommand={row.entry.kind === 'command'} live={row.live} open={openEntries.has(row.entry.id)} onToggle={() => toggleEntry(row.entry.id)} />;
     case 'work-toggle': { const Icon = ICON[row.icon] || Layers; return <div className="m14-entry"><LogRow icon={<Icon size={14} />} label={row.summary} chevron expanded={row.expanded} onClick={() => toggleGroup(row.id)} />{row.expanded && <GroupEntries entries={row.entries} openEntries={openEntries} toggleEntry={toggleEntry} />}</div>; }
     case 'work-live': {
       const Icon = ICON[row.entry.kind] || Wrench;
@@ -209,7 +211,7 @@ function Row({ row, ui, onLink, onToast, onOpenChild, onBranch }) {
       return <div className="m14-entry">
         <button className="m14-live" aria-expanded={row.expanded} onClick={() => toggleGroup(row.id)}>
           {thoughtLine && !isThought && <span className="m14-log wrap"><span className="m14-log-icon"><Brain size={14} /></span><span className="m14-log-label m14-thought-line">{thoughtLine}</span></span>}
-          <span className="m14-log"><span className="m14-log-icon">{isThought ? <Brain size={14} /> : <Icon size={14} />}</span><span className="m14-log-label m14-shine">{isThought ? (thoughtLine || '思考中') : entryLabel(row.entry, true)}</span></span>
+          <span className="m14-log"><span className="m14-log-icon">{isThought ? <Brain size={14} /> : <Icon size={14} />}</span><span className="m14-log-label m14-shine">{isThought ? (thoughtLine || '思考中……') : entryLabel(row.entry, true)}</span></span>
         </button>
         {row.expanded && <GroupEntries entries={row.entries} openEntries={openEntries} toggleEntry={toggleEntry} />}
       </div>;

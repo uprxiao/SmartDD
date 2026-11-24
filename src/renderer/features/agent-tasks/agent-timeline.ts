@@ -220,14 +220,20 @@ export function summarizeTools(items: readonly TimelineItem[]) {
 }
 
 /** 工作条目的单行摘要。 */
-export function workLabel(it: TimelineItem): string {
+export function workLabel(it: TimelineItem, summarizeCommand = false): string {
   const p = it.payload ?? {};
   const toolLabel = (action: string, target: string) => {
     if (it.terminal === 'unconfirmed') return target ? `未收到工具结果 · ${target}` : '未收到工具结果';
     return target ? `${action} ${target}` : action;
   };
   switch (it.type) {
-    case 'command_execution': return toolLabel(p.status === 'running' ? '正在运行' : p.status === 'declined' ? '已拒绝运行' : p.status === 'failed' ? '运行失败' : '运行了', p.command ?? p.input?.command ?? '');
+    case 'command_execution': {
+      const action = p.status === 'running' ? '正在运行' : p.status === 'declined' ? '已拒绝运行'
+        : p.status === 'failed' ? '运行失败' : '运行了';
+      if (!summarizeCommand) return toolLabel(action, p.command ?? p.input?.command ?? '');
+      if (it.terminal === 'unconfirmed') return '1 条命令未收到结果';
+      return action === '运行失败' ? '1 条命令运行失败' : `${action} 1 条命令`;
+    }
     case 'file_change': {
       const paths: string[] = p.changes?.map((c: any) => c.path) ?? (p.input?.file_path ? [p.input.file_path] : []);
       return toolLabel(p.status === 'running' ? '正在修改' : p.status === 'declined' ? '已拒绝修改' : p.status === 'failed' ? '未能修改' : '修改了', paths.join('、'));
