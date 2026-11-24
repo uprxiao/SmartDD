@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup,fireEvent,render,screen,waitFor } from '@testing-library/react';
+import { cleanup,fireEvent,render,screen,waitFor,within } from '@testing-library/react';
 import { QueryClient,QueryClientProvider } from '@tanstack/react-query';
 import { afterEach,beforeEach,expect,it,vi } from 'vitest';
 import type { CapabilityRegistryView,ManagedCapabilityView } from '@shared/managed-capabilities';
@@ -22,6 +22,34 @@ it('explains Codex Provider native plugin limits while keeping Skill and MCP ado
 it('scans on entry and exposes management without independent installers or MCP connection creation',async()=>{
   mount();await screen.findByRole('button',{name:/public-echo/});expect(m.scan).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole('button',{name:/安装 Skill|新增 MCP|添加 MCP|导入/})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'一键纳管'}));await waitFor(()=>expect(m.adopt).toHaveBeenCalledTimes(1));
+});
+it('places search with the CLI status filters and applies it to the current Skill or MCP list', async () => {
+  m.state = {
+    items: [
+      item(),
+      item({ id: 'private', name: 'private-echo', sourcePath: '/synthetic/private-echo/SKILL.md', status: 'managed', managed: true }),
+      item({ id: 'mcp', kind: 'mcp', name: 'public-server', sourcePath: '/synthetic/.claude.json' }),
+    ],
+    autoManage: false,
+    newCount: 2,
+  };
+  mount();
+  await screen.findByRole('button', { name: /public-echo/ });
+  const filters = within(screen.getByRole('group', { name: '筛选从 CLI 发现的技能' }));
+  const search = filters.getByRole('searchbox', { name: '搜索 Skill 或 MCP' });
+  expect(filters.queryByRole('button', { name: '重新扫描' })).toBeNull();
+
+  fireEvent.change(search, { target: { value: 'public' } });
+  expect(screen.getByRole('button', { name: /public-echo/ })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /private-echo/ })).toBeNull();
+  expect(screen.getByText('WillYou 项目上下文 MCP')).toBeTruthy();
+  fireEvent.click(filters.getByRole('button', { name: /^已纳管/ }));
+  expect(screen.queryByRole('button', { name: /public-echo/ })).toBeNull();
+
+  fireEvent.click(filters.getByRole('button', { name: /^全部/ }));
+  fireEvent.click(screen.getByRole('tab', { name: /^MCP/ }));
+  expect(screen.getByRole('button', { name: /public-server/ })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /public-echo/ })).toBeNull();
 });
 it('conflict details preserve the source and offer no destructive takeover action',async()=>{
   m.state={items:[item({status:'conflict'})],autoManage:false,newCount:0};mount();fireEvent.click(await screen.findByRole('button',{name:/public-echo/}));await screen.findByRole('dialog');

@@ -14,7 +14,7 @@ import { BrowserCheckpointCard } from '@renderer/features/browser/checkpoint-car
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, GitBranch, Globe, Info, List, Loader2, Network, Sparkles, SquareTerminal, Target, ThumbsUp, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
 import { ComposerPrimaryAction, ComposerStopIcon, QueuedSendIcon } from './composer-primary-action';
@@ -147,10 +147,26 @@ function Markdown({ text,itemId }: { text: string;itemId?:string }) {
 
 const DEFAULT_COMMANDS: Record<string, string[]> = { 'codex-app-server': ['goal', 'compact', 'review'], 'claude-sdk': ['goal', 'compact', 'init'] };
 /** 输入框选用菜单（/命令、@文件、$Skill）；方向键选择，Enter／Tab 选用，Esc 关闭。 */
-function ComposerMenu({ items, index, onPick }: { items: MenuItem[]; index: number; onPick: (i: MenuItem) => void }) {
-  if (!items.length) return null;
-  return <div className="agent-menu" role="listbox">{items.map((it, i) => <button key={it.key} type="button" role="option" aria-selected={i === index} className={i === index ? 'on' : ''} onMouseDown={e => { e.preventDefault(); onPick(it); }}>
-    <b>{it.label}</b>{it.detail && <small>{it.detail}</small>}</button>)}</div>;
+function ComposerMenu({ items, index, onPick, skills, empty }: { items: MenuItem[]; index: number; onPick: (i: MenuItem) => void; skills: boolean; empty?: string }) {
+  const menu = useRef<HTMLDivElement>(null);
+  const selected = items[index]?.key;
+  useEffect(() => {
+    const list = menu.current;
+    const active = list?.children[index] as HTMLElement | undefined;
+    if (!skills || !list || !active) return;
+    const top = active.offsetTop, bottom = top + active.offsetHeight;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+  }, [skills, index, selected]);
+  if (!items.length) return empty ? <div className="agent-menu agent-menu-empty" role="status">{empty}</div> : null;
+  return <div ref={menu} className={'agent-menu' + (skills ? ' agent-menu-skills' : '')} role="listbox" aria-label={skills ? '选择技能' : undefined}>
+    {items.map((it, i) => <button key={it.key} type="button" role="option" aria-selected={i === index} className={i === index ? 'on' : ''} onMouseDown={e => e.preventDefault()} onClick={() => onPick(it)}>
+      {skills && <Sparkles size={14} aria-hidden />}
+      <b title={skills ? it.label : undefined}>{it.label}</b>
+      {it.detail && <small title={skills ? it.detail : undefined}>{it.detail}</small>}
+      {skills && <span className="agent-menu-source">{it.source ?? '执行器'}</span>}
+    </button>)}
+  </div>;
 }
 
 type RangeChunk = { chunk: string; next: number; done: boolean; revision?: number };
@@ -877,6 +893,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const [trigger, setTrigger] = useState<MenuTrigger | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
+  const [skillLookup, setSkillLookup] = useState<{ taskId: string; items: { name: string }[]; failed?: boolean } | null>(null);
+  const selectingSkill = trigger?.kind === '$';
+  useEffect(() => {
+    setSkillLookup(null);
+    if (!selectingSkill) return;
+    let current = true;
+    void rpc.agentTasks.managedSkills(taskId).then(
+      items => { if (current) setSkillLookup({ taskId, items }); },
+      () => { if (current) setSkillLookup({ taskId, items: [], failed: true }); },
+    );
+    return () => { current = false; };
+  }, [selectingSkill, taskId]);
   const textarea = useRef<HTMLTextAreaElement>(null);
   // D06-78: when the terminal drawer closes, its focused xterm is removed and focus falls to <body>. Hand it back to the
   // composer, but only if it really fell to the page; never steal focus the user already moved elsewhere.
@@ -1223,7 +1251,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
   // 目标命令只在运行冻结的能力允许时出现（复核 CR15）。
   const catalog: Catalog = snap.run && !snap.run.goal ? { ...rawCatalog, commands: rawCatalog.commands.filter(c => c.replace(/^\//, '') !== 'goal') } : rawCatalog;
-  const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query) : fileItems(fileHits);
+  const currentSkills = skillLookup?.taskId === taskId ? skillLookup : null;
+  const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query, currentSkills?.items) : fileItems(fileHits);
+  const activeMenuIndex = Math.min(menuIndex, Math.max(0, menuItems.length - 1));
+  const skillStatus = selectingSkill ? !currentSkills ? '正在读取技能…' : currentSkills.failed ? '暂时无法读取纳管技能' : '没有匹配的技能' : undefined;
   const refreshTrigger = (value: string, caret: number) => { const t = findTrigger(value, caret); setTrigger(t); setMenuIndex(0); };
   const pick = (item: MenuItem) => {
     if (!trigger) return;
@@ -1599,16 +1630,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
             void stop();
           }}>
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
-          <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
+          <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={skillStatus} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
             onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
+              if (e.key === 'Escape' && (menuItems.length || selectingSkill) && !e.nativeEvent.isComposing) {
+                e.preventDefault(); setTrigger(null); return;
+              }
               if (menuItems.length && !e.nativeEvent.isComposing) {
-                if (e.key === 'ArrowDown') { e.preventDefault(); setMenuIndex(i => (i + 1) % menuItems.length); return; }
-                if (e.key === 'ArrowUp') { e.preventDefault(); setMenuIndex(i => (i - 1 + menuItems.length) % menuItems.length); return; }
-                if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pick(menuItems[Math.min(menuIndex, menuItems.length - 1)]); return; }
-                if (e.key === 'Escape') { e.preventDefault(); setTrigger(null); return; }
+                if (e.key === 'ArrowDown') { e.preventDefault(); setMenuIndex((activeMenuIndex + 1) % menuItems.length); return; }
+                if (e.key === 'ArrowUp') { e.preventDefault(); setMenuIndex((activeMenuIndex - 1 + menuItems.length) % menuItems.length); return; }
+                if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pick(menuItems[activeMenuIndex]); return; }
               }
               if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!composerStopping) void send(); } }} />
           <div className="agent-composer-bar">

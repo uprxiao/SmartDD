@@ -5,7 +5,7 @@ import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), managedSkills: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -40,6 +40,25 @@ beforeEach(() => {
 });
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
+
+it('refreshes the managed Skill list when reopening $ in the same task', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({
+    run: { catalog: { commands: [], skills: [{ name: 'open-source-radar' }] } },
+  }));
+  mocks.managedSkills.mockResolvedValueOnce([]).mockResolvedValueOnce([{ name: 'source-driven-ui-test' }]);
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入');
+  fireEvent.change(input, { target: { value: '$source' } });
+  await waitFor(() => expect(mocks.managedSkills).toHaveBeenCalledWith('task'));
+  expect(screen.queryByRole('option', { name: /source-driven-ui-test/ })).toBeNull();
+  fireEvent.change(input, { target: { value: '' } });
+  fireEvent.change(input, { target: { value: '$source' } });
+  const fresh = await screen.findByRole('option', { name: /source-driven-ui-test.*WillYou 纳管/ });
+  expect(screen.getAllByRole('option')[0]).toBe(fresh);
+  fireEvent.keyDown(input, { key: 'Tab' });
+  expect((input as HTMLTextAreaElement).value).toBe('$source-driven-ui-test ');
+  expect(mocks.submit).not.toHaveBeenCalled();
+});
 
 it('switches the single composer button between stop and queue, with a separate stop action in the task header', async () => {
   mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', run: { runId: 'active', busy: true, steer: true } }));

@@ -25,4 +25,19 @@ describe('菜单项', () => {
   it('Skill 按名称过滤', () => {
     expect(skillItems({ commands: [], skills: [{ name: 'pdf', description: 'PDF' }, { name: 'docx' }] }, 'pd')).toEqual([{ key: 's:pdf', label: '$pdf', detail: 'PDF', insert: '$pdf ' }]);
   });
+  it('优先显示准确和前缀匹配，同名的纳管项与执行器项合并', () => {
+    const catalog = { commands: [], skills: [
+      { name: 'open-source-radar' },
+      { name: 'source-driven-ui-test', description: '从源码生成测试' },
+      { name: 'source' },
+    ] };
+    const items = skillItems(catalog, 'SOURCE', [{ name: 'source-driven-ui-test' }]);
+    expect(items.map(item => item.label)).toEqual(['$source', '$source-driven-ui-test', '$open-source-radar']);
+    expect(items[1]).toMatchObject({ detail: '从源码生成测试', source: 'WillYou 纳管' });
+  });
+  it('可查找完整纳管目录并独立选用执行器未公布的技能', () => {
+    const skills = Array.from({ length: 250 }, (_, index) => ({ name: `skill-${index}` }));
+    expect(skillItems({ commands: [], skills: [] }, '', skills)).toHaveLength(250);
+    expect(skillItems({ commands: [], skills: [] }, 'skill-249', skills)[0]?.insert).toBe('$skill-249 ');
+  });
 });

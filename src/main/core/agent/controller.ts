@@ -107,6 +107,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       pasteToTerminal: (e, taskId: string, text: string) => run(e, w => { if (!w.terminals) throw new Error('终端不可用'); return w.terminals.paste(taskId, text); }),
       command: (e, taskId: string, name: string, args?: string) => run(e, w => w.tasks.command(taskId, name, args)),
       searchFiles: (e, taskId: string | null, cwd: string | null, query: string) => run(e, w => w.tasks.searchFiles(taskId, cwd, query)),
+      managedSkills: (e, taskId: string) => run(e, w => w.tasks.managedSkills(taskId)),
     }),
   };
 }

@@ -16,6 +16,7 @@ import { searchProjectFiles } from './file-search';
 import { HandoffService, type Transfer } from './handoff';
 import type { RunIntegration, RunIntegrationContext } from './run-integration';
 import type { TaskCoordination } from './task-coordination';
+import type { CapabilityRegistryService } from '../capabilities/capability-registry';
 
 export interface ResolvedLaunch {
   driverId: DriverId;
@@ -217,7 +218,7 @@ export class AgentTaskService {
   // A /goal turn that ended without a recognised confirmation: the goal state is unknown (A69, D06-66).
   private readonly goalUnknown = new Map<string, { kind: 'set' | 'clear'; objective?: string }>();
 
-  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; profileName?(id: string): string; profileModelSettings?(id: string): { defaultModel?: string | null; providerBacked?: boolean; options: AgentModelOption[] }; userData?: string }) {
+  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; profileName?(id: string): string; profileModelSettings?(id: string): { defaultModel?: string | null; providerBacked?: boolean; options: AgentModelOption[] }; userData?: string; capabilityRegistry?: Pick<CapabilityRegistryService, 'selected'> }) {
     this.handoffs = new HandoffService(d.store);
     // 重启后排队的输入保留但不自动发出，等用户再次提交或取消（未知接收不自动重发）。
     for (const taskId of d.store.tasksWithQueue()) this.paused.add(taskId);
@@ -720,6 +721,13 @@ export class AgentTaskService {
     const dir = taskId ? this.selection(taskId).task.cwd : cwd;
     if (!dir) return [];
     return searchProjectFiles(dir, String(query).slice(0, 200));
+  }
+
+  managedSkills(taskId: string) {
+    const { task } = this.selection(taskId);
+    return (this.d.capabilityRegistry?.selected(task.cwd) ?? [])
+      .filter(item => item.kind === 'skill')
+      .map(({ name }) => ({ name }));
   }
 
   /** 目标（需求 R02）：Codex 用原生目标接口，可暂停／继续；Claude 以 /goal 文字设定与清除，不能暂停。 */

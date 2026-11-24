@@ -77,6 +77,7 @@ export interface AgentWorkspaceDeps {
   ptys?: import('./manual-terminal').TerminalPtys;
   mcpProjection?: Pick<McpProjectionService, 'prepare'>;
   skillProjection?: Pick<import('../capabilities/skill-projection').SkillProjectionService, 'prepare'>;
+  capabilityRegistry?: Pick<import('../capabilities/capability-registry').CapabilityRegistryService, 'selected'>;
 }
 
 export function driverForKind(kind: string): DriverId {
@@ -281,6 +282,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
       return { defaultModel: profile.defaultModel, providerBacked: profile.source === 'provider', options: providerModelOptions(provider, profile) };
     },
     userData: d.userData,
+    capabilityRegistry: d.capabilityRegistry,
   });
   const ownedCommand = ownedWorkspaceCommand({processes:d.processes,env:d.baseEnv,blocked:(options,_proof,detail)=>{if(options.taskId)store.addHostItem(options.taskId,null,'system_notice',{code:'host_job_drain_unknown',detail});}});
   const git = new GitWorkspaces({ store, command:(cwd,command,args,timeout,options)=>options?ownedCommand(cwd,command,args,timeout,options):runWorkspaceCommand(cwd,command,args,timeout), home: d.baseEnv().HOME ?? homedir(), recoverySafe: async taskId => {
