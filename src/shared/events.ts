@@ -15,7 +15,8 @@ export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:ex
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 /** M14 统一 Agent 工作区：已提交的任务事件（含 seq）与只推在线订阅者的流式增量。 */
 export const agentTaskEvent = defineEvent<{ taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }>('agentTasks:event');
-export interface AgentLiveFrame { taskId: string; runId: string; itemKey: string; text: string; previewIncomplete?: boolean }
+export interface AgentCommandPreview { revision: number; text: string; truncated: boolean }
+export interface AgentLiveFrame { taskId: string; runId: string; itemKey: string; text: string; previewIncomplete?: boolean; commandRevision?: number }
 export const agentTaskLiveEvent = defineEvent<AgentLiveFrame>('agentTasks:live');
 export const browserChangedEvent=defineEvent<{taskId:string}>('browser:changed');
 export const browserAccessChangedEvent=defineEvent<Record<string,never>>('browser:access-changed');

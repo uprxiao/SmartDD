@@ -341,6 +341,8 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const liveOutput = new AgentLiveOutput(d.emitLive);
   const live: LiveListener = ({ taskId, runId, event }) => {
     if (event.type === 'message.delta') liveOutput.append({ taskId, runId, itemKey: event.nativeItemId, text: event.text });
+    if (event.type === 'command.output') d.emitLive({ taskId, runId, itemKey: event.nativeItemId, text: event.preview.text,
+      commandRevision: event.preview.revision, previewIncomplete: event.preview.truncated });
     if (event.type === 'turn.completed' || event.type === 'exit') liveOutput.end(runId);
   };
   const unsubscribeLive = runs.onLive(live);

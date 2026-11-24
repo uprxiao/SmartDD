@@ -2,6 +2,7 @@
 // 持有流式缓冲、原生关联、工具映射和待回应回调。任务／编排层不出现品牌配对枚举。
 import type { DriverId } from './capabilities';
 import type { Tier } from './permissions';
+import type { AgentCommandPreview } from '@shared/events';
 
 export interface DriverExecutable {
   /** 已核对的 realpath；不接受 Agent 或客户端提供的路径。 */
@@ -79,10 +80,12 @@ export type DriverEvent =
   /** 执行器公布的命令与 Skill（输入框 /命令、$Skill 只列这些）。 */
   | { type: 'catalog'; commands: string[]; skills: { name: string; description?: string }[] }
   | { type: 'message.delta'; nativeItemId: string; text: string }
+  | { type: 'command.output'; nativeItemId: string; preview: AgentCommandPreview }
   | { type: 'item.completed'; nativeItemId: string; itemType: string; payload: unknown }
   | { type: 'request'; requestKey: string; kind: DriverRequestKind; payload: unknown; nodeId?: string }
   | { type: 'node.message'; nodeId: string; key: string; payload: unknown }
-  | { type: 'node.state'; nodeId: string; state: 'running' | 'completed' | 'failed' | 'interrupted'; nativeRunId?: string }
+  | { type: 'node.state'; nodeId: string; state: 'running' | 'completed' | 'failed' | 'interrupted'; nativeRunId?: string; replacesNodeId?: string;
+      nativeTask?: { kind: 'command' | 'subagent'; background?: boolean; summary?: string; output?: string; outputTruncated?: boolean } }
   | { type: 'request.resolved'; requestKey: string }
   | { type: 'activity'; nativeTurnId: string; activity: import('@shared/agent-activity').AgentActivityUpdate }
   | { type: 'turn.completed'; nativeTurnId: string; status: TurnStatus; error?: string }
@@ -129,6 +132,7 @@ export interface DriverInstance {
   goal?(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }): Promise<void>;
   goalState?(): Promise<{ objective: string; status: string; createdAt: number; updatedAt: number } | null>;
   nativeChildHistory?(nodeId: string): Promise<{ key: string; payload: unknown }[]>;
+  commandPreview?(nativeItemId: string): AgentCommandPreview | undefined;
   /** 原生命令（Codex compact／review 走协议；其余由调用方作为文字输入发送）。 */
   command?(name: 'compact' | 'review'): Promise<void>;
   close(): Promise<void>;

@@ -522,8 +522,16 @@ it('A05 dispatches another foreground turn while an earlier native background no
   const first = await svc.submit(taskId, { clientInputId: id(51), text: 'Start background work', expectedSelectionRevision: 1 });
   await until(() => insts[0]?.turns.length === 1);
   const runId = runs.runForTask(taskId)!.runId;
-  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'running' });
+  insts[0].emit({ type: 'item.completed', nativeItemId: 'launch', itemType: 'assistant', payload: {
+    content: [{ type: 'tool_use', id: 'background-job', name: 'Bash', input: { command: 'git pull', run_in_background: true } }],
+  } });
+  insts[0].emit({ type: 'node.state', nodeId: 'native-task-id', state: 'running' });
+  insts[0].emit({ type: 'node.state', nodeId: 'background-job', replacesNodeId: 'native-task-id', state: 'running', nativeTask: { kind: 'command', background: true } });
   insts[0].finish();
+  const parent = svc.snapshot(taskId);
+  expect(parent).toMatchObject({ status: 'working', run: { busy: false }, backgroundWork: [
+    { runId, turnId: first.turnId, terminal: null, payload: { status: 'running', background: true } },
+  ] });
   const second = await svc.submit(taskId, { clientInputId: id(52), text: 'Follow up in the foreground', expectedSelectionRevision: 1 });
   await until(() => insts[0]?.turns.length === 2);
   expect(after).toHaveBeenCalledWith(taskId, first.turnId, true);
@@ -531,8 +539,14 @@ it('A05 dispatches another foreground turn while an earlier native background no
   expect(runs.runForTask(taskId)?.runId).toBe(runId);
   expect(runs.nativeBusy(runId)).toBe(true);
   expect(store.turn(second.turnId)?.status).toBe('started');
-  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'completed' });
+  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'completed', nativeTask: { kind: 'command', background: true, output: 'Updated\n' } });
   insts[0].finish();
+  const settled = svc.snapshot(taskId);
+  expect(settled.backgroundWork ?? []).toEqual([]);
+  expect(runs.nativeBusy(runId)).toBe(false);
+  expect(settled.items.find(item => item.itemId === parent.backgroundWork?.[0].itemId)).toMatchObject({
+    turnId: first.turnId, terminal: 'completed', payload: { status: 'completed', output: 'Updated\n' },
+  });
 });
 
 it('A44 bounds event catch-up to its captured watermark and only refreshes explicitly requested history in the same task', () => {

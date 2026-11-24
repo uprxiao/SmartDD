@@ -42,6 +42,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
         ...req, initialCodexDefault: req.initialCodexDefault === true && w.isCodexSubscription(req.profileId), cwd: w.projectCwd(req.projectId, req.dirId),
       })),
       snapshot: (e, taskId: string) => run(e, w => w.tasks.snapshot(taskId)),
+      commandPreview: (e, taskId: string, runId: string, itemKey: string) => run(e, w => w.tasks.commandPreview(taskId, runId, itemKey)),
       events: (e, taskId: string, afterSeq: number, throughSeq?: number) => run(e, w => w.tasks.events(taskId, afterSeq, 128, throughSeq)),
       history: (e, taskId: string, cursor: number | string) => run(e, w => w.tasks.history(taskId, cursor)),
       historyItems: (e, taskId: string, itemIds: string[]) => run(e, w => w.tasks.historyItems(taskId, itemIds)),

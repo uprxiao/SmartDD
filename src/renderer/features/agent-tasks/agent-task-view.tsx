@@ -546,19 +546,25 @@ const WORK_ICONS: Record<string, typeof Brain> = {
   web_search:Globe, tool_call:Wrench, subagent:Network,
 };
 
-function WorkItem({ it, inGroup = false }: { it: TimelineItem; inGroup?: boolean }) {
+function WorkItem({ it, now, inGroup = false }: { it: TimelineItem; now: number; inGroup?: boolean }) {
   const { payload: p, truncated, load } = useFullPayload(it);
   const viewProcess = useContext(NativeProcessScope);
+  const taskId = useContext(TaskScope);
   const [commandOpen, setCommandOpen] = useState(false);
   const Icon = WORK_ICONS[it.type] ?? Info;
   const isCommand = it.type === 'command_execution';
+  const subagentStatus = it.type === 'subagent' && (it.terminal === 'unconfirmed' ? '结果未确认'
+    : p.status === 'running' && !it.terminal ? '运行中' : p.status === 'completed' ? '已完成'
+      : p.status === 'interrupted' ? '已停止' : p.status === 'failed' ? '失败' : '');
   const entry = { ...it, payload: p };
   const completeness = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
   return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}${isCommand ? ' agent-work-command-row' : ''}`}
     onToggle={isCommand ? event => { if (event.target === event.currentTarget) setCommandOpen(event.currentTarget.open); } : undefined}>
-    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, isCommand && !inGroup)}</span>{isCommand && <ChevronRight size={13} aria-hidden/>}</summary>
+    <summary><Icon size={14} aria-hidden/><span>{workLabel(entry, isCommand && !inGroup)}</span>{subagentStatus && <small>{subagentStatus}</small>}{isCommand && <ChevronRight size={13} aria-hidden/>}</summary>
     {isCommand ? commandOpen && <>
-      <AgentCommandDetails command={String(p.command ?? p.input?.command ?? '')} output={String(p.output ?? '')} exitCode={typeof p.exitCode === 'number' ? p.exitCode : undefined} running={p.status === 'running' && !it.terminal}/>
+      <AgentCommandDetails command={String(p.command ?? p.input?.command ?? '')} output={String(p.output ?? '')}
+        outputTruncated={p.outputTruncated} exitCode={typeof p.exitCode === 'number' ? p.exitCode : undefined} running={p.status === 'running' && !it.terminal}
+        taskId={taskId} runId={it.runId} itemKey={p.outputKey} startedAt={it.createdAt} heartbeatAt={p.heartbeatAt} elapsedSeconds={p.elapsedSeconds} now={now}/>
       {completeness}
     </> : <>
       {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
@@ -574,16 +580,16 @@ function WorkHeadingLabel({ heading }: { heading: WorkHeading }) {
   return <><Icon size={15} aria-hidden/>{heading.text}</>;
 }
 
-function WorkContents({ items }: { items: TimelineItem[] }) {
+function WorkContents({ items, now }: { items: TimelineItem[]; now: number }) {
   return <div className="agent-work-rows">{workSegments(items).map(segment => {
     if (segment.kind === 'single') return segment.item.type === 'assistant_message'
       ? <ItemRow key={segment.item.itemId} item={segment.item}/>
-      : <WorkItem key={segment.item.itemId} it={segment.item}/>;
+      : <WorkItem key={segment.item.itemId} it={segment.item} now={now}/>;
     const [first] = segment.items;
-    if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first}/>;
+    if (segment.items.length === 1) return <WorkItem key={first.itemId} it={first} now={now}/>;
     return <details className="agent-work-row agent-work-group" key={first.itemId}>
       <summary><Wrench size={14} aria-hidden/><span>{summarizeTools(segment.items)}</span><ChevronRight size={13} aria-hidden/></summary>
-      {segment.items.map(item => <WorkItem key={item.itemId} it={item} inGroup/>)}
+      {segment.items.map(item => <WorkItem key={item.itemId} it={item} now={now} inGroup/>)}
     </details>;
   })}</div>;
 }
@@ -591,7 +597,7 @@ function WorkContents({ items }: { items: TimelineItem[] }) {
 const countsAsActivity = (row: TurnGroup['rows'][number]) => row.kind !== 'item'
   || !['user_message', 'system_notice', 'files_changed', 'handoff'].includes(row.item.type);
 
-function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stopping: boolean; showActivity: boolean }) {
+function TurnRows({ group, stopping, showActivity, liveChildIds, now }: { group: TurnGroup; stopping: boolean; showActivity: boolean; liveChildIds: ReadonlySet<string>; now: number }) {
   const completed = group.status === 'completed';
   const running = showActivity || group.status === 'dispatching' || group.status === 'started';
   const [choice, setChoice] = useState<{ completed: boolean; open: boolean }>();
@@ -630,9 +636,9 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
   const rows = group.rows.map((row, index) => {
     if (row.kind === 'footer') return null;
     const visible = open || !isProcess(row);
-    const content = !visible ? null : row.kind === 'work'
-      ? <WorkContents items={row.items}/>
-      : <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt} turnStatus={group.status}/>;
+    const work = row.kind === 'work' ? (visible ? row.items : row.items.filter(item => liveChildIds.has(item.itemId))) : [];
+    const content = row.kind === 'work' ? (work.length > 0 && <WorkContents items={work} now={now}/>)
+      : visible && <ItemRow item={row.item} finalReply={row.finalReply} completedAt={group.completedAt} turnStatus={group.status}/>;
     return <Fragment key={row.kind === 'item' ? row.item.itemId : row.id}>
       {content}
       {index === firstUser && summary}
@@ -1108,7 +1114,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     const offWindowShown = events.on(windowShownEvent, recoverTimeline);
     window.addEventListener('focus', onVisible); document.addEventListener('visibilitychange', onVisible);
     const offLive = events.on(agentTaskLiveEvent, e => {
-      if (e.taskId !== taskId) return;
+      if (e.taskId !== taskId || e.commandRevision !== undefined) return;
       setLive(current => {
         if (current.incomplete) return current;
         const existing = Object.hasOwn(current.items, e.itemKey);
@@ -1359,6 +1365,12 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const canForceStop = stopping && !stopping.closing && now >= stopping.forceAt;
   const activeTurnId = groups.findLast(group => group.status === 'dispatching' || group.status === 'started')?.turnId
     ?? snap.preparingTurnId;
+  const backgroundWork = (snap.backgroundWork ?? []) as TimelineItem[];
+  const liveChildIds = new Set(backgroundWork.filter(item => item.type === 'subagent').map(item => item.itemId));
+  const backgroundOnly = !activeTurnId && !snap.run?.busy && backgroundWork.length > 0;
+  const backgroundCommands = backgroundWork.length - liveChildIds.size;
+  const backgroundLabel = [liveChildIds.size ? `${liveChildIds.size} 个子 Agent` : '',
+    backgroundCommands ? `${backgroundCommands} 条命令` : ''].filter(Boolean).join(' · ');
   const liveText = Object.values(live.items).join('');
 
   const addFiles = (files: File[]) => {
@@ -1548,9 +1560,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const resumeGoal = canContinue && snap.selection.driverId === 'codex-app-server' && snap.run?.goal !== false
     && snap.goal?.status === 'paused' && snap.goal.pausedReason !== 'waiting_children';
   const composerAction = composerStopping || (working && !hasDraftContent) ? 'stop'
-    : hasDraftContent ? working && !blocking ? 'queue' : 'send'
+    : hasDraftContent ? working && !blocking && !backgroundOnly ? 'queue' : 'send'
     : resumeQueue || resumeGoal ? 'resume' : 'send';
-  const composerLabel = composerAction === 'stop' ? composerStopping ? '正在停止…' : '停止本轮'
+  const stopLabel = backgroundOnly ? '停止后台工作' : '停止本轮';
+  const composerLabel = composerAction === 'stop' ? composerStopping ? '正在停止…' : stopLabel
     : composerAction === 'resume' ? resumeQueue ? '继续排队消息' : '继续目标'
     : composerAction === 'queue' ? '加入队列' : '发送';
   const canEscapeStop = working && !composerStopping && !requests.length && !snap.requestsTotal
@@ -1558,9 +1571,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const taskHeader = <header className="agent-task-head" aria-label="当前任务">
     {titlebarTarget && snap.projectId && <TaskProjectBreadcrumb projectId={snap.projectId} />}
     <h1 title={snap.title}>{snap.title}</h1>
-    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}
+    {(archived || composerStopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : composerStopping ? '正在停止…' : backgroundOnly && snap.status === 'working' ? '后台运行中' : STATUS_LABEL[snap.status]}</span>}
     {!archived && working && composerAction !== 'stop' && <button type="button" className="agent-head-btn agent-header-stop"
-      title="停止本轮" aria-label="停止本轮" onClick={() => void stop()}><ComposerStopIcon /></button>}
+      title={stopLabel} aria-label={stopLabel} onClick={() => void stop()}><ComposerStopIcon /></button>}
     <span className="push" />
     {lineageToggle}
     {archived ? <>
@@ -1597,10 +1610,15 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       }}>回到最新记录</button></div>}
       {groups.map(group => {
         const active = group.turnId !== null && group.turnId === activeTurnId;
-        return <TurnRows key={group.key} group={group} stopping={active && !!stopping}
+        return <TurnRows key={group.key} group={group} stopping={active && !!stopping} liveChildIds={liveChildIds} now={now}
           showActivity={active && !archived && !stopping && snap.status === 'working' && !liveText && !live.incomplete}/>;
       })}
       {working && (liveText || live.incomplete) && <div className="agent-assistant streaming">{liveText && <Markdown text={liveText} />}{live.incomplete && <p role="status">部分内容未在流式预览中显示，完成后可查看全文。</p>}</div>}
+      {!archived && backgroundOnly && <section className="agent-background-work" aria-label="后台工作">
+        <header><Clock3 size={14} aria-hidden/><b>后台仍在运行</b><span>{backgroundLabel}</span></header>
+        {backgroundWork.filter(item => item.type === 'command_execution' || !byItemId.has(item.itemId)).map(item =>
+          <WorkItem key={item.itemId} it={byItemId.get(item.itemId) ?? item} now={now}/>)}
+      </section>}
       {!!relations?.childrenTotal && <AgentChildSummary taskId={taskId} value={relations} readOnly={archived} reload={() => void reload()} />}
       {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
       {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
@@ -1667,7 +1685,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
           <AttachmentChips chips={chips} taskId={taskId} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={activeMenuIndex} onPick={pick} skills={selectingSkill} empty={skillCatalog.empty} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
-            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
+            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && !backgroundOnly && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working && !backgroundOnly ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
               if (e.key === 'Escape' && (menuItems.length || selectingSkill) && !e.nativeEvent.isComposing) {

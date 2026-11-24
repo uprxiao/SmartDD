@@ -4,11 +4,12 @@ import type { SDKPartialAssistantMessage } from '@anthropic-ai/claude-agent-sdk'
 import type { AgentActivityError, AgentActivityStatus, AgentActivityUpdate, AgentRetryProgress } from '@shared/agent-activity';
 import type { DriverEvent, TurnStatus } from './driver';
 import type { DriverId } from './capabilities';
+import { claudeBackgroundLaunch } from './claude-background';
 
 export type ItemType =
   | 'assistant_message' | 'reasoning' | 'proposed_plan' | 'todo_list' | 'command_execution' | 'file_change'
   | 'file_search' | 'web_search' | 'tool_call' | 'subagent' | 'compaction' | 'system_notice' | 'error';
-export interface ItemUpsert { key: string; type: ItemType; payload: Record<string, unknown>; terminal?: 'completed' | 'failed' | null }
+export interface ItemUpsert { key: string; type: ItemType; payload: Record<string, unknown>; terminal?: 'completed' | 'failed' | 'unconfirmed' | null }
 
 const FILE_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
 const SEARCH_TOOLS = new Set(['Glob', 'Grep', 'Read', 'LS']);
@@ -30,6 +31,9 @@ function claudeToolType(name: string): ItemType {
   if (name === 'Agent' || name === 'Task') return 'subagent';
   return 'tool_call';
 }
+
+type ClaudeTool = { type: ItemType; name: string; input: unknown; background?: boolean; heartbeatAt?: number; elapsedSeconds?: number; nativeRunId?: string };
+type NodeState = Extract<DriverEvent, { type: 'node.state' }>;
 
 /** 每个运行一个投影器实例：保存工具调用与结果的配对，以及聚合的待办清单。 */
 /** 计划条目只存一份计划正文（复核 T02）：入参里的 plan 移到顶层，不重复内联而让历史正文翻倍。 */
@@ -73,12 +77,13 @@ function publishClaudeThinking(block: ClaudeThinkingBlock): ItemUpsert[] {
 }
 
 export class TimelineProjector {
-  private readonly claudeTools = new Map<string, { type: ItemType; name: string; input: unknown }>();
+  private readonly claudeTools = new Map<string, ClaudeTool>();
+  private readonly earlyClaudeTasks = new Map<string, NodeState>();
   private readonly claudeThinkingMessages = new Map<string, ClaudeThinkingMessage>();
   private claudeThinkingMessage?: ClaudeThinkingMessage;
   private readonly todos = new Map<string, { id: string; subject: string; status: string }>();
   private readonly childLogs = new Map<string, string[]>();
-  private readonly finals = new Map<string, { payload: Record<string, unknown>; terminal: 'completed' | 'failed' }>();
+  private readonly finals = new Map<string, { payload: Record<string, unknown>; terminal: 'completed' | 'failed' | 'unconfirmed' }>();
   private readonly childToolParent = new Map<string, string>();
   private readonly closedNotices = new Set<string>();
   private codexTurnId?: string;
@@ -252,7 +257,59 @@ export class TimelineProjector {
     return publishClaudeThinking(block);
   }
 
+  private claudeWork(toolId: string, tool: ClaudeTool, payload: Record<string, unknown>, terminal: ItemUpsert['terminal'] = null): ItemUpsert {
+    const item = { key: `tool:${toolId}`, type: tool.type, terminal, payload: {
+      name: tool.name, input: tool.input, status: 'running',
+      ...(tool.background ? { background: true } : {}),
+      ...(tool.type === 'command_execution' && !terminal ? { outputKey: toolId,
+        ...(tool.heartbeatAt === undefined ? {} : { heartbeatAt: tool.heartbeatAt, elapsedSeconds: tool.elapsedSeconds }) } : {}),
+      ...(tool.type === 'subagent' ? { nativeNodeIds: [toolId], kind: 'provider_native', childLog: this.childLogs.get(toolId) ?? [], childLogPreviewOnly: true } : {}),
+      ...payload,
+    } };
+    if (terminal) this.finals.set(toolId, { payload: item.payload, terminal });
+    return item;
+  }
+
+  private claudeTask(e: NodeState): ItemUpsert[] {
+    const task = e.nativeTask;
+    if (!task) return [];
+    const tool = this.claudeTools.get(e.nodeId);
+    if (!tool) {
+      if (this.earlyClaudeTasks.size < 128) this.earlyClaudeTasks.set(e.nodeId, e);
+      return [];
+    }
+    const expectedType = task.kind === 'command' ? 'command_execution' : 'subagent';
+    if (tool.type !== expectedType) return [];
+    if (this.finals.has(e.nodeId)) {
+      const resumed = task.kind === 'subagent' && e.state === 'running' && e.nativeRunId && tool.nativeRunId && e.nativeRunId > tool.nativeRunId;
+      if (!resumed) return [];
+      this.finals.delete(e.nodeId);
+    }
+    tool.nativeRunId = e.nativeRunId ?? tool.nativeRunId;
+    tool.background = task.background ?? tool.background;
+    if (e.state === 'running') return [this.claudeWork(e.nodeId, tool, {})];
+    const output = task.kind === 'command' ? task.output ?? (e.state !== 'completed' ? task.summary : '') : task.summary;
+    return [this.claudeWork(e.nodeId, tool, { status: e.state, output: output?.slice(0, 16_000) ?? '',
+      ...(task.outputTruncated ? { outputTruncated: true } : {}) }, e.state === 'completed' ? 'completed' : 'failed')];
+  }
+
+  private claudeHeartbeat(payload: unknown): ItemUpsert[] {
+    const p = payload as { tool_name?: string; tool_use_id?: string; parent_tool_use_id?: string; heartbeat?: boolean; elapsed_time_seconds?: number } | null;
+    if (p?.tool_name !== 'Bash' || p.heartbeat !== true || typeof p.tool_use_id !== 'string') return [];
+    const parent = p.parent_tool_use_id;
+    const id = typeof parent === 'string' && p.tool_use_id.startsWith(`${parent}-heartbeat-`) ? parent : p.tool_use_id;
+    const tool = this.claudeTools.get(id);
+    const elapsed = p.elapsed_time_seconds;
+    if (tool?.type !== 'command_execution' || this.finals.has(id) || typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0
+      || tool.elapsedSeconds !== undefined && elapsed <= tool.elapsedSeconds) return [];
+    tool.heartbeatAt = Date.now();
+    tool.elapsedSeconds = elapsed;
+    return [this.claudeWork(id, tool, {})];
+  }
+
   private claude(e: DriverEvent): ItemUpsert[] {
+    if (e.type === 'native' && e.name === 'tool_progress') return this.claudeHeartbeat(e.payload);
+    if (e.type === 'node.state') return this.claudeTask(e);
     if (e.type === 'native' && e.name === 'stream_event') {
       const frame = e.payload as SDKPartialAssistantMessage;
       const items = this.claudeThinkingFrame(frame);
@@ -269,6 +326,11 @@ export class TimelineProjector {
       }
       this.claudeThinkingMessages.clear();
       this.claudeThinkingMessage = undefined;
+      if (e.type !== 'turn.completed') {
+        for (const [id, tool] of this.claudeTools) {
+          if (tool.background && !this.finals.has(id)) out.push(this.claudeWork(id, tool, { status: 'unknown' }, 'unconfirmed'));
+        }
+      }
       return out;
     }
     if (e.type === 'item.completed' && e.itemType === 'assistant') {
@@ -285,7 +347,7 @@ export class TimelineProjector {
         // 终态单调（复核 NR11）：子节点已有结果后，迟到的内部消息只追加记录，不恢复运行中。
         const final = this.finals.get(msg.parentToolUseId);
         if (final) return [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { ...final.payload, nativeNodeIds: [msg.parentToolUseId], childLog: log.slice(-50), childLogPreviewOnly: true }, terminal: final.terminal }];
-        return parent ? [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { name: parent.name, input: parent.input, status: 'running', nativeNodeIds: [msg.parentToolUseId], childLog: log.slice(-50), childLogPreviewOnly: true }, terminal: null }] : [];
+        return parent?.type === 'subagent' ? [this.claudeWork(msg.parentToolUseId, parent, {})] : [];
       }
       const out: ItemUpsert[] = [];
       const thinking = msg.id ? this.claudeThinkingMessages.get(msg.id) : undefined;
@@ -307,9 +369,18 @@ export class TimelineProjector {
         }
         else if (block?.type === 'tool_use') {
           const type = claudeToolType(block.name);
-          this.claudeTools.set(block.id, { type, name: block.name, input: block.input });
+          if (this.claudeTools.has(block.id)) return;
+          const tool = { type, name: block.name, input: block.input };
+          this.claudeTools.set(block.id, tool);
           if (TODO_TOOLS.has(block.name)) return; // 只在成功结果后改清单（V10b，RR03）
-          out.push({ key: `tool:${block.id}`, type, payload: { name: block.name, status: 'running', ...(type === 'subagent' ? { nativeNodeIds: [block.id], kind: 'provider_native' } : {}), ...(type === 'proposed_plan' ? planFields(block.input) : { input: block.input }) }, terminal: null });
+          if (type === 'subagent' || type === 'command_execution') {
+            const early = this.earlyClaudeTasks.get(block.id);
+            this.earlyClaudeTasks.delete(block.id);
+            const items = early ? this.claudeTask(early) : [];
+            out.push(...(items.length ? items : [this.claudeWork(block.id, tool, {})]));
+            return;
+          }
+          out.push({ key: `tool:${block.id}`, type, payload: { name: block.name, status: 'running', ...(type === 'proposed_plan' ? planFields(block.input) : { input: block.input }) }, terminal: null });
         }
       });
       return out;
@@ -319,8 +390,8 @@ export class TimelineProjector {
       if (!Array.isArray(content)) return [];
       const out: ItemUpsert[] = [];
       if (typeof (e.payload as any).parent_tool_use_id === 'string') return []; // 子 Agent 内部工具结果不进主时间线
-      for (const block of content) {
-        if (block?.type !== 'tool_result') continue;
+      const results = content.filter(block => block?.type === 'tool_result');
+      for (const block of results) {
         if (this.childToolParent.has(block.tool_use_id)) continue;
         const tool = this.claudeTools.get(block.tool_use_id);
         if (!tool) continue;
@@ -335,9 +406,20 @@ export class TimelineProjector {
           continue;
         }
         const output = Array.isArray(block.content) ? block.content.map((c: any) => c?.text ?? '').join('\n') : text(block.content);
-        const finalPayload = { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed' };
-        if (tool.type === 'subagent') this.finals.set(block.tool_use_id, { payload: finalPayload, terminal: failed ? 'failed' : 'completed' });
-        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { nativeNodeIds: [block.tool_use_id], childLog: this.childLogs.get(block.tool_use_id) ?? [], childLogPreviewOnly: true } : {}), ...(tool.type === 'proposed_plan' ? planFields(tool.input) : { input: tool.input }) }, terminal: failed ? 'failed' : 'completed' });
+        if (tool.type === 'command_execution' || tool.type === 'subagent') {
+          const kind = tool.type === 'command_execution' ? 'command' : 'subagent';
+          const result = results.length === 1 ? (e.payload as any).tool_use_result : undefined;
+          if (!failed && claudeBackgroundLaunch(kind, result, output)) {
+            if (this.finals.has(block.tool_use_id)) continue;
+            tool.background = true;
+            out.push(this.claudeWork(block.tool_use_id, tool, {}));
+            continue;
+          }
+          if (tool.background && (!failed || this.finals.has(block.tool_use_id))) continue;
+          out.push(this.claudeWork(block.tool_use_id, tool, { output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed' }, failed ? 'failed' : 'completed'));
+          continue;
+        }
+        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'proposed_plan' ? planFields(tool.input) : { input: tool.input }) }, terminal: failed ? 'failed' : 'completed' });
       }
       return out;
     }

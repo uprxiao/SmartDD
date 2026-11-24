@@ -79,14 +79,14 @@ function boundedPreview(payload: unknown, limit: number): Record<string, unknown
   if (jsonBytes(p) <= limit) return p ?? {};
   return Object.fromEntries(Object.entries(payload as Record<string, unknown>).filter(([, v]) => typeof v !== 'object' || v === null).map(([k, v]) => [k, typeof v === 'string' ? v.slice(0, 500) : v]));
 }
-function previewItem<T extends { payload: any }>(it: T): T {
+function previewItem<T extends { payload: any }>(it: T, limit = ITEM_PREVIEW): T {
   const bytes = jsonBytes(it.payload);
-  if (bytes <= ITEM_PREVIEW && !it.payload?.artifact) return it;
+  if (bytes <= limit && !it.payload?.artifact) return it;
   // 原文在 artifact 里的条目，库内只是预览：无论大小都标截断，界面经正文接口读全文（复核 U01）。
   const { artifact, ...fields } = it.payload ?? {};
   const marker = { truncated: true, bytes: artifact?.bytes ?? bytes };
-  const preview = { ...boundedPreview(fields, ITEM_PREVIEW), ...marker };
-  return { ...it, payload: jsonBytes(preview) <= ITEM_PREVIEW ? preview : marker };
+  const preview = { ...boundedPreview(fields, limit), ...marker };
+  return { ...it, payload: jsonBytes(preview) <= limit ? preview : marker };
 }
 function previewRequest<T extends { payload: any }>(r: T, limit = REQUEST_PREVIEW): T & { detailTruncated?: boolean; bytes?: number } {
   const bytes = jsonBytes(r.payload);
@@ -1235,6 +1235,11 @@ export class AgentTaskService {
     return { items, hasMore: rows.length > 50, total, nextOrdinal: (items[0]?.ordinal ?? null) as number | null, states, partial: !items.length && !!payload.childLog?.length, stopRunId: stoppable ? ownerRunId : null };
   }
 
+  commandPreview(taskId: string, runId: string, itemKey: string) {
+    const run = this.d.runs.active(runId);
+    return run?.taskId === taskId ? run.instance.commandPreview?.(itemKey) ?? null : null;
+  }
+
   /** 一致快照与已提交水位；订阅方先订阅再读快照，随后补拉 (seq, …]（技术方案 §3.1）。 */
   snapshot(taskId: string) {
     const { task, selection, revision } = this.selection(taskId, true);
@@ -1246,6 +1251,8 @@ export class AgentTaskService {
     const allTurns = this.d.store.turnsWithNativeWait(taskId);
     const goal = this.d.store.goal(taskId);
     const catalog = run ? this.d.runs.active(run.runId)?.catalog ?? null : null;
+    const backgroundWork = run?.driverId === 'claude-sdk'
+      ? this.d.store.activeBackgroundItems(taskId, run.runId).map(item => previewItem(item, 2048)) : [];
     // 整份响应按最终 UTF-8 字节守 256 KiB（技术方案 §3.1，复核 FR02／SR04）。基础字段按档逐级收紧，
     // 每档都保留全部待处理请求的可访问路径（预览或只含标识的摘要，全文经 requestBody 读取）；剩余预算装最近条目。
     for (let level = 0; level <= 3; level++) {
@@ -1257,6 +1264,7 @@ export class AgentTaskService {
         ...requestsForSnapshot(pending, level),
         queued: queuedAll.slice(0, [10, 10, 5, 3][level]).map(q => queuedPreview(q, [1000, 1000, 400, 200][level])),
         queuedTotal: queuedAll.length, preparingTurnId,
+        ...(backgroundWork.length ? { backgroundWork } : {}),
         run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.turnTier ?? run.appliedTier ?? run.tier, tierChanging: !!run.tierChange, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: !this.d.runs.stopProgress(taskId) && this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
         goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null, goalUnknown: this.goalUnknown.get(taskId) ?? null,
         status: this.status(taskId), seq: this.d.store.watermark(taskId),

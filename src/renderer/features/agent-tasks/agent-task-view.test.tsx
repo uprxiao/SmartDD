@@ -4,10 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
+import type { AgentLiveFrame } from '@shared/events';
 
 const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), managedSkills: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
 const imageRead = vi.hoisted(() => vi.fn());
-vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: Object.assign(mocks, { attachmentImage: imageRead }) }, events: { on: mocks.on } }));
+const commandPreview = vi.hoisted(() => vi.fn());
+vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: Object.assign(mocks, { attachmentImage: imageRead, commandPreview }) }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey', () => ({ useAppSettingsKey: () => ({ value: { fullConfirmed: true }, update: vi.fn() }) }));
@@ -41,6 +43,62 @@ beforeEach(() => {
 });
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
+
+it('shows real heartbeat liveness and command output before the Bash tool finishes', async () => {
+  const nativeOutput = new Set<(frame: AgentLiveFrame) => void>();
+  const now = Date.now();
+  const started = new Date(now - 31000).toISOString();
+  const command = { ...item('command_execution', { command: 'printf fixture', status: 'running', outputKey: 'call',
+    heartbeatAt: now - 1000, elapsedSeconds: 30 }), itemId: 'command', turnId: 'running', runId: 'run', createdAt: started, terminal: null };
+  mocks.on.mockImplementation((event, cb) => {
+    if (event.name === 'agentTasks:live') nativeOutput.add(cb);
+    return () => { nativeOutput.delete(cb); };
+  });
+  commandPreview.mockResolvedValue(null);
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [command], status: 'working', run: { runId: 'run', busy: true },
+    turns: [{ turn_id: 'running', status: 'started', started_at: started }] }));
+  render(<AgentTaskView taskId="task"/>);
+  fireEvent.click((await screen.findByText('正在运行 1 条命令')).closest('summary')!);
+  const details = await screen.findByRole('region', { name: '命令详情' });
+  expect(within(details).getByText(/已运行/)).toBeTruthy();
+  expect(within(details).getByText(/最近心跳/)).toBeTruthy();
+  expect(within(details).getByText('等待输出')).toBeTruthy();
+  const emit = (frame: AgentLiveFrame) => act(() => { for (const listener of nativeOutput) listener(frame); });
+  const frame = { taskId: 'task', runId: 'run', itemKey: 'call', text: '首段输出\n', commandRevision: 1 };
+  emit({ ...frame, runId: 'other-run', text: '其他任务的输出' });
+  expect(screen.queryByText('其他任务的输出')).toBeNull();
+  emit(frame);
+  expect(within(details).getByLabelText('命令输出').textContent).toBe('首段输出\n');
+  expect(screen.getByText('正在运行 1 条命令')).toBeTruthy();
+});
+
+it('keeps a live native child outside the finished fold and gives background commands their own details', async () => {
+  const start = '2026-11-24T00:00:00Z', end = '2026-11-24T00:00:03Z';
+  const entries = [item('user_message', { text: '更新并分析' }),
+    item('subagent', { name: 'Agent', status: 'running', background: true, input: { description: '分析 DS-Bot' } }),
+    item('command_execution', { name: 'Bash', status: 'running', background: true, input: { command: 'git pull -q' } }),
+    item('assistant_message', { text: '分析已开始，等待更新。' })].map((entry, ordinal) => ({
+    ...entry, itemId: String(ordinal), ordinal, turnId: 'parent', runId: 'run', terminal: ordinal === 1 || ordinal === 2 ? null : 'completed',
+  }));
+  const turns = [{ turn_id: 'parent', status: 'completed', accepted_at: start, started_at: start, ended_at: end }];
+  let state = snapshot({ items: entries, turns, backgroundWork: entries.slice(1, 3), status: 'working', run: { runId: 'run', busy: false } });
+  let publish!: (event: { taskId: string; seq: number }) => void;
+  mocks.on.mockImplementation((event, cb) => { if (event.name === 'agentTasks:event') publish = cb; return () => {}; });
+  mocks.snapshot.mockImplementation(async () => state);
+  render(<AgentTaskView taskId="task"/>);
+  expect((await screen.findByRole('button', { name: '用时 3 秒' })).getAttribute('aria-expanded')).toBe('false');
+  expect(screen.getByRole('button', { name: '复制回复' })).toBeTruthy();
+  expect(screen.getByText('子 Agent 分析 DS-Bot')).toBeTruthy();
+  const background = screen.getByRole('region', { name: '后台工作' });
+  expect(within(background).getByText('后台仍在运行')).toBeTruthy();
+  fireEvent.click(within(background).getByText('正在运行 1 条命令').closest('summary')!);
+  expect((await within(background).findByLabelText('完整命令')).textContent).toBe('git pull -q');
+  state = snapshot({ items: entries.map(entry => ({ ...entry, terminal: 'completed', payload: { ...entry.payload, status: 'completed' } })),
+    turns, backgroundWork: [], status: 'completed', run: { runId: 'run', busy: false }, seq: 2 });
+  await act(async () => publish({ taskId: 'task', seq: 2 }));
+  await waitFor(() => expect(screen.queryByRole('region', { name: '后台工作' })).toBeNull());
+  expect(screen.queryByText('子 Agent 分析 DS-Bot')).toBeNull();
+});
 
 it.each(['claude-sdk', 'codex-app-server', 'antigravity-acp'])('shows local offline and online transitions without losing the task for %s', async driverId => {
   let online = true;

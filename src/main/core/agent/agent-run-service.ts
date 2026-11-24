@@ -365,6 +365,11 @@ export class AgentRunService {
           break;
         case 'node.message': store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node:${e.nodeId}:${e.key}`, nodeId: e.nodeId, type: 'subagent_message', payload: e.payload, terminalState: 'completed' }); break;
         case 'node.state': {
+          if (e.replacesNodeId) {
+            run.nativeNodes?.delete(e.replacesNodeId);
+            store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${e.replacesNodeId}`,
+              nodeId: e.replacesNodeId, type: 'subagent_status', payload: { state: 'rebound' }, terminalState: 'unconfirmed' });
+          }
           if (e.state === 'running') (run.nativeNodes ??= new Set()).add(e.nodeId); else run.nativeNodes?.delete(e.nodeId);
           if (run.userStop && !run.userStop.turnId && !run.nativeNodes?.size) run.userStop = undefined;
           store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${e.nodeId}`, nodeId: e.nodeId, type: 'subagent_status', payload: { state: e.state, nativeRunId: e.nativeRunId }, terminalState: e.state === 'running' ? null : e.state === 'completed' ? 'completed' : 'failed' }); break;

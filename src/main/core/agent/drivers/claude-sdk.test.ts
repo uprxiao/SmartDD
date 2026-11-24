@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import { appendFile, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { McpServerStatus } from '@anthropic-ai/claude-agent-sdk';
 import type { DriverEvent } from '../driver';
 import { until } from '../test-doubles';
@@ -438,6 +441,88 @@ describe('Claude SDK 驱动', () => {
     await until(() => events.some(event => event.type === 'turn.completed' && event.status === 'completed'));
     expect(sdk.state.interrupts).toBe(1);
     await inst.close();
+  });
+
+  it.skipIf(!process.getuid)('streams the native Bash output file before its outcome and resolves outcomes without tool_use_id', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'willyou-bash-output-'));
+    let release!: () => void;
+    const released = new Promise<void>(resolve => { release = resolve; });
+    const { inst, events } = make([async ({ options, emit }) => {
+      const session_id = options.sessionId;
+      emit({ type: 'assistant', uuid: 'start', message: { content: [{ type: 'tool_use', id: 'bash-tool', name: 'Bash', input: { command: 'printf test', run_in_background: true } }] } });
+      emit({ type: 'system', subtype: 'task_started', session_id, task_id: 'bash-task', tool_use_id: 'bash-tool', task_type: 'local_bash', is_backgrounded: true });
+      emit({ type: 'result', subtype: 'success' });
+      await released;
+      emit({ type: 'system', subtype: 'task_notification', session_id, task_id: 'bash-task', status: 'completed' });
+    }]);
+    try {
+      const { nativeId } = await inst.open({ executable: exe, cwd: root, env: { CLAUDE_CODE_TMPDIR: root }, tier: 'ask' });
+      const out = join(root, `claude-${process.getuid!()}`, '-workspace', nativeId, 'tasks');
+      await mkdir(out, { recursive: true });
+      const file = join(out, 'bash-task.output');
+      await writeFile(file, 'stdout 首行\n');
+      await inst.startTurn({ clientInputId: 'first', text: 'run', tier: 'ask' });
+      await until(() => events.some(event => event.type === 'command.output'));
+      expect(events).toContainEqual(expect.objectContaining({ type: 'command.output', nativeItemId: 'bash-tool', preview: expect.objectContaining({ text: 'stdout 首行\n' }) }));
+      await appendFile(file, 'stderr 末行\n');
+      release();
+      await until(() => events.some(event => event.type === 'node.state' && event.state === 'completed'));
+      expect(events).toContainEqual(expect.objectContaining({ type: 'node.state', nodeId: 'bash-tool', state: 'completed',
+        nativeTask: expect.objectContaining({ kind: 'command', output: 'stdout 首行\nstderr 末行\n' }) }));
+    } finally {
+      release();
+      await inst.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it.skipIf(!process.getuid)('declines a Bash output link to a file outside the native task directory', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'willyou-bash-linked-output-'));
+    const { inst, events } = make([async ({ options, emit }) => {
+      const session_id = options.sessionId;
+      emit({ type: 'system', subtype: 'task_started', session_id, tool_use_id: 'call', task_id: 'bash', task_type: 'local_bash' });
+      emit({ type: 'system', subtype: 'task_notification', session_id, task_id: 'bash', status: 'completed' });
+      emit({ type: 'result', subtype: 'success' });
+    }]);
+    try {
+      const { nativeId } = await inst.open({ executable: exe, cwd: root, env: { CLAUDE_CODE_TMPDIR: root }, tier: 'ask' });
+      const tasks = join(root, `claude-${process.getuid!()}`, '-workspace', nativeId, 'tasks');
+      const outside = join(root, 'outside.txt');
+      await mkdir(tasks, { recursive: true });
+      await writeFile(outside, '只能在任务目录外读取的合成内容');
+      await symlink(outside, join(tasks, 'bash.output'));
+      await inst.startTurn({ clientInputId: 'linked', text: 'run', tier: 'ask' });
+      await until(() => events.some(event => event.type === 'turn.completed'));
+      const status = events.find(event => event.type === 'node.state' && event.state === 'completed');
+      expect(status).toMatchObject({ nodeId: 'call', nativeTask: { kind: 'command' } });
+      expect(status).not.toHaveProperty('nativeTask.output');
+      expect(events.some(event => event.type === 'command.output')).toBe(false);
+    } finally {
+      await inst.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('uses the launch receipt to bind older Bash task frames missing their tool use ID', async () => {
+    const { inst, events } = make([async ({ options, emit }) => {
+      const session_id = options.sessionId;
+      emit({ type: 'assistant', uuid: 'start', message: { content: [{ type: 'tool_use', id: 'bash-tool', name: 'Bash', input: { command: 'printf fixture' } }] } });
+      emit({ type: 'system', subtype: 'task_started', session_id, task_id: 'bash-task', task_type: 'local_bash', is_backgrounded: true });
+      emit({ type: 'user', session_id, tool_use_result: { backgroundTaskId: 'bash-task', stdout: '', stderr: '' },
+        message: { content: [{ type: 'tool_result', tool_use_id: 'bash-tool', content: 'Background command launched.' }] } });
+      emit({ type: 'result', subtype: 'success' });
+      emit({ type: 'system', subtype: 'task_notification', session_id, task_id: 'bash-task', status: 'completed' });
+    }]);
+    try {
+      await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+      await inst.startTurn({ clientInputId: 'older', text: 'run', tier: 'ask' });
+      await until(() => events.some(event => event.type === 'node.state' && event.state === 'completed'));
+      expect(events.filter(event => event.type === 'node.state')).toEqual([
+        expect.objectContaining({ nodeId: 'bash-task', state: 'running' }),
+        expect.objectContaining({ nodeId: 'bash-tool', replacesNodeId: 'bash-task', state: 'running' }),
+        expect.objectContaining({ nodeId: 'bash-tool', state: 'completed' }),
+      ]);
+    } finally { await inst.close(); }
   });
 
   it('失败结果映射为失败；上一轮未结束时拒绝新输入', async () => {

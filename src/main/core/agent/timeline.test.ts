@@ -1,6 +1,57 @@
 import { describe, expect, it } from 'vitest';
 import { TimelineProjector } from './timeline';
 
+describe('Claude 后台工作和命令进度', () => {
+  const scenario = (name: 'Agent' | 'Bash', input: Record<string, unknown>) => {
+    const projector = new TimelineProjector('claude-sdk');
+    const toolId = 'toolu_native_1';
+    projector.project({ type: 'item.completed', nativeItemId: 'assistant-1', itemType: 'assistant',
+      payload: { content: [{ type: 'tool_use', id: toolId, name, input }] } });
+    const result = (content: string, tool_use_result?: object) => projector.project({ type: 'native', name: 'user',
+      payload: { type: 'user', tool_use_result, message: { content: [{ type: 'tool_result', tool_use_id: toolId, content }] } } });
+    return { projector, toolId, result };
+  };
+
+  it('keeps an asynchronously launched Agent running through the parent result until the native outcome', () => {
+    const { projector, toolId, result } = scenario('Agent', { description: '分析 DS-Bot', run_in_background: true });
+    const nativeTask = { kind: 'subagent', background: true } as const;
+    projector.project({ type: 'node.state', nodeId: toolId, state: 'running', nativeRunId: 'first', nativeTask });
+    expect(result('Async agent launched successfully.', { isAsync: true, status: 'async_launched', agentId: 'child' }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true } }]);
+    projector.project({ type: 'turn.completed', nativeTurnId: 'parent', status: 'completed' });
+    expect(projector.project({ type: 'item.completed', nativeItemId: 'child-progress', itemType: 'assistant',
+      payload: { parentToolUseId: toolId, content: [{ type: 'text', text: '正在读源码' }] } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true, childLog: ['正在读源码'] } }]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'completed', nativeRunId: 'first',
+      nativeTask: { ...nativeTask, summary: '分析完成' } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: 'completed', payload: { status: 'completed', output: '分析完成' } }]);
+    expect(result('Async agent launched successfully.', { isAsync: true })).toEqual([]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'running', nativeRunId: 'first', nativeTask })).toEqual([]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'running', nativeRunId: 'second', nativeTask }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true } }]);
+  });
+
+  it('records liveness without inventing output and settles a background Bash from its final native result', () => {
+    const { projector, toolId, result } = scenario('Bash', { command: 'git pull -q' });
+    expect(projector.project({ type: 'native', name: 'tool_progress', payload: { type: 'tool_progress', tool_name: 'Bash',
+      tool_use_id: `${toolId}-heartbeat-0`, parent_tool_use_id: toolId, heartbeat: true, elapsed_time_seconds: 30 } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', heartbeatAt: expect.any(Number), elapsedSeconds: 30 } }]);
+    expect(result('Command running in background with ID: bash-task.', { backgroundTaskId: 'bash-task' }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: null, payload: { status: 'running', background: true } }]);
+    expect(projector.project({ type: 'node.state', nodeId: toolId, state: 'completed',
+      nativeTask: { kind: 'command', background: true, output: 'pulled successfully\n' } }))
+      .toMatchObject([{ key: `tool:${toolId}`, terminal: 'completed', payload: { status: 'completed', output: 'pulled successfully\n' } }]);
+  });
+
+  it('keeps foreground stdout with a launch-like prefix in the final command result', () => {
+    const { toolId, result } = scenario('Bash', { command: 'printf fixture' });
+    const stdout = 'Command running in background with ID: example';
+    expect(result(stdout, { stdout, stderr: '' })).toMatchObject([
+      { key: `tool:${toolId}`, terminal: 'completed', payload: { output: stdout, status: 'completed' } },
+    ]);
+  });
+});
+
 describe('回合活动的原生事件回放', () => {
   const turn = { nativeTurnId: 'turn-1', clientInputId: 'input-1' };
 
