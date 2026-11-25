@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: two independent holds release out of order, idempotent
+ok 1 - two independent holds release out of order, idempotent
+  ---
+  duration_ms: 0.437083
+  type: 'test'
+  ...
+# Subtest: foreground survives a background command release, and vice versa
+ok 2 - foreground survives a background command release, and vice versa
+  ---
+  duration_ms: 0.071625
+  type: 'test'
+  ...
+# Subtest: outer timeout or cancel does not release an uncompleted underlying capture
+ok 3 - outer timeout or cancel does not release an uncompleted underlying capture
+  ---
+  duration_ms: 0.162917
+  type: 'test'
+  ...
+# Subtest: frame readiness must be fulfilled before operation; readiness failure releases its own hold
+ok 4 - frame readiness must be fulfilled before operation; readiness failure releases its own hold
+  ---
+  duration_ms: 0.531
+  type: 'test'
+  ...
+# Subtest: terminal closing blocks new holds but retains underlying work until real settlement
+ok 5 - terminal closing blocks new holds but retains underlying work until real settlement
+  ---
+  duration_ms: 0.178458
+  type: 'test'
+  ...
+# Subtest: generation change cannot release or mutate the replacement native view
+ok 6 - generation change cannot release or mutate the replacement native view
+  ---
+  duration_ms: 0.070667
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 39.081

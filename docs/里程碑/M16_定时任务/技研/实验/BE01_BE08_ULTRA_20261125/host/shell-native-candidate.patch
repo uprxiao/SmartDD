@@ -1,0 +1,42 @@
+diff --git a/src/main/core/browser/page-registry.ts b/src/main/core/browser/page-registry.ts
+--- a/src/main/core/browser/page-registry.ts
++++ b/src/main/core/browser/page-registry.ts
+@@ -149,7 +149,7 @@
+   async placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{
+     const page=this.get(taskId,pageId),window=this.options.window?.();
+     if(page.kind==='popup')throw new BrowserError('BROWSER_ERROR','子窗口不能挂到工作区');
+-    if(this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
++    if(rect&&this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
+       await this.park.park(this.mounted.view,this.mounted.rect);this.mounted=undefined;
+     }
+     if(rect&&window&&!window.isDestroyed()){
+@@ -163,6 +163,7 @@
+       if(this.mounted?.taskId===child.taskId)child.popupWindow.showInactive();else child.popupWindow.hide();
+     }
+   }
++  async suspendPresentation():Promise<void>{const current=this.mounted;if(current&&!current.closed)await this.placement(current.taskId,current.id,null);}
+   activate(taskId:string,pageId:string):void{this.get(taskId,pageId);this.active.set(taskId,pageId);}
+   isMounted(page:BrowserPage):boolean{return this.mounted===page;}
+   close(taskId:string,pageId:string,fromPageQueue=false):Promise<void>{
+diff --git a/src/main/core/browser/workspace.ts b/src/main/core/browser/workspace.ts
+--- a/src/main/core/browser/workspace.ts
++++ b/src/main/core/browser/workspace.ts
+@@ -267,6 +267,7 @@
+     page.contents.stop();
+     this.cancelRecovery(page.id);
+   }
++  async suspendPresentationForShellReload():Promise<void>{this.placementVersion++;this.overlays.clear();await this.options.pages.suspendPresentation();}
+   async placement(taskId:string,id:string,rect:Electron.Rectangle|null):Promise<void>{
+     const version=++this.placementVersion;
+     // Unmount remains possible after project deletion, before UI unmount finishes.
+diff --git a/src/main/index.ts b/src/main/index.ts
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -332,6 +332,7 @@
+   applyNativeTheme(settings.get('theme'));
+   rebuildMenu();
+   await createMainWindow();
++  getMainWindowContents()?.on('did-start-navigation',details=>{if(details.isMainFrame&&!details.isSameDocument)void browser?.workspace.suspendPresentationForShellReload().catch(()=>console.warn('[F36 lab] shell reload presentation demotion failed'));});
+ 
+   app.on('activate', () => void showMainWindow());
+ 

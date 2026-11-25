@@ -1,0 +1,515 @@
+
+ RUN  v4.1.11 /private/tmp/willyou-f36-reopen-e_n5l76z/source
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"old-page-visible","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"old-close-and-empty-cleanup-settled","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"new-user-input-remembered","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"},"guard":true}
+F36_TRACE {"case":"settled-close","phase":"fixture-host-reservation-in-loading-phase","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"settled-close","phase":"host-presentation-before-renderer","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}}],"event":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"loading-visible","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-1","tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-1","tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-1","tabId":"new-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"same-page-ready-visible","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-1","tabs":[{"id":"new-1","url":"https://fixture.invalid/f36-new","loading":false}]},"host":{"activeId":"new-1","tabs":[{"id":"new-1","url":"https://fixture.invalid/f36-new","loading":false}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-1","tabId":"new-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}}]}
+
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page 98ms
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"old-page-visible","revision":3,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"both-empty-close-snapshots-captured-and-transport-delayed","revision":3,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"new-user-input-remembered","revision":3,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-2","pageId":"new-2","clientInputId":"input-2","operationId":"operation-2"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"old-empty-cleanup-released","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"guard":false}
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"fixture-host-reservation-in-loading-phase","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-2","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"host-presentation-before-renderer","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-2","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}}],"event":{"taskId":"fixture-task-2","pageId":"new-2","clientInputId":"input-2","operationId":"operation-2"},"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"after-new-presentation","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-2","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-2","pageId":"new-2","clientInputId":"input-2","operationId":"operation-2"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"old-page-visible","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"both-empty-close-snapshots-captured-and-transport-delayed","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"new-user-input-remembered","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"empty-store-commit-before-passive-cleanup","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"guard":true}
+F36_TRACE {"case":"red-B-empty-during-select","phase":"fixture-host-reservation-in-loading-phase","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"red-B-empty-during-select","phase":"host-presentation-before-renderer","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-3"]}}],"event":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"},"guard":true}
+F36_TRACE {"case":"red-B-empty-during-select","phase":"select-started-before-old-render-cleanup","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":"new-3","tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-3"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-3","tabId":"new-3"}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"react-empty-effect-settled-while-selecting","revision":6,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":"new-3","tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-3"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-3","tabId":"new-3"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"after-select-and-new-snapshot-replies","revision":6,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":"new-3","tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-3","tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-3"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-3","tabId":"new-3"}}],"guard":false}
+
+ × src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight 1083ms
+   → expected 'files' to be 'browser' // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"统一工作面板"[39m
+        [33mclass[39m=[32m"agent-right-panel"[39m
+        [33mdata-maximized[39m=[32m"false"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"agent-panel-header"[39m
+          [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"工作面板"[39m
+            [33mclass[39m=[32m"agent-panel-tabs"[39m
+            [33mrole[39m=[32m"tablist"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mFixture files tab[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-add"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"打开面板"[39m
+              [33mtitle[39m=[32m"打开面板"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-plus"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M5 12h14"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 5v14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"push"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mtitle[39m=[32m"最大化面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 3h6v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m21 3-7 7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m3 21 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9 21H3v-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-body"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-file-surface"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [0mFixture files[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m...
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"old-page-visible","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"both-empty-close-snapshots-captured-and-transport-delayed","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-4","tabId":"old-4"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"new-user-input-remembered","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-4","tabId":"old-4"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"},"guard":true}
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"fixture-host-reservation-in-loading-phase","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-4","tabId":"old-4"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"host-presentation-before-renderer","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-4","tabId":"old-4"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-4"]}}],"event":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"older-empty-replies-dropped","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-4","tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-4","tabId":"old-4"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-4"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-4","tabId":"new-4"}}],"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes
+F36_TRACE {"case":"new-snapshot-supersedes-old","phase":"new-snapshot-visible","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-4","tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-4","tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-4","tabId":"old-4"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-4"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-4","tabId":"new-4"}},{"event":"rpc.snapshot","payload":{"activeId":"new-4","ids":["new-4"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation
+F36_TRACE {"case":"deliberate-close-revokes-earlier-intent","phase":"old-page-visible","revision":8,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation
+F36_TRACE {"case":"deliberate-close-revokes-earlier-intent","phase":"new-user-input-remembered","revision":8,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}}],"event":{"taskId":"fixture-task-5","pageId":"new-5","clientInputId":"input-5","operationId":"operation-5"},"guard":true}
+
+ × src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply 1080ms
+   → expected 'files' to be 'browser' // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"统一工作面板"[39m
+        [33mclass[39m=[32m"agent-right-panel"[39m
+        [33mdata-maximized[39m=[32m"false"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"agent-panel-header"[39m
+          [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"工作面板"[39m
+            [33mclass[39m=[32m"agent-panel-tabs"[39m
+            [33mrole[39m=[32m"tablist"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mFixture files tab[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-add"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"打开面板"[39m
+              [33mtitle[39m=[32m"打开面板"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-plus"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M5 12h14"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 5v14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"push"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mtitle[39m=[32m"最大化面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 3h6v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m21 3-7 7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m3 21 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9 21H3v-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-body"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-file-surface"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [0mFixture files[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m...
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes 82ms
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation
+F36_TRACE {"case":"deliberate-close-revokes-earlier-intent","phase":"old-close-and-empty-cleanup-settled","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-5","tabId":"old-5"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation
+F36_TRACE {"case":"deliberate-close-revokes-earlier-intent","phase":"fixture-host-reservation-in-loading-phase","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-5","tabId":"old-5"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"deliberate-close-revokes-earlier-intent","phase":"host-presentation-before-renderer","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-5","tabId":"old-5"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}}],"event":{"taskId":"fixture-task-5","pageId":"new-5","clientInputId":"input-5","operationId":"operation-5"},"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation
+F36_TRACE {"case":"deliberate-close-revokes-earlier-intent","phase":"old-intent-does-not-undo-deliberate-close","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-5","tabId":"old-5"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-5","pageId":"new-5","clientInputId":"input-5","operationId":"operation-5"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"old-page-visible","revision":10,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"new-user-input-remembered","revision":10,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}}],"event":{"taskId":"fixture-task-6","pageId":"new-6","clientInputId":"input-6","operationId":"operation-6"},"guard":true}
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"fixture-host-reservation-in-loading-phase","revision":11,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}}]}
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"host-presentation-before-renderer","revision":11,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-6"]}}],"event":{"taskId":"fixture-task-6","pageId":"new-6","clientInputId":"input-6","operationId":"operation-6"},"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"user-panel-switch-preserved","revision":11,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":null,"tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-6"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-6","pageId":"new-6","clientInputId":"input-6","operationId":"operation-6"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"old-page-visible","revision":12,"route":{"view":"agentTask","task":"fixture-task-7"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-7","tabs":[{"id":"old-7","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-7","tabs":[{"id":"old-7","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-7","ids":["old-7"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"new-user-input-remembered","revision":12,"route":{"view":"agentTask","task":"fixture-task-7"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-7","tabs":[{"id":"old-7","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-7","tabs":[{"id":"old-7","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-7","ids":["old-7"]}}],"event":{"taskId":"fixture-task-7","pageId":"new-7","clientInputId":"input-7","operationId":"operation-7"},"guard":true}
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"fixture-host-reservation-in-loading-phase","revision":12,"route":{"view":"agentTask","task":"fixture-task-7"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-7","tabs":[{"id":"old-7","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-7","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-7","ids":["old-7"]}}]}
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"host-presentation-before-renderer","revision":12,"route":{"view":"agentTask","task":"fixture-task-7"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-7","tabs":[{"id":"old-7","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-7","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-7","ids":["old-7"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-7"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-7"]}}],"event":{"taskId":"fixture-task-7","pageId":"new-7","clientInputId":"input-7","operationId":"operation-7"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"user-panel-switch-during-select-preserved","revision":13,"route":{"view":"agentTask","task":"fixture-task-7"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[{"id":"new-7","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-7","tabs":[{"id":"new-7","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-7","ids":["old-7"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-7"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-7"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-7","pageId":"new-7","clientInputId":"input-7","operationId":"operation-7"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-7","tabId":"new-7"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"old-page-visible","revision":14,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-8","tabs":[{"id":"old-8","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-8","tabs":[{"id":"old-8","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"old-close-and-empty-cleanup-settled","revision":15,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-8","tabId":"old-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"fixture-host-reservation-in-loading-phase","revision":15,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-8","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-8","tabId":"old-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"background-no-show-intent","revision":15,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-8","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-8","tabId":"old-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"explicit-reveal-existing-page","revision":16,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-8","tabs":[{"id":"new-8","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-8","tabs":[{"id":"new-8","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-8","tabId":"old-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-8","tabId":"new-8"}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"same-page-ready-visible","revision":16,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-8","tabs":[{"id":"new-8","url":"https://fixture.invalid/f36-new","loading":false}]},"host":{"activeId":"new-8","tabs":[{"id":"new-8","url":"https://fixture.invalid/f36-new","loading":false}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-8","tabId":"old-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-8","tabId":"new-8"}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"closed-explicit-reveal-rejected","revision":17,"route":{"view":"agentTask","task":"fixture-task-8"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-8","ids":["old-8"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-8","tabId":"old-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-8","tabId":"new-8"}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":"new-8","ids":["new-8"]}},{"event":"rpc.close","payload":{"tabId":"new-8"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-8"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.select","payload":{"taskId":"fixture-task-8","tabId":"new-8"}}]}
+
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation 22ms
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select 20ms
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus 21ms
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails 42ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+ FAIL  src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+AssertionError: expected 'files' to be 'browser' // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"统一工作面板"[39m
+        [33mclass[39m=[32m"agent-right-panel"[39m
+        [33mdata-maximized[39m=[32m"false"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"agent-panel-header"[39m
+          [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"工作面板"[39m
+            [33mclass[39m=[32m"agent-panel-tabs"[39m
+            [33mrole[39m=[32m"tablist"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mFixture files tab[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-add"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"打开面板"[39m
+              [33mtitle[39m=[32m"打开面板"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-plus"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M5 12h14"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 5v14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"push"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mtitle[39m=[32m"最大化面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 3h6v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m21 3-7 7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m3 21 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9 21H3v-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-body"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-file-surface"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [0mFixture files[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m...
+
+Expected: "browser"
+Received: "files"
+
+ ❯ src/renderer/features/browser/f36-reopen-probe.test.tsx:131:37
+    129| async function expectShownPending(){
+    130|   await waitFor(()=>{
+    131|     expect(panelsFor(scope).active).toBe('browser');
+       |                                     ^
+    132|     expect((screen.getByRole('textbox',{name:'网页地址'}) as HTMLInputElem…
+    133|     expect(screen.getByRole('status',{name:'网页正在加载'})).toBeTruthy();
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  14:45:33
+   Duration  3.01s (transform 130ms, setup 0ms, import 260ms, tests 2.45s, environment 236ms)
+

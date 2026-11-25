@@ -1,0 +1,122 @@
+
+ RUN  v4.1.11 /private/tmp/willyou-f36-reopen-e_n5l76z/source
+
+ ✓ src/renderer/features/agent-tasks/workspace-panels.test.tsx > A73: home exposes files/manual terminal only, menu keyboard actions cannot start a browser or a task 64ms
+ ✓ src/renderer/features/agent-tasks/workspace-panels.test.tsx > A73: panel tabs can close to zero and reopen by their displayed key without losing another task selection 12ms
+ ✓ src/renderer/features/agent-tasks/workspace-panels.test.tsx > A65/A73: a task without a project can open its own diff; switching the sole terminal tab into a drawer leaves a valid active surface 15ms
+ ✓ src/renderer/features/agent-tasks/workspace-panels.test.tsx > G2 opens an exact old turn instead of falling back and can load earlier options 15ms
+stderr | src/renderer/features/agent-tasks/workspace-panels.test.tsx > shows changed lines and their original line numbers in a long file, with the file list out of the way
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+stderr | src/renderer/features/agent-tasks/workspace-panels.test.tsx > shows changed lines and their original line numbers in a long file, with the file list out of the way
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+stderr | src/renderer/features/agent-tasks/workspace-panels.test.tsx > shows changed lines and their original line numbers in a long file, with the file list out of the way
+An error occurred in the <FileDiff> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+ × src/renderer/features/agent-tasks/workspace-panels.test.tsx > shows changed lines and their original line numbers in a long file, with the file list out of the way 1018ms
+   → expected '正在绘制差异…' to contain 'int timeout = 15;'
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+  [36m</body>[39m
+[36m</html>[39m...
+ ✓ src/renderer/features/browser/workspace.test.tsx > removes the browser surface on a delayed empty snapshot without discarding a new tab in flight 8ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > shows an initial failed navigation rather than hiding it behind the blank startup page, and binds approval to its nonce 58ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > offers no certificate approval for an ordinary failed navigation 13ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > shows the requested URL and loading feedback on the new tab before the page commits 6ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > retains the failed destination in the address bar when the new tab has no committed page 11ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > restores the last committed address after an ordinary failed navigation, while retaining the failure explanation 10ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > keeps invalid input selected with an error surface, without replacing the current document: javascript:alert(1) 27ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > keeps invalid input selected with an error surface, without replacing the current document: data:text/html,not-a-navigation 22ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > dismisses an old input error when the host commits a different URL 10ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > closes downloads with Escape after the focused menu item is removed, without moving focus 30ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > handles the first body Escape as soon as downloads commit, before passive effects 24ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > renders activity and routes pause/resume as trusted user actions without blocking manual navigation 16ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > displays the host activity deadline across remounts and tab switches without extending its lifetime 24ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > waits for native overlay parking acknowledgement before exposing a scoped authorization dialog 9ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > keeps native page geometry constant when activity starts or expires 8ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > shows the current host profile and opens its management through the badge after parking the native page 18ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > does not display an obsolete profile response after switching the active profile 14ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > keeps an unavailable profile unknown and recovers through explicit management 14ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > keeps the importing recovery explanation visible when a menu captures the parked page 14ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > keeps the needs-attention recovery explanation visible when a menu captures the parked page 17ms
+ ✓ src/renderer/features/browser/open-presentation.test.ts > accepts the original send and rejects a presentation after switching away and back 2ms
+ ✓ src/renderer/features/browser/open-presentation.test.ts > does not give a retried send a new presentation revision after a panel change 0ms
+ ✓ src/renderer/features/browser/open-presentation.test.ts > transfers the home send to its automatic task transition 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/agent-tasks/workspace-panels.test.tsx > shows changed lines and their original line numbers in a long file, with the file list out of the way
+AssertionError: expected '正在绘制差异…' to contain 'int timeout = 15;'
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+  [36m</body>[39m
+[36m</html>[39m...
+
+Expected: "int timeout = 15;"
+Received: "正在绘制差异…"
+
+ ❯ src/renderer/features/agent-tasks/workspace-panels.test.tsx:62:44
+     60|   const diff=await screen.findByRole('region',{name:'只读差异'});
+     61|   const visibleLines=()=>diff.querySelector('diffs-container')?.shadow…
+     62|   await waitFor(()=>expect(visibleLines()).toContain('int timeout = 15…
+       |                                            ^
+     63|   expect(visibleLines()).toContain('int timeout = 30;');
+     64|   expect(visibleLines()).toContain('6001');
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of null (reading 'useContext')
+ ❯ process.env.NODE_ENV.exports.useContext ../../../../Users/liubu/hx/4.uprxiao/SmartDD-bugfix/node_modules/.pnpm/react@19.3.0/node_modules/react/cjs/react.development.js:1258:25
+ ❯ useVirtualizer ../../../../Users/liubu/hx/4.uprxiao/SmartDD-bugfix/node_modules/.pnpm/@pierre+diffs@1.7.0-beta.4_@shikijs+themes@4.2.0_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/@pierre/diffs/dist/react/Virtualizer.js:30:9
+ ❯ useFileDiffInstance ../../../../Users/liubu/hx/4.uprxiao/SmartDD-bugfix/node_modules/.pnpm/@pierre+diffs@1.7.0-beta.4_@shikijs+themes@4.2.0_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/@pierre/diffs/dist/react/utils/useFileDiffInstance.js:21:28
+ ❯ FileDiff ../../../../Users/liubu/hx/4.uprxiao/SmartDD-bugfix/node_modules/.pnpm/@pierre+diffs@1.7.0-beta.4_@shikijs+themes@4.2.0_react-dom@19.3.0_react@19.3.0__react@19.3.0/node_modules/@pierre/diffs/dist/react/FileDiff.js:9:119
+ ❯ Object.react_stack_bottom_frame ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+
+This error originated in "src/renderer/features/agent-tasks/workspace-panels.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "shows changed lines and their original line numbers in a long file, with the file list out of the way". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 27 passed (28)
+     Errors  1 error
+   Start at  14:44:48
+   Duration  3.06s (transform 250ms, setup 0ms, import 667ms, tests 1.48s, environment 695ms)
+

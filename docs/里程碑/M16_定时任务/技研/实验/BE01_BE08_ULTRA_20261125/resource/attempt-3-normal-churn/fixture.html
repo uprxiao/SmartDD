@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Fixed F36 rendering fixture</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#eeeeee;font:14px system-ui;color:#111}
+#count{position:absolute;left:20px;top:20px;width:140px;height:52px}
+#frame{position:absolute;left:180px;top:100px;width:110px;height:90px}
+#motion{position:absolute;left:20px;top:200px;background:#8030d0;width:22px;height:22px;animation:go 1s infinite alternate linear}
+@keyframes go {from{transform:translateX(0)}to{transform:translateX(72px)}}
+#state{position:absolute;left:20px;top:80px}
+</style>
+<button id="count">Fetch sample</button><output id="state">Ready</output>
+<canvas id="frame" width="110" height="90"></canvas><div id="motion"></div>
+<script>
+const c=document.querySelector('#frame').getContext('2d');
+const markerColors=['#ff0000','#00ff00','#0000ff','#ff00ff'];
+const id=String(performance.timeOrigin)+'-'+Math.random();let clicks=0,ticks=0,frames=0,lastFrameAt=0,drawnStep=0,step=0,pending=0,fetchState='initial',lastFetchAt=null;
+const entries=[{event:'initial',visibility:document.visibilityState,at:performance.now(),focus:document.hasFocus()}];
+function note(event){entries.push({event,visibility:document.visibilityState,at:performance.now(),focus:document.hasFocus()});}
+for(const [obj,name] of [[document,'visibilitychange'],[window,'focus'],[window,'blur']])obj.addEventListener(name,()=>note(name));
+setInterval(()=>ticks++,100);
+function render(t){frames++;lastFrameAt=t;c.fillStyle=markerColors[step%markerColors.length];c.fillRect(0,0,110,90);drawnStep=step;requestAnimationFrame(render)}requestAnimationFrame(render);
+document.querySelector('#count').addEventListener('click',async()=>{
+  if(pending)return;clicks++;pending=1;fetchState='pending';document.querySelector('#state').textContent='Pending '+clicks;
+  try{const response=await fetch('/payload',{cache:'no-store'});const body=await response.json();if(body.fixture!=='fixed-payload')throw Error('unexpected fixture');step=clicks;fetchState='done';lastFetchAt=performance.now();document.querySelector('#state').textContent='Done '+clicks}
+  catch(e){fetchState='failed';document.querySelector('#state').textContent='Failed '+clicks}
+  finally{pending=0}
+});
+window.fixtureRead=()=>({documentId:id,clicks,ticks,frames,lastFrameAt,drawnStep,step,pending,fetchState,lastFetchAt,now:performance.now(),visibility:document.visibilityState,focus:document.hasFocus(),motion:getComputedStyle(document.querySelector('#motion')).transform,animationTime:document.querySelector('#motion').getAnimations()[0]?.currentTime??null,width:innerWidth,height:innerHeight,entries:[...entries]});
+</script>

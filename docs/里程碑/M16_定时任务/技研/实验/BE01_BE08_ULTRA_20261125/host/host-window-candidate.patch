@@ -1,0 +1,26 @@
+--- a/src/main/app/window.ts
++++ b/src/main/app/window.ts
+@@ -17,7 +17,7 @@
+ export function markAppQuitting(): void { appQuitting = true; }
+ function notifyWindowShown(win:BaseWindow):void { if(getMainWindow()===win)getMainWindowContents()?.send(windowShownEvent.name); }
+ export async function showMainWindow(): Promise<BaseWindow> {
+-  const win=getMainWindow() ?? await createMainWindow();
++  const win=creating ? await creating : (getMainWindow() ?? await createMainWindow());
+   const wasHidden=!win.isVisible(); win.show(); if(wasHidden)notifyWindowShown(win); return win;
+ }
+ export function isMainRenderer(event:Pick<IpcMainEvent,'sender'|'senderFrame'>):boolean {
+@@ -54,7 +54,13 @@
+       resize();
+       if(!(lab&&process.env.WY_F36_LAB_START_HIDDEN==='1')){if(lab&&process.env.WY_F36_LAB_NONACTIVATE==='1')win.showInactive();else win.show();}
+       return win;
+-    }catch(error){if(!shell.webContents.isDestroyed())shell.webContents.close({waitForBeforeUnload:false});if(!win.isDestroyed())win.destroy();throw error;}
++    }catch(error){
++      if(!win.isDestroyed()){
++        for(const child of [...win.contentView.children])if(child instanceof WebContentsView&&!child.webContents.isDestroyed())child.webContents.close({waitForBeforeUnload:false});
++        win.destroy();
++      }else if(!shell.webContents.isDestroyed()) shell.webContents.close({waitForBeforeUnload:false});
++      throw error;
++    }
+   })();
+   try{return await creating;}finally{creating=null;}
+ }

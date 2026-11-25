@@ -1,0 +1,719 @@
+{
+  "kind": "antigravity",
+  "driverId": "antigravity-acp",
+  "layer": "Frozen production main-process task service + actual native CLI + synthetic loopback protocol; no UI, scheduler, or real model",
+  "root": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt",
+  "source": "a0acddb3a2325c6bf732adaa7e954ce4d767a2c3",
+  "assertions": [
+    {
+      "name": "E03 stable create ID and duplicate no second task",
+      "value": true
+    },
+    {
+      "name": "E05 existing host entry queues while busy; scheduler requires dedicated atomic claim/skip",
+      "value": {
+        "stateAtAttempt": "working",
+        "witnessTurn": "dd2256df-3533-4db9-b8b6-a8abade3485f",
+        "cancelledBeforeDispatch": true
+      }
+    },
+    {
+      "name": "E03 native completion, durable accepted/started/ended and duplicate input receipt",
+      "value": true
+    },
+    {
+      "name": "E05 actual persisted native session resumes same binding, generation advances, old response reaches model fixture, new model used",
+      "value": true
+    },
+    {
+      "name": "E03 synthetic host source stays system and duplicate ID deduplicated across same task",
+      "value": true
+    },
+    {
+      "name": "E05 same cwd/profile new task has different native identity and no prior chat input",
+      "value": true
+    },
+    {
+      "name": "E05 archived/missing bound task rejected by actual host enqueue; proposed policy re-confirm on changed permission and target identity",
+      "value": true
+    },
+    {
+      "name": "E03 no human source evidence granted to programmatic submit or system enqueue",
+      "value": true
+    },
+    {
+      "name": "E03 subscriber event sequence equals durable events",
+      "value": true
+    }
+  ],
+  "turns": [
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "turnId": "a9af865b-06af-437a-baab-618309cb95dd",
+      "clientInputId": "a3b38b3e-be52-43ba-a57c-3652ae90e7a9",
+      "sourceKind": "user",
+      "status": "completed",
+      "nativeTurnId": "df05bcca-5d1c-44e7-aa09-ccfed89fe58b",
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "bindingId": "948c97b7-7869-4a27-ad1c-f0cb42dcb21e",
+      "nativeId": "4df1d661-b7f6-43bd-99c2-161d210919df",
+      "generation": 1,
+      "model": "gemini-4-carbon",
+      "effort": "low",
+      "outputMarker": "WY_M16_ANTIGRAVITY_1_FIRST_ANSWER",
+      "events": [
+        "turn.accepted",
+        "turn.preparing",
+        "turn.dispatching",
+        "turn.started",
+        "turn.ended"
+      ]
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "turnId": "a142ee33-1204-4ece-ae8b-b848a090092f",
+      "clientInputId": "4008fc5f-bc1b-4916-9231-384854bf4be9",
+      "sourceKind": "system",
+      "status": "completed",
+      "nativeTurnId": "5f47a745-747e-4bd2-8a35-8ca62db2dd5d",
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "bindingId": "948c97b7-7869-4a27-ad1c-f0cb42dcb21e",
+      "nativeId": "4df1d661-b7f6-43bd-99c2-161d210919df",
+      "generation": 2,
+      "model": "gemini-4-argon",
+      "effort": "high",
+      "outputMarker": "WY_M16_ANTIGRAVITY_1_CONTINUE_ANSWER",
+      "events": [
+        "turn.accepted",
+        "turn.dispatching",
+        "turn.started",
+        "turn.ended"
+      ]
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "turnId": "54f23056-79d0-48e7-bdad-9cf0fe4c6fc5",
+      "clientInputId": "98c51820-70fd-4c68-98a1-ab01360ad8c0",
+      "sourceKind": "system",
+      "status": "completed",
+      "nativeTurnId": "542b80cc-aef7-4c02-abcd-445b76dbb500",
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "bindingId": "2a2aaf6f-0ff8-464c-a10d-b8b31a76caac",
+      "nativeId": "90d2500a-31f0-4c3e-b552-afb20a21a42e",
+      "generation": 1,
+      "model": "gemini-4-carbon",
+      "effort": "low",
+      "outputMarker": "WY_M16_ANTIGRAVITY_2_INDEPENDENT_ANSWER",
+      "events": [
+        "turn.accepted",
+        "turn.dispatching",
+        "turn.started",
+        "turn.ended"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "task.created",
+      "seq": 1
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.accepted",
+      "seq": 2,
+      "turnId": "a9af865b-06af-437a-baab-618309cb95dd",
+      "sourceKind": "user"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "item.created",
+      "seq": 3
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.preparing",
+      "seq": 4,
+      "turnId": "a9af865b-06af-437a-baab-618309cb95dd"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.preparing",
+      "seq": 5,
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "generation": 1
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.active",
+      "seq": 6,
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "binding.confirmed",
+      "seq": 7
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.session_ready",
+      "seq": 8,
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.dispatching",
+      "seq": 9,
+      "turnId": "a9af865b-06af-437a-baab-618309cb95dd",
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.started",
+      "seq": 10,
+      "turnId": "a9af865b-06af-437a-baab-618309cb95dd",
+      "nativeTurnId": "df05bcca-5d1c-44e7-aa09-ccfed89fe58b"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.accepted",
+      "seq": 11,
+      "turnId": "dd2256df-3533-4db9-b8b6-a8abade3485f",
+      "sourceKind": "system"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "item.created",
+      "seq": 12
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.ended",
+      "seq": 13,
+      "turnId": "dd2256df-3533-4db9-b8b6-a8abade3485f",
+      "status": "canceled"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "item.created",
+      "seq": 14
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.ended",
+      "seq": 15,
+      "turnId": "a9af865b-06af-437a-baab-618309cb95dd",
+      "status": "completed"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.close_requested",
+      "seq": 16,
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.ended",
+      "seq": 17,
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "selection.changed",
+      "seq": 18
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.accepted",
+      "seq": 19,
+      "turnId": "a142ee33-1204-4ece-ae8b-b848a090092f",
+      "sourceKind": "system"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "item.created",
+      "seq": 20
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.preparing",
+      "seq": 21,
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "generation": 2
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.active",
+      "seq": 22,
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.session_ready",
+      "seq": 23,
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.dispatching",
+      "seq": 24,
+      "turnId": "a142ee33-1204-4ece-ae8b-b848a090092f",
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.started",
+      "seq": 25,
+      "turnId": "a142ee33-1204-4ece-ae8b-b848a090092f",
+      "nativeTurnId": "5f47a745-747e-4bd2-8a35-8ca62db2dd5d"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "item.created",
+      "seq": 26
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "turn.ended",
+      "seq": 27,
+      "turnId": "a142ee33-1204-4ece-ae8b-b848a090092f",
+      "status": "completed"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.close_requested",
+      "seq": 28,
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "run.ended",
+      "seq": 29,
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "task.created",
+      "seq": 1
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "turn.accepted",
+      "seq": 2,
+      "turnId": "54f23056-79d0-48e7-bdad-9cf0fe4c6fc5",
+      "sourceKind": "system"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "item.created",
+      "seq": 3
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "run.preparing",
+      "seq": 4,
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "generation": 1
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "run.active",
+      "seq": 5,
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "binding.confirmed",
+      "seq": 6
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "run.session_ready",
+      "seq": 7,
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "turn.dispatching",
+      "seq": 8,
+      "turnId": "54f23056-79d0-48e7-bdad-9cf0fe4c6fc5",
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "turn.started",
+      "seq": 9,
+      "turnId": "54f23056-79d0-48e7-bdad-9cf0fe4c6fc5",
+      "nativeTurnId": "542b80cc-aef7-4c02-abcd-445b76dbb500"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "item.created",
+      "seq": 10
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "turn.ended",
+      "seq": 11,
+      "turnId": "54f23056-79d0-48e7-bdad-9cf0fe4c6fc5",
+      "status": "completed"
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "selection.changed",
+      "seq": 30
+    },
+    {
+      "taskId": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "type": "task.archived",
+      "seq": 31
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "run.close_requested",
+      "seq": 12,
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d"
+    },
+    {
+      "taskId": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "type": "run.ended",
+      "seq": 13,
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d"
+    }
+  ],
+  "live": [
+    {
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "type": "process",
+      "pid": 3878,
+      "identityVerified": true
+    },
+    {
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "type": "session",
+      "nativeId": "4df1d661-b7f6-43bd-99c2-161d210919df"
+    },
+    {
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "type": "turn.started",
+      "nativeTurnId": "df05bcca-5d1c-44e7-aa09-ccfed89fe58b"
+    },
+    {
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "type": "turn.completed",
+      "status": "completed",
+      "nativeTurnId": "df05bcca-5d1c-44e7-aa09-ccfed89fe58b"
+    },
+    {
+      "runId": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "type": "exit",
+      "code": 0,
+      "signal": null
+    },
+    {
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "type": "process",
+      "pid": 3883,
+      "identityVerified": true
+    },
+    {
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "type": "session",
+      "nativeId": "4df1d661-b7f6-43bd-99c2-161d210919df"
+    },
+    {
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "type": "turn.started",
+      "nativeTurnId": "5f47a745-747e-4bd2-8a35-8ca62db2dd5d"
+    },
+    {
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "type": "turn.completed",
+      "status": "completed",
+      "nativeTurnId": "5f47a745-747e-4bd2-8a35-8ca62db2dd5d"
+    },
+    {
+      "runId": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "type": "exit",
+      "code": 0,
+      "signal": null
+    },
+    {
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "type": "process",
+      "pid": 3887,
+      "identityVerified": true
+    },
+    {
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "type": "session",
+      "nativeId": "90d2500a-31f0-4c3e-b552-afb20a21a42e"
+    },
+    {
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "type": "turn.started",
+      "nativeTurnId": "542b80cc-aef7-4c02-abcd-445b76dbb500"
+    },
+    {
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "type": "turn.completed",
+      "status": "completed",
+      "nativeTurnId": "542b80cc-aef7-4c02-abcd-445b76dbb500"
+    },
+    {
+      "runId": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "type": "exit",
+      "code": 0,
+      "signal": null
+    }
+  ],
+  "launches": [
+    {
+      "driverId": "antigravity-acp",
+      "model": "gemini-4-carbon",
+      "profileId": "fixture-profile-antigravity",
+      "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/work",
+      "stateRoot": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/data/agents/antigravity/7ba3c9bd387fd8ed78df575c1885e3e8",
+      "envHome": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/data/agents/antigravity/7ba3c9bd387fd8ed78df575c1885e3e8",
+      "compatibility": {
+        "source": "provider",
+        "providerId": "fixture-provider-antigravity",
+        "extensions": false
+      },
+      "tier": "selected per real task",
+      "argumentsHash": "ba49a0aa414111ab8bbe7892f7eab6972f9158fca9c63693aac75b0e1b683635"
+    },
+    {
+      "driverId": "antigravity-acp",
+      "model": "gemini-4-carbon",
+      "profileId": "fixture-profile-antigravity",
+      "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/work",
+      "stateRoot": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/data/agents/antigravity/7ba3c9bd387fd8ed78df575c1885e3e8",
+      "envHome": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/data/agents/antigravity/7ba3c9bd387fd8ed78df575c1885e3e8",
+      "compatibility": {
+        "source": "provider",
+        "providerId": "fixture-provider-antigravity",
+        "extensions": false
+      },
+      "tier": "selected per real task",
+      "argumentsHash": "ba49a0aa414111ab8bbe7892f7eab6972f9158fca9c63693aac75b0e1b683635"
+    },
+    {
+      "driverId": "antigravity-acp",
+      "model": "gemini-4-carbon",
+      "profileId": "fixture-profile-antigravity",
+      "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/work",
+      "stateRoot": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/data/agents/antigravity/7ba3c9bd387fd8ed78df575c1885e3e8",
+      "envHome": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/antigravity-Xda2Yt/data/agents/antigravity/7ba3c9bd387fd8ed78df575c1885e3e8",
+      "compatibility": {
+        "source": "provider",
+        "providerId": "fixture-provider-antigravity",
+        "extensions": false
+      },
+      "tier": "selected per real task",
+      "argumentsHash": "ba49a0aa414111ab8bbe7892f7eab6972f9158fca9c63693aac75b0e1b683635"
+    }
+  ],
+  "policy": [
+    {
+      "name": "busy actual native turn",
+      "decision": "skip-busy"
+    },
+    {
+      "name": "actual same-profile model/effort change",
+      "decision": "reuse",
+      "selectionRevision": 2,
+      "selection": {
+        "driverId": "antigravity-acp",
+        "profileId": "fixture-profile-antigravity",
+        "tier": "ask",
+        "carryExtensions": false,
+        "extensionPreferences": {
+          "fixture-profile-antigravity": false
+        },
+        "model": "gemini-4-argon",
+        "effort": "high",
+        "modelEfforts": {
+          "[\"fixture-profile-antigravity\",\"gemini-4-carbon\"]": "low",
+          "[\"fixture-profile-antigravity\",\"gemini-4-argon\"]": "high"
+        }
+      }
+    },
+    {
+      "name": "driver",
+      "decision": "reconfirm",
+      "evidence": "isolated proposed comparison using actual snapshot fields"
+    },
+    {
+      "name": "profile",
+      "decision": "reconfirm",
+      "evidence": "isolated proposed comparison using actual snapshot fields"
+    },
+    {
+      "name": "provider",
+      "decision": "reconfirm",
+      "evidence": "isolated proposed comparison using actual snapshot fields"
+    },
+    {
+      "name": "cwd",
+      "decision": "reconfirm",
+      "evidence": "isolated proposed comparison using actual snapshot fields"
+    },
+    {
+      "name": "real task permission selection changed, no turn dispatched",
+      "decision": "reconfirm"
+    }
+  ],
+  "cli": {
+    "executable": "/Users/liubu/.local/bin/agy",
+    "version": "1.5.14",
+    "sha256": "e8c2959bf4744580d0e5b8f938ec2dc3918a942b620a6262e53856400f14e5fb",
+    "capabilityState": "ready",
+    "capabilities": {
+      "basic": {
+        "state": "enabled"
+      },
+      "resume": {
+        "state": "enabled"
+      },
+      "mcp": {
+        "state": "enabled"
+      },
+      "skills": {
+        "state": "enabled"
+      },
+      "nativeSubagents": {
+        "state": "disabled",
+        "reason": "not-declared"
+      },
+      "steer": {
+        "state": "disabled",
+        "reason": "not-declared"
+      },
+      "approvalsReviewer": {
+        "state": "disabled",
+        "reason": "not-declared"
+      },
+      "goal": {
+        "state": "enabled",
+        "minVersion": "1.5.14"
+      },
+      "plan": {
+        "state": "disabled",
+        "reason": "not-declared"
+      }
+    }
+  },
+  "status": "passed",
+  "trace": [
+    {
+      "protocol": "gemini",
+      "model": "gemini-3.1-flash-lite-preview",
+      "marker": "WY_M16_ANTIGRAVITY_1_FIRST",
+      "markers": [
+        "WY_M16_ANTIGRAVITY_1_FIRST"
+      ],
+      "earlierAnswer": false,
+      "reasoning": -1,
+      "at": 1795595259109,
+      "auxiliary": true
+    },
+    {
+      "protocol": "gemini",
+      "model": "gemini-4-carbon",
+      "marker": "WY_M16_ANTIGRAVITY_1_FIRST",
+      "markers": [
+        "WY_M16_ANTIGRAVITY_1_FIRST"
+      ],
+      "earlierAnswer": false,
+      "reasoning": "LOW",
+      "at": 1795595259118,
+      "auxiliary": false
+    },
+    {
+      "protocol": "gemini",
+      "model": "gemini-4-argon",
+      "marker": "WY_M16_ANTIGRAVITY_1_CONTINUE",
+      "markers": [
+        "WY_M16_ANTIGRAVITY_1_FIRST",
+        "WY_M16_ANTIGRAVITY_1_CONTINUE"
+      ],
+      "earlierAnswer": true,
+      "reasoning": "HIGH",
+      "at": 1795595259317,
+      "auxiliary": false
+    },
+    {
+      "protocol": "gemini",
+      "model": "gemini-3.1-flash-lite-preview",
+      "marker": "WY_M16_ANTIGRAVITY_2_INDEPENDENT",
+      "markers": [
+        "WY_M16_ANTIGRAVITY_2_INDEPENDENT"
+      ],
+      "earlierAnswer": false,
+      "reasoning": -1,
+      "at": 1795595259457,
+      "auxiliary": true
+    },
+    {
+      "protocol": "gemini",
+      "model": "gemini-4-carbon",
+      "marker": "WY_M16_ANTIGRAVITY_2_INDEPENDENT",
+      "markers": [
+        "WY_M16_ANTIGRAVITY_2_INDEPENDENT"
+      ],
+      "earlierAnswer": false,
+      "reasoning": "LOW",
+      "at": 1795595259467,
+      "auxiliary": false
+    }
+  ],
+  "denied": [],
+  "fixtureFailures": [],
+  "runRows": [
+    {
+      "task_id": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "run_id": "20d435f4-96c8-4e38-99a4-5c1c534dff09",
+      "binding_id": "948c97b7-7869-4a27-ad1c-f0cb42dcb21e",
+      "generation": 1,
+      "state": "stopped",
+      "pid": 3878,
+      "error_code": null
+    },
+    {
+      "task_id": "9b052059-b961-46ce-8dba-c7db4238d064",
+      "run_id": "d985d48d-710f-4758-a9ea-e9a0be4cbe97",
+      "binding_id": "948c97b7-7869-4a27-ad1c-f0cb42dcb21e",
+      "generation": 2,
+      "state": "stopped",
+      "pid": 3883,
+      "error_code": null
+    },
+    {
+      "task_id": "92a05601-6f6e-4851-9b67-391045ca5636",
+      "run_id": "685c15a5-2617-4fdb-a4d5-7c19094fb66d",
+      "binding_id": "2a2aaf6f-0ff8-464c-a10d-b8b31a76caac",
+      "generation": 1,
+      "state": "stopped",
+      "pid": 3887,
+      "error_code": null
+    }
+  ],
+  "cleanup": [
+    {
+      "pid": 3878,
+      "state": "stopped"
+    },
+    {
+      "pid": 3883,
+      "state": "stopped"
+    },
+    {
+      "pid": 3887,
+      "state": "stopped"
+    }
+  ],
+  "providerFixtureOnly": true,
+  "networkRoute": "All native configured model endpoints and proxy are local loopback; proxy denies absolute requests and CONNECT.",
+  "cliSha256Unchanged": true
+}

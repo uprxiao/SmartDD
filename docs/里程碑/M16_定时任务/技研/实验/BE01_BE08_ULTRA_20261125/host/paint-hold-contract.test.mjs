@@ -1,0 +1,21 @@
+// Isolated design contract for F36 paint ownership. Native view and frame readiness are fixtures.
+// This is not BrowserService integration and does not model OS compositor or a third-party page.
+import {test} from 'node:test';import assert from 'node:assert/strict';
+class PaintHolds {
+  entries=new Map();
+  attach(id,generation,view){if(this.entries.has(id))throw Error('logical page still attached');const e={id,generation,view,foreground:false,closing:false,holds:new Set()};this.entries.set(id,e);this.apply(e);return Object.freeze({id,generation});}
+  find(key){const e=this.entries.get(key.id);if(!e||e.generation!==key.generation||e.closing)throw Error('page not active');return e;}
+  apply(e){if(this.entries.get(e.id)===e)e.view.setVisible(e.foreground||e.holds.size>0);}
+  show(key,visible){const e=this.find(key);e.foreground=visible;this.apply(e);}
+  acquire(key,reason){const e=this.find(key);const token={reason};e.holds.add(token);this.apply(e);let released=false;return ()=>{if(released)return;released=true;e.holds.delete(token);this.apply(e);};}
+  async run(key,reason,ready,operation){const release=this.acquire(key,reason);try{await ready();this.find(key);return await operation();}finally{release();}}
+  beginClose(key){const e=this.find(key);e.closing=true;e.foreground=false;this.apply(e);return ()=>{if(e.holds.size)throw Error('underlying work still retained');if(this.entries.get(e.id)!==e)throw Error('stale close');this.entries.delete(e.id);};}
+}
+const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return{promise,resolve,reject}};
+const setup=()=>{const hold=new PaintHolds(),view={visible:false,history:[],setVisible(v){this.visible=v;this.history.push(v);}};const key=hold.attach('fixture-page',1,view);return{hold,view,key};};
+test('two independent holds release out of order, idempotent',()=>{const {hold,view,key}=setup();const a=hold.acquire(key,'capture'),b=hold.acquire(key,'wait');assert(view.visible);a();a();assert(view.visible);b();assert(!view.visible);});
+test('foreground survives a background command release, and vice versa',()=>{const {hold,view,key}=setup();hold.show(key,true);let a=hold.acquire(key,'click');a();assert(view.visible);a=hold.acquire(key,'capture');hold.show(key,false);assert(view.visible);a();assert(!view.visible);});
+test('outer timeout or cancel does not release an uncompleted underlying capture',async()=>{const {hold,view,key}=setup(),capture=deferred();const op=hold.run(key,'capture',async()=>{},()=>capture.promise);await Promise.resolve();const other=hold.acquire(key,'second caller');const outer=await Promise.race([op,Promise.resolve('caller stopped waiting')]);assert.equal(outer,'caller stopped waiting');other();assert(view.visible);capture.resolve('final frame');assert.equal(await op,'final frame');assert(!view.visible);});
+test('frame readiness must be fulfilled before operation; readiness failure releases its own hold',async()=>{const {hold,view,key}=setup(),frame=deferred();let called=0;const op=hold.run(key,'frame',()=>frame.promise,async()=>{called++;});assert(view.visible);assert.equal(called,0);frame.reject(Error('no frame'));await assert.rejects(op,/no frame/);assert.equal(called,0);assert(!view.visible);});
+test('terminal closing blocks new holds but retains underlying work until real settlement',async()=>{const {hold,view,key}=setup(),frame=deferred();const running=hold.run(key,'capture',async()=>{},()=>frame.promise);await Promise.resolve();const finish=hold.beginClose(key);assert.throws(()=>hold.acquire(key,'late'),/not active/);assert.throws(finish,/still retained/);assert(view.visible);frame.resolve('ended');assert.equal(await running,'ended');assert(!view.visible);finish();assert.equal(hold.entries.size,0);});
+test('generation change cannot release or mutate the replacement native view',()=>{const {hold,key}=setup();const stale=hold.acquire(key,'old');stale();hold.beginClose(key)();const newView={visible:false,setVisible(v){this.visible=v;}};const next=hold.attach('fixture-page',2,newView);const live=hold.acquire(next,'new');stale();assert(newView.visible);assert.throws(()=>hold.show(key,true),/not active/);live();assert(!newView.visible);});

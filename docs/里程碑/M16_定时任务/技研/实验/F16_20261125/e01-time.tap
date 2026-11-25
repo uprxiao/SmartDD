@@ -1,0 +1,84 @@
+TAP version 13
+# {"metric":"cron-minute-oracle","compared":36}
+# Subtest: E01-01 fixed interval anchored and no drift from delayed completion
+ok 1 - E01-01 fixed interval anchored and no drift from delayed completion
+  ---
+  duration_ms: 1.21025
+  type: 'test'
+  ...
+# Subtest: E01-02 daily, weekday, several weekdays, explicit timezone and quarter-hour offset
+ok 2 - E01-02 daily, weekday, several weekdays, explicit timezone and quarter-hour offset
+  ---
+  duration_ms: 9.9435
+  type: 'test'
+  ...
+# Subtest: E01-03 monthly exact day skips absent day; last calendar day
+ok 3 - E01-03 monthly exact day skips absent day; last calendar day
+  ---
+  duration_ms: 0.4045
+  type: 'test'
+  ...
+# Subtest: E01-04 once, invalid calendar date, and frozen instant after timezone change
+ok 4 - E01-04 once, invalid calendar date, and frozen instant after timezone change
+  ---
+  duration_ms: 0.618792
+  type: 'test'
+  ...
+# Subtest: E01-05 spring gap skipped, fall fold only first, reverse after repeated hour
+ok 5 - E01-05 spring gap skipped, fall fold only first, reverse after repeated hour
+  ---
+  duration_ms: 0.800416
+  type: 'test'
+  ...
+# Subtest: E01-06 non-hour DST and skipped date
+ok 6 - E01-06 non-hour DST and skipped date
+  ---
+  duration_ms: 0.441833
+  type: 'test'
+  ...
+# Subtest: E01-07 cron list/range/step, aliases, sunday=7, DOM/DOW semantics
+ok 7 - E01-07 cron list/range/step, aliases, sunday=7, DOM/DOW semantics
+  ---
+  duration_ms: 1.646583
+  type: 'test'
+  ...
+# Subtest: E01-08 invalid schedules fail clearly
+ok 8 - E01-08 invalid schedules fail clearly
+  ---
+  duration_ms: 0.766958
+  type: 'test'
+  ...
+# Subtest: E01-09 host timezone change follows local, stable wall slot identity
+ok 9 - E01-09 host timezone change follows local, stable wall slot identity
+  ---
+  duration_ms: 1.595875
+  type: 'test'
+  ...
+# Subtest: E01-10 grace including exact boundary and no-catch-up normal jitter
+ok 10 - E01-10 grace including exact boundary and no-catch-up normal jitter
+  ---
+  duration_ms: 0.279833
+  type: 'test'
+  ...
+# Subtest: E01-11 independently scan UTC minutes as oracle against optimized cron search
+ok 11 - E01-11 independently scan UTC minutes as oracle against optimized cron search
+  ---
+  duration_ms: 18.627709
+  type: 'test'
+  ...
+# {"metric":"time-engine-local","n":400,"p50Ms":0.05720800000000281,"p95Ms":0.11366699999999241,"maxMs":0.21187500000000625,"timerLagsMs":[1,0,1,1,1]}
+# Subtest: E01-12 benchmark pure next/last scheduling and real local timer dispatch (not model latency)
+ok 12 - E01-12 benchmark pure next/last scheduling and real local timer dispatch (not model latency)
+  ---
+  duration_ms: 257.266791
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 331.189834

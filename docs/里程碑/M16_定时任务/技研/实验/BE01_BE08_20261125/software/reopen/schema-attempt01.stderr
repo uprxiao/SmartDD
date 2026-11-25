@@ -1,0 +1,72 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    additionalProperties: false,
++   description: 'Open or reuse a WillYou tab in the current task. Supply an HTTP(S) url or existing pageId. Returns a pageId and navigation phase early. Keep the pageId to observe that tab.',
+    properties: {
+      intent: {
+        enum: [
+          'reuse-or-new',
+          'new'
+
+    at file:///private/tmp/willyou-f36-reopen-e_n5l76z/source/scripts/browser/f36-schema-diagnostic.mjs:9:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: {
+    type: 'object',
+    properties: {
+      url: { type: 'string', maxLength: 8192 },
+      pageId: { type: 'string' },
+      profileId: { type: 'string' },
+      intent: { enum: [ 'reuse-or-new', 'new' ] },
+      presentation: { enum: [ 'show', 'background' ] },
+      ready: {
+        type: 'object',
+        properties: {
+          selector: { type: 'string', minLength: 1, maxLength: 512 },
+          text: { type: 'string', minLength: 1, maxLength: 512 },
+          timeout: { type: 'integer', minimum: 1, maximum: 15000 }
+        },
+        required: [],
+        additionalProperties: false
+      }
+    },
+    required: [],
+    additionalProperties: false,
+    description: 'Open or reuse a WillYou tab in the current task. Supply an HTTP(S) url or existing pageId. Returns a pageId and navigation phase early. Keep the pageId to observe that tab.'
+  },
+  expected: {
+    type: 'object',
+    properties: {
+      url: { type: 'string', maxLength: 8192 },
+      pageId: { type: 'string' },
+      profileId: { type: 'string' },
+      intent: { enum: [ 'reuse-or-new', 'new' ] },
+      presentation: { enum: [ 'show', 'background' ] },
+      ready: {
+        type: 'object',
+        properties: {
+          selector: { type: 'string', minLength: 1, maxLength: 512 },
+          text: { type: 'string', minLength: 1, maxLength: 512 },
+          timeout: { type: 'integer', minimum: 1, maximum: 15000 }
+        },
+        required: [],
+        additionalProperties: false
+      }
+    },
+    required: [],
+    additionalProperties: false
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.23.1

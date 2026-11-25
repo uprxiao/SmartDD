@@ -1,0 +1,44 @@
+import Database from 'better-sqlite3';import {it,expect,afterEach} from 'vitest';import {randomUUID} from 'node:crypto';import {runBundledMigrations} from '../../db/migrations';import {AgentStore} from './agent-store';import {HostBusinessRequests} from './host-business-requests';import {attachAgentBrowserRequests} from './m16-browser-access-candidate';import {evaluateCapabilities} from './capabilities';
+const close:(()=>void)[]=[];afterEach(()=>close.splice(0).forEach(f=>f()));
+function fixture(scheduled=false){const db=new Database(':memory:');runBundledMigrations(db);db.prepare('INSERT INTO projects(id,name,created_at,updated_at) VALUES(?,?,?,?)').run('project','fixture',Date.now(),Date.now());const store=new AgentStore(db),taskId=store.createTask({projectId:'project',dirId:null,cwd:'/fixture',title:'browser',selection:{profileId:'p',driverId:'codex-app-server',tier:'ask'}}),bindingId=store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'p',continuation_hash:'a'.repeat(64),state_root:'/fixture/state',cwd_identity:'/fixture'});let current:any,owner=false,generation=0,adapter:any,unloaded=false,targets={projectId:'project',pages:[{id:'page',url:'https://example.invalid/'}]},grants:any[]=[];const open=()=>{const runId=randomUUID();store.insertRun({runId,taskId,bindingId,generation:++generation,projectId:'project',driverId:'codex-app-server',owner:{instanceId:'fixture',pid:process.pid,startedAt:null},launchPlanHash:'b'.repeat(64)});store.attachRunProcess(runId,taskId,12345,'fixture');current={runId,taskId,bindingId,generation,driverId:'codex-app-server',tier:'ask',version:'0.169.0',capabilities:evaluateCapabilities('codex-app-server','0.169.0').capabilities};owner=true;return current;};const origin=open();db.exec('CREATE TABLE experiment_scheduled_runs(run_id TEXT PRIMARY KEY)');if(scheduled)db.prepare('INSERT INTO experiment_scheduled_runs VALUES(?)').run(origin.runId);const service=new HostBusinessRequests({store,run:()=>current,hasOwner:()=>owner,notify:()=>{}}),browser:any={accessTarget:(_taskId:string,reviewedPageIds?:readonly string[])=>unloaded?{...targets,pages:targets.pages.filter(page=>reviewedPageIds?.includes(page.id))}:targets,attachTaskAccess:(a:any)=>adapter=a,bindTaskAccess:(binding:any,_target:any,mode:any,id:any)=>{grants.push({binding,mode,id});return{id};},access:{revokeTaskGrants:()=>{grants=[];},revoke:(id:string)=>{grants=grants.filter(g=>g.id!==id);}}};attachAgentBrowserRequests({store,requests:service,browser,context:runId=>({run:{...current,runId,projectId:'project'},signal:new AbortController().signal} as any),enabled:()=>{},scheduledRun:id=>!!db.prepare('SELECT 1 FROM experiment_scheduled_runs WHERE run_id=?').get(id)});close.push(()=>{service.close();db.close();});const targetTaskId=store.createTask({projectId:'project',dirId:null,cwd:'/fixture',title:'接口文档任务',selection:{profileId:'p',driverId:'codex-app-server',tier:'ask'}});const accept=()=>adapter.accept({runId:origin.runId,taskId,projectId:'project',operationId:randomUUID()},targetTaskId,'control');const end=()=>{store.finishRun(origin.runId,taskId,'stopped',null);current=undefined;owner=false;};return{store,service,accept,taskId,targetTaskId,open,end,restartWithoutNativePage:()=>{unloaded=true;},grants:()=>grants,change:()=>targets.pages[0].url='https://other.invalid/'};}
+it('E12/A37: browser approval after real owner end binds only to the registered successor; revoke before binding supplies no authority',async()=>{const f=fixture(),r=f.accept();f.end();await f.service.respond(f.taskId,r.requestId,1,{choice:'observe'});expect(f.grants()).toEqual([]);const next=f.open();await f.service.bindPending(f.taskId,next);expect(f.grants()).toHaveLength(1);expect(f.grants()[0]).toMatchObject({binding:{runId:next.runId},mode:'observe'});f.service.stop(f.taskId);expect(f.grants()).toEqual([]);});
+it('E12/A37: changed target page retires late approval and user stop retires an approved pending binding',async()=>{const f=fixture(),r=f.accept();f.change();await expect(f.service.respond(f.taskId,r.requestId,1,{choice:'control'})).rejects.toThrow('目标页面');expect(f.store.request(r.requestId)?.status).toBe('retired');const second=f.accept();f.end();await f.service.respond(f.taskId,second.requestId,1,{choice:'control'});f.service.stop(f.taskId);await f.service.bindPending(f.taskId,f.open());expect(f.grants()).toEqual([]);expect(f.store.request(second.requestId)?.status).toBe('retired');});
+
+it('retains the pending approval across an unloaded target and binds it only after successor registration',async()=>{
+  const f=fixture(),request=f.accept();
+  f.end();
+  await f.service.respond(f.taskId,request.requestId,1,{choice:'observe'});
+  f.restartWithoutNativePage();
+  await f.service.reconcile();
+  expect(f.store.request(request.requestId)).toMatchObject({status:'approved_pending_bind',bound_run_id:null});
+  expect(f.grants()).toEqual([]);
+  const successor=f.open();
+  await f.service.bindPending(f.taskId,successor);
+  expect(f.store.request(request.requestId)).toMatchObject({status:'resolved',bound_run_id:successor.runId});
+  expect(f.grants()).toMatchObject([{id:request.requestId,binding:{runId:successor.runId},mode:'observe'}]);
+});
+
+it('V24 resolves a same-project title for presentation without changing the frozen request', () => {
+  const f=fixture(), receipt=f.accept();
+  const stored=f.store.request(receipt.requestId)!.payload_ref;
+  expect(f.store.pendingRequests(f.taskId,true)[0]).toMatchObject({
+    targetTaskTitle:'接口文档任务',
+    payload:{review:{targetTaskId:f.targetTaskId}},
+  });
+  expect(f.store.request(receipt.requestId)!.payload_ref).toBe(stored);
+  f.store.sqlite.prepare('UPDATE tasks SET project_id=NULL WHERE id=?').run(f.targetTaskId);
+  expect(f.store.pendingRequests(f.taskId,true)[0].targetTaskTitle).toBeUndefined();
+});
+
+it('F16 E09 candidate rejects a new scheduled cross-task request before any approval or grant exists',()=>{
+ const f=fixture(true);
+ expect(f.store.pendingRequests(f.taskId)).toEqual([]);
+ expect(()=>f.accept()).toThrow('无人值守计划运行不能新申请跨任务网页授权');
+ expect(f.store.pendingRequests(f.taskId)).toEqual([]);
+ expect(f.grants()).toEqual([]);
+ const ordinary=fixture(false),receipt=ordinary.accept();
+ expect(ordinary.store.pendingRequests(ordinary.taskId)).toHaveLength(1);
+ expect(ordinary.store.request(receipt.requestId)?.status).toBe('pending');
+ console.log(JSON.stringify({case:'E09-scheduled-browser-policy-candidate',scheduledRequestRows:0,scheduledGrants:0,
+  ordinaryRequestPending:true,layer:'private extra origin predicate in actual host business adapter; scheduled provenance persistence/inheritance and full service wiring not implemented'}));
+});

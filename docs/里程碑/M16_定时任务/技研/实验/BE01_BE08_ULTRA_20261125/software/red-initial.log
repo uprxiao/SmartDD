@@ -1,0 +1,188 @@
+[1125/162649.804024:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/willyou-f36-ultra-layout-5IkHDj/source
+
+[1125/162649.955878:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > close-in-flight must not match the old tab for a new URL request
+ULTRA_LIFECYCLE {"name":"close-reserve","value":{"old":"11111111-1111-4111-8111-111111111111","replacement":{"pageId":"11111111-1111-4111-8111-111111111111","profileId":"project-1d54909ca72221484c23a661","reused":true,"url":"http://127.0.0.1:1/fixed-local-fixture"},"explicitRejected":false,"saved":{"version":1,"tabs":[],"activeId":null,"closed":[{"id":"11111111-1111-4111-8111-111111111111","url":"http://127.0.0.1:1/fixed-local-fixture","title":"11111111-1111-4111-8111-111111111111","profileId":"project-1d54909ca72221484c23a661","favicon":null}]}}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > duplicate overlapping close adds exactly one closed-history entry
+ULTRA_LIFECYCLE {"name":"double-close","value":{"version":1,"tabs":[],"activeId":null,"closed":[{"id":"11111111-1111-4111-8111-111111111111","url":"http://127.0.0.1:1/fixed-local-fixture","title":"11111111-1111-4111-8111-111111111111","profileId":"project-1d54909ca72221484c23a661","favicon":null},{"id":"11111111-1111-4111-8111-111111111111","url":"http://127.0.0.1:1/fixed-local-fixture","title":"11111111-1111-4111-8111-111111111111","profileId":"project-1d54909ca72221484c23a661","favicon":null}]}}
+
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > close-in-flight must not match the old tab for a new URL request 8ms
+   → expected '11111111-1111-4111-8111-111111111111' not to be '11111111-1111-4111-8111-111111111111' // Object.is equality
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > duplicate overlapping close adds exactly one closed-history entry 2ms
+   → expected [ …(2) ] to deeply equal [ Array(1) ]
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > two same-URL callers share one pending creation, cancellation of one keeps the valid other caller
+ULTRA_LIFECYCLE {"name":"shared-one-cancel","value":{"first":{"pageId":"9a99d04c-9bf8-4c6a-9c42-66aab8f9c5af","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"a0c3b221-07f2-4efe-bfc1-3734511507e4","presentation":"background","phase":"loading"},"second":{"pageId":"9a99d04c-9bf8-4c6a-9c42-66aab8f9c5af","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"5a7feeb3-62f2-41a3-aca9-dc7298340216","presentation":"background","phase":"loading"},"one":{"requestId":"207c4f75-7470-4892-8c5d-ba8e07d0d525","pageId":"9a99d04c-9bf8-4c6a-9c42-66aab8f9c5af","command":"tab open","state":"failed","effectState":"completed","progress":null,"summary":{"pageId":"9a99d04c-9bf8-4c6a-9c42-66aab8f9c5af","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"a0c3b221-07f2-4efe-bfc1-3734511507e4","presentation":"background","phase":"cancelled","hash":"1b89d19b160f5aa8949da235a0b847d8f92a33fc0eb7cbcc010870b998b5ebdd"},"errorCode":"CANCELED","createdAt":1795595210190,"updatedAt":1795595210242},"other":{"requestId":"51cb8320-6bfc-4b93-ad5a-99440979877b","pageId":"9a99d04c-9bf8-4c6a-9c42-66aab8f9c5af","command":"tab open","state":"succeeded","effectState":"completed","progress":null,"summary":{"pageId":"9a99d04c-9bf8-4c6a-9c42-66aab8f9c5af","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"5a7feeb3-62f2-41a3-aca9-dc7298340216","presentation":"background","phase":"ready","hash":"1b89d19b160f5aa8949da235a0b847d8f92a33fc0eb7cbcc010870b998b5ebdd"},"errorCode":null,"createdAt":1795595210190,"updatedAt":1795595210294},"create":1,"navigate":1}}
+
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > two same-URL callers share one pending creation, cancellation of one keeps the valid other caller 156ms
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > a new URL request after all old callers cancel must not join a dead initialization
+ULTRA_LIFECYCLE {"name":"shared-all-cancel-new","value":{"first":{"pageId":"84eee672-ced4-4eed-b7c9-cca2d1a369f5","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"6c146bd3-175e-4e1a-a600-759f151bf208","presentation":"background","phase":"loading"},"second":{"pageId":"84eee672-ced4-4eed-b7c9-cca2d1a369f5","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"8bc6778d-647f-4c77-baf3-573bc0e71abf","presentation":"background","phase":"loading"},"fresh":{"pageId":"84eee672-ced4-4eed-b7c9-cca2d1a369f5","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"383aacb3-fa4c-4e75-8d4c-04f0c6a17ae1","presentation":"background","phase":"loading"},"result":{"requestId":"7bc93db3-905d-442d-bafc-ce74df2721a2","pageId":"84eee672-ced4-4eed-b7c9-cca2d1a369f5","command":"tab open","state":"failed","effectState":"completed","progress":null,"summary":{"pageId":"84eee672-ced4-4eed-b7c9-cca2d1a369f5","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"383aacb3-fa4c-4e75-8d4c-04f0c6a17ae1","presentation":"background","phase":"cancelled","hash":"1b89d19b160f5aa8949da235a0b847d8f92a33fc0eb7cbcc010870b998b5ebdd"},"errorCode":"CANCELED","createdAt":1795595210449,"updatedAt":1795595210450},"create":1,"navigate":[]}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a late null for another page cannot demote the current mounted page
+ULTRA_LIFECYCLE {"name":"late-null-other-page","value":{"front":["11111111-1111-4111-8111-111111111111","22222222-2222-4222-8222-222222222222","AppShell"],"mountedB":false}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a delayed old native transition cannot commit after the newest A→B→A selection
+ULTRA_LIFECYCLE {"name":"native-aba","value":{"front":["11111111-1111-4111-8111-111111111111","AppShell","22222222-2222-4222-8222-222222222222"],"mountedA":false,"mountedB":true}}
+
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > a new URL request after all old callers cancel must not join a dead initialization 157ms
+   → expected { …(10) } to match object { state: 'succeeded', …(1) }
+(14 matching properties omitted from actual)
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a late null for another page cannot demote the current mounted page 1ms
+   → expected false to be true // Object.is equality
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a cancelled capture cannot re-park or publish after same-owner menu reentry
+ULTRA_LIFECYCLE {"name":"overlay-reentry","value":{"result":"data:image/jpeg;base64,Zml4ZWQtaW1hZ2U=","extraPlacement":1}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old A layout release cannot detach a fresh A after A→B→A
+ULTRA_LIFECYCLE {"name":"layout-instance-aba","value":{"front":["11111111-1111-4111-8111-111111111111","22222222-2222-4222-8222-222222222222","AppShell"],"mountedA":false}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old same-owner release cannot remove a new overlay acquisition
+ULTRA_LIFECYCLE {"name":"overlay-instance-release","value":{"mountedA":true,"front":["AppShell","11111111-1111-4111-8111-111111111111"]}}
+
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a delayed old native transition cannot commit after the newest A→B→A selection 52ms
+   → expected false to be true // Object.is equality
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a cancelled capture cannot re-park or publish after same-owner menu reentry 1ms
+   → expected 'data:image/jpeg;base64,Zml4ZWQtaW1hZ2…' to be null
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old A layout release cannot detach a fresh A after A→B→A 1ms
+   → expected false to be true // Object.is equality
+ × src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old same-owner release cannot remove a new overlay acquisition 0ms
+   → expected true to be false // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > close-in-flight must not match the old tab for a new URL request
+AssertionError: expected '11111111-1111-4111-8111-111111111111' not to be '11111111-1111-4111-8111-111111111111' // Object.is equality
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:55:35
+     53|    finally{closeGate.resolve();await closing;}
+     54|    trace('close-reserve',{old:A,replacement,explicitRejected,saved:sav…
+     55|    expect(replacement.pageId).not.toBe(A);expect(replacement.reused).t…
+       |                                   ^
+     56|  });
+     57|  it('duplicate overlapping close adds exactly one closed-history entry…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > duplicate overlapping close adds exactly one closed-history entry
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    "11111111-1111-4111-8111-111111111111",
++   "11111111-1111-4111-8111-111111111111",
+  ]
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:61:55
+     59|    const x=f.workspace.close(task,A);await vi.waitFor(()=>expect(a.hel…
+     60|    closeGate.resolve();await Promise.all([x,y]);trace('double-close',s…
+     61|    expect(saved(f).closed.map((t:{id:string})=>t.id)).toEqual([A]);exp…
+       |                                                       ^
+     62|    f.workspace.reopen(task);f.workspace.reopen(task);expect(f.workspac…
+     63|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > a new URL request after all old callers cancel must not join a dead initialization
+AssertionError: expected { …(10) } to match object { state: 'succeeded', …(1) }
+(14 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "state": "succeeded",
++   "state": "failed",
+    "summary": {
+-     "phase": "ready",
++     "phase": "cancelled",
+    },
+  }
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:75:768
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a late null for another page cannot demote the current mounted page
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:83:152
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a delayed old native transition cannot commit after the newest A→B→A selection
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:88:174
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a cancelled capture cannot re-park or publish after same-owner menu reentry
+AssertionError: expected 'data:image/jpeg;base64,Zml4ZWQtaW1hZ2…' to be null
+
+- Expected:
+null
+
++ Received:
+"data:image/jpeg;base64,Zml4ZWQtaW1hZ2U="
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:91:531
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old A layout release cannot detach a fresh A after A→B→A
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:98:151
+     96|    const f=fixture([A,B]),a=f.makePage(A);f.makePage(B);const place=f.…
+     97|    await place(task,A,rect,1);await place(task,B,rect,2);await place(t…
+     98|    trace('layout-instance-aba',{front:f.children.map(x=>(x as {label:s…
+       |                                                                                                                                                       ^
+     99|  });
+    100|  it('old same-owner release cannot remove a new overlay acquisition',a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old same-owner release cannot remove a new overlay acquisition
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/main/core/browser/__tests__/ultra-lifecycle.test.ts:103:156
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 1 passed (9)
+   Start at  16:26:49
+   Duration  633ms (transform 116ms, setup 0ms, import 178ms, tests 379ms, environment 0ms)
+

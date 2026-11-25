@@ -1,0 +1,65 @@
+{
+  "layer": "read-only copy of synthetic P1.0 model, no GUI/no user data",
+  "rows": [
+    {
+      "id": "R05-REUSE",
+      "observed": {
+        "model": {
+          "model": "gpt-6.2-sol",
+          "effort": "低",
+          "status": "running"
+        },
+        "identity": {
+          "status": "running",
+          "agent": "cx-sub",
+          "permission": "ask",
+          "cwd": "/workspace/SmartDD",
+          "needsRepair": null
+        },
+        "archived": {
+          "status": "running",
+          "taskId": "persistent"
+        }
+      },
+      "expected": "Existing reuse binding must follow model+effort; pause on agent/provider/cwd/tier change; archived target requires repair."
+    },
+    {
+      "id": "R02-ONCE-EDIT",
+      "observed": {
+        "oldDue": 1795748460000,
+        "newDue": 1795834800000,
+        "before": "已暂停",
+        "after": "已结束",
+        "newDate": "2026-11-28",
+        "nextAt": null
+      },
+      "expected": "Old run completion settles only old run; edited new date remains paused and resumable."
+    },
+    {
+      "id": "R03-MISSING-IDENTITY",
+      "observed": {
+        "invalidTaskProjection": {
+          "agent": "cx-sub",
+          "model": "gpt-6.2-sol",
+          "effort": "中等",
+          "permission": "ask",
+          "delegation": false,
+          "dirId": "git",
+          "cwd": "/workspace/SmartDD"
+        },
+        "validated": true,
+        "runStatus": "running",
+        "nestedProviderTaskProjection": {
+          "agent": "cx-sub",
+          "model": "gpt-6.2-sol",
+          "effort": "中等",
+          "permission": "ask",
+          "delegation": false,
+          "dirId": "git",
+          "cwd": "/workspace/actual"
+        }
+      },
+      "expected": "An unavailable explicit Agent/model or missing actual cwd requires repair/selection confirmation; a Provider-backed task must not be silently mapped to subscription."
+    }
+  ]
+}

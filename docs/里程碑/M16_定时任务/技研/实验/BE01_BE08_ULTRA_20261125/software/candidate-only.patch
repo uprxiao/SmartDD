@@ -1,0 +1,146 @@
+diff --git a/src/main/core/browser/workspace.ts b/src/main/core/browser/workspace.ts
+--- a/src/main/core/browser/workspace.ts
++++ b/src/main/core/browser/workspace.ts
+@@ -24,16 +24,19 @@
+   private readonly pendingNavigations=new Map<string,PendingNavigation>();
+   private readonly navigations=new Map<string,{stopped:boolean}>();
+   private readonly closingTabs=new Set<string>();
++  private readonly closeRequests=new Map<string,Promise<BrowserWorkspaceState>>();
+   private readonly recovering=new Map<string,ReturnType<typeof setTimeout>>();
+   private readonly notices=new Map<string,string>();
+   private readonly external=new Map<string,{id:string;url:string}>();
+   private readonly unobserve:()=>void;
+   private shuttingDown=false;
+   private placementVersion=0;
++  // Experimental: producer-issued view instance ordinal (single trusted shell fixture).
++  private placementInstance=0;
+   private readonly finds=new Map<string,{requestId:number;active:number;total:number}>();
+   private readonly agentActive=new Map<string,string>();
+   private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
+-  private readonly overlays=new Map<string,Set<string>>();
++  private readonly overlays=new Map<string,Map<string,{instance?:string}>>();
+   private reconciling?:Promise<void>;
+   constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;activity?:(pageId:string)=>{active:boolean;running:boolean;holdUntil?:number|null};paused?:(taskId:string)=>boolean;profileState?:(profileId:string)=>'ready'|'importing'|'needs-attention';available?:(profileId:string)=>void;authentication?:(taskId:string,pageId:string)=>{prompt:BrowserAuthPrompt|null;cancelled:BrowserAuthCancelled|null};javascriptDialog?:(taskId:string,pageId:string)=>BrowserJavascriptDialog|null;downloads?:(taskId:string)=>BrowserDownload[];permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+     this.unobserve=options.pages.observe(event=>{
+@@ -69,12 +72,12 @@
+     return state.tabs.find(tab=>tab.id===state.activeId)?.profileId??browserProjectProfile(this.project(taskId));
+   }
+   savedTab(taskId:string,id:string){
+-    return this.load(taskId).tabs.find(tab=>tab.id===id);
+-  }
+-  reserveAgentOpen(taskId:string,input:{pageId?:string;url?:string;profileId:string;forceNew:boolean}){
++    return this.closeRequests.has(id)?undefined:this.load(taskId).tabs.find(tab=>tab.id===id);
++  }
++  reserveAgentOpen(taskId:string,input:{pageId?:string;url?:string;profileId:string;forceNew:boolean;exclude?: (id:string)=>boolean}){
+     const state=this.load(taskId);
+-    const matches=state.tabs.filter(tab=>input.pageId?tab.id===input.pageId:
+-      !input.forceNew&&tab.profileId===input.profileId&&(this.pendingNavigations.get(tab.id)?.url??tab.url)===input.url);
++    const matches=state.tabs.filter(tab=>!this.closeRequests.has(tab.id)&&(input.pageId?tab.id===input.pageId:
++      !input.forceNew&&!input.exclude?.(tab.id)&&tab.profileId===input.profileId&&(this.pendingNavigations.get(tab.id)?.url??tab.url)===input.url));
+     const existing=matches.find(tab=>tab.id===state.activeId)??matches[0];
+     if(existing){
+       return{pageId:existing.id,profileId:existing.profileId,reused:true,url:this.pendingNavigations.get(existing.id)?.url??existing.url};
+@@ -267,7 +270,11 @@
+     page.contents.stop();
+     this.cancelRecovery(page.id);
+   }
+-  async placement(taskId:string,id:string,rect:Electron.Rectangle|null):Promise<void>{
++  async placement(taskId:string,id:string,rect:Electron.Rectangle|null,instance?:number):Promise<void>{
++    if(instance!==undefined){
++      if(instance<this.placementInstance||rect===null&&instance!==this.placementInstance)return;
++      this.placementInstance=instance;
++    }
+     const version=++this.placementVersion;
+     // Unmount remains possible after project deletion, before UI unmount finishes.
+     if(rect===null){const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live)await this.options.pages.placement(taskId,id,null);return;}
+@@ -276,20 +283,21 @@
+     const tab=this.load(taskId).tabs.find(t=>t.id===id);if(!tab||tab.url===BROWSER_BLANK_URL||this.runtime.get(id)?.failure||this.options.profileState?.(tab.profileId)!==undefined&&this.options.profileState(tab.profileId)!=='ready')return;
+     const page=await this.ensure(taskId,id);if(this.shuttingDown||version!==this.placementVersion||this.overlays.has(id))return;await this.options.pages.placement(taskId,page.id,rect);
+   }
+-  async overlay(taskId:string,id:string,open:boolean,capture=true,owner='surface'):Promise<string|null>{
++  async overlay(taskId:string,id:string,open:boolean,capture=true,owner='surface',instance?:string):Promise<string|null>{
+     if(!this.load(taskId).tabs.some(tab=>tab.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
+-    const release=()=>{const owners=this.overlays.get(id);owners?.delete(owner);if(!owners?.size)this.overlays.delete(id);};
++    const release=(expected?:{instance?:string})=>{const owners=this.overlays.get(id),held=owners?.get(owner);if(held&&(expected?held===expected:instance===undefined||held.instance===instance))owners!.delete(owner);if(!owners?.size)this.overlays.delete(id);};
+     if(!open){release();return null;}
+-    const owners=this.overlays.get(id)??new Set<string>();owners.add(owner);this.overlays.set(id,owners);
++    const acquisition={instance};
++    const owners=this.overlays.get(id)??new Map<string,{instance?:string}>();owners.set(owner,acquisition);this.overlays.set(id,owners);
+     this.placementVersion++;const page=this.options.pages.list(taskId).find(page=>page.id===id);if(!page)return null;
+     // Each independently dismissed surface releases only its own parking hold.
+     // A cancelled capture must not park a page after its caller has gone away.
+     if(!capture){await this.placement(taskId,id,null);return null;}
+     try{
+       const image=await page.contents.capturePage(),size=image.getSize(),thumbnail=size.width>1920?image.resize({width:1920}):image;
+-      if(!this.overlays.get(id)?.has(owner))return null;
++      if(this.overlays.get(id)?.get(owner)!==acquisition)return null;
+       await this.placement(taskId,id,null);return'data:image/jpeg;base64,'+thumbnail.toJPEG(80).toString('base64');
+-    }catch(error){release();throw error;}
++    }catch(error){release(acquisition);throw error;}
+   }
+   async find(taskId:string,id:string,text:string,forward:boolean,next:boolean){
+     this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}this.options.available?.(page.profileId);const wc=page.contents;
+@@ -298,11 +306,18 @@
+     const requestId=wc.findInPage(text,{forward,findNext:!next});this.finds.set(id,{requestId,active:0,total:0});
+   }
+   async close(taskId:string,id:string,fromPageQueue=false):Promise<BrowserWorkspaceState>{
+-    const changing=this.profileChanges.get(id);if(changing)await changing;
+     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return this.snapshot(taskId);
+-    this.clearPendingNavigation(id);this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending.catch(()=>undefined);
+-    this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id,fromPageQueue);}finally{this.closingTabs.delete(id);}
+-    state.closed=[...state.closed,tab].slice(-10);state.tabs=state.tabs.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.tabs.at(-1)?.id??null;this.runtime.delete(id);this.save(taskId);return this.snapshot(taskId);
++    const existing=this.closeRequests.get(id);if(existing)return existing;
++    const work=Promise.resolve().then(async()=>{
++      const changing=this.profileChanges.get(id);if(changing)await changing;
++      this.clearPendingNavigation(id);this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending.catch(()=>undefined);
++      this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id,fromPageQueue);}finally{this.closingTabs.delete(id);}
++      if(state.tabs.some(t=>t.id===id)){
++        state.closed=[...state.closed,tab].slice(-10);state.tabs=state.tabs.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.tabs.at(-1)?.id??null;this.runtime.delete(id);this.save(taskId);
++      }
++      return this.snapshot(taskId);
++    }).finally(()=>this.closeRequests.delete(id));
++    this.closeRequests.set(id,work);return work;
+   }
+   reopen(taskId:string):BrowserWorkspaceState{const state=this.load(taskId),old=state.closed.pop();if(old){const tab={...old,id:randomUUID()};state.tabs.push(tab);state.activeId=tab.id;this.save(taskId);}return this.snapshot(taskId);}
+   /** The persistent tab ID survives a partition change; the engine, helper and
+diff --git a/src/main/core/browser/tab-open.ts b/src/main/core/browser/tab-open.ts
+--- a/src/main/core/browser/tab-open.ts
++++ b/src/main/core/browser/tab-open.ts
+@@ -59,7 +59,8 @@
+     }
+     options.authorize();
+     this.operations.begin(runId,requestId,taskId,null,'tab open');
+-    const tab=this.workspace.reserveAgentOpen(taskId,{pageId:input.pageId,url:input.url,profileId,forceNew:input.intent==='new'});
++    const tab=this.workspace.reserveAgentOpen(taskId,{pageId:input.pageId,url:input.url,profileId,forceNew:input.intent==='new',
++      exclude:id=>this.loads.get(id)?.abort.signal.aborted===true});
+     options.dispatch();
+     const base={pageId:tab.pageId,url:tab.url,reused:tab.reused,operationId,presentation:input.presentation};
+     this.operations.page(runId,requestId,tab.pageId);
+diff --git a/src/main/core/browser/page-registry.ts b/src/main/core/browser/page-registry.ts
+--- a/src/main/core/browser/page-registry.ts
++++ b/src/main/core/browser/page-registry.ts
+@@ -25,6 +25,7 @@
+   private readonly active=new Map<string,string>();
+   private readonly park:BrowserParkWindow;
+   private mounted?:BrowserPage;
++  private placementTail:Promise<void>=Promise.resolve();
+   private readonly observers=new Set<(event:BrowserPageEvent)=>void>();
+   private readonly closing=new Map<string,Promise<void>>();
+   private readonly navigationRequests=new WeakMap<BrowserPage,object>();
+@@ -146,10 +147,14 @@
+     }})();
+     await awaitBrowserNavigation(navigation,navigationSignal);
+   }
+-  async placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{
++  placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{
++    const pending=this.placementTail.then(()=>this.place(taskId,pageId,rect));
++    this.placementTail=pending.catch(()=>undefined);return pending;
++  }
++  private async place(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{
+     const page=this.get(taskId,pageId),window=this.options.window?.();
+     if(page.kind==='popup')throw new BrowserError('BROWSER_ERROR','子窗口不能挂到工作区');
+-    if(this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
++    if(rect&&this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
+       await this.park.park(this.mounted.view,this.mounted.rect);this.mounted=undefined;
+     }
+     if(rect&&window&&!window.isDestroyed()){

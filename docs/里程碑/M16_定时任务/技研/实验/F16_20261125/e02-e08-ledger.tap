@@ -1,0 +1,30 @@
+[1125/165613.025165:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1125/165613.066637:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+SQLite due index rows=2200 p95 ms 0.019 SEARCH plans USING INDEX due_plan (next_due<?)
+✔ E02 persistence, foreign-key/transaction and untouched existing table across restart (14.261583ms)
+✔ E02 edit revision CAS and historical frozen configuration (3.883083ms)
+✔ E02 pause/manual/resume and deleted plan preserves active record (3.073834ms)
+✔ E02 once early manual does not consume schedule; ended remains manually runnable and can be redated (5.992333ms)
+✔ E02 local wall-slot not replayed after time-zone change; fixed/once/interval not rebased (5.311459ms)
+✔ E02 due query index; 2000 paused, 200 active real SQLite rows (39.1465ms)
+two process claims not_due,claimed
+✔ E08 same occurrence atomic across two actual worker processes (54.949917ms)
+✔ E08 same plan and same bound task skips; separate plans can be active together (4.082625ms)
+✔ E08 host busy observation causes skipped occurrence; manual request ID replay is idempotent (3.020292ms)
+✔ E08 wake coalesces to latest missed occurrence, preserves missed range and grace (4.434166ms)
+✔ E08 crash after independent host receipt; reconcile exact immutable receipt without another effect (52.780541ms)
+✔ E08 crash before acceptance proof goes unknown, not retry; later explicit no-effect proof allows one retry (55.372083ms)
+✔ E08 accepted partially failed is not replayed; retry outside original grace rejected (4.195125ms)
+real timer due-to-dispatch ms [{"id":"slow","delay":2},{"id":"fast","delay":2},{"id":"other","delay":3}]
+✔ E08 due timer dispatches independent plans while another is slow, no empty polling and shutdown stops new dispatch (475.370375ms)
+✔ E02 display timezone change does not reset interval anchor and archived duplicate receipt is stable (4.569833ms)
+✔ E08 restore with zero grace cannot claim abandoned or repeat unsubmitted occurrence after deadline (3.400292ms)
+✔ E08 isolated plan gate: edit/pause/delete before actual acceptance skips old occurrence; accepted snapshot remains (4.059917ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 795.73675

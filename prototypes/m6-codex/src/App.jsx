@@ -266,7 +266,7 @@ export function App() {
   const integration = useIntegrationPreview();
   const [integrationProjectId, setIntegrationProjectId] = useState('ais');
   const reviewProjects = new URLSearchParams(location.search).get('preview') === 'm14' ? [{ id: 'archive-review', name: '发布归档', path: '/workspace/release', archived: true }] : [];
-  const [projects, setProjects] = useState(() => [...PROJECTS, ...reviewProjects].map(p => ({ ...makeProject(p, true), archived: !!p.archived }))), [profiles, setProfiles] = useState(PROFILES), [tasks, setTasks] = useState(() => TASKS.map(t => ({ ...t, firstMessage: t.title })).concat(new URLSearchParams(location.search).get('preview') === 'm14' ? [
+  const [projects, setProjects] = useState(() => [...PROJECTS, ...reviewProjects].map(p => ({ ...makeProject(p, true), archived: !!p.archived }))), [profiles, setProfiles] = useState(PROFILES), [tasks, setTasks] = useState(() => TASKS.map(t => ({ ...t, firstMessage: t.title, ...(m16Preview ? { cwd: PROJECTS.find(p => p.id === t.project)?.path } : {}) })).concat(new URLSearchParams(location.search).get('preview') === 'm14' ? [
     { ...TASKS[0], id: 'archive-demo', title: '核对多平台构建说明', runner: 'codex', project: PROJECTS[0].id, archived: true, status: 'stopped', worktree: '/Users/demo/.willyou/worktrees/smartdd-a1b2c3/main_willyou_build-check' },
     { ...TASKS[0], id: 'archive-demo-child', parentId: 'archive-demo', title: '子任务：检查架构声明', runner: 'claude', project: PROJECTS[0].id, archived: true, status: 'stopped' },
     { ...TASKS[0], id: 'archive-demo-other', title: '整理启动检查结果', runner: 'claude', project: 'archive-review', archived: true, status: 'stopped', worktree: '/Users/demo/.willyou/worktrees/release-a1b2c3/main_willyou_launch-check' },

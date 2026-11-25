@@ -1,0 +1,33 @@
+--- a/electron.vite.config.ts
++++ b/electron.vite.config.ts
+@@ -23,20 +23,7 @@
+ 
+ export default defineConfig({
+   main: {
+-    plugins: [externalizeDepsPlugin(), { name: 'smartdd-native-bridges', writeBundle() {
+-      execFileSync(process.execPath, ['scripts/voice/build.mjs'], { stdio: 'inherit' });
+-      execFileSync(process.execPath, ['scripts/files/build.mjs'], { stdio: 'inherit' });
+-      execFileSync(process.execPath, ['scripts/applications/build.mjs'], { stdio: 'inherit' });
+-      execFileSync(process.execPath, ['scripts/applications/build-runtime.mjs'], { stdio: 'inherit' });
+-      execFileSync(process.execPath, ['scripts/applications/build-bundles.mjs'], { stdio: 'inherit' });
+-      execFileSync(process.execPath, ['scripts/plugins/build-zentao.mjs'], { stdio: 'inherit' });
+-      if (process.platform === 'darwin') {
+-        execFileSync(process.execPath, ['scripts/browser/prepare-agent-browser.mjs'], { stdio: 'inherit' });
+-        execFileSync('python3', ['scripts/files/prepare-tex.py'], { stdio: 'inherit' });
+-        execFileSync('python3', ['scripts/files/prepare-office.py'], { stdio: 'inherit' });
+-        execFileSync('python3', ['scripts/files/prepare-libreoffice.py', '--node-executable', process.execPath], { stdio: 'inherit' });
+-      }
+-    } }],
++    plugins: [externalizeDepsPlugin()],
+     resolve: { alias },
+     build: { rollupOptions: { input: { index: resolve('src/main/index.ts'), 'agent-diff-worker': resolve('src/main/core/agent/turn-diff-worker.ts'), 'm9-html-resources': resolve('src/main/core/files/html/worker.ts'), 'm9-tex-resources': resolve('src/main/core/files/tex/worker.ts'), 'm9-office-document': resolve('src/main/core/files/office/worker.ts'), 'm9-office-pages': resolve('src/main/core/files/office/pages-worker.ts'), 'm9-pptx-document': resolve('src/main/core/files/office/pptx-worker.ts'), 'm10-mail-reader': resolve('src/main/core/applications/providers/mail-worker.ts') } } },
+   },
+@@ -48,7 +35,7 @@
+   renderer: {
+     root: 'src/renderer',
+     plugins: [react(), tailwindcss(), { name: 'willyou-pdf-offline-assets', configureServer: copyPdfAssets, closeBundle: copyPdfAssets }],
+-    resolve: { alias },
++    resolve: { alias, dedupe: ['react', 'react-dom'] },
+     build: { rollupOptions: { input: { index: resolve('src/renderer/index.html'), 'm9-diagram': resolve('src/renderer/m9-diagram.html') } } },
+   },
+ });

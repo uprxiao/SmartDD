@@ -1,0 +1,95 @@
+{
+  "scope": "actual extracted candidate before-quit handler, dependency mocks; not native dialog or real service invocation",
+  "sourceSha256": "0d2b191cd1f916ceae8102f6f334d0c6314b1316109c94c8efece79de971f5ea",
+  "extractedSha256": "cbfd1418b15fbb1d067def08ec2705dccc8b5420972986bdff3ae100418820bd",
+  "scenarios": [
+    {
+      "name": "busy user cancels quit",
+      "ok": true,
+      "trace": [
+        "busy.dialog"
+      ],
+      "quitCount": 0,
+      "committed": false
+    },
+    {
+      "name": "save refused and continue; subsequent quit accepted",
+      "ok": true,
+      "firstTrace": [
+        "request:save",
+        "ui:save",
+        "save.dialog",
+        "ui:resume"
+      ],
+      "trace": [
+        "request:save",
+        "ui:save",
+        "save.dialog",
+        "ui:resume",
+        "request:save",
+        "ui:save",
+        "request:commit",
+        "ui:commit",
+        "agent.closeAll",
+        "pty.killAll",
+        "managed.dispose",
+        "applications.dispose",
+        "watcher.dispose",
+        "markAppQuitting",
+        "app.quit"
+      ],
+      "quitCount": 1
+    },
+    {
+      "name": "commit not acknowledged",
+      "ok": true,
+      "trace": [
+        "request:save",
+        "ui:save",
+        "request:commit",
+        "ui:commit",
+        "ui:resume"
+      ],
+      "quitCount": 0,
+      "committed": false
+    },
+    {
+      "name": "explicit discard and successful quit",
+      "ok": true,
+      "trace": [
+        "request:save",
+        "ui:save",
+        "save.dialog",
+        "request:discard",
+        "ui:discard",
+        "request:commit",
+        "ui:commit",
+        "agent.closeAll",
+        "pty.killAll",
+        "managed.dispose",
+        "applications.dispose",
+        "watcher.dispose",
+        "markAppQuitting",
+        "app.quit"
+      ],
+      "quitCount": 1,
+      "committed": true
+    },
+    {
+      "name": "discard not acknowledged",
+      "ok": true,
+      "trace": [
+        "request:save",
+        "ui:save",
+        "save.dialog",
+        "request:discard",
+        "ui:discard",
+        "save.dialog",
+        "ui:resume"
+      ],
+      "quitCount": 0,
+      "committed": false
+    }
+  ],
+  "status": "passed"
+}

@@ -1,0 +1,81 @@
+
+ RUN  v4.1.11 /private/tmp/willyou-f36-reopen-e_n5l76z/source
+
+stdout | src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"old-page-visible","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}}]}
+
+stdout | src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"new-user-input-remembered","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}}],"event":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"},"guard":true}
+
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 positive: newer host snapshot supersedes delayed empty replies before presentation completes
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 positive: a deliberate last-tab close after prior intent still cancels that older presentation
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+ ↓ src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+stdout | src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"both-empty-close-snapshots-captured-and-transport-delayed","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"deliberate-close-accepted-empty-replies-held","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"guard":true}
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"fixture-host-reservation-in-loading-phase","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"host-presentation-before-renderer","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-1"]}}],"event":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup
+F36_TRACE {"case":"prior-intent-close-before-cleanup","phase":"older-show-arrives-after-explicit-close","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-1","tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-1","tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-1"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-1","tabId":"new-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}}],"guard":true}
+
+ × src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup 148ms
+   → expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "tabId": "new-1",
+        "taskId": "fixture-task-1",
+      },
+    ]
+
+
+Number of calls: 1
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/browser/f36-prior-close-probe.test.tsx > BE05 supplemental RED C: deliberate close supersedes an earlier show before delayed empty cleanup
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "tabId": "new-1",
+        "taskId": "fixture-task-1",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/features/browser/f36-prior-close-probe.test.tsx:284:28
+    282|   // The host may have a valid new background page. Do not select it a…
+    283|   // steal the user's last close choice through the obsolete show inte…
+    284|   expect(f.api.select).not.toHaveBeenCalled();
+       |                            ^
+    285|   expect(host.activeId).toBeNull();
+    286|   expect(screen.queryByRole('textbox',{name:'网页地址'})).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  14:43:33
+   Duration  788ms (transform 134ms, setup 0ms, import 291ms, tests 149ms, environment 279ms)
+

@@ -1,0 +1,47 @@
+[1125/162749.712348:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/willyou-f36-ultra-layout-5IkHDj/source
+
+[1125/162749.868141:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > close-in-flight must not match the old tab for a new URL request
+ULTRA_LIFECYCLE {"name":"close-reserve","value":{"old":"11111111-1111-4111-8111-111111111111","replacement":{"pageId":"ed0abde8-f566-428c-91d7-ca7c33dbc627","profileId":"project-1d54909ca72221484c23a661","reused":false,"url":"http://127.0.0.1:1/fixed-local-fixture"},"explicitRejected":true,"saved":{"version":1,"tabs":[{"id":"ed0abde8-f566-428c-91d7-ca7c33dbc627","url":"about:blank","title":"新标签页","profileId":"project-1d54909ca72221484c23a661","favicon":null}],"activeId":"ed0abde8-f566-428c-91d7-ca7c33dbc627","closed":[{"id":"11111111-1111-4111-8111-111111111111","url":"http://127.0.0.1:1/fixed-local-fixture","title":"11111111-1111-4111-8111-111111111111","profileId":"project-1d54909ca72221484c23a661","favicon":null}]}}}
+
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > close-in-flight must not match the old tab for a new URL request 56ms
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > duplicate overlapping close adds exactly one closed-history entry
+ULTRA_LIFECYCLE {"name":"double-close","value":{"version":1,"tabs":[],"activeId":null,"closed":[{"id":"11111111-1111-4111-8111-111111111111","url":"http://127.0.0.1:1/fixed-local-fixture","title":"11111111-1111-4111-8111-111111111111","profileId":"project-1d54909ca72221484c23a661","favicon":null}]}}
+
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > duplicate overlapping close adds exactly one closed-history entry 52ms
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > two same-URL callers share one pending creation, cancellation of one keeps the valid other caller
+ULTRA_LIFECYCLE {"name":"shared-one-cancel","value":{"first":{"pageId":"4dd053a9-59f5-41c6-bb9d-cb0fa32f59fd","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"358881ef-7216-4d31-8031-6030ee11857c","presentation":"background","phase":"loading"},"second":{"pageId":"4dd053a9-59f5-41c6-bb9d-cb0fa32f59fd","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"bbdf00cd-2a58-44b8-a038-5f4cf2bfc1d4","presentation":"background","phase":"loading"},"one":{"requestId":"4bb8c2b9-2d2b-4c65-8db7-a2801efeaa56","pageId":"4dd053a9-59f5-41c6-bb9d-cb0fa32f59fd","command":"tab open","state":"failed","effectState":"completed","progress":null,"summary":{"pageId":"4dd053a9-59f5-41c6-bb9d-cb0fa32f59fd","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"358881ef-7216-4d31-8031-6030ee11857c","presentation":"background","phase":"cancelled","hash":"1b89d19b160f5aa8949da235a0b847d8f92a33fc0eb7cbcc010870b998b5ebdd"},"errorCode":"CANCELED","createdAt":1795595270192,"updatedAt":1795595270244},"other":{"requestId":"fee94d52-39b7-4815-9456-8a9c9a3724d1","pageId":"4dd053a9-59f5-41c6-bb9d-cb0fa32f59fd","command":"tab open","state":"succeeded","effectState":"completed","progress":null,"summary":{"pageId":"4dd053a9-59f5-41c6-bb9d-cb0fa32f59fd","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"bbdf00cd-2a58-44b8-a038-5f4cf2bfc1d4","presentation":"background","phase":"ready","hash":"1b89d19b160f5aa8949da235a0b847d8f92a33fc0eb7cbcc010870b998b5ebdd"},"errorCode":null,"createdAt":1795595270193,"updatedAt":1795595270294},"create":1,"navigate":1}}
+
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > two same-URL callers share one pending creation, cancellation of one keeps the valid other caller 153ms
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > a new URL request after all old callers cancel must not join a dead initialization
+ULTRA_LIFECYCLE {"name":"shared-all-cancel-new","value":{"first":{"pageId":"c0153429-da4f-4e9e-9bce-d260a54e033a","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"148c35b6-5dd5-4f71-945d-ad9f1085130b","presentation":"background","phase":"loading"},"second":{"pageId":"c0153429-da4f-4e9e-9bce-d260a54e033a","url":"http://127.0.0.1:1/fixed-local-fixture","reused":true,"operationId":"79b3fbb2-3bc4-46f4-ac7a-04d3a87652d3","presentation":"background","phase":"loading"},"fresh":{"pageId":"74b8fcf4-fa78-4ff9-9104-889391a107ec","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"489efc6f-f511-417b-8b24-d21f341c41d6","presentation":"background","phase":"loading"},"result":{"requestId":"bdea61b4-7ff3-412a-af64-af2eee003f30","pageId":"74b8fcf4-fa78-4ff9-9104-889391a107ec","command":"tab open","state":"succeeded","effectState":"completed","progress":null,"summary":{"pageId":"74b8fcf4-fa78-4ff9-9104-889391a107ec","url":"http://127.0.0.1:1/fixed-local-fixture","reused":false,"operationId":"489efc6f-f511-417b-8b24-d21f341c41d6","presentation":"background","phase":"ready","hash":"1b89d19b160f5aa8949da235a0b847d8f92a33fc0eb7cbcc010870b998b5ebdd"},"errorCode":null,"createdAt":1795595270447,"updatedAt":1795595270449},"create":2,"navigate":["74b8fcf4-fa78-4ff9-9104-889391a107ec"]}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a late null for another page cannot demote the current mounted page
+ULTRA_LIFECYCLE {"name":"late-null-other-page","value":{"front":["11111111-1111-4111-8111-111111111111","AppShell","22222222-2222-4222-8222-222222222222"],"mountedB":true}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a delayed old native transition cannot commit after the newest A→B→A selection
+ULTRA_LIFECYCLE {"name":"native-aba","value":{"front":["22222222-2222-4222-8222-222222222222","AppShell","11111111-1111-4111-8111-111111111111"],"mountedA":true,"mountedB":false}}
+
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private close and shared open lifecycle > a new URL request after all old callers cancel must not join a dead initialization 155ms
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a late null for another page cannot demote the current mounted page 1ms
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a cancelled capture cannot re-park or publish after same-owner menu reentry
+ULTRA_LIFECYCLE {"name":"overlay-reentry","value":{"result":null,"extraPlacement":0}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old A layout release cannot detach a fresh A after A→B→A
+ULTRA_LIFECYCLE {"name":"layout-instance-aba","value":{"front":["22222222-2222-4222-8222-222222222222","AppShell","11111111-1111-4111-8111-111111111111"],"mountedA":true}}
+
+stdout | src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old same-owner release cannot remove a new overlay acquisition
+ULTRA_LIFECYCLE {"name":"overlay-instance-release","value":{"mountedA":false,"front":["11111111-1111-4111-8111-111111111111","AppShell"]}}
+
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a delayed old native transition cannot commit after the newest A→B→A selection 51ms
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > a cancelled capture cannot re-park or publish after same-owner menu reentry 1ms
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old A layout release cannot detach a fresh A after A→B→A 0ms
+ ✓ src/main/core/browser/__tests__/ultra-lifecycle.test.ts > F36 Ultra private UI placement/overlay instance lifecycle > old same-owner release cannot remove a new overlay acquisition 0ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  16:27:49
+   Duration  717ms (transform 106ms, setup 0ms, import 167ms, tests 471ms, environment 0ms)
+

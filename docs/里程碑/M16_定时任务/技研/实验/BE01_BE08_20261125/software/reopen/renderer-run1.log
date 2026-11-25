@@ -1,0 +1,1420 @@
+
+ RUN  v4.1.11 /private/tmp/willyou-f36-reopen-e_n5l76z/source
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"old-page-visible","revision":1,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-1","tabs":[{"id":"old-1","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"old-close-and-empty-cleanup-settled","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"new-user-input-remembered","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"},"guard":true}
+F36_TRACE {"case":"settled-close","phase":"fixture-host-reservation-in-loading-phase","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"settled-close","phase":"host-presentation-before-renderer","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}}],"event":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"loading-visible","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-1","tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-1","tabs":[{"id":"new-1","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-1","tabId":"new-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page
+F36_TRACE {"case":"settled-close","phase":"same-page-ready-visible","revision":2,"route":{"view":"agentTask","task":"fixture-task-1"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-1","tabs":[{"id":"new-1","url":"https://fixture.invalid/f36-new","loading":false}]},"host":{"activeId":"new-1","tabs":[{"id":"new-1","url":"https://fixture.invalid/f36-new","loading":false}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-1","ids":["old-1"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-1","tabId":"old-1"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-1","pageId":"new-1","clientInputId":"input-1","operationId":"operation-1"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-1","tabId":"new-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-1"}},{"event":"rpc.snapshot","payload":{"activeId":"new-1","ids":["new-1"]}}]}
+
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: settled last-close then explicit show reaches loading and ready on the same new page 95ms
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"old-page-visible","revision":3,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"both-empty-close-snapshots-captured-and-transport-delayed","revision":3,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"new-user-input-remembered","revision":3,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-2","tabs":[{"id":"old-2","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-2","pageId":"new-2","clientInputId":"input-2","operationId":"operation-2"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"old-empty-cleanup-released","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"guard":false}
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"fixture-host-reservation-in-loading-phase","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-2","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"host-presentation-before-renderer","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-2","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}}],"event":{"taskId":"fixture-task-2","pageId":"new-2","clientInputId":"input-2","operationId":"operation-2"},"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+F36_TRACE {"case":"red-A-empty-before-presentation","phase":"after-new-presentation","revision":4,"route":{"view":"agentTask","task":"fixture-task-2"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-2","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-2","ids":["old-2"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-2","tabId":"old-2"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-2"}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-2","pageId":"new-2","clientInputId":"input-2","operationId":"operation-2"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"old-page-visible","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"both-empty-close-snapshots-captured-and-transport-delayed","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"new-user-input-remembered","revision":5,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-3","tabs":[{"id":"old-3","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"event":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+F36_TRACE {"case":"red-B-empty-during-select","phase":"empty-published-before-react-effect","revision":6,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}],"guard":false}
+F36_TRACE {"case":"red-B-empty-during-select","phase":"fixture-host-reservation-in-loading-phase","revision":6,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+F36_TRACE {"case":"red-B-empty-during-select","phase":"host-presentation-before-renderer","revision":6,"route":{"view":"agentTask","task":"fixture-task-3"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-3","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-3","ids":["old-3"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-3","tabId":"old-3"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-3"}}],"event":{"taskId":"fixture-task-3","pageId":"new-3","clientInputId":"input-3","operationId":"operation-3"},"guard":false}
+
+ × src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight 1087ms
+   → expected 'files' to be 'browser' // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"统一工作面板"[39m
+        [33mclass[39m=[32m"agent-right-panel"[39m
+        [33mdata-maximized[39m=[32m"false"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"agent-panel-header"[39m
+          [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"工作面板"[39m
+            [33mclass[39m=[32m"agent-panel-tabs"[39m
+            [33mrole[39m=[32m"tablist"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mFixture files tab[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-add"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"打开面板"[39m
+              [33mtitle[39m=[32m"打开面板"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-plus"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M5 12h14"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 5v14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"push"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mtitle[39m=[32m"最大化面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 3h6v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m21 3-7 7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m3 21 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9 21H3v-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-body"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-file-surface"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [0mFixture files[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m...
+ × src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply 90ms
+   → expected "vi.fn()" to be called with arguments: [ { taskId: 'fixture-task-3', …(1) } ]
+
+Number of calls: 0
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"old-page-visible","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"new-user-input-remembered","revision":7,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}}],"event":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"},"guard":true}
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"fixture-host-reservation-in-loading-phase","revision":8,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}}]}
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"host-presentation-before-renderer","revision":8,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":"old-4","tabs":[{"id":"old-4","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-4"]}}],"event":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"},"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select
+F36_TRACE {"case":"deliberate-user-file-switch","phase":"user-panel-switch-preserved","revision":8,"route":{"view":"agentTask","task":"fixture-task-4"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":null,"tabs":[{"id":"new-4","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-4","ids":["old-4"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-4"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-4"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-4","pageId":"new-4","clientInputId":"input-4","operationId":"operation-4"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"old-page-visible","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"new-user-input-remembered","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}}],"event":{"taskId":"fixture-task-5","pageId":"new-5","clientInputId":"input-5","operationId":"operation-5"},"guard":true}
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"fixture-host-reservation-in-loading-phase","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}}]}
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"host-presentation-before-renderer","revision":9,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-5","tabs":[{"id":"old-5","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":null,"tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-5"]}}],"event":{"taskId":"fixture-task-5","pageId":"new-5","clientInputId":"input-5","operationId":"operation-5"},"guard":true}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus
+F36_TRACE {"case":"deliberate-user-switch-while-selecting","phase":"user-panel-switch-during-select-preserved","revision":10,"route":{"view":"agentTask","task":"fixture-task-5"},"panel":{"active":"files","tabs":["files","browser"]},"snapshot":{"activeId":null,"tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-5","tabs":[{"id":"new-5","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-5","ids":["old-5"]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-5"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":["new-5"]}},{"event":"host.emit:browser:open-presentation","payload":{"taskId":"fixture-task-5","pageId":"new-5","clientInputId":"input-5","operationId":"operation-5"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-5","tabId":"new-5"}}],"guard":false}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"old-page-visible","revision":11,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"host":{"activeId":"old-6","tabs":[{"id":"old-6","url":"https://fixture.invalid/old","loading":false}]},"address":"https://fixture.invalid/old","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"old-close-and-empty-cleanup-settled","revision":12,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-6","tabId":"old-6"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"fixture-host-reservation-in-loading-phase","revision":12,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-6","tabId":"old-6"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"background-no-show-intent","revision":12,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"files","tabs":["files"]},"snapshot":{"activeId":null,"tabs":[]},"host":{"activeId":null,"tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":null,"visibleBrowser":false,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-6","tabId":"old-6"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}}]}
+
+stdout | src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+F36_TRACE {"case":"background-and-deliberate-reveal","phase":"explicit-reveal-existing-page","revision":13,"route":{"view":"agentTask","task":"fixture-task-6"},"panel":{"active":"browser","tabs":["files","browser"]},"snapshot":{"activeId":"new-6","tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"host":{"activeId":"new-6","tabs":[{"id":"new-6","url":"about:blank","pendingUrl":"https://fixture.invalid/f36-new","loading":true}]},"address":"https://fixture.invalid/f36-new","visibleBrowser":true,"calls":[{"event":"rpc.snapshot","payload":{"activeId":"old-6","ids":["old-6"]}},{"event":"rpc.close","payload":{"taskId":"fixture-task-6","tabId":"old-6"}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"rpc.snapshot","payload":{"activeId":null,"ids":[]}},{"event":"host.emit:browser:changed","payload":{"taskId":"fixture-task-6"}},{"event":"rpc.select","payload":{"taskId":"fixture-task-6","tabId":"new-6"}},{"event":"rpc.snapshot","payload":{"activeId":"new-6","ids":["new-6"]}},{"event":"rpc.snapshot","payload":{"activeId":"new-6","ids":["new-6"]}}]}
+
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch after intent invalidates that presentation before select 29ms
+ ✓ src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: deliberate file-panel switch during select prevents the second guard from stealing focus 22ms
+ × src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails 45ms
+   → Unable to find an accessible element with the role "button" and name "关闭网页 new-6"
+
+Here are the accessible roles:
+
+  complementary:
+
+  Name "统一工作面板":
+  [36m<aside[39m
+    [33maria-label[39m=[32m"统一工作面板"[39m
+    [33mclass[39m=[32m"agent-right-panel"[39m
+    [33mdata-maximized[39m=[32m"false"[39m
+    [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"agent-panel-header"[39m
+    [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "工作面板":
+  [36m<div[39m
+    [33maria-label[39m=[32m"工作面板"[39m
+    [33mclass[39m=[32m"agent-panel-tabs"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Fixture files tab":
+  [36m<button[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "fixture.invalid":
+  [36m<button[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtitle[39m=[32m"https://fixture.invalid/f36-new"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭网页 fixture.invalid":
+  [36m<button[39m
+    [33maria-label[39m=[32m"关闭网页 fixture.invalid"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "打开面板":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"打开面板"[39m
+    [33mtitle[39m=[32m"打开面板"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "最大化面板":
+  [36m<button[39m
+    [33mtitle[39m=[32m"最大化面板"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "后退":
+  [36m<button[39m
+    [33maria-label[39m=[32m"后退"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "前进":
+  [36m<button[39m
+    [33maria-label[39m=[32m"前进"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "停止加载":
+  [36m<button[39m
+    [33maria-label[39m=[32m"停止加载"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+  [36m/>[39m
+
+  Name "登录态":
+  [36m<button[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33mclass[39m=[32m"bw-profile"[39m
+    [33mtitle[39m=[32m"无法读取当前登录态，点击管理"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "浏览器菜单":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"浏览器菜单"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "网页地址":
+  [36m<input[39m
+    [33maria-label[39m=[32m"网页地址"[39m
+    [33mplaceholder[39m=[32m"输入网址或搜索内容"[39m
+    [33mspellcheck[39m=[32m"false"[39m
+    [33mvalue[39m=[32m"https://fixture.invalid/f36-new"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "网页正在加载":
+  [36m<div[39m
+    [33maria-label[39m=[32m"网页正在加载"[39m
+    [33mclass[39m=[32m"bw-progress"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<aside[39m
+      [33maria-label[39m=[32m"统一工作面板"[39m
+      [33mclass[39m=[32m"agent-right-panel"[39m
+      [33mdata-maximized[39m=[32m"false"[39m
+      [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"agent-panel-header"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"工作面板"[39m
+          [33mclass[39m=[32m"agent-panel-tabs"[39m
+          [33mrole[39m=[32m"tablist"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-selected[39m=[32m"false"[39m
+              [33mrole[39m=[32m"tab"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mFixture files tab[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-surface-tab on"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtitle[39m=[32m"https://fixture.invalid/f36-new"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-globe"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"14"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"14"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2 12h20"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"agent-tab-label"[39m
+                [36m>[39m
+                  [0mfixture.invalid[0m
+                [36m</span>[39m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"关闭网页 fixture.invalid"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-x"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"11"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"11"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M18 6 6 18"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 6 12 12"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-add"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-label[39m=[32m"打开面板"[39m
+            [33mtitle[39m=[32m"打开面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-plus"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M5 12h14"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 5v14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"push"[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mtitle[39m=[32m"最大化面板"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"15"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"15"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M15 3h6v6"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m21 3-7 7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m3 21 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M9 21H3v-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"agent-panel-body"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-file-surface"[39m
+          [33mhidden[39m=[32m""[39m
+        [36m>[39m
+          [36m<div>[39m
+            [0mFixture files[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-browser-surface"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bw-workspace"[39m
+            [33mdata-browser-task[39m=[32m"fixture-task-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"fw-toolbar bw-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bw-nav"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"后退"[39m
+                  [33mclass[39m=[32m"fw-icon"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-arrow-left"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"17"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.65"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"17"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 12H5"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"前进"[39m
+                  [33mclass[39m=[32m"fw-icon"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-arrow-right"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"17"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.65"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"17"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M5 12h14"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m12 5 7 7-7 7"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"停止加载"[39m
+                  [33mclass[39m=[32m"fw-icon"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-x"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"17"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.65"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"17"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M18 6 6 18"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 6 12 12"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<form[39m
+                [33mclass[39m=[32m"fw-breadcrumb bw-address"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"bw-security"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-globe"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"13"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"13"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"12"[39m
+                      [33mr[39m=[32m"10"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M2 12h20"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</span>[39m
+                [36m<input[39m
+                  [33maria-label[39m=[32m"网页地址"[39m
+                  [33mplaceholder[39m=[32m"输入网址或搜索内容"[39m
+                  [33mspellcheck[39m=[32m"false"[39m
+                  [33mvalue[39m=[32m"https://fixture.invalid/f36-new"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-busy[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"bw-profile"[39m
+                  [33mtitle[39m=[32m"无法读取当前登录态，点击管理"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user-round"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"12"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"12"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"8"[39m
+                      [33mr[39m=[32m"5"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M20 21a8 8 0 0 0-16 0"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0m登录态[0m
+                [36m</button>[39m
+              [36m</form>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-label[39m=[32m"浏览器菜单"[39m
+                [33mclass[39m=[32m"fw-icon"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-ellipsis"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"17"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"1.65"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"17"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"19"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"5"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"网页正在加载"[39m
+              [33mclass[39m=[32m"bw-progress"[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bw-page"[39m
+              [33mdata-testid[39m=[32m"browser-viewport"[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</aside>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED A: old empty snapshot cleanup must not cancel the newer user intent recorded while close reply is in flight
+AssertionError: expected 'files' to be 'browser' // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"统一工作面板"[39m
+        [33mclass[39m=[32m"agent-right-panel"[39m
+        [33mdata-maximized[39m=[32m"false"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"agent-panel-header"[39m
+          [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"工作面板"[39m
+            [33mclass[39m=[32m"agent-panel-tabs"[39m
+            [33mrole[39m=[32m"tablist"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mFixture files tab[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-add"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"打开面板"[39m
+              [33mtitle[39m=[32m"打开面板"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-plus"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"15"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"15"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M5 12h14"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 5v14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"push"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mtitle[39m=[32m"最大化面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 3h6v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m21 3-7 7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m3 21 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9 21H3v-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-body"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-file-surface"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [0mFixture files[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m...
+
+Expected: "browser"
+Received: "files"
+
+ ❯ src/renderer/features/browser/f36-reopen-probe.test.tsx:129:37
+    127| async function expectShownPending(){
+    128|   await waitFor(()=>{
+    129|     expect(panelsFor(scope).active).toBe('browser');
+       |                                     ^
+    130|     expect((screen.getByRole('textbox',{name:'网页地址'}) as HTMLInputElem…
+    131|     expect(screen.getByRole('status',{name:'网页正在加载'})).toBeTruthy();
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 RED B: old empty cleanup must not cancel a valid presentation between select request and reply
+AssertionError: expected "vi.fn()" to be called with arguments: [ { taskId: 'fixture-task-3', …(1) } ]
+
+Number of calls: 0
+
+ ❯ src/renderer/features/browser/f36-reopen-probe.test.tsx:206:26
+    204|     snapshotHandlers=[()=>newSnapshot.promise]; // new host snapshot s…
+    205|     reserveNew();emitShow(event);await tick();
+    206|     expect(f.api.select).toHaveBeenCalledWith({taskId,tabId:newId}); /…
+       |                          ^
+    207|     trace('select-started-before-old-render-cleanup');
+    208|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/features/browser/f36-reopen-probe.test.tsx > BE05 positive: background reservation leaves the surface closed; deliberate reveal selects the existing page and a closed ID fails
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "关闭网页 new-6"
+
+Here are the accessible roles:
+
+  complementary:
+
+  Name "统一工作面板":
+  [36m<aside[39m
+    [33maria-label[39m=[32m"统一工作面板"[39m
+    [33mclass[39m=[32m"agent-right-panel"[39m
+    [33mdata-maximized[39m=[32m"false"[39m
+    [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"agent-panel-header"[39m
+    [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "工作面板":
+  [36m<div[39m
+    [33maria-label[39m=[32m"工作面板"[39m
+    [33mclass[39m=[32m"agent-panel-tabs"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Fixture files tab":
+  [36m<button[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "fixture.invalid":
+  [36m<button[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtitle[39m=[32m"https://fixture.invalid/f36-new"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭网页 fixture.invalid":
+  [36m<button[39m
+    [33maria-label[39m=[32m"关闭网页 fixture.invalid"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "打开面板":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"打开面板"[39m
+    [33mtitle[39m=[32m"打开面板"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "最大化面板":
+  [36m<button[39m
+    [33mtitle[39m=[32m"最大化面板"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "后退":
+  [36m<button[39m
+    [33maria-label[39m=[32m"后退"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "前进":
+  [36m<button[39m
+    [33maria-label[39m=[32m"前进"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "停止加载":
+  [36m<button[39m
+    [33maria-label[39m=[32m"停止加载"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+  [36m/>[39m
+
+  Name "登录态":
+  [36m<button[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33mclass[39m=[32m"bw-profile"[39m
+    [33mtitle[39m=[32m"无法读取当前登录态，点击管理"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "浏览器菜单":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"浏览器菜单"[39m
+    [33mclass[39m=[32m"fw-icon"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "网页地址":
+  [36m<input[39m
+    [33maria-label[39m=[32m"网页地址"[39m
+    [33mplaceholder[39m=[32m"输入网址或搜索内容"[39m
+    [33mspellcheck[39m=[32m"false"[39m
+    [33mvalue[39m=[32m"https://fixture.invalid/f36-new"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "网页正在加载":
+  [36m<div[39m
+    [33maria-label[39m=[32m"网页正在加载"[39m
+    [33mclass[39m=[32m"bw-progress"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<aside[39m
+      [33maria-label[39m=[32m"统一工作面板"[39m
+      [33mclass[39m=[32m"agent-right-panel"[39m
+      [33mdata-maximized[39m=[32m"false"[39m
+      [33mdata-testid[39m=[32m"agent-workspace-panel"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"agent-panel-header"[39m
+        [33mdata-testid[39m=[32m"agent-workspace-panel-header"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"工作面板"[39m
+          [33mclass[39m=[32m"agent-panel-tabs"[39m
+          [33mrole[39m=[32m"tablist"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-selected[39m=[32m"false"[39m
+              [33mrole[39m=[32m"tab"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mFixture files tab[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"agent-panel-tab-slot"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"agent-surface-tab on"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtitle[39m=[32m"https://fixture.invalid/f36-new"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-globe"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"14"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"14"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2 12h20"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"agent-tab-label"[39m
+                [36m>[39m
+                  [0mfixture.invalid[0m
+                [36m</span>[39m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"关闭网页 fixture.invalid"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-x"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"11"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"11"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M18 6 6 18"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 6 12 12"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-panel-add"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-label[39m=[32m"打开面板"[39m
+            [33mtitle[39m=[32m"打开面板"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-plus"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M5 12h14"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 5v14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"push"[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mtitle[39m=[32m"最大化面板"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-maximize2 lucide-maximize-2"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"15"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"15"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M15 3h6v6"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m21 3-7 7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m3 21 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M9 21H3v-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"agent-panel-body"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-file-surface"[39m
+          [33mhidden[39m=[32m""[39m
+        [36m>[39m
+          [36m<div>[39m
+            [0mFixture files[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"agent-browser-surface"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bw-workspace"[39m
+            [33mdata-browser-task[39m=[32m"fixture-task-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"fw-toolbar bw-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bw-nav"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"后退"[39m
+                  [33mclass[39m=[32m"fw-icon"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-arrow-left"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"17"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.65"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"17"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 12H5"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"前进"[39m
+                  [33mclass[39m=[32m"fw-icon"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-arrow-right"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"17"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.65"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"17"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M5 12h14"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m12 5 7 7-7 7"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"停止加载"[39m
+                  [33mclass[39m=[32m"fw-icon"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-x"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"17"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.65"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"17"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M18 6 6 18"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 6 12 12"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<form[39m
+                [33mclass[39m=[32m"fw-breadcrumb bw-address"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"bw-security"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-globe"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"13"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"13"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"12"[39m
+                      [33mr[39m=[32m"10"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M2 12h20"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</span>[39m
+                [36m<input[39m
+                  [33maria-label[39m=[32m"网页地址"[39m
+                  [33mplaceholder[39m=[32m"输入网址或搜索内容"[39m
+                  [33mspellcheck[39m=[32m"false"[39m
+                  [33mvalue[39m=[32m"https://fixture.invalid/f36-new"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-busy[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"bw-profile"[39m
+                  [33mtitle[39m=[32m"无法读取当前登录态，点击管理"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user-round"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"12"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"12"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"8"[39m
+                      [33mr[39m=[32m"5"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M20 21a8 8 0 0 0-16 0"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0m登录态[0m
+                [36m</button>[39m
+              [36m</form>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-label[39m=[32m"浏览器菜单"[39m
+                [33mclass[39m=[32m"fw-icon"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-ellipsis"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"17"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"1.65"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"17"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"19"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"5"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"网页正在加载"[39m
+              [33mclass[39m=[32m"bw-progress"[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bw-page"[39m
+              [33mdata-testid[39m=[32m"browser-viewport"[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</aside>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../../../Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/browser/f36-reopen-probe.test.tsx:240:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  14:36:11
+   Duration  2.15s (transform 125ms, setup 0ms, import 305ms, tests 1.37s, environment 420ms)
+

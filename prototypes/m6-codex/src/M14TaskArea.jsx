@@ -17,23 +17,24 @@ const ICON = { thought: Brain, read: FileText, edit: Pencil, command: SquareTerm
 // ---------- 正文 ----------
 const UICtx = { taskId: 'demo', mailBase: null, toast: () => {}, runInTerminal: () => {}, linkMenu: () => {}, openDiff: () => {}, mail: null, openNative: () => {} }; // 由 M14TaskArea 每次渲染时赋值，供深层消息组件使用
 const RootCtx = { root: '/workspace/SmartDD' }; // 当前任务的项目目录（App 传入）；示例消息中的根路径按它替换
-function Inline({ text, onLink }) {
-  return inlineSegments(text.replaceAll('/workspace/SmartDD', RootCtx.root)).map((s, i) => {
+function Inline({ text, onLink, readOnly = false }) {
+  return inlineSegments(readOnly ? text : text.replaceAll('/workspace/SmartDD', RootCtx.root)).map((s, i) => {
     if (s.t === 'bold') return <b key={i}>{s.v}</b>;
     if (s.t === 'code') return <code key={i}>{s.v}</code>;
     if (s.t !== 'link') return <span key={i}>{s.v}</span>;
+    if (readOnly) return <span key={i}>{s.code ? <code>{s.v}</code> : s.v}</span>;
     const r = routeLink(s.href, { projectRoot: RootCtx.root });
     // 不用原生 href／title：避免浏览器左下角网址预览和原生提示叠加闪烁；提示框悬停 0.4 秒后出现
     return <span key={i} role="link" tabIndex={0} className={'m14-link' + (s.code ? ' is-code' : '') + (r.ok ? '' : ' blocked')} data-tip={r.ok ? r.label + ' · ⌘ 点击用系统打开' : r.reason} onClick={e => onLink(s.href, e.metaKey || e.ctrlKey)} onContextMenu={e => { e.preventDefault(); UICtx.linkMenu({ x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 180), href: s.href, route: r }); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onLink(s.href, e.metaKey || e.ctrlKey); } }}>{s.code ? <code>{s.v}</code> : s.v}</span>;
   });
 }
-function Markdown({ lines, onLink, streaming }) {
+function Markdown({ lines, onLink, streaming, readOnly = false }) {
   const out = []; let list = [], code = null;
   const flush = () => { if (list.length) { out.push(<ul key={'l' + out.length}>{list}</ul>); list = []; } };
   lines.forEach((l, i) => {
-    if (code) { if (l.startsWith('```')) { out.push(<CodeBlock key={'c' + i} lang={code.lang} code={code.body.join('\n')} onToast={UICtx.toast} onRunInTerminal={UICtx.runInTerminal} />); code = null; } else code.body.push(l); return; }
+    if (code) { if (l.startsWith('```')) { out.push(readOnly ? <pre className="m14-output" key={'c' + i}>{code.body.join('\n')}</pre> : <CodeBlock key={'c' + i} lang={code.lang} code={code.body.join('\n')} onToast={UICtx.toast} onRunInTerminal={UICtx.runInTerminal} />); code = null; } else code.body.push(l); return; }
     if (l.startsWith('```')) { flush(); code = { lang: l.slice(3).trim(), body: [] }; return; }
-    if (l.startsWith('- ')) list.push(<li key={i}><Inline text={l.slice(2)} onLink={onLink} />{streaming && i === lines.length - 1 && <span className="m14-caret" />}</li>); else { flush(); out.push(<p key={i}><Inline text={l} onLink={onLink} />{streaming && i === lines.length - 1 && <span className="m14-caret" />}</p>); } });
+    if (l.startsWith('- ')) list.push(<li key={i}><Inline text={l.slice(2)} onLink={onLink} readOnly={readOnly} />{streaming && i === lines.length - 1 && <span className="m14-caret" />}</li>); else { flush(); out.push(<p key={i}><Inline text={l} onLink={onLink} readOnly={readOnly} />{streaming && i === lines.length - 1 && <span className="m14-caret" />}</p>); } });
   flush();
   return <div className="m14-md">{out}</div>;
 }
@@ -61,6 +62,24 @@ function LogRow({ icon, label, detail, time, chevron, expanded, onClick, tone, l
     {chevron && <ChevronRight size={12} className={'m14-chev' + (expanded ? ' open' : '')} />}
   </Tag>;
 }
+
+// Recorded turns share the same message and work-row presentation, without
+// depending on the active conversation's mutable link, terminal or task context.
+export function M14RecordedOutput({ lines }) {
+  return <Markdown lines={lines} readOnly />;
+}
+export function M14RecordedTimeline({ prompt, events, lines, startedLabel, partial=false }) {
+  const icons={start:PlayRecordIcon,read:FileText,work:ListChecks,file:FileText,done:CheckCircle2,warn:AlertTriangle,error:AlertCircle,skip:Hourglass,stop:Square};
+  return <div className="m16-recorded-timeline">
+    {prompt&&<div className="m14-user"><small className="m16-recorded-time">{startedLabel} · 定时任务提示词</small><div className="m14-bubble">{prompt}</div></div>}
+    <div className="m16-recorded-events">{events.map((e,i)=>{const EventIcon=icons[e.kind]??Wrench;return <div className="m16-recorded-event" key={i}>
+      <LogRow icon={<EventIcon size={15}/>} label={e.label} tone={['warn','error'].includes(e.kind)?'warn':undefined} wrap />
+      {e.timeLabel&&<small className="m16-event-time">{e.timeLabel}</small>}{e.detail&&<p>{e.detail}</p>}
+    </div>})}</div>
+    {lines?.length>0&&<div className="m16-recorded-message"><small>{partial?'执行期间输出（非最终结果）':'智能体最终回复'}</small><M14RecordedOutput lines={lines}/></div>}
+  </div>;
+}
+const PlayRecordIcon=CircleDashed;
 function EntryBody({ e }) {
   if (e.kind === 'thought') return <div className="m14-log-body thought"><Markdown lines={e.text.split('\n')} onLink={() => {}} /></div>;
   if (e.kind === 'command') return <div className="m14-log-body"><pre className="m14-output"><span className="m14-prompt">$ {e.cmd}</span>{'\n'}{e.output ?? '（等待输出）'}{e.exit != null && `\n\n退出码 ${e.exit}`}</pre></div>;

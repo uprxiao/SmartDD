@@ -1,0 +1,942 @@
+diff --git a/src/main/app/window-host.ts b/src/main/app/window-host.ts
+new file mode 100644
+--- /dev/null
++++ b/src/main/app/window-host.ts
+@@ -0,0 +1,9 @@
++// F36 isolated candidate: window ownership separate from shell WebContents and trust.
++import type { BaseWindow, WebContents, WebContentsView } from 'electron';
++let mainWindow:BaseWindow|null=null, mainShell:WebContentsView|null=null;
++export function bindMainHost(window:BaseWindow,shell:WebContentsView):void{mainWindow=window;mainShell=shell;}
++export function clearMainHost(window:BaseWindow):boolean{if(mainWindow!==window)return false;mainWindow=null;mainShell=null;return true;}
++export function getMainWindow():BaseWindow|null{return mainWindow&&!mainWindow.isDestroyed()?mainWindow:null;}
++export function getMainShell():WebContentsView|null{return getMainWindow()&&mainShell&&!mainShell.webContents.isDestroyed()?mainShell:null;}
++export function getMainWindowContents():WebContents|null{return getMainShell()?.webContents??null;}
++export function mainWindowForContents(contents:WebContents):BaseWindow|null{return getMainWindowContents()===contents?getMainWindow():null;}
+diff --git a/src/main/app/window.test.ts b/src/main/app/window.test.ts
+--- a/src/main/app/window.test.ts
++++ b/src/main/app/window.test.ts
+@@ -3,24 +3,31 @@
+ const native = vi.hoisted(() => ({ windows: [] as any[] }));
+ vi.mock('./icon', () => ({ appIcon: '' }));
+ vi.mock('electron', () => ({
+-  nativeTheme: { shouldUseDarkColors: false },
+-  BrowserWindow: class extends EventEmitter {
+-    webContents = { mainFrame: { url: '' }, isDestroyed: () => false, send: vi.fn() };
+-    visible = false;
+-    constructor() { super(); native.windows.push(this); }
+-    isDestroyed() { return false; }
+-    isVisible() { return this.visible; }
+-    show() { this.visible = true; }
+-    async loadURL(url: string) { this.webContents.mainFrame.url = url; }
+-    async loadFile(path: string) { this.webContents.mainFrame.url = `file://${path}`; }
++  nativeTheme: { shouldUseDarkColors: false }, app: {quit:vi.fn()},
++  BaseWindow: class extends EventEmitter {
++    contentView={children:[] as any[],addChildView:(view:any)=>{this.contentView.children.push(view);}};
++    visible=false;destroyed=false;
++    constructor(){super();native.windows.push(this);}
++    isDestroyed(){return this.destroyed;}
++    isVisible(){return this.visible;}
++    show(){this.visible=true;}
++    showInactive(){this.visible=true;}
++    hide(){this.visible=false;}
++    getContentBounds(){return {x:0,y:0,width:1400,height:900};}
++    setBackgroundColor(){}
++    destroy(){this.destroyed=true;this.emit('closed');}
++  },
++  WebContentsView: class {
++    webContents={mainFrame:{url:''},destroyed:false,isDestroyed:()=>this.webContents.destroyed,send:vi.fn(),close:()=>{this.webContents.destroyed=true;},loadURL:async(url:string)=>{this.webContents.mainFrame.url=url;},loadFile:async(path:string)=>{this.webContents.mainFrame.url=`file://${path}`;}};
++    setBounds(){} setBackgroundColor(){}
+   },
+ }));
+-import { createMainWindow, isMainRenderer, showMainWindow } from './window';
++import { createMainWindow, getMainWindowContents, isMainRenderer, showMainWindow } from './window';
+ afterEach(() => { for (const win of native.windows.splice(0)) win.emit('closed'); vi.unstubAllEnvs(); });
+ describe('trusted terminal renderer document', () => {
+   it('accepts the exact loaded main document and hash navigation, rejects foreign pages/queries/frames/windows', async () => {
+     vi.stubEnv('ELECTRON_RENDERER_URL', 'http://127.0.0.1:5173/');
+-    const win = await createMainWindow(); const wc = win.webContents;
++    const win = await createMainWindow(); const wc = getMainWindowContents()!;
+     const e = { sender: wc, senderFrame: wc.mainFrame };
+     expect(isMainRenderer(e)).toBe(true);
+     (wc.mainFrame as any).url = 'http://127.0.0.1:5173/#tasks'; expect(isMainRenderer(e)).toBe(true);
+@@ -34,23 +41,25 @@
+   });
+   it('accepts a packaged file document and revokes an old window after replacement', async () => {
+     vi.stubEnv('ELECTRON_RENDERER_URL', '');
+-    const first = await createMainWindow(); const e = { sender: first.webContents, senderFrame: first.webContents.mainFrame };
++    const first = await createMainWindow(); const wc = getMainWindowContents()!; const e = { sender: wc, senderFrame: wc.mainFrame };
+     expect(isMainRenderer(e)).toBe(true);
+-    const second = await createMainWindow();
++    expect(await createMainWindow()).toBe(first);
++    first.emit('closed');
++    await createMainWindow(); const secondWC=getMainWindowContents()!;
+     expect(isMainRenderer(e)).toBe(false);
+-    expect(isMainRenderer({ sender: second.webContents, senderFrame: second.webContents.mainFrame })).toBe(true);
++    expect(isMainRenderer({ sender: secondWC, senderFrame: secondWC.mainFrame })).toBe(true);
+   });
+ });
+ 
+ it('notifies the current renderer when a hidden window opens and when the native window restores', async () => {
+-  const first = await createMainWindow();
+-  const current = await createMainWindow();
++  const first = await createMainWindow(); const firstWC=getMainWindowContents()!; first.emit('closed');
++  const current = await createMainWindow(); const currentWC=getMainWindowContents()!; current.hide();
+   first.emit('restore');
+   expect(await showMainWindow()).toBe(current);
+   expect(await showMainWindow()).toBe(current);
+   current.emit('restore');
+   current.emit('closed');
+   current.emit('restore');
+-  expect(first.webContents.send).not.toHaveBeenCalled();
+-  expect(vi.mocked(current.webContents.send).mock.calls).toEqual([['window:shown'], ['window:shown']]);
++  expect(firstWC.send).not.toHaveBeenCalled();
++  expect(vi.mocked(currentWC.send).mock.calls).toEqual([['window:shown'], ['window:shown']]);
+ });
+diff --git a/src/main/app/window.ts b/src/main/app/window.ts
+--- a/src/main/app/window.ts
++++ b/src/main/app/window.ts
+@@ -1,108 +1,60 @@
+-// Window chrome follows Yoda (Apache-2.0) src/main/app/window.ts.
++// F36 isolated experimental candidate; not production source.
+ import { join } from 'node:path';
+ import { pathToFileURL } from 'node:url';
+-import { app, BrowserWindow, nativeTheme, type IpcMainEvent } from 'electron';
++import { app, BaseWindow, WebContentsView, nativeTheme, type IpcMainEvent } from 'electron';
+ import type { Theme } from '@shared/app-settings';
+ import { windowShownEvent } from '@shared/events';
+ import { appIcon } from './icon';
++import {bindMainHost,clearMainHost,getMainWindow,getMainShell,getMainWindowContents} from './window-host';
++export {getMainWindow,getMainWindowContents,mainWindowForContents} from './window-host';
+ 
+-let mainWindow: BrowserWindow | null = null;
++let creating: Promise<BaseWindow> | null = null;
+ let mainDocumentURL: string | null = null;
+ let appQuitting = false;
+ const MAC_TITLEBAR_HEIGHT = 40;
++const lab = /^\/private\/tmp\/willyou-f36-lab-[A-Za-z0-9_-]+\//.test(process.env.SMARTDD_USER_DATA ?? '');
+ 
+-/** Once a real quit starts, the last window stops hiding and actually closes. */
+-export function markAppQuitting(): void {
+-  appQuitting = true;
++export function markAppQuitting(): void { appQuitting = true; }
++function notifyWindowShown(win:BaseWindow):void { if(getMainWindow()===win)getMainWindowContents()?.send(windowShownEvent.name); }
++export async function showMainWindow(): Promise<BaseWindow> {
++  const win=getMainWindow() ?? await createMainWindow();
++  const wasHidden=!win.isVisible(); win.show(); if(wasHidden)notifyWindowShown(win); return win;
+ }
+-
+-export function getMainWindow(): BrowserWindow | null {
+-  return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
++export function isMainRenderer(event:Pick<IpcMainEvent,'sender'|'senderFrame'>):boolean {
++  const contents=getMainWindowContents();
++  if(!contents || event.sender!==contents || event.sender.isDestroyed() || !event.senderFrame || event.senderFrame!==contents.mainFrame || !mainDocumentURL)return false;
++  try{const current=new URL(event.senderFrame.url);current.hash='';return current.href===mainDocumentURL;}catch{return false;}
+ }
+-
+-function notifyWindowShown(win: BrowserWindow): void {
+-  if (getMainWindow() === win && !win.webContents.isDestroyed()) win.webContents.send(windowShownEvent.name);
++export function applyNativeTheme(theme:Theme|null):void {
++  nativeTheme.themeSource=theme===null?'system':theme==='ydark'?'dark':'light';
++  getMainWindow()?.setBackgroundColor(windowBackground()); getMainShell()?.setBackgroundColor(windowBackground());
+ }
+-
+-export async function showMainWindow(): Promise<BrowserWindow> {
+-  const win = getMainWindow() ?? (await createMainWindow());
+-  const wasHidden = !win.isVisible();
+-  win.show();
+-  // Cocoa may omit the visibility event on an occluded window.
+-  if (wasHidden) notifyWindowShown(win);
+-  return win;
++function windowBackground():string{return nativeTheme.shouldUseDarkColors?'#111111':'#ffffff';}
++export async function createMainWindow():Promise<BaseWindow>{
++  if(creating)return creating;
++  const existing=getMainWindow();if(existing)return existing;
++  creating=(async()=>{
++    const isMac=process.platform==='darwin';
++    const win=new BaseWindow({width:1400,height:900,minWidth:700,minHeight:500,title:'WillYou',icon:appIcon,show:false,backgroundColor:windowBackground(),...(isMac?{titleBarStyle:'hiddenInset' as const,titleBarOverlay:{height:MAC_TITLEBAR_HEIGHT},trafficLightPosition:{x:14,y:14},acceptFirstMouse:true}:{})});
++    const shell=new WebContentsView({webPreferences:{preload:join(__dirname,'../preload/index.js'),sandbox:false,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
++    shell.setBackgroundColor(windowBackground()); win.contentView.addChildView(shell);
++    const resize=()=>{if(!win.isDestroyed()&&!shell.webContents.isDestroyed()){const {width,height}=win.getContentBounds();shell.setBounds({x:0,y:0,width,height});}};
++    resize(); win.on('resize',resize); win.on('enter-full-screen',resize); win.on('leave-full-screen',resize);
++    bindMainHost(win,shell);
++    const documentURL=new URL(process.env.ELECTRON_RENDERER_URL || pathToFileURL(join(__dirname,'../renderer/index.html')).href); documentURL.hash='';mainDocumentURL=documentURL.href;
++    win.on('close',event=>{
++      if(!appQuitting){event.preventDefault();if(isMac)win.hide();else app.quit();return;}
++      // App's existing confirmed-quit path drains services before markAppQuitting().
++      for(const child of [...win.contentView.children])if(child instanceof WebContentsView&&!child.webContents.isDestroyed())child.webContents.close({waitForBeforeUnload:false});
++    });
++    win.on('closed',()=>{if(clearMainHost(win))mainDocumentURL=null;if(!shell.webContents.isDestroyed())shell.webContents.close({waitForBeforeUnload:false});});
++    win.on('restore',()=>{resize();notifyWindowShown(win);});
++    try{
++      if(process.env.ELECTRON_RENDERER_URL)await shell.webContents.loadURL(process.env.ELECTRON_RENDERER_URL);else await shell.webContents.loadFile(join(__dirname,'../renderer/index.html'));
++      resize();
++      if(!(lab&&process.env.WY_F36_LAB_START_HIDDEN==='1')){if(lab&&process.env.WY_F36_LAB_NONACTIVATE==='1')win.showInactive();else win.show();}
++      return win;
++    }catch(error){if(!shell.webContents.isDestroyed())shell.webContents.close({waitForBeforeUnload:false});if(!win.isDestroyed())win.destroy();throw error;}
++  })();
++  try{return await creating;}finally{creating=null;}
+ }
+-
+-/** A renderer navigation must not carry terminal authority to another page. */
+-export function isMainRenderer(event: Pick<IpcMainEvent, 'sender' | 'senderFrame'>): boolean {
+-  const win = getMainWindow();
+-  if (!win || event.sender !== win.webContents || event.sender.isDestroyed() ||
+-      !event.senderFrame || event.senderFrame !== event.sender.mainFrame || !mainDocumentURL) return false;
+-  try {
+-    const current = new URL(event.senderFrame.url);
+-    current.hash = '';
+-    return current.href === mainDocumentURL;
+-  } catch { return false; }
+-}
+-
+-/** Native chrome (menus, dialogs, window background) follows the theme setting. */
+-export function applyNativeTheme(theme: Theme | null): void {
+-  nativeTheme.themeSource = theme === null ? 'system' : theme === 'ydark' ? 'dark' : 'light';
+-}
+-
+-function windowBackground(): string {
+-  return nativeTheme.shouldUseDarkColors ? '#111111' : '#ffffff';
+-}
+-
+-export async function createMainWindow(): Promise<BrowserWindow> {
+-  const isMac = process.platform === 'darwin';
+-  const win = new BrowserWindow({
+-    width: 1400,
+-    height: 900,
+-    minWidth: 700,
+-    minHeight: 500,
+-    title: 'WillYou',
+-    icon: appIcon,
+-    show: false,
+-    backgroundColor: windowBackground(),
+-    ...(isMac
+-      ? {
+-          titleBarStyle: 'hiddenInset' as const,
+-          titleBarOverlay: { height: MAC_TITLEBAR_HEIGHT },
+-          trafficLightPosition: { x: 14, y: 14 },
+-          acceptFirstMouse: true,
+-        }
+-      : {}),
+-    webPreferences: {
+-      preload: join(__dirname, '../preload/index.js'),
+-      sandbox: false,
+-      contextIsolation: true,
+-      nodeIntegration: false,
+-      // Keep terminal painting and renderer state current when the workspace is
+-      // covered by another window; PTY sessions continue to run in the background.
+-      backgroundThrottling: false,
+-    },
+-  });
+-  mainWindow = win;
+-  const documentURL = new URL(process.env.ELECTRON_RENDERER_URL || pathToFileURL(join(__dirname, '../renderer/index.html')).href);
+-  documentURL.hash = '';
+-  mainDocumentURL = documentURL.href;
+-
+-  // macOS: closing the window hides it (terminals keep running); Cmd+Q is the real quit.
+-  win.on('close', (event) => {
+-    if (appQuitting) return;
+-    event.preventDefault();
+-    if (isMac) win.hide();
+-    else app.quit();
+-  });
+-  win.on('closed', () => {
+-    if (mainWindow === win) { mainWindow = null; mainDocumentURL = null; }
+-  });
+-  // With background throttling disabled, the DOM can stay visible while the native window is hidden.
+-  win.on('restore', () => notifyWindowShown(win));
+-  win.once('ready-to-show', () => win.show());
+-
+-  if (process.env.ELECTRON_RENDERER_URL) await win.loadURL(process.env.ELECTRON_RENDERER_URL);
+-  else await win.loadFile(join(__dirname, '../renderer/index.html'));
+-  return win;
+-}
+diff --git a/src/main/core/ai/agent-transfer-controller.ts b/src/main/core/ai/agent-transfer-controller.ts
+--- a/src/main/core/ai/agent-transfer-controller.ts
++++ b/src/main/core/ai/agent-transfer-controller.ts
+@@ -1,4 +1,5 @@
+-import { BrowserWindow, dialog, type IpcMainInvokeEvent } from 'electron';
++import { dialog, type IpcMainInvokeEvent } from 'electron';
++import {mainWindowForContents} from '@main/app/window-host';
+ import { z } from 'zod';
+ import { createScopedRPCController } from '@shared/ipc/rpc';
+ import { agentExportSelectionSchema, type AgentExportSelection } from '@shared/agent-transfer';
+@@ -34,14 +35,14 @@
+     export:(e,input:AgentExportSelection)=>run(e,async(_id,check)=>{
+       const selection=agentExportSelectionSchema.parse(input);
+       if(selection.includeKeys){if(typeof selection.confirmation!=='string')throw new AgentTransferError('请再次输入导出口令');const issue=passphraseIssue(selection.password??'',selection.confirmation);if(issue)throw new AgentTransferError(issue);}
+-      const win=BrowserWindow.fromWebContents(e.sender);
++      const win=mainWindowForContents(e.sender);
+       const options:Electron.SaveDialogOptions={title:'导出智能体配置',defaultPath:'willyou-ai-config.json',properties:['showOverwriteConfirmation','createDirectory']};
+       const result=win?await dialog.showSaveDialog(win,options):await dialog.showSaveDialog(options);
+       check();if(result.canceled||!result.filePath)return null;
+       return service.exportTo(result.filePath,selection,check);
+     }),
+     chooseImport:e=>run(e,async(id,check)=>{
+-      const win=BrowserWindow.fromWebContents(e.sender),options:Electron.OpenDialogOptions={title:'导入智能体配置',properties:['openFile']};
++      const win=mainWindowForContents(e.sender),options:Electron.OpenDialogOptions={title:'导入智能体配置',properties:['openFile']};
+       const result=win?await dialog.showOpenDialog(win,options):await dialog.showOpenDialog(options);
+       check();if(result.canceled||!result.filePaths[0])return null;
+       return service.choose(id,result.filePaths[0]);
+diff --git a/src/main/core/applications/controller.ts b/src/main/core/applications/controller.ts
+--- a/src/main/core/applications/controller.ts
++++ b/src/main/core/applications/controller.ts
+@@ -1,5 +1,6 @@
+ import type {BuiltinPluginId,BuiltinPluginDefault,BuiltinPluginDelete,BuiltinPluginProject} from '@shared/builtin-plugin-preferences';
+-import {BrowserWindow,dialog} from 'electron';
++import {dialog} from 'electron';
++import {mainWindowForContents} from '@main/app/window-host';
+ import {FileError} from '@shared/files';
+ import type {ApplicationImpactQuery} from '@shared/application-impact';
+ import type {SessionChangeQuery} from '@shared/session-change-impact';
+@@ -35,7 +36,7 @@
+     pluginStartupStatus:(event)=>run(event,current=>current.pluginStartupStatus(event)),
+     pluginChoose:(event,kind:'directory'|'zip',target?:string)=>run(event,async current=>{
+       if(kind!=='directory'&&kind!=='zip')throw new ApplicationError('INVALID_INPUT','请选择本地文件夹或压缩包');
+-      const window=BrowserWindow.fromWebContents(event.sender);if(!window)throw new ApplicationError('SCOPE_DENIED','没有可用的插件安装窗口');
++      const window=mainWindowForContents(event.sender);if(!window)throw new ApplicationError('SCOPE_DENIED','没有可用的插件安装窗口');
+       const chosen=await dialog.showOpenDialog(window,{title:target?'选择更新插件包':'选择插件包',properties:[kind==='directory'?'openDirectory':'openFile','dontAddToRecent'],...(kind==='zip'?{filters:[{name:'插件压缩包',extensions:['zip']}]}:{})});
+       if(chosen.canceled||!chosen.filePaths[0])return null;
+       return current.pluginInspect(event,chosen.filePaths[0],kind,target);
+@@ -120,9 +121,9 @@
+     saveAttachment:(event,projectId:string,input:unknown)=>run(event,async current=>{
+       const id=event.sender.id;if(saving.has(id))throw new ApplicationError('RESOURCE_BUSY','请先完成当前附件保存');saving.add(id);
+       try{return await current.saveAttachment(event,projectId,input,async suggested=>{
+-        requireSender(event);const win=BrowserWindow.fromWebContents(event.sender);if(!win||win.isDestroyed())throw new ApplicationError('SCOPE_DENIED','保存窗口已关闭');
+-        try{const chosen=await dialog.showSaveDialog(win,{title:'保存附件',buttonLabel:'保存附件',defaultPath:suggested,showsTagField:false,filters:[{name:'所有文件',extensions:['*']}],properties:['createDirectory','showOverwriteConfirmation']});if(chosen.canceled||!chosen.filePath)return null;requireSender(event);if(win.isDestroyed()||BrowserWindow.fromWebContents(event.sender)!==win)throw new ApplicationError('SCOPE_DENIED','保存窗口已变化，未写入所选位置');return chosen.filePath;}
+-        finally{if(!win.isDestroyed()&&win.isFocused())win.webContents.focus();}
++        requireSender(event);const win=mainWindowForContents(event.sender);if(!win||win.isDestroyed())throw new ApplicationError('SCOPE_DENIED','保存窗口已关闭');
++        try{const chosen=await dialog.showSaveDialog(win,{title:'保存附件',buttonLabel:'保存附件',defaultPath:suggested,showsTagField:false,filters:[{name:'所有文件',extensions:['*']}],properties:['createDirectory','showOverwriteConfirmation']});if(chosen.canceled||!chosen.filePath)return null;requireSender(event);if(win.isDestroyed()||mainWindowForContents(event.sender)!==win)throw new ApplicationError('SCOPE_DENIED','保存窗口已变化，未写入所选位置');return chosen.filePath;}
++        finally{if(!win.isDestroyed()&&win.isFocused()&&!event.sender.isDestroyed()&&mainWindowForContents(event.sender)===win)event.sender.focus();}
+       });}finally{saving.delete(id);}
+     }),
+     confirmAttachmentSave:(event,projectId:string,input:unknown)=>run(event,current=>current.confirmAttachmentSave(event,projectId,input)),
+diff --git a/src/main/core/browser/page-registry.ts b/src/main/core/browser/page-registry.ts
+--- a/src/main/core/browser/page-registry.ts
++++ b/src/main/core/browser/page-registry.ts
+@@ -1,4 +1,4 @@
+-import { BaseWindow, WebContentsView, session, type Session, type BrowserWindow, type Rectangle, type WebContents, type BrowserWindowConstructorOptions } from 'electron';
++import { BaseWindow, WebContentsView, session, type Session, type Rectangle, type WebContents, type BrowserWindowConstructorOptions } from 'electron';
+ import { randomUUID } from 'node:crypto';
+ import { join } from 'node:path';
+ import { BrowserCdpProxy } from './cdp-proxy';
+@@ -23,7 +23,7 @@
+ export class BrowserPageRegistry {
+   private readonly pages=new Map<string,BrowserPage>();
+   private readonly active=new Map<string,string>();
+-  private readonly park=new BrowserParkWindow();
++  private readonly park:BrowserParkWindow;
+   private mounted?:BrowserPage;
+   private readonly observers=new Set<(event:BrowserPageEvent)=>void>();
+   private readonly closing=new Map<string,Promise<void>>();
+@@ -31,7 +31,7 @@
+   private readonly initializing=new Map<WebContents,{profileId:string;settled:Promise<void>;finish:()=>void}>();
+   private stopping=false;
+   private disposing?:Promise<void>;
+-  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles;prepareSession?:(session:Session)=>void;configure?:(page:BrowserPage)=>void}){}
++  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BaseWindow|null;profiles?:BrowserProfiles;prepareSession?:(session:Session)=>void;configure?:(page:BrowserPage)=>void}){this.park=new BrowserParkWindow(options.window);}
+   observe(listener:(event:BrowserPageEvent)=>void):()=>void{this.observers.add(listener);return()=>{this.observers.delete(listener);};}
+   private publish(type:BrowserPageEvent['type'],page:BrowserPage){for(const listener of this.observers)listener({type,page});}
+   list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed);}
+@@ -150,13 +150,13 @@
+     const page=this.get(taskId,pageId),window=this.options.window?.();
+     if(page.kind==='popup')throw new BrowserError('BROWSER_ERROR','子窗口不能挂到工作区');
+     if(this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
+-      window.contentView.removeChildView(this.mounted.view);await this.park.park(this.mounted.view,this.mounted.rect);this.mounted=undefined;
++      await this.park.park(this.mounted.view,this.mounted.rect);this.mounted=undefined;
+     }
+     if(rect&&window&&!window.isDestroyed()){
+       if(!Object.values(rect).every(Number.isFinite)||rect.width<1||rect.height<1)throw new BrowserError('BROWSER_ERROR','网页显示区域无效');
+-      this.park.remove(page.view);window.contentView.addChildView(page.view);page.rect=rect;page.view.setBounds(rect);this.mounted=page;this.active.set(taskId,pageId);
++      window.contentView.addChildView(page.view);page.rect=rect;page.view.setBounds(rect);this.mounted=page;this.active.set(taskId,pageId);
+     }else{
+-      if(this.mounted===page&&window&&!window.isDestroyed()){window.contentView.removeChildView(page.view);this.mounted=undefined;}
++      if(this.mounted===page){this.mounted=undefined;}
+       await this.park.park(page.view,page.rect);
+     }
+     for(const child of this.pages.values())if(child.popupWindow&&!child.popupWindow.isDestroyed()){
+@@ -179,7 +179,7 @@
+     // The CLI close is the current serialized item; it cannot wait for itself.
+     // UI/dispose closes still wait for any active page work to finish.
+     if(!fromPageQueue)await page.queue.settled();await page.proxy.stop();
+-    const window=this.options.window?.();if(this.mounted===page&&window&&!window.isDestroyed()){window.contentView.removeChildView(page.view);this.mounted=undefined;}
++    const window=this.options.window?.();if(this.mounted===page){this.mounted=undefined;}
+     this.park.remove(page.view);if(!page.contents.isDestroyed())page.contents.close();if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.close();this.pages.delete(pageId);this.publish('closed',page);
+     if(this.active.get(taskId)===pageId){const next=this.list(taskId)[0];if(next)this.active.set(taskId,next.id);else this.active.delete(taskId);}
+   }
+diff --git a/src/main/core/browser/park-window.ts b/src/main/core/browser/park-window.ts
+--- a/src/main/core/browser/park-window.ts
++++ b/src/main/core/browser/park-window.ts
+@@ -1,25 +1,20 @@
+-import { BrowserWindow, screen, type WebContentsView, type Rectangle } from 'electron';
+-
+-/** One non-activating paint surface. It never appears in the app's window menu. */
++// F36 isolated experiment: native pages remain in the sole main host.
++import type { BaseWindow, WebContentsView, Rectangle } from 'electron';
++import { BrowserError } from './errors';
+ export class BrowserParkWindow {
+-  private window?: BrowserWindow;
+-  private preparing?: Promise<BrowserWindow>;
+-  async ensure(): Promise<BrowserWindow> {
+-    if (this.window && !this.window.isDestroyed()) return this.window;
+-    this.preparing ??= (async () => {
+-      const bounds = screen.getPrimaryDisplay().workArea;
+-      const window = new BrowserWindow({ x:bounds.x,y:bounds.y,width:Math.max(800,bounds.width),height:Math.max(600,bounds.height),show:false,opacity:0,focusable:false,skipTaskbar:true,hasShadow:false,title:'WillYou browser background',webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false} });
+-      if (process.platform === 'darwin') window.excludedFromShownWindowsMenu = true;
+-      window.setIgnoreMouseEvents(true);
+-      await window.loadURL('data:text/html,<title>WillYou browser background</title>');
+-      window.showInactive(); this.window=window; return window;
+-    })();
+-    try { return await this.preparing; } finally { this.preparing=undefined; }
++  private readonly owned=new Set<WebContentsView>();
++  constructor(private readonly host?:()=>BaseWindow|null){}
++  async ensure():Promise<BaseWindow>{
++    const until=Date.now()+5000;
++    while(Date.now()<until){const window=this.host?.();if(window&&!window.isDestroyed())return window;await new Promise(resolve=>setTimeout(resolve,30));}
++    throw new BrowserError('BROWSER_UNAVAILABLE','浏览器主宿主尚未就绪');
+   }
+-  async park(view: WebContentsView, rect: Rectangle): Promise<void> {
+-    const window=await this.ensure(); window.contentView.addChildView(view);
++  async park(view:WebContentsView,rect:Rectangle):Promise<void>{
++    const window=await this.ensure();if(view.webContents.isDestroyed())throw new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭');
++    // Reorder within the existing parent, instead of transferring between system windows.
++    window.contentView.addChildView(view,0); this.owned.add(view);
+     view.setBounds({x:0,y:0,width:Math.max(1,rect.width),height:Math.max(1,rect.height)});
+   }
+-  remove(view: WebContentsView): void { if(this.window&&!this.window.isDestroyed()&&this.window.contentView.children.includes(view))this.window.contentView.removeChildView(view); }
+-  dispose(): void { if(this.window&&!this.window.isDestroyed())this.window.destroy();this.window=undefined; }
++  remove(view:WebContentsView):void{const window=this.host?.();if(window&&!window.isDestroyed()&&window.contentView.children.includes(view))window.contentView.removeChildView(view);this.owned.delete(view);}
++  dispose():void{for(const view of [...this.owned])this.remove(view);}
+ }
+diff --git a/src/main/core/browser/service.ts b/src/main/core/browser/service.ts
+--- a/src/main/core/browser/service.ts
++++ b/src/main/core/browser/service.ts
+@@ -6,7 +6,7 @@
+ import { BrowserOperations } from './operations';
+ import { BrowserError, staleReference } from './errors';
+ import type Database from 'better-sqlite3';
+-import { app, nativeImage, session, type BrowserWindow } from 'electron';
++import { app, nativeImage, session, type BaseWindow } from 'electron';
+ import { BrowserInputInterrupted, type BrowserHelperOptions } from './agent-browser';
+ import { join,resolve,isAbsolute,dirname } from 'node:path';
+ import {readFile,realpath,stat} from 'node:fs/promises';
+@@ -251,7 +251,7 @@
+   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
+   private reconciling?:Promise<void>;
+   private reconcileTimer?:ReturnType<typeof setTimeout>;
+-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;promptPreloadPath?:string;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
++  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;promptPreloadPath?:string;window?:()=>BaseWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
+     this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.checkpoints=new BrowserCheckpoints(options.sqlite,this.operations);this.audit=new BrowserAudit(this.operations);this.importAudit=new BrowserCookieImportAudit(this.operations,options.taskProject);
+     this.access=new BrowserAccess({taskProject:options.taskProject,changed:options.accessChanged,audit:event=>this.auditAccess(event)});
+     this.automation=new BrowserAutomation({changed:options.changed,ended:runId=>this.access.endRun(runId)});
+diff --git a/src/main/core/files/controller.ts b/src/main/core/files/controller.ts
+--- a/src/main/core/files/controller.ts
++++ b/src/main/core/files/controller.ts
+@@ -4,7 +4,8 @@
+ import type { DirectoryListRequest } from '@shared/files';
+ import type { ViewerOpenInput, ViewerResourceInput, ViewerWriteInput } from '@shared/file-viewer';
+ import type { IpcMainInvokeEvent } from 'electron';
+-import { BrowserWindow, dialog, shell } from 'electron';
++import { dialog, shell } from 'electron';
++import {mainWindowForContents} from '@main/app/window-host';
+ import { dirname, extname, join } from 'node:path';
+ import { z } from 'zod';
+ import { officeLossyCopySchema,type OfficeLossyCopyInput } from '@shared/file-office-fidelity';
+@@ -107,9 +108,9 @@
+       return result;
+     },
+     viewerUiOpen: (event: IpcMainInvokeEvent, input: ViewerResourceInput) => {
+-      const id = owner(event), win = BrowserWindow.fromWebContents(event.sender);
++      const id = owner(event), win = mainWindowForContents(event.sender);
+       if (!win) throw new FileError('UNTRUSTED', '文件窗口已关闭');
+-      return service.viewers.ui.open(id, input, win, value => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame && trusted(event)) event.sender.send(fileViewerUiEvent.name, value); });
++      return service.viewers.ui.open(id, input, win, value => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame && trusted(event)) event.sender.send(fileViewerUiEvent.name, value); }, event.sender);
+     },
+     viewerUiBounds: (event: IpcMainInvokeEvent, input: HtmlViewBounds) => service.viewers.ui.bounds(owner(event), input),
+     viewerUiSend: (event: IpcMainInvokeEvent, input: ViewerResourceInput, payload: unknown) => service.viewers.ui.send(owner(event), input, payload),
+@@ -172,9 +173,9 @@
+     texChunk: (event: IpcMainInvokeEvent, id: string, offset: number, length: number) => service.tex.chunk(owner(event), id, offset, length),
+     releaseTex: (event: IpcMainInvokeEvent, id: string) => service.tex.release(owner(event), id),
+     openHtml: (event: IpcMainInvokeEvent, request: HtmlOpenInput) => {
+-      const id = owner(event), win = BrowserWindow.fromWebContents(event.sender);
++      const id = owner(event), win = mainWindowForContents(event.sender);
+       if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '文件窗口已关闭');
+-      return service.html.open(id, request, win, (state) => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame) event.sender.send(fileHtmlEvent.name, { id: request.id, ...state }); });
++      return service.html.open(id, request, win, (state) => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame) event.sender.send(fileHtmlEvent.name, { id: request.id, ...state }); }, event.sender);
+     },
+     htmlBounds: (event: IpcMainInvokeEvent, request: HtmlViewBounds) => service.html.bounds(owner(event), request),
+     closeHtml: (event: IpcMainInvokeEvent, id: string) => service.html.close(owner(event), id),
+@@ -196,7 +197,7 @@
+       try{
+         const document=input.kind==='xlsx'?service.office:service.pptx;
+         const candidate=await document.lossyCandidate(id,input.id,input.token);
+-        const selection=await service.actions.prepareOfficeCopy(id,candidate),win=BrowserWindow.fromWebContents(event.sender);
++        const selection=await service.actions.prepareOfficeCopy(id,candidate),win=mainWindowForContents(event.sender);
+         if(!win||win.isDestroyed())throw new FileError('UNTRUSTED','另存窗口已关闭');
+         const extension=extname(selection.name),stem=selection.name.slice(0,selection.name.length-extension.length);
+         const chosen=await dialog.showSaveDialog(win,{title:'另存有损副本',buttonLabel:'保存有损副本',defaultPath:join(selection.context.lease.canonicalPath,dirname(selection.context.relativePath),`${stem} 有损副本${extension}`),showsTagField:false,filters:[{name:'Office 文件',extensions:[input.kind]}],properties:['createDirectory','showOverwriteConfirmation']});
+@@ -211,7 +212,7 @@
+       copying.add(id);
+       try {
+         const selection = await service.actions.prepareCopy(id, request);
+-        const win = BrowserWindow.fromWebContents(event.sender);
++        const win = mainWindowForContents(event.sender);
+         if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '另存窗口已关闭');
+         const extension = extname(selection.name), stem = selection.name.slice(0, selection.name.length - extension.length);
+         const suggestedName = `${stem} 副本${extension}`.replace(/[<>:"/\\|?*]/g, '_');
+@@ -226,7 +227,7 @@
+       const id = owner(event); if (copying.has(id)) throw new FileError('CONFLICT', '请先完成当前另存对话框');
+       copying.add(id);
+       try {
+-        const selection = await service.actions.prepareContentCopy(id, request), win = BrowserWindow.fromWebContents(event.sender);
++        const selection = await service.actions.prepareContentCopy(id, request), win = mainWindowForContents(event.sender);
+         if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '另存窗口已关闭');
+         const defaultPath = join(selection.context.lease.canonicalPath, dirname(selection.context.relativePath), selection.name);
+         const chosen = await dialog.showSaveDialog(win, { title: '另存副本', buttonLabel: '保存副本', defaultPath, showsTagField: false, filters: [{ name: '所有文件', extensions: ['*'] }], properties: ['createDirectory', 'showOverwriteConfirmation'] });
+diff --git a/src/main/core/files/html/service.test.ts b/src/main/core/files/html/service.test.ts
+--- a/src/main/core/files/html/service.test.ts
++++ b/src/main/core/files/html/service.test.ts
+@@ -39,7 +39,7 @@
+   const abort = new AbortController(), hash = createHash('sha256').update(raw).digest('hex');
+   const source: HtmlSource = { path: 'index.html', hash, signal: abort.signal, assert: vi.fn(), read: vi.fn(async (path) => ({ bytes: new TextEncoder().encode(path === 'index.html' ? raw : 'document.body.dataset.script="yes";'), hash })) };
+   const service = new FileHtmlService(() => source), emit = vi.fn(), input = (): HtmlOpenInput => ({ id: randomUUID(), ref: { id: randomUUID(), lease: randomUUID(), generation: 1 }, baseHash: hash });
+-  const parent = Object.assign(new EventEmitter(), { isDestroyed: () => false, isFocused: vi.fn(() => true), isVisible: () => true, isMinimized: vi.fn(() => false), getContentSize: () => [800, 600], webContents: { getZoomFactor: () => 1, focus: vi.fn() }, contentView: { addChildView: vi.fn(), removeChildView: vi.fn() } }) as unknown as BrowserWindow;
++  const parent = Object.assign(new EventEmitter(), { isDestroyed: () => false, isFocused: vi.fn(() => true), isVisible: () => true, isMinimized: vi.fn(() => false), getContentSize: () => [800, 600], webContents: { isDestroyed: () => false, getZoomFactor: () => 1, focus: vi.fn() }, contentView: { addChildView: vi.fn(), removeChildView: vi.fn() } }) as unknown as BrowserWindow;
+   return { abort, source, service, emit, input, parent };
+ }
+ const services: FileHtmlService[] = [];
+@@ -49,14 +49,14 @@
+   it('accepts an extensionless source only with the main-derived readonly HTML mapping', async () => {
+     const f = fixture('<h1>EXTENSIONLESS_ATTACHMENT</h1>'); services.push(f.service); f.source.path = 'attachment';
+     f.source.read = vi.fn(async () => ({ bytes: new TextEncoder().encode('<h1>EXTENSIONLESS_ATTACHMENT</h1>'), hash: f.source.hash }));
+-    await expect(f.service.open('owner', f.input(), f.parent, f.emit)).rejects.toThrow('UNSUPPORTED'); expect(fake.views).toHaveLength(0);
+-    f.source.attachmentHtml = true; expect((await f.service.open('owner', f.input(), f.parent, f.emit)).state).toBe('ready');
++    await expect(f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents)).rejects.toThrow('UNSUPPORTED'); expect(fake.views).toHaveLength(0);
++    f.source.attachmentHtml = true; expect((await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents)).state).toBe('ready');
+     expect(fake.views[0].options.webPreferences).toMatchObject({ sandbox: true, nodeIntegration: false, contextIsolation: true });
+     expect(fake.load.mock.calls[1][0]).toMatch(/\/attachment$/); expect(fake.chooser).toHaveBeenCalledWith('Page.setInterceptFileChooserDialog', { enabled: true, cancel: true });
+   });
+   it('uses only the independent input guard and refuses other frames, network, reload, XHR and unmapped files', async () => {
+     const f = fixture(); services.push(f.service); const input = f.input();
+-    expect((await f.service.open('owner', input, f.parent, f.emit)).state).toBe('ready');
++    expect((await f.service.open('owner', input, f.parent, f.emit, f.parent.webContents)).state).toBe('ready');
+     const view = fake.views[0], session = fake.sessions[0], entry = fake.load.mock.calls[1][0];
+     expect(view.options.webPreferences).toMatchObject({ sandbox: true, nodeIntegration: false, contextIsolation: true, webSecurity: true }); expect(view.options.webPreferences.preload).toMatch(/m9-html-guard\.js$/);
+     expect(fake.chooser).toHaveBeenCalledWith('Page.setInterceptFileChooserDialog', { enabled: true, cancel: true });
+@@ -80,7 +80,7 @@
+   });
+   it('returns child keyboard focus when hidden for an App popup or closed, but respects sheets and inactive windows', async () => {
+     const f = fixture(); services.push(f.service); const input = f.input();
+-    await f.service.open('owner', input, f.parent, f.emit); const view = fake.views[0];
++    await f.service.open('owner', input, f.parent, f.emit, f.parent.webContents); const view = fake.views[0];
+     const bounds = { id: input.id, x: 50, y: 60, width: 400, height: 300, visible: true };
+     f.service.bounds('owner', bounds); view.webContents.isFocused.mockReturnValue(true);
+     f.parent.emit('sheet-begin'); expect(f.parent.webContents.focus).not.toHaveBeenCalled(); f.parent.emit('sheet-end');
+@@ -92,39 +92,39 @@
+   });
+   it('fails closed when native chooser protection cannot attach or its guard is lost', async () => {
+     const f = fixture(); services.push(f.service); fake.chooser.mockRejectedValueOnce(new Error('chooser isolation unavailable'));
+-    expect((await f.service.open('owner', f.input(), f.parent, f.emit)).state).toBe('failed');
++    expect((await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents)).state).toBe('failed');
+     expect(fake.load.mock.calls.every(([url]) => url === 'about:blank')).toBe(true); expect(fake.views[0].webContents.close).toHaveBeenCalled();
+-    await f.service.open('owner', f.input(), f.parent, f.emit); fake.views[1].webContents.debugger.emit('detach', {}, 'unexpected');
++    await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents); fake.views[1].webContents.debugger.emit('detach', {}, 'unexpected');
+     expect(fake.views[1].webContents.close).toHaveBeenCalled(); expect(f.emit.mock.lastCall?.[0].message).toContain('文件选择隔离已失效');
+-    await f.service.open('owner', f.input(), f.parent, f.emit); fake.views[2].webContents.emit('preload-error', {}, 'guard', new Error('failed'));
++    await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents); fake.views[2].webContents.emit('preload-error', {}, 'guard', new Error('failed'));
+     expect(fake.views[2].webContents.close).toHaveBeenCalled(); expect(f.emit.mock.lastCall?.[0].message).toContain('文件输入隔离未能加载');
+   });
+   it('revokes active resources on source close, rejects changed versions and reuses only cleared sessions', async () => {
+     const f = fixture(); services.push(f.service);
+-    await expect(f.service.open('owner', { ...f.input(), baseHash: '0'.repeat(64) }, f.parent, f.emit)).rejects.toThrow('CHANGED');
+-    const first = f.input(); await f.service.open('owner', first, f.parent, f.emit);
++    await expect(f.service.open('owner', { ...f.input(), baseHash: '0'.repeat(64) }, f.parent, f.emit, f.parent.webContents)).rejects.toThrow('CHANGED');
++    const first = f.input(); await f.service.open('owner', first, f.parent, f.emit, f.parent.webContents);
+     const view = fake.views[0], session = fake.sessions[0], old = session.protocolHandler;
+     f.service.close('owner', first.id); expect(view.webContents.close).toHaveBeenCalledWith({ waitForBeforeUnload: false }); expect(session.protocolHandler).toBeNull();
+     expect(old(new Request(fake.load.mock.calls[0][0])).status).toBe(404); expect(session.clearStorageData).toHaveBeenCalled();
+-    await f.service.open('owner', f.input(), f.parent, f.emit); expect(fake.sessions).toHaveLength(1);
++    await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents); expect(fake.sessions).toHaveLength(1);
+     f.abort.abort(); expect(fake.views[1].webContents.close).toHaveBeenCalled(); expect(f.emit.mock.lastCall?.[0].state).toBe('failed');
+   });
+   it('handles cancel-before-open and cancel-during-load without accepting a late ready result', async () => {
+     const f = fixture(); services.push(f.service); const input = f.input();
+-    f.service.close('owner', input.id); await expect(f.service.open('owner', input, f.parent, f.emit)).rejects.toThrow('CANCELLED');
++    f.service.close('owner', input.id); await expect(f.service.open('owner', input, f.parent, f.emit, f.parent.webContents)).rejects.toThrow('CANCELLED');
+     let finish!: () => void; fake.load.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
+-    const next = f.input(), pending = f.service.open('owner', next, f.parent, f.emit);
++    const next = f.input(), pending = f.service.open('owner', next, f.parent, f.emit, f.parent.webContents);
+     await vi.waitFor(() => expect(fake.load).toHaveBeenCalled()); f.service.close('owner', next.id);
+     expect((await pending).state).toBe('closed'); finish(); await Promise.resolve(); expect(f.emit.mock.calls.some(([value]) => value.state === 'ready')).toBe(false);
+   });
+   it('terminates load timeouts and post-load hung or oversized processes while retaining a retry result', async () => {
+     vi.useFakeTimers(); const f = fixture(); services.push(f.service);
+-    fake.load.mockImplementation(() => new Promise(() => undefined)); const pending = f.service.open('owner', f.input(), f.parent, f.emit);
++    fake.load.mockImplementation(() => new Promise(() => undefined)); const pending = f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents);
+     await vi.advanceTimersByTimeAsync(HTML_LIMITS.timeout + 1); expect((await pending).message).toContain('15秒'); expect(fake.views[0].webContents.close).toHaveBeenCalled();
+-    fake.load.mockResolvedValue(undefined); await f.service.open('owner', f.input(), f.parent, f.emit);
++    fake.load.mockResolvedValue(undefined); await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents);
+     fake.heartbeat.mockImplementation(() => new Promise(() => undefined)); await vi.advanceTimersByTimeAsync(7001);
+     expect(fake.views[1].webContents.forcefullyCrashRenderer).toHaveBeenCalled(); expect(f.emit.mock.lastCall?.[0].message).toContain('5秒');
+-    fake.heartbeat.mockResolvedValue(0); await f.service.open('owner', f.input(), f.parent, f.emit); fake.memory = 512 * 1024 + 1; await vi.advanceTimersByTimeAsync(2001);
++    fake.heartbeat.mockResolvedValue(0); await f.service.open('owner', f.input(), f.parent, f.emit, f.parent.webContents); fake.memory = 512 * 1024 + 1; await vi.advanceTimersByTimeAsync(2001);
+     expect(fake.views[2].webContents.forcefullyCrashRenderer).toHaveBeenCalled(); expect(f.emit.mock.lastCall?.[0].message).toContain('512 MiB');
+   });
+ });
+diff --git a/src/main/core/files/html/service.ts b/src/main/core/files/html/service.ts
+--- a/src/main/core/files/html/service.ts
++++ b/src/main/core/files/html/service.ts
+@@ -1,4 +1,4 @@
+-import { app, session, WebContentsView, type BrowserWindow, type Session } from 'electron';
++import { app, session, WebContentsView, type BaseWindow, type WebContents, type Session } from 'electron';
+ import { randomBytes } from 'node:crypto';
+ import { join } from 'node:path';
+ import { HTML_LIMITS, HTML_SCHEME, htmlBoundsSchema, htmlOpenSchema, type HtmlOpenInput, type HtmlPreviewState, type HtmlViewBounds } from '@shared/file-html';
+@@ -8,7 +8,7 @@
+ import { htmlBounds, htmlLookup, htmlRequestType, HtmlResponses } from './policy';
+ 
+ interface Preview {
+-  owner: string; id: string; parent: BrowserWindow; abort: AbortController; source: HtmlSource;
++  owner: string; id: string; parent: BaseWindow; parentContents: WebContents; abort: AbortController; source: HtmlSource;
+   state: HtmlPreviewState; emit(value: HtmlPreviewState): void; cleanups: (() => void)[];
+   parser?: HtmlReferenceParser; view?: WebContentsView; bounds?: HtmlViewBounds; sheet: boolean;
+ }
+@@ -25,7 +25,7 @@
+   private readonly cancelled = new Map<string, number>();
+   constructor(private readonly resolve: (owner: string, ref: FileRef) => HtmlSource, private readonly worker = join(__dirname, 'm9-html-resources.js')) {}
+ 
+-  async open(owner: string, raw: HtmlOpenInput, parent: BrowserWindow, emit: (value: HtmlPreviewState) => void): Promise<HtmlPreviewState> {
++  async open(owner: string, raw: HtmlOpenInput, parent: BaseWindow, emit: (value: HtmlPreviewState) => void, parentContents: WebContents): Promise<HtmlPreviewState> {
+     const input = htmlOpenSchema.parse(raw), key = `${owner}/${input.id}`;
+     this.pruneCancelled();
+     if (this.cancelled.has(key)) throw new FileError('CANCELLED', 'HTML预览已取消');
+@@ -37,7 +37,7 @@
+     const previous = this.previews.get(owner); if (previous?.id === input.id) throw new FileError('IDEMPOTENCY', 'HTML预览编号已使用');
+     if (previous) this.drop(previous);
+     if (this.previews.size >= 4) throw new FileError('TOO_LARGE', '当前HTML预览数量已达上限');
+-    const record: Preview = { owner, id: input.id, parent, source, abort: new AbortController(), state: { state: 'loading', warnings: [], blockedRequests: 0 }, emit: (value) => { try { emit(value); } catch { /* Renderer has navigated or closed; lifecycle releases the view. */ } }, cleanups: [], sheet: false };
++    const record: Preview = { owner, id: input.id, parent, parentContents, source, abort: new AbortController(), state: { state: 'loading', warnings: [], blockedRequests: 0 }, emit: (value) => { try { emit(value); } catch { /* Renderer has navigated or closed; lifecycle releases the view. */ } }, cleanups: [], sheet: false };
+     this.previews.set(owner, record);
+     const alive = () => !record.abort.signal.aborted && this.previews.get(owner) === record;
+     const invalidate = () => this.fail(record, 'HTML所属文件或目录已关闭，请重新打开');
+@@ -156,9 +156,9 @@
+     while (this.cancelled.size > 2048) this.cancelled.delete(this.cancelled.keys().next().value!);
+   }
+   private layout(record: Preview): void {
+-    if (!record.view || record.parent.isDestroyed()) return;
++    if (!record.view || record.parent.isDestroyed() || record.parentContents.isDestroyed()) return;
+     const input = record.bounds, [width, height] = record.parent.getContentSize();
+-    const rect = input ? htmlBounds(input, width, height, record.parent.webContents.getZoomFactor()) : { x: 0, y: 0, width: 0, height: 0 };
++    const rect = input ? htmlBounds(input, width, height, record.parentContents.getZoomFactor()) : { x: 0, y: 0, width: 0, height: 0 };
+     const visible = record.state.state === 'ready' && !!input?.visible && !record.sheet && rect.width > 0 && rect.height > 0 && record.parent.isVisible() && !record.parent.isMinimized();
+     if (!visible) this.returnFocus(record, record.view);
+     record.view.setBounds(rect); record.view.setVisible(visible);
+@@ -166,7 +166,7 @@
+   private returnFocus(record: Preview, view: WebContentsView): void {
+     // Hiding a native child does not move its keyboard focus. Return it to the
+     // App so Escape/menu shortcuts work, without stealing a system sheet's focus.
+-    if (!record.sheet && !record.parent.isDestroyed() && record.parent.isFocused() && record.parent.isVisible() && !record.parent.isMinimized() && !view.webContents.isDestroyed() && view.webContents.isFocused()) record.parent.webContents.focus();
++    if (!record.sheet && !record.parent.isDestroyed() && record.parent.isFocused() && record.parent.isVisible() && !record.parent.isMinimized() && !view.webContents.isDestroyed() && view.webContents.isFocused() && !record.parentContents.isDestroyed()) record.parentContents.focus();
+   }
+   private fail(record: Preview, message: string, hung = false): void {
+     if (record.abort.signal.aborted) return;
+diff --git a/src/main/core/files/mcp/ui-view.ts b/src/main/core/files/mcp/ui-view.ts
+--- a/src/main/core/files/mcp/ui-view.ts
++++ b/src/main/core/files/mcp/ui-view.ts
+@@ -1,4 +1,4 @@
+-import {app,session,WebContentsView,type BrowserWindow,type Session} from 'electron';
++import {app,session,WebContentsView,type BaseWindow,type WebContents,type Session} from 'electron';
+ import {randomUUID} from 'node:crypto';
+ import {join} from 'node:path';
+ import {FileError} from '@shared/files';
+@@ -9,19 +9,19 @@
+ import {nativeViewerDocument} from './ui-document';
+ export interface McpUiSource { html:string;signal:AbortSignal;assert():void }
+ export interface McpUiEvent {id:string;payload?:unknown;error?:string}
+-interface View {owner:string;id:string;parent:BrowserWindow;source:McpUiSource;abort:AbortController;view?:WebContentsView;bounds?:HtmlViewBounds;ready:boolean;sheet:boolean;cleanups:(()=>void)[];emit(value:McpUiEvent):void}
++interface View {owner:string;id:string;parent:BaseWindow;parentContents:WebContents;source:McpUiSource;abort:AbortController;view?:WebContentsView;bounds?:HtmlViewBounds;ready:boolean;sheet:boolean;cleanups:(()=>void)[];emit(value:McpUiEvent):void}
+ export class FileMcpUiService {
+  private views=new Map<string,View>();
+  private cancelled=new Map<string,number>();
+  private sessions=new Map<string,{session:Session;ready:Promise<void>}>();
+  constructor(private readonly resolve:(owner:string,input:ViewerResourceInput)=>McpUiSource){}
+- async open(owner:string,input:ViewerResourceInput,parent:BrowserWindow,emit:(event:McpUiEvent)=>void){
++ async open(owner:string,input:ViewerResourceInput,parent:BaseWindow,emit:(event:McpUiEvent)=>void,parentContents:WebContents){
+   for(const [key,until] of this.cancelled)if(until<Date.now())this.cancelled.delete(key);
+   if(this.cancelled.has(`${owner}/${input.id}`))throw new FileError('CANCELLED','扩展界面打开已取消');
+   const source=this.resolve(owner,input);source.assert();source.signal.throwIfAborted();
+   if(this.views.get(owner)?.id===input.id)throw new FileError('IDEMPOTENCY','扩展界面会话已经打开');
+   this.closeOwner(owner);
+-  const record:View={owner,id:input.id,parent,source,abort:new AbortController(),ready:false,sheet:false,cleanups:[],emit:value=>{try{emit(value)}catch{this.closeOwner(owner)}}};this.views.set(owner,record);
++  const record:View={owner,id:input.id,parent,parentContents,source,abort:new AbortController(),ready:false,sheet:false,cleanups:[],emit:value=>{try{emit(value)}catch{this.closeOwner(owner)}}};this.views.set(owner,record);
+   const alive=()=>this.views.get(owner)===record&&!record.abort.signal.aborted;
+   const assert=()=>{if(!alive())throw new FileError('CANCELLED','扩展界面已关闭');source.assert();source.signal.throwIfAborted()};
+   const fail=(message:string,hung=false)=>{if(alive()){record.emit({id:record.id,error:message});this.drop(record,hung)}};
+@@ -86,7 +86,7 @@
+  bounds(owner:string,raw:HtmlViewBounds){const input=htmlBoundsSchema.parse(raw),record=this.views.get(owner);if(record?.id===input.id){record.bounds=input;this.layout(record)}}
+  close(owner:string,id:string){this.cancelled.set(`${owner}/${id}`,Date.now()+60000);while(this.cancelled.size>2048)this.cancelled.delete(this.cancelled.keys().next().value!);const record=this.views.get(owner);if(record?.id===id)this.drop(record)}
+  closeOwner(owner:string){const record=this.views.get(owner);if(record)this.close(owner,record.id)}
+- private layout(r:View){if(!r.view||r.parent.isDestroyed())return;const [w,h]=r.parent.getContentSize(),bounds=r.bounds?htmlBounds(r.bounds,w,h,r.parent.webContents.getZoomFactor()):{x:0,y:0,width:0,height:0};const visible=r.ready&&!!r.bounds?.visible&&!r.sheet&&bounds.width>0&&bounds.height>0&&r.parent.isVisible()&&!r.parent.isMinimized();if(!visible)this.focus(r);r.view.setBounds(bounds);r.view.setVisible(visible)}
+- private focus(r:View){if(r.view&&!r.sheet&&!r.parent.isDestroyed()&&r.parent.isFocused()&&r.parent.isVisible()&&!r.parent.isMinimized()&&!r.view.webContents.isDestroyed()&&r.view.webContents.isFocused())r.parent.webContents.focus()}
++ private layout(r:View){if(!r.view||r.parent.isDestroyed()||r.parentContents.isDestroyed())return;const [w,h]=r.parent.getContentSize(),bounds=r.bounds?htmlBounds(r.bounds,w,h,r.parentContents.getZoomFactor()):{x:0,y:0,width:0,height:0};const visible=r.ready&&!!r.bounds?.visible&&!r.sheet&&bounds.width>0&&bounds.height>0&&r.parent.isVisible()&&!r.parent.isMinimized();if(!visible)this.focus(r);r.view.setBounds(bounds);r.view.setVisible(visible)}
++ private focus(r:View){if(r.view&&!r.sheet&&!r.parent.isDestroyed()&&r.parent.isFocused()&&r.parent.isVisible()&&!r.parent.isMinimized()&&!r.view.webContents.isDestroyed()&&r.view.webContents.isFocused()&&!r.parentContents.isDestroyed())r.parentContents.focus()}
+  private drop(r:View,hung=false){if(r.abort.signal.aborted)return;r.abort.abort();if(this.views.get(r.owner)===r)this.views.delete(r.owner);const view=r.view;if(view){this.focus(r);r.view=undefined;view.setVisible(false);if(!r.parent.isDestroyed())r.parent.contentView.removeChildView(view);if(!view.webContents.isDestroyed()){if(hung)view.webContents.forcefullyCrashRenderer();view.webContents.close({waitForBeforeUnload:false})}}r.cleanups.splice(0).forEach(f=>f())}
+ }
+diff --git a/src/main/core/projects/transfer-controller.ts b/src/main/core/projects/transfer-controller.ts
+--- a/src/main/core/projects/transfer-controller.ts
++++ b/src/main/core/projects/transfer-controller.ts
+@@ -1,4 +1,5 @@
+-import { BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
++import { dialog, shell, type IpcMainInvokeEvent } from 'electron';
++import {mainWindowForContents} from '@main/app/window-host';
+ import { z } from 'zod';
+ import { createScopedRPCController } from '@shared/ipc/rpc';
+ import { passphraseIssue, type TransferDraft, type TransferReply } from '@shared/project-transfer';
+@@ -23,7 +24,7 @@
+     catch (e) { return e instanceof TransferError ? { ok: false, code: e.code, message: e.message } : { ok: false, code: 'INVALID_DRAFT', message: '无法完成项目迁移，请检查选择后重试' }; }
+   };
+   const open = (event: IpcMainInvokeEvent, options: Electron.OpenDialogOptions) => {
+-    const win = BrowserWindow.fromWebContents(event.sender);
++    const win = mainWindowForContents(event.sender);
+     return win ? dialog.showOpenDialog(win, options) : dialog.showOpenDialog(options);
+   };
+   return createScopedRPCController({
+@@ -32,7 +33,7 @@
+       if (typeof input?.passphrase !== 'string' || typeof input?.confirmation !== 'string') throw new TransferError('INVALID_DRAFT', '请输入并确认导出口令');
+       const issue = passphraseIssue(input.passphrase, input.confirmation); if (issue) throw new TransferError('INVALID_DRAFT', issue);
+       const description = svc.describeExport(input.projectId, input.profileIds);
+-      const win = BrowserWindow.fromWebContents(e.sender);
++      const win = mainWindowForContents(e.sender);
+       const options: Electron.SaveDialogOptions = { title: '导出项目', defaultPath: transferFilename(description.project.name), ...(process.platform === 'darwin' ? {} : { filters: [{ name: 'WillYou 项目', extensions: ['willyou'] }] }), properties: ['showOverwriteConfirmation', 'createDirectory'] };
+       const chosen = win ? await dialog.showSaveDialog(win, options) : await dialog.showSaveDialog(options);
+       if (chosen.canceled || !chosen.filePath) return null;
+diff --git a/src/main/core/voice/controller.ts b/src/main/core/voice/controller.ts
+--- a/src/main/core/voice/controller.ts
++++ b/src/main/core/voice/controller.ts
+@@ -1,4 +1,5 @@
+-import { shell, BrowserWindow, systemPreferences } from 'electron';
++import { shell, systemPreferences } from 'electron';
++import {getMainWindowContents} from '@main/app/window-host';
+ import { createRPCController } from '@shared/ipc/rpc';
+ import type { VoiceTrigger, VoiceSettings } from '@shared/voice';
+ import type { VoiceService } from './voice-service';
+@@ -9,7 +10,7 @@
+     if (recordingTimer) clearTimeout(recordingTimer);
+     recordingTimer = null;
+     service.setShortcutRecording(false);
+-    for (const window of BrowserWindow.getAllWindows()) window.webContents.setIgnoreMenuShortcuts(false);
++    getMainWindowContents()?.setIgnoreMenuShortcuts(false);
+   };
+   return createRPCController({
+     inspect: () => service.inspect(),
+@@ -19,7 +20,7 @@
+       service.setShortcutRecording(enabled);
+       if (recordingTimer) clearTimeout(recordingTimer);
+       recordingTimer = setTimeout(finishRecording, 60_000); recordingTimer.unref();
+-      for (const window of BrowserWindow.getAllWindows()) window.webContents.setIgnoreMenuShortcuts(enabled);
++      getMainWindowContents()?.setIgnoreMenuShortcuts(enabled);
+     },
+     trigger: (input: VoiceTrigger) => service.trigger(input),
+     cancel: (id: string) => { if (typeof id === 'string' && id.length <= 80) service.cancel(id); },
+diff --git a/src/main/index.ts b/src/main/index.ts
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -8,7 +8,7 @@
+ import {existsSync,readFileSync} from 'node:fs';
+ import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
+ import { join } from 'node:path';
+-import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification, shell } from 'electron';
++import { app, dialog, ipcMain, globalShortcut, Notification, shell } from 'electron';
+ import {
+   agentToolsChangedEvent,
+   aiProfilesChangedEvent,
+@@ -30,7 +30,7 @@
+ import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
+ import { buildAppMenu } from './app/menu';
+ import { appIcon } from './app/icon';
+-import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, markAppQuitting, showMainWindow } from './app/window';
++import { applyNativeTheme, createMainWindow, getMainWindow, getMainWindowContents, isMainRenderer, markAppQuitting, showMainWindow } from './app/window';
+ import { AiProfileService } from './core/ai/ai-profile-service';
+ import { AgentService } from './core/ai/agent-service';
+ import { ProviderService } from './core/ai/provider-service';
+@@ -98,7 +98,7 @@
+ 
+ const events = createEventEmitter({
+   emit: (channel, data) => {
+-    getMainWindow()?.webContents.send(channel, data);
++    getMainWindowContents()?.send(channel, data);
+   },
+   on: (channel, cb) => {
+     const listener = (_e: Electron.IpcMainEvent, data: unknown) => cb(data);
+@@ -358,9 +358,9 @@
+     }
+     quitPending = true;
+     void (async () => {
+-      const win = getMainWindow();
+-      if (win) {
+-        const contents = win.webContents, frame = contents.mainFrame;
++      const win = getMainWindow(), contents = getMainWindowContents();
++      if (win && contents) {
++        const frame = contents.mainFrame;
+         const owner = `${contents.id}:${frame.processId}:${frame.routingId}`;
+         const send = (request: FileCloseRequest) => {
+           if (contents.isDestroyed() || contents.mainFrame !== frame) throw new Error('原文件界面已经关闭');
+@@ -396,8 +396,7 @@
+       await files.watcher.dispose({ shutdown: true });
+       quitConfirmed = true; markAppQuitting(); app.quit();
+     })().catch((error) => {
+-      const win = getMainWindow();
+-      if (win) win.webContents.send(fileCloseEvent.name, { id: '', action: 'resume' });
++      getMainWindowContents()?.send(fileCloseEvent.name, { id: '', action: 'resume' });
+       dialog.showErrorBox('文件保存确认未完成', rpcErrorMessage(error));
+     }).finally(() => { quitPending = false; });
+   });
+diff --git a/src/main/rpc.ts b/src/main/rpc.ts
+--- a/src/main/rpc.ts
++++ b/src/main/rpc.ts
+@@ -3,7 +3,8 @@
+ import type { AgentTransferService } from './core/ai/agent-transfer';
+ import { createVoiceController } from './core/voice/controller';
+ import type { VoiceService } from './core/voice/voice-service';
+-import { app, BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
++import { app, dialog, shell, type IpcMainInvokeEvent } from 'electron';
++import {getMainWindow} from './app/window-host';
+ import type { AppSettingsKey } from '@shared/app-settings';
+ import { createRPCController, createRPCRouter, createScopedRPCController } from '@shared/ipc/rpc';
+ import { createAiProfileController } from './core/ai/controller';
+@@ -113,13 +114,13 @@
+     dialog: createRPCController({
+       /** Native folder picker; null when cancelled. */
+       pickDirectory: async (defaultPath?: string) => {
+-        const win = BrowserWindow.getFocusedWindow();
++        const win = getMainWindow();
+         const opts: Electron.OpenDialogOptions = { properties: ['openDirectory', 'createDirectory'], defaultPath };
+         const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
+         return r.canceled ? null : (r.filePaths[0] ?? null);
+       },
+       pickFile: async (defaultPath?: string) => {
+-        const win = BrowserWindow.getFocusedWindow();
++        const win = getMainWindow();
+         const opts: Electron.OpenDialogOptions = { properties: ['openFile', 'showHiddenFiles'], defaultPath };
+         const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
+         return r.canceled ? null : (r.filePaths[0] ?? null);
+diff --git a/src/main/terminal-ownership-acceptance.test.ts b/src/main/terminal-ownership-acceptance.test.ts
+--- a/src/main/terminal-ownership-acceptance.test.ts
++++ b/src/main/terminal-ownership-acceptance.test.ts
+@@ -5,19 +5,32 @@
+ import { createPtyController, PtyAccess, registerPtyInput } from './pty-access';
+ const windows = vi.hoisted(() => [] as any[]);
+ vi.mock('./app/icon', () => ({ appIcon: '' }));
+-vi.mock('electron', () => ({ nativeTheme: { shouldUseDarkColors: false }, BrowserWindow: class extends EventEmitter {
+-  webContents = { mainFrame: { url: '' }, isDestroyed: (): boolean => false };
+-  constructor() { super(); windows.push(this); }
+-  isDestroyed() { return false; }
+-  async loadURL(url: string) { this.webContents.mainFrame.url = url; }
+-  async loadFile(path: string) { this.webContents.mainFrame.url = `file://${path}`; }
+-} }));
+-import { createMainWindow, isMainRenderer } from './app/window';
++vi.mock('electron', () => ({
++  nativeTheme: { shouldUseDarkColors: false }, app: {quit:vi.fn()},
++  BaseWindow: class extends EventEmitter {
++    contentView={children:[] as any[],addChildView:(view:any)=>{this.contentView.children.push(view);}};
++    visible=false;destroyed=false;
++    constructor(){super();windows.push(this);}
++    isDestroyed(){return this.destroyed;}
++    isVisible(){return this.visible;}
++    show(){this.visible=true;}
++    showInactive(){this.visible=true;}
++    hide(){this.visible=false;}
++    getContentBounds(){return {x:0,y:0,width:1400,height:900};}
++    setBackgroundColor(){}
++    destroy(){this.destroyed=true;this.emit('closed');}
++  },
++  WebContentsView: class {
++    webContents={mainFrame:{url:''},destroyed:false,isDestroyed:()=>this.webContents.destroyed,send:vi.fn(),close:()=>{this.webContents.destroyed=true;},loadURL:async(url:string)=>{this.webContents.mainFrame.url=url;},loadFile:async(path:string)=>{this.webContents.mainFrame.url=`file://${path}`;}};
++    setBounds(){} setBackgroundColor(){}
++  },
++}));
++import { createMainWindow, getMainWindowContents, isMainRenderer } from './app/window';
+ let bus: EventEmitter, off: () => void, event: IpcMainInvokeEvent, active: Map<string, string>, alive: Set<string>;
+ let write: Mock<(id: string, data: string) => void>, resize: Mock<(id: string, cols: number, rows: number) => void>, kill: Mock<(id: string) => void>, invoke: Function;
+ beforeEach(async () => {
+   vi.stubEnv('ELECTRON_RENDERER_URL', 'http://127.0.0.1:5173/');
+-  const window = await createMainWindow(); event = { sender: window.webContents, senderFrame: window.webContents.mainFrame } as unknown as IpcMainInvokeEvent;
++  await createMainWindow(); const wc=getMainWindowContents()!; event = { sender: wc, senderFrame: wc.mainFrame } as unknown as IpcMainInvokeEvent;
+   active = new Map([['task-a', 'pty-a'], ['task-b', 'pty-b']]); alive = new Set(['pty-a', 'pty-b']);
+   write = vi.fn(); resize = vi.fn(); kill = vi.fn();
+   const access = new PtyAccess({ trusted: isMainRenderer, activePty: id => active.get(id) ?? null, alive: id => alive.has(id), write, resize, killTask: kill });
+@@ -42,7 +55,7 @@
+     if (scenario === 'subframe') incoming = { ...event, senderFrame: {} } as never;
+     if (scenario === 'navigated-document') (event.sender.mainFrame as unknown as { url: string }).url = 'http://127.0.0.1:5173/untrusted';
+     if (scenario === 'destroyed-sender') event.sender.isDestroyed = () => true;
+-    if (scenario === 'replaced-window') await createMainWindow();
++    if (scenario === 'replaced-window') {windows.at(-1).emit('closed');await createMainWindow();}
+     bus.emit('pty:input', incoming, target); bus.emit('pty:resize', incoming, target);
+     expect(() => invoke(incoming, target.taskId, target.ptyId)).toThrow(/TERMINAL_(SENDER|TARGET)_DENIED/);
+     expect(write).not.toHaveBeenCalled(); expect(resize).not.toHaveBeenCalled(); expect(kill).not.toHaveBeenCalled();
+diff --git a/src/renderer/features/agent-tasks/workspace-panels-store.ts b/src/renderer/features/agent-tasks/workspace-panels-store.ts
+--- a/src/renderer/features/agent-tasks/workspace-panels-store.ts
++++ b/src/renderer/features/agent-tasks/workspace-panels-store.ts
+@@ -19,8 +19,8 @@
+     this.open('attachment');
+   }
+   open(id:AgentPanel,automatic=false){if(!automatic)invalidateBrowserPresentation();if(!this.tabs.includes(id))this.tabs.push(id);this.active=id;if(id==='terminal')this.drawer=false;if(!navigation.filePanelOpen)navigation.toggleFilePanel();}
+-  close(id:AgentPanel){
+-    invalidateBrowserPresentation();
++  close(id:AgentPanel,automatic=false){
++    if(!automatic)invalidateBrowserPresentation();
+     this.tabs=this.tabs.filter(t=>t!==id);
+     if(id==='attachment')this.attachment=null;
+     if(this.active===id)this.active=this.tabs.at(-1)??'files';
+diff --git a/src/renderer/features/agent-tasks/workspace-panels.tsx b/src/renderer/features/agent-tasks/workspace-panels.tsx
+--- a/src/renderer/features/agent-tasks/workspace-panels.tsx
++++ b/src/renderer/features/agent-tasks/workspace-panels.tsx
+@@ -91,7 +91,7 @@
+          onActivate:()=>panels.open('files'),onCloseDirectory:()=>{panels.close('files');setBrowseRequest(0);},
+        }}/></div>)}
+      {tabs.includes('browser')&&taskId&&<AgentBrowserSurface taskId={taskId} workspaceHeader={{
+-       target:webTabsTarget,active:active==='browser',onActivate:()=>panels.open('browser'),onClose:()=>panels.close('browser'),
++       target:webTabsTarget,active:active==='browser',onActivate:()=>panels.open('browser'),onClose:()=>panels.close('browser'),onAutoClose:()=>panels.close('browser',true),
+      }}/>}
+      {tabs.includes('terminal')&&active==='terminal'&&terminal}
+      {tabs.includes('diff')&&active==='diff'&&taskId&&<TurnDiffSurface key={taskId} taskId={taskId} readOnly={readOnly}/>}
+diff --git a/src/renderer/features/browser/store.ts b/src/renderer/features/browser/store.ts
+--- a/src/renderer/features/browser/store.ts
++++ b/src/renderer/features/browser/store.ts
+@@ -3,7 +3,7 @@
+ import {navigation} from '@renderer/core/navigation';
+ import {panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
+ import {agentTasksStore} from '@renderer/core/agent-tasks-store';
+-import {authorizeBrowserPresentation,type BrowserPresentationEvent} from './open-presentation';
++import {authorizeBrowserPresentation,invalidateBrowserPresentation,type BrowserPresentationEvent} from './open-presentation';
+ export class BrowserWorkspaceStore {
+   private value:{state:BrowserWorkspaceState|null;error:string}={state:null,error:''};
+   private readonly listeners=new Set<()=>void>();
+@@ -33,7 +33,7 @@
+     if(request===this.request)this.value={state,error:''};
+   });
+   select=(tabId:string|null)=>this.run(()=>rpc.browser.select({taskId:this.taskId,tabId}));
+-  close=(tabId:string)=>this.run(()=>rpc.browser.close({taskId:this.taskId,tabId}));
++  close=(tabId:string)=>{invalidateBrowserPresentation();return this.run(()=>rpc.browser.close({taskId:this.taskId,tabId}));};
+   reopen=()=>this.openTab(()=>this.run(()=>rpc.browser.reopen({taskId:this.taskId})));
+ }
+ const stores=new Map<string,BrowserWorkspaceStore>();
+diff --git a/src/renderer/features/browser/workspace.tsx b/src/renderer/features/browser/workspace.tsx
+--- a/src/renderer/features/browser/workspace.tsx
++++ b/src/renderer/features/browser/workspace.tsx
+@@ -55,6 +55,7 @@
+   active: boolean;
+   onActivate: () => void;
+   onClose: () => void;
++  onAutoClose?: () => void;
+ }
+ function tabAddress(tab:BrowserTabState){
+   return tab.url===BROWSER_BLANK_URL?tab.pendingUrl??tab.failure?.url??'':tab.url;
+@@ -64,7 +65,7 @@
+   const store = browserWorkspaceFor(taskId);
+   const { state, error } = useSyncExternalStore(store.subscribe, store.snapshot);
+   const hadTabs = useRef(false);
+-  const onCloseSurface = workspaceHeader?.onClose;
++  const onCloseSurface = workspaceHeader?.onAutoClose ?? workspaceHeader?.onClose;
+   const openingTab = store.openingTab;
+   useEffect(() => {
+     void store.refresh();

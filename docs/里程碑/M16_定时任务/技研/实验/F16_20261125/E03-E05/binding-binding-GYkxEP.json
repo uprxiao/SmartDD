@@ -1,0 +1,124 @@
+{
+  "status": "passed",
+  "source": "a0acddb3a2325c6bf732adaa7e954ce4d767a2c3",
+  "root": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP",
+  "rows": [
+    {
+      "name": "real AgentTaskService cross-agent UI command contract; stale input rejected",
+      "before": {
+        "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+        "driverId": "codex-app-server",
+        "profileId": "fixture-codex",
+        "providerId": "P1",
+        "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP/work",
+        "tier": "ask",
+        "status": "idle",
+        "archivedAt": null,
+        "revision": 1
+      },
+      "after": {
+        "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+        "driverId": "claude-sdk",
+        "profileId": "fixture-claude",
+        "providerId": "P1",
+        "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP/work",
+        "tier": "ask",
+        "status": "idle",
+        "archivedAt": null,
+        "revision": 2
+      },
+      "decision": "reconfirm"
+    },
+    {
+      "name": "real AgentTaskService same-agent alternate-provider profile switch; stale input rejected",
+      "before": {
+        "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+        "driverId": "claude-sdk",
+        "profileId": "fixture-claude",
+        "providerId": "P1",
+        "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP/work",
+        "tier": "ask",
+        "status": "idle",
+        "archivedAt": null,
+        "revision": 2
+      },
+      "after": {
+        "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+        "driverId": "claude-sdk",
+        "profileId": "fixture-claude-other",
+        "providerId": "P2",
+        "cwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP/work",
+        "tier": "ask",
+        "status": "idle",
+        "archivedAt": null,
+        "revision": 3
+      },
+      "decision": "reconfirm"
+    },
+    {
+      "name": "real resolveProfileLaunch compatibility derives endpoint/key identity (same Provider ID)",
+      "sameProvider": true,
+      "endpointIdentityChanged": true,
+      "credentialIdentityChanged": true,
+      "needReconfirm": true,
+      "scope": "launch resolution only; no runtime credential mutation or external model"
+    },
+    {
+      "name": "distinct physical working directory, same profile/provider identity; must include cwd as separate binding dimension",
+      "beforeCwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP/work",
+      "afterCwd": "/private/tmp/willyou-m16-E03E05.DyUBda3d/runtime/binding-GYkxEP/other",
+      "decision": "reconfirm",
+      "scope": "two real temp directories, proposed scheduler comparison; no task migration"
+    }
+  ],
+  "events": [
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "task.created",
+      "seq": 1
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "item.created",
+      "seq": 2
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "selection.changed",
+      "seq": 3
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "selection.switching",
+      "seq": 4
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "selection.switching",
+      "seq": 5
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "item.created",
+      "seq": 6
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "selection.changed",
+      "seq": 7
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "selection.switching",
+      "seq": 8
+    },
+    {
+      "taskId": "6553ba82-16b9-4b29-82ba-797de95c1f30",
+      "type": "selection.switching",
+      "seq": 9
+    }
+  ],
+  "networkRequests": 0,
+  "proxyDenied": [],
+  "layer": "real service selection commands and production launch resolver plus experimental scheduler decision; no model/native task sent"
+}
