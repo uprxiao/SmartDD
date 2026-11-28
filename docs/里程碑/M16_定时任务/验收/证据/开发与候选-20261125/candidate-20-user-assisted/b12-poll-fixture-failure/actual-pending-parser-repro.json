@@ -1,0 +1,43 @@
+{
+  "case": "C20 actual real CLI preflight fixture pending result correction",
+  "pendingOriginalWrapper": "Chunk ID: 8de1c8\nWall time: 1.0022 seconds\nProcess running with session ID 61937\nOriginal token count: 0\nOutput:\n",
+  "repeatedOriginalErrorCount": 30,
+  "actualCompletedCommands": [
+    {
+      "command": "/bin/zsh -lc 'willyou-app browser tab list --show-profile true'",
+      "cwd": "/private/tmp/willyou-m16-f36-b12-system-fresh-mock-zIbNWZ/project",
+      "output": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba\",\"connections\":[]},\"data\":{\"tabs\":[{\"pageId\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\",\"index\":0,\"active\":true,\"browserPageId\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\",\"title\":\"Joint page A\",\"kind\":\"tab\",\"profileId\":\"project-65064f42b1b20837bdb05b36\",\"url\":\"http:\\/\\/127.0.0.1:3425\\/m16-joint\\/A\"}]},\"resources\":[],\"operation\":{\"id\":\"aa54d0c3-2806-414c-a364-d78204c7af63\",\"requestId\":\"ecc59e28-34b3-4ca7-865a-9e343fc0a545\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.list\"}\n",
+      "exitCode": 0,
+      "status": "completed"
+    },
+    {
+      "command": "/bin/zsh -lc 'willyou-app browser snapshot --page 444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1'",
+      "cwd": "/private/tmp/willyou-m16-f36-b12-system-fresh-mock-zIbNWZ/project",
+      "output": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba\",\"connections\":[]},\"data\":{\"origin\":\"http:\\/\\/127.0.0.1:3425\\/m16-joint\\/A\",\"generation\":\"ke3005476ef484fc397c4808fff146ba3:1\",\"browserPageId\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\",\"snapshot\":\"- main\\n  - heading \\\"Joint page A\\\" [level=1, ref=@ke3005476ef484fc397c4808fff146ba3s5e1]\\n  - paragraph\\n    - StaticText \\\"M16_JOINT_T1_PAGE_A\\\"\",\"refs\":[{\"available\":true,\"name\":\"Joint page A\",\"role\":\"heading\",\"ref\":\"@ke3005476ef484fc397c4808fff146ba3s5e1\"}],\"title\":\"Joint page A\",\"url\":\"http:\\/\\/127.0.0.1:3425\\/m16-joint\\/A\"},\"resources\":[],\"operation\":{\"id\":\"ba42a3df-0c58-461e-8a1a-12f401521145\",\"requestId\":\"94420139-b9ae-491c-ade8-1358933ff066\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+      "exitCode": 0,
+      "status": "completed"
+    }
+  ],
+  "actualBusinessAudit": [
+    {
+      "command": "tab list",
+      "state": "succeeded",
+      "effect": "read-only",
+      "error": null,
+      "created": 1795671372621,
+      "updated": 1795671372638,
+      "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"77c04933-be58-493b-9ee8-5e51ff1055bc\",\"targetTaskId\":\"16d6a089-f4c7-4f3a-aade-1a6069f50e8a\",\"semantics\":\"read\",\"arguments\":{\"show-profile\":true},\"result\":{\"tabs\":[{\"pageId\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\",\"browserPageId\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\",\"title\":\"Joint page A\",\"url\":\"http://127.0.0.1:3425/m16-joint/A\",\"profileId\":\"project-65064f42b1b20837bdb05b36\",\"kind\":\"tab\",\"index\":0,\"active\":true}]},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}"
+    },
+    {
+      "command": "snapshot",
+      "state": "succeeded",
+      "effect": "read-only",
+      "error": null,
+      "created": 1795671373741,
+      "updated": 1795671373924,
+      "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"77c04933-be58-493b-9ee8-5e51ff1055bc\",\"targetTaskId\":\"16d6a089-f4c7-4f3a-aade-1a6069f50e8a\",\"semantics\":\"read\",\"arguments\":{\"page\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\"},\"result\":{\"origin\":\"http://127.0.0.1:3425/m16-joint/A\",\"snapshot\":\"- main\\n  - heading \\\"Joint page A\\\" [level=1, ref=@ke3005476ef484fc397c4808fff146ba3s5e1]\\n  - paragraph\\n    - StaticText \\\"M16_JOINT_T1_PAGE_A\\\"\",\"refs\":[{\"ref\":\"@ke3005476ef484fc397c4808fff146ba3s5e1\",\"role\":\"heading\",\"name\":\"Joint page A\",\"available\":true}],\"browserPageId\":\"444cd5c3-9ff2-4cc5-94b8-aec4d7aecea1\",\"generation\":\"ke3005476ef484fc397c4808fff146ba3:1\",\"url\":\"http://127.0.0.1:3425/m16-joint/A\",\"title\":\"Joint page A\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}"
+    }
+  ],
+  "rawFixtureSha": "127b1f3d0d5d1ce257d409d36ee96dd017f8216951bf26aa7915064dc3f7059e",
+  "boundary": "actual app list and snapshot both exit0; fixture treated shell running intermediate as terminal; no screenshot/plan/user step. Subsequent parser replay only reads these exact saved synthetic inputs."
+}

@@ -30,6 +30,14 @@ async function fixture() {
 }
 
 describe('S1 per-page CDP proxy over real loopback/WebSocket', () => {
+  it('M16 B02/B10 closes its real loopback listener even if the native debugger wrapper was destroyed',async()=>{
+    const native=new Debugger();let destroyed=false;
+    const wc={get debugger(){if(destroyed)throw new TypeError('native debugger destroyed');return native;},isDestroyed:()=>destroyed,getTitle:()=>'',getURL:()=>''};
+    const proxy=new BrowserCdpProxy(wc as unknown as WebContents);await proxy.start();cleanups.push(()=>proxy.stop());
+    const socket=new WebSocket(proxy.endpoint);await once(socket,'open');
+    const closed=once(socket,'close');destroyed=true;await proxy.stop();await closed;
+    await expect(fetch(proxy.discoveryEndpoint+'/json/list')).rejects.toThrow();
+  });
   it('preserves the fixed helper direct-page event scope without admitting foreign events', async () => {
     const { debugger_, socket } = await fixture();
     const event = once(socket, 'message');

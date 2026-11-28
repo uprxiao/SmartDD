@@ -1,5 +1,5 @@
 import { execFile, type ChildProcess } from 'node:child_process';
-import { mkdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm, lstat, readdir, rmdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { browserDigest } from './artifacts';
 import { BrowserError, helperError } from './errors';
@@ -20,6 +20,7 @@ export class BrowserHelper {
   private daemon?: ProcessIdentity;
   private closing?: Promise<void>;
   private revision = 0;
+  private disposed=false;
   private lastCleanup?: { daemonPid: number | null; daemonState: string; clientStopped: boolean; socketFilesRemoved: boolean };
   get cleanup() { return this.lastCleanup; }
   get sessionRevision(): number { return this.revision; }
@@ -50,6 +51,7 @@ export class BrowserHelper {
   }
   private async checkSession(): Promise<boolean> {
     await this.closing;
+    if(this.disposed)throw new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭');
     await this.prepare();
     if (!this.daemon || !this.options.processes) return false;
     const state = this.options.processes.state(this.daemon);
@@ -140,6 +142,21 @@ export class BrowserHelper {
     if (this.closing) return this.closing;
     this.closing = this.closeOwned().finally(() => { this.closing = undefined; });
     return this.closing;
+  }
+  /** Called only by the terminal page owner, after native operations settle.
+   * A temporary close intentionally preserves the helper home and version stamp. */
+  async dispose():Promise<void>{
+    this.disposed=true;await this.close();
+    if(!this.initialized)return;
+    const receipt=this.cleanup;
+    if(!receipt||!receipt.clientStopped||!receipt.socketFilesRemoved||!['stopped','absent'].includes(receipt.daemonState))throw new BrowserError('BROWSER_UNAVAILABLE','网页 helper 尚未确认终止');
+    const socket=this.socketDirectory(),home=this.options.home,tmp=join(home,'tmp'),version=join(socket,this.options.session+'.version');
+    const kind=async(path:string)=>{try{const st=await lstat(path);return st.isSymbolicLink()?'symlink':st.isDirectory()?'directory':st.isFile()?'file':'other';}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return'absent';throw e;}};
+    if(await kind(socket)==='absent'&&await kind(home)==='absent')return;
+    if(await kind(socket)!=='directory'||await kind(home)!=='directory')throw new BrowserError('BROWSER_UNAVAILABLE','网页 helper 私有路径无法核对');
+    const files=await readdir(socket),homes=await readdir(home),vk=await kind(version),tk=await kind(tmp);
+    if(files.some(f=>f!==this.options.session+'.version')||homes.some(f=>f!=='tmp')||!['file','absent'].includes(vk)||!['directory','absent'].includes(tk)||tk==='directory'&&(await readdir(tmp)).length)throw new BrowserError('BROWSER_UNAVAILABLE','网页 helper 私有目录包含未识别内容，保留诊断');
+    if(vk==='file')await unlink(version);if(tk==='directory')await rmdir(tmp);await rmdir(socket);await rmdir(home);
   }
   private async closeOwned(): Promise<void> {
     this.invalidate(); this.active?.kill('SIGTERM');

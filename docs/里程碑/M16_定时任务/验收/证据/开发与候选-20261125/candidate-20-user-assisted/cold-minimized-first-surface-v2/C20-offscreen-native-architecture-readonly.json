@@ -1,0 +1,60 @@
+{
+  "status": "read-only-architecture-audit",
+  "actualFrozenFramework": "/private/tmp/willyou-m16-c20-frozen-8sqi_pp7/WillYou.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+  "sha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709",
+  "bytes": 190956272,
+  "exactMarkerOffsets": {
+    "No content under offscreen mode": {
+      "utf-8": 164446377,
+      "utf-16-le": 179761242
+    },
+    "OffScreenView": {
+      "utf-8": 164446409,
+      "utf-16-le": -1
+    },
+    "beginFrameSubscription": {
+      "utf-8": 164367317,
+      "utf-16-le": -1
+    },
+    "startPainting": {
+      "utf-8": 164367419,
+      "utf-16-le": -1
+    },
+    "stopPainting": {
+      "utf-8": 164367433,
+      "utf-16-le": -1
+    }
+  },
+  "localTypes": "node_modules/electron/electron.d.ts:18223,18227,18525,18537,19285,24261",
+  "officialSources": [
+    {
+      "url": "https://www.electronjs.org/docs/latest/tutorial/offscreen-rendering",
+      "scope": "bitmap or shared texture output, custom rendering, frame controls"
+    },
+    {
+      "url": "https://www.electronjs.org/docs/latest/api/web-contents-view",
+      "scope": "WebPreferences for creation; given contents adopt by one WCView only"
+    },
+    {
+      "url": "https://www.electronjs.org/docs/latest/api/structures/web-preferences",
+      "scope": "offscreen creation flag; no runtime transition documented"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/electron/electron/main/shell/browser/api/electron_api_web_contents.cc",
+      "lines": "1756–1782, 5188–5248",
+      "scope": "offscreen path constructs separate underlying contents view, start/stop only control its painting"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/electron/electron/main/shell/browser/osr/osr_web_contents_view_mac.mm",
+      "lines": "7–42",
+      "scope": "native NSView placeholder rather than website content"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/electron/electron/main/shell/browser/osr/osr_render_widget_host_view.cc",
+      "lines": "194–212, 274–288",
+      "scope": "separate compositor with null accelerated widget; absent native child, native text input and focus"
+    }
+  ],
+  "exactSourceQualification": "v42.11.14 and 42-x-y exact source fetch cache miss. Main upstream implementation corroborated by exact frozen local framework marker and local Electron42 public declarations, no exact-revision source or runtime OSR observation claimed.",
+  "decision": "Do not turn on offscreen as a one-line repair: offscreen output alone does not preserve existing native interactive appearance. Remains an alternate rendering architecture requiring explicit rendering/input ownership, accessibility, native dialogs, layer and persistence design, not current preapproved product behavior. No app or server launched. No production changes or daily data."
+}

@@ -1,4 +1,5 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
+import {EventEmitter} from 'node:events';
 import Database from 'better-sqlite3';
 import {BrowserWorkspace} from '../workspace';
 import {BrowserPageRegistry,browserProjectProfile,type BrowserPage} from '../page-registry';
@@ -76,6 +77,31 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
       expect(f.workspace.snapshot('t1').tabs).toEqual([]);
     } finally { await f.workspace.dispose(); }
   });
+  it('M16 B04 commits close history before physical teardown and rolls back a failed durable admission',async()=>{
+    const f=fixture(),id=f.workspace.create('t1').activeId!;
+    const page={id,taskId:'t1',closed:false} as BrowserPage;
+    const list=vi.spyOn(f.pages,'list').mockImplementation(task=>task==='t1'?[page]:[]);
+    vi.spyOn(f.pages,'isMounted').mockReturnValue(false);
+    let release!:()=>void;const closeNative=vi.spyOn(f.pages,'close').mockImplementation(async()=>{await new Promise<void>(resolve=>{release=resolve;});list.mockReturnValue([]);});
+    const persisted=()=>JSON.parse((f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1') as {value:string}).value);
+    try{
+      const original=persisted();
+      f.sqlite.exec("CREATE TRIGGER fail_fixture_close BEFORE UPDATE ON app_settings WHEN OLD.key='browserWorkspace.v1:t1' BEGIN SELECT RAISE(ABORT,'synthetic save failure'); END");
+      await expect(f.workspace.close('t1',id)).rejects.toThrow('synthetic save failure');
+      expect(persisted()).toEqual(original);expect(f.workspace.snapshot('t1')).toMatchObject({activeId:id,tabs:[{id}]});expect(closeNative).not.toHaveBeenCalled();
+      f.sqlite.exec('DROP TRIGGER fail_fixture_close');
+      const closing=f.workspace.close('t1',id);
+      await vi.waitFor(()=>expect(closeNative).toHaveBeenCalledOnce());
+      expect(persisted()).toMatchObject({activeId:null,tabs:[],closed:[{id}]});
+      expect(f.workspace.savedTab('t1',id)).toBeUndefined();
+      expect(()=>f.workspace.reserveAgentOpen('t1',{pageId:id,profileId:browserProjectProfile('p1'),forceNew:false})).toThrow();
+      const repeat=f.workspace.close('t1',id);
+      const next=f.workspace.reserveAgentOpen('t1',{url:'https://fixture.example/new',profileId:browserProjectProfile('p1'),forceNew:false});
+      expect(next.pageId).not.toBe(id);expect(persisted().closed).toHaveLength(1);
+      release();expect(await closing).toEqual(await repeat);expect(closeNative).toHaveBeenCalledOnce();
+      expect(persisted()).toMatchObject({tabs:[{id:next.pageId}],closed:[{id}]});
+    }finally{release?.();await f.workspace.dispose();}
+  });
   it('retains exactly the last ten closed tabs and refuses tasks without projects',async()=>{
     const f=fixture();for(let i=0;i<12;i++)f.workspace.create('t1');const ids=f.workspace.snapshot('t1').tabs.map(t=>t.id);for(const id of ids)await f.workspace.close('t1',id);for(let i=0;i<11;i++)f.workspace.reopen('t1');expect(f.workspace.snapshot('t1').tabs).toHaveLength(10);expect(f.create).not.toHaveBeenCalled();expect(()=>f.workspace.create('no-project')).toThrow('项目');f.workspace.dispose();
   });
@@ -109,6 +135,36 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
     const f=fixture();f.workspace.create('t1');await f.workspace.dispose();f.removed.add('t1');const restored=new BrowserWorkspace(f.options);
     try{await restored.reconcile();expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1')).toBeUndefined();expect(f.create).not.toHaveBeenCalled();}finally{await restored.dispose();}
   });
+  it('ignores a real page late navigation/title event after the task owner has already been deleted',async()=>{
+    const f=fixture();await f.workspace.dispose();let event!:Parameters<BrowserPageRegistry['observe']>[0];
+    vi.spyOn(f.pages,'observe').mockImplementation(listener=>{event=listener;return()=>{};});
+    const changed=vi.fn(),workspace=new BrowserWorkspace({...f.options,changed}),id=workspace.create('t1').activeId!;
+    let url='about:blank',title='Original';const wc=Object.assign(new EventEmitter(),{getURL:()=>url,getTitle:()=>title,isDestroyed:()=>false,isLoading:()=>false,navigationHistory:{canGoBack:()=>false,canGoForward:()=>false},setWindowOpenHandler:vi.fn()});
+    const page={id,taskId:'t1',kind:'tab',profileId:browserProjectProfile('p1'),contents:wc,closed:false} as unknown as BrowserPage;
+    try{
+      event({type:'created',page});const before=f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1');
+      f.removed.add('t1');changed.mockClear();url='https://fixture.example/late';title='Late';
+      expect(()=>wc.emit('did-navigate')).not.toThrow();expect(()=>wc.emit('page-title-updated',{},'Late title')).not.toThrow();
+      expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1')).toEqual(before);
+      expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserRecent.v1:p1')).toBeUndefined();expect(changed).not.toHaveBeenCalled();
+    }finally{await workspace.dispose();}
+  });
+  it('retires a late native initialization for a removed owner before any navigation can start',async()=>{
+    const f=fixture();let finish!:(page:BrowserPage)=>void;f.create.mockReturnValue(new Promise(resolve=>{finish=resolve;}));
+    const navigate=vi.spyOn(f.pages,'navigate').mockResolvedValue(),close=vi.spyOn(f.pages,'close').mockResolvedValue();
+    const id=f.workspace.create('t1','https://fixture.example/late-start').activeId!;
+    try{await vi.waitFor(()=>expect(f.create).toHaveBeenCalledOnce());f.removed.add('t1');
+      finish({id,taskId:'t1',closed:false} as BrowserPage);await vi.waitFor(()=>expect(close).toHaveBeenCalledWith('t1',id));expect(navigate).not.toHaveBeenCalled();
+      await f.workspace.reconcile();expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1')).toBeUndefined();
+    }finally{await f.workspace.dispose();}
+  });
+  it('distinguishes archived inactive scope from a permanently removed browser owner',async()=>{
+    const f=fixture();await f.workspace.dispose();const durable=new Set(['t1','t2']),workspace=new BrowserWorkspace({...f.options,taskOwnerExists:id=>durable.has(id)});
+    try{workspace.create('t1');workspace.create('t2');const read=(id:string)=>f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:'+id),archived=read('t1'),neighbor=read('t2');
+      f.removed.add('t1');await workspace.reconcile();expect(read('t1')).toEqual(archived);expect(read('t2')).toEqual(neighbor);
+      durable.delete('t1');await workspace.reconcile();expect(read('t1')).toBeUndefined();expect(read('t2')).toEqual(neighbor);
+    }finally{await workspace.dispose();}
+  });
   function savedPage(f:ReturnType<typeof fixture>){
     const id='11111111-1111-4111-8111-111111111111';
     f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:t1',JSON.stringify({version:1,tabs:[{id,url:'https://fixture.example/',title:'Fixture',favicon:null,profileId:browserProjectProfile('p1')}],activeId:id,closed:[]}));
@@ -131,7 +187,7 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
       await f.workspace.overlay('t1',id,false,true,'tab-tooltip:1');place.mockClear();
       await f.workspace.placement('t1',id,{x:1,y:1,width:800,height:600});expect(place).not.toHaveBeenCalled();
       await f.workspace.overlay('t1',id,false);await f.workspace.placement('t1',id,{x:1,y:1,width:800,height:600});
-      expect(place).toHaveBeenCalledWith('t1',id,{x:1,y:1,width:800,height:600});
+      expect(place).toHaveBeenCalledWith('t1',id,{x:1,y:1,width:800,height:600},expect.any(Function));
     }finally{await f.workspace.dispose();}
   });
   it('does not park after an obsolete tooltip capture resolves, or release a dialog when capture fails',async()=>{

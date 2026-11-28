@@ -1,0 +1,28 @@
+[1126/010023.618583:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/010023.755518:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/wiring.test.ts (12 tests | 1 failed | 11 skipped) 39ms
+   × M16 A19 does not dispatch a retained bound task after its actual source project was archived 38ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/wiring.test.ts > M16 A19 does not dispatch a retained bound task after its actual source project was archived
+TypeError: .toMatch() expects to receive a string, but got object
+ ❯ src/main/core/agent/wiring.test.ts:273:29
+    271|     expect(f.workspace.store.task(f.taskId)?.archived_at).toBeNull(); …
+    272|     schedules.auditConfigurations();const repaired=schedules.store.pla…
+    273|     expect(repaired.repair).toMatch(/项目.*失效/);expect(schedules.runNow(…
+       |                             ^
+    274|     expect(f.instances).toHaveLength(0);expect(f.workspace.store.turns…
+    275|   }finally{await schedules.stop();await f.close();}
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 skipped (12)
+   Start at  01:00:23
+   Duration  656ms (transform 367ms, setup 0ms, import 548ms, tests 39ms, environment 0ms)
+

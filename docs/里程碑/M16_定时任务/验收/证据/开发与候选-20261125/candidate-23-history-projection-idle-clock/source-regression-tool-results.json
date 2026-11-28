@@ -1,0 +1,70 @@
+{
+  "candidate": "C23",
+  "base": "4148950b8",
+  "previousCandidate": "C22",
+  "formalMainCasesPreviouslyPassed": 55,
+  "formalMainCaseTotal": 64,
+  "scope": "No production behavior change: recent 200 visible-item error status projection; lazy newest-first history iteration stops at same response budget; completed idle timeline stops periodic clock until time-consuming activity resumes. C22 real trend failures remain.",
+  "red": {
+    "expectedExit": 1,
+    "result": {
+      "chunk_id": "b10e13",
+      "wall_time_seconds": 0.000010875,
+      "exit_code": 1,
+      "original_token_count": 929,
+      "output": "stderr | src/renderer/features/agent-tasks/agent-task-view.test.tsx > 不为已结束的时间线按秒重绘，下一回合开始时恢复真实计时\nreact-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next or by passing it via props or context. In monorepo setups, make sure there is only one instance of react-i18next. { code: 'NO_I18NEXT_INSTANCE' }\n\n ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx (109 tests | 1 failed | 108 skipped) 42ms\n   × 不为已结束的时间线按秒重绘，下一回合开始时恢复真实计时 41ms\n[1126/233910.047173:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\n ❯ src/main/core/agent/agent-task-service.test.ts (125 tests | 2 failed | 123 skipped) 54ms\n     × 任务状态仅解码最近 200 条可见历史中属于末轮的错误，保留原边界与真值语义 30ms\n     × 快照按字节预算停止读取历史正文，不预先解码未返回的旧条目 23ms\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/main/core/agent/agent-task-service.test.ts > 容量与分页（技术方案 §3.1） > 任务状态仅解码最近 200 条可见历史中属于末轮的错误，保留原边界与真值语义\nAssertionError: expected [ …(2) ] to have a length of +0 but got 2\n\n- Expected\n+ Received\n\n- 0\n+ 2\n\n ❯ src/main/core/agent/agent-task-service.test.ts:1021:119\n    1019|     try {\n    1020|       expect(svc.status(taskId)).toBe('completed');\n    1021|       expect(parse.mock.calls.filter(([body]) => typeof body === 'stri…\n       |                                                                                                                       ^\n    1022|     } finally { parse.mockRestore(); }\n    1023|\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯\n\n FAIL  src/main/core/agent/agent-task-service.test.ts > 容量与分页（技术方案 §3.1） > 快照按字节预算停止读取历史正文，不预先解码未返回的旧条目\nAssertionError: expected 80 to be less than or equal to 16\n ❯ src/main/core/agent/agent-task-service.test.ts:1047:109\n    1045|       expect(snap.items.at(-1)?.ordinal).toBe(80);\n    1046|       expect(snap.items.length).toBeLessThan(80);\n    1047|       expect(parse.mock.calls.filter(([body]) => typeof body === 'stri…\n       |                                                                                                             ^\n    1048|     } finally { parse.mockRestore(); }\n    1049|     expect(snap.items).toEqual(store.items(taskId).slice(-snap.items.l…\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯\n\n FAIL  src/renderer/features/agent-tasks/agent-task-view.test.tsx > 不为已结束的时间线按秒重绘，下一回合开始时恢复真实计时\nAssertionError: expected 4 to be 3 // Object.is equality\n\n- Expected\n+ Received\n\n- 3\n+ 4\n\n ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx:1311:39\n    1309|     await act(async () => { await vi.advanceTimersByTimeAsync(5000); }…\n    1310|     expect(screen.getByText('用时 3 秒')).toBeTruthy();\n    1311|     expect(commits.mock.calls.length).toBe(idleCommits);\n       |                                       ^\n    1312|\n    1313|     const start = new Date(Date.now()).toISOString();\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯\n\n\n Test Files  2 failed (2)\n      Tests  3 failed | 231 skipped (234)\n   Start at  23:39:08\n   Duration  1.89s (transform 578ms, setup 0ms, import 1.27s, tests 96ms, environment 376ms)\n\n ELIFECYCLE  Test failed. See above for more details.\n"
+    }
+  },
+  "green": {
+    "result": {
+      "chunk_id": "755ce7",
+      "wall_time_seconds": 0.00001475,
+      "exit_code": 0,
+      "original_token_count": 47,
+      "output": "\n Test Files  2 passed (2)\n      Tests  3 passed | 231 skipped (234)\n   Start at  23:43:42\n   Duration  1.68s (transform 719ms, setup 0ms, import 1.24s, tests 107ms, environment 198ms)\n\n"
+    }
+  },
+  "wideRegression": {
+    "command": "pnpm test src/main/core/browser src/main/app/window.test.ts src/main/core/files/html src/main/core/files/mcp src/main/core/schedules src/main/core/agent/agent-task-service.test.ts src/main/core/agent/host-business-requests.test.ts src/main/core/agent/agent-run-service.test.ts src/main/core/agent/delegation-service.test.ts src/main/core/agent/turn-diffs.test.ts src/renderer/features/agent-tasks --maxWorkers=2",
+    "result": {
+      "chunk_id": "991d7d",
+      "wall_time_seconds": 0.000014292,
+      "exit_code": 0,
+      "original_token_count": 48,
+      "output": "\n Test Files  77 passed (77)\n      Tests  856 passed | 1 skipped (857)\n   Start at  23:46:26\n   Duration  32.36s (transform 1.67s, setup 0ms, import 4.50s, tests 54.32s, environment 941ms)\n\n"
+    },
+    "defaultSkip": "Optional M14_REVIEW_WALL_CLOCK test requires explicit opt-in; not counted as passed."
+  },
+  "typecheck": {
+    "initial": {
+      "chunk_id": "6962f7",
+      "wall_time_seconds": 0.000015667,
+      "exit_code": 2,
+      "original_token_count": 126,
+      "output": "src/renderer/features/agent-tasks/agent-task-view.tsx(1071,24): error TS2345: Argument of type '(turn: TurnInfo) => boolean' is not assignable to parameter of type '(value: Record<string, any>, index: number, array: Record<string, any>[]) => unknown'.\n  Types of parameters 'turn' and 'value' are incompatible.\n    Type 'Record<string, any>' is missing the following properties from type 'TurnInfo': turn_id, status, accepted_at, started_at, and 2 more.\n ELIFECYCLE  Command failed with exit code 2.\n"
+    },
+    "final": {
+      "chunk_id": "d5734a",
+      "wall_time_seconds": 0.000015459,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "adjustment": "Type-only cast to existing TurnInfo[] projection; no runtime input/behavior changed after broad suite."
+  },
+  "build": {
+    "result": {
+      "chunk_id": "83e73d",
+      "wall_time_seconds": 0.000015292,
+      "exit_code": 0,
+      "original_token_count": 754,
+      "output": "To ensure your native dependencies are always matched electron version, simply add script `\"postinstall\": \"electron-builder install-app-deps\" to your `package.json`\n  • skipped dependencies rebuild  reason=npmRebuild is set to false\n  • packaging       platform=darwin arch=arm64 electron=42.11.14 appOutDir=/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64\n  • using custom unpacked Electron distribution  electronDist=node_modules/electron/dist\n  • copying unpacked Electron  source=/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/electron/dist/Electron.app destination=/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/Electron.app\n  • searching for node modules  pm=pnpm searchDir=/Users/liubu/hx/4.uprxiao/SmartDD\n  • platform-specific optional dependencies not bundled — add them to your project's optionalDependencies if your app requires them (pnpm 10+ does not auto-install transitive platform binaries)  dependencies=[\"@parcel/watcher-android-arm64@2.5.6\",\"@parcel/watcher-darwin-x64@2.5.6\",\"@parcel/watcher-freebsd-x64@2.5.6\",\"@parcel/watcher-linux-arm-glibc@2.5.6\",\"@parcel/watcher-linux-arm-musl@2.5.6\",\"@parcel/watcher-linux-arm64-glibc@2.5.6\",\"@parcel/watcher-linux-arm64-musl@2.5.6\",\"@parcel/watcher-linux-x64-glibc@2.5.6\",\"@parcel/watcher-linux-x64-musl@2.5.6\",\"@parcel/watcher-win32-arm64@2.5.6\",\"@parcel/watcher-win32-ia32@2.5.6\",\"@parcel/watcher-win32-x64@2.5.6\"]\n  • ad-hoc signing with hardenedRuntime enabled requires the com.apple.security.cs.disable-library-validation entitlement to prevent app launch failures due to library validation. See https://electron.build/code-signing for details.\n  • signing additional user-defined binaries for arch  binaries=[\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/smartdd-voice\",\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files\",\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/willyou-foxmail\",\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/willyou-process-identity\",\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/willyou-app\",\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/tex/tectonic\",\"/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app/Contents/Resources/native/office/jre/bin/java\"] arch=arm64\n  • signing         file=/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app platform=darwin type=distribution identityName=- identityHash=none provisioningProfile=none\n  • skipped macOS notarization  reason=`notarize` options were set explicitly `false`\n{\"version\":\"0.1.7\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"sqlite\":\"passed\",\"pty\":\"passed\",\"voiceBridge\":\"passed\",\"fileBroker\":\"passed\",\"officeRenderer\":\"passed\",\"fileWatcher\":\"passed\"}\n"
+    },
+    "app": "/private/tmp/willyou-m16-c23-build.9V6OZq/standard/mac-arm64/WillYou.app",
+    "log": "/private/tmp/willyou-m16-c23-build.9V6OZq/package.log",
+    "sourceManifestSha256": "e1d0a05bb377391386fb862c6428fc476929671dde99e480806104d1f0f60dce",
+    "asar": "cb3a33f315a9e862c4e0c904513bfc01400cb11c7436feaf0f352f7f067da3f1",
+    "native": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "codesignDeepStrictExit": 0
+  }
+}

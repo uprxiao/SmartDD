@@ -22,6 +22,22 @@ describe.skipIf(process.platform !== 'darwin')('kernel process identity and actu
     expect(reader.read(-1)).toBeNull(); expect(reader.read(Number.NaN)).toBeNull(); expect(new MacProcessIdentityReader(join(build,'not-present')).state({ pid: process.pid,startedAt: 'darwin-proc-v1:1:1' })).toBe('unknown');
     expect(JSON.parse(execFileSync(native,['invalid'],{ encoding: 'utf8' }))).toEqual({ schema: 1,state: 'unknown' });
   });
+  it('observes a bounded batch of exact known identities with the same state as individual probes', async () => {
+    const own = reader.read(process.pid)!;
+    const first = await child(), second = await child();
+    const live = reader.read(first.pid!)!, ended = reader.read(second.pid!)!;
+    const exit = once(second,'exit'); second.kill('SIGTERM'); await exit;
+    const input = [own, live, ended, {...live,startedAt:'darwin-proc-v1:1:1'}, {...live,startedAt:'invalid'}, {pid:-1,startedAt:own.startedAt}];
+    const expected = input.map(identity=>reader.state(identity));
+    expect(expected).toEqual(['running','running','stopped','stopped','unknown','unknown']);
+    expect(reader.states(input)).toEqual(expected);
+    const result=JSON.parse(execFileSync(native,['--observe-owned-identities',String(live.pid),live.startedAt,String(ended.pid),ended.startedAt,String(live.pid),'darwin-proc-v1:1:1'],{encoding:'utf8',timeout:5000}));
+    expect(result).toEqual({schema:6,state:'observed',entries:[{...live,state:'running'},{...ended,state:'stopped'},{...live,startedAt:'darwin-proc-v1:1:1',state:'stopped'}]});
+    expect(JSON.parse(execFileSync(native,['--observe-owned-identities',String(live.pid),'invalid'],{encoding:'utf8'}))).toEqual({schema:6,state:'unknown'});
+    expect(reader.states([])).toEqual([]);
+    expect(new MacProcessIdentityReader(join(build,'not-present')).states([own,live])).toEqual(['unknown','unknown']);
+    expect(reader.states(Array.from({length:70},()=>own))).toEqual(Array.from({length:70},()=> 'running'));
+  });
   it('returns only known held SQLite file identities and rejects a different birth or executable',()=>{
     const path=join(build,'state_5.sqlite'),other=join(build,'unrelated-public.txt');
     writeFileSync(path,'public metadata fixture');writeFileSync(other,'excluded public fixture');

@@ -1,3 +1,5 @@
+import {scheduledWorkspaceForTask} from '../schedules/workspace-authority';
+import {taskApplicationScope} from './task-application-scope';
 import { realpathSync, statSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { applicationRunsForAgent } from './application-runs';
@@ -76,6 +78,7 @@ export interface AgentWorkspaceDeps {
   host: { instanceId: string; pid: number; startedAt: string | null };
   emitEvent(e: StoredEvent): void;
   emitLive(e: AgentLiveFrame): void;
+  onTaskRemoved?: (taskId: string) => void;
   ptys?: import('./manual-terminal').TerminalPtys;
   mcpProjection?: Pick<McpProjectionService, 'prepare'>;
   skillProjection?: Pick<import('../capabilities/skill-projection').SkillProjectionService, 'prepare'>;
@@ -130,7 +133,8 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const kind = codeAgentKindSchema.parse(c.kind);
     const connection = provider ? d.providers.runtimeConnection(provider.id, kind) : undefined;
     const base = d.baseEnv();
-    const input = { config: c, tool, provider, key: connection?.target.key, cwd, userData: d.userData, runId: randomUUID(), baseEnv: base, model, carryExtensions };
+    const standalone = !!taskId && store.task(taskId)?.project_id === null;
+    const input = { config: c, tool, provider, key: connection?.target.key, cwd, userData: d.userData, runId: randomUUID(), baseEnv: base, model, carryExtensions, standalone };
     let launch = resolveProfileLaunch(input);
     const old = taskId ? store.bindingLaunch(taskId, profileId) : undefined;
     const withoutExtensions = (x: Record<string, unknown>) => Object.fromEntries(Object.entries(x).filter(([k]) => k !== 'extensions'));
@@ -162,7 +166,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
       : undefined;
     const scope = kind === 'codex' && c.source === 'login' ? subscriptionCatalogScope(profileId, launch, tool, cwd) : undefined;
     const bindAccount = (account: string) => catalogAccountId(account, probe.realpath!, probe.version);
-    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities, modelsWithoutImageInput, assertCurrent,
+    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, nativeProjectSkillRoots:launch.nativeProjectSkillRoots, capabilities: probe.capabilities, modelsWithoutImageInput, assertCurrent,
       modelCache: scope && {
         read: account => modelCatalogs.modelsForRun(scope.key, bindAccount(account), () => {
           void readSubscriptionCatalog(c, tool, cwd).catch(() => {});
@@ -171,9 +175,10 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
       },
       integrate: async context => {
         if (!taskId) return undefined;
-        const task = store.task(taskId); if (!task?.project_id) return undefined;
+        const task = store.task(taskId); if (!task) return undefined;
         assertCurrent();
-        const projectId = task.project_id;
+        const projectId=taskApplicationScope(store.sqlite,taskId);if(!projectId)return undefined;
+        const standalone=task.project_id===null;
         const actual = resolveProfileLaunch({ ...input, runId: context.runId, carryExtensions: launch.compatibility.extensions !== false });
         materializeAgentPlan(actual.plan, d.userData, cwd);
         const supportsMcp = probe.capabilities.mcp.state === 'enabled';
@@ -181,24 +186,24 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         if (supportsMcp && business && !delivery) {
           store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证，本轮可继续对话和写代码。'});
         }
-        const applicationScope = delivery === 'browser' ? delivery : undefined;
+        const applicationScope = standalone&&delivery?'browser':delivery === 'browser' ? delivery : undefined;
         const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
         const home = base.HOME ?? homedir();
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
-        const projectResourcesAllowed = kind !== 'antigravity' && role?.access !== 'read';
-        const extensionsAllowed = projectResourcesAllowed && delivery === 'verified';
+        const projectResourcesAllowed = !standalone&&kind !== 'antigravity' && role?.access !== 'read';
+        const extensionsAllowed = kind !== 'antigravity' && role?.access !== 'read' && delivery === 'verified';
         const skillAdapterForRun = skillAdapter(kind);
         const skillsAllowed = role?.access !== 'read' && probe.capabilities.skills.state === 'enabled'
           && (extensionsAllowed || skillAdapterForRun?.isolatedHome);
         const skills = skillsAllowed ? d.skillProjection?.prepare({
-          runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
+          runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, globalOnly:standalone, nativeLogin: c.source === 'login',
         }) : undefined;
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
         if (skills?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedSkillUnavailable', detail: skills.issues.map(issue => issue.reason).join('；'),
         });
         const projected = extensionsAllowed ? d.mcpProjection?.prepare({
-          runner: actual.plan.profile.runner, cwd, runRoot,
+          runner: actual.plan.profile.runner, cwd, runRoot, globalOnly:standalone,
           injectedNames: Object.keys(actual.plan.profile.env), requireKnownFields: true,
         }) : undefined;
         if (projected?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
@@ -329,16 +334,19 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   } });
   const delegationProfile = (id: string) => { const c = config(id), provider = c.providerId ? d.agents.providers().find(p => p.id === c.providerId) : undefined; return { profileId: id, driverId: driverForKind(c.kind), name: c.name, models: c.models, available: c.available, trustedRead: c.kind === 'codex' && c.source === 'provider', revision: sha256(JSON.stringify({ config: c, providerRevision: provider?.identityRevision })) }; };
   const delegations = new DelegationService({ store, runs, tasks, git, profile: delegationProfile, profiles: () => d.agents.configs().filter(c => c.source !== 'legacy' && c.available).map(c => delegationProfile(c.id)),
-    roots: taskId => { const w = git.workspace(taskId); if (w?.state === 'ready') return [w.path]; const roots = (store.sqlite.prepare('SELECT path FROM project_dirs').all() as { path: string }[]).map(r => r.path); const task = store.task(taskId); return task?.project_id ? roots : task ? [task.cwd] : []; },
+    roots: taskId => { const own=scheduledWorkspaceForTask(store.sqlite,taskId,d.baseEnv().HOME??homedir());if(own)return [own.path];const w = git.workspace(taskId); if (w?.state === 'ready') return [w.path]; const roots = (store.sqlite.prepare('SELECT path FROM project_dirs').all() as { path: string }[]).map(r => r.path); const task = store.task(taskId); return task?.project_id ? roots : task ? [task.cwd] : []; },
     project: id => id ? (store.sqlite.prepare('SELECT id,name FROM projects WHERE id=?').get(id) as { id: string; name: string } | undefined) ?? { id, name: 'project' } : { id: 'unscoped', name: 'project' },
     drained: async runId => { if (!await runs.drainNativeGroup(runId)) return false; if (store.run(runId)?.state === 'orphaned') await business?.recoverAgentRun(runId); const processes = store.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND state NOT IN ('exited','canceled')").get(runId); const activities = store.sqlite.prepare("SELECT 1 FROM capability_run_activities WHERE run_id=? AND state='active'").get(runId); return !processes && !activities; },
   });
-  const requests = new HostBusinessRequests({store,run:taskId=>runs.runForTask(taskId),currentTurn:runId=>runs.active(runId)?.turnId,hasOwner:taskId=>!!runs.runForTask(taskId)||!!runs.closingForTask(taskId),notify:(taskId,id,text,wake)=>tasks.enqueueHost(taskId,id,text,'notification',wake),wakeLogin:taskId=>tasks.kick(taskId),acquire:(taskId,_operation,signal)=>delegations.acquireBusiness(taskId,signal)});tasks.attachBusiness(requests);
-  const diffs=new TurnDiffs({store,storage:join(d.userData,'agent-diffs'),excluded:(taskId,cwd)=>git.snapshotExclusions(taskId,cwd,d.userData),stable:(taskId,turnId)=>{const run=runs.runForTask(taskId);return !delegations.businessBusy(taskId)&&(!run||!runs.busy(run.runId)&&!runs.nativeBusy(run.runId))&&!store.sqlite.prepare("SELECT 1 FROM agent_turns WHERE task_id=? AND turn_id<>? AND status IN ('dispatching','started')").get(taskId,turnId);},changed:taskId=>store.tx(emit=>emit(taskId,'diff.changed',{}))});
+  const requests = new HostBusinessRequests({store,run:taskId=>runs.runForTask(taskId),currentTurn:runId=>runs.active(runId)?.turnId,hasOwner:taskId=>!!runs.runForTask(taskId)||!!runs.closingForTask(taskId),notify:(taskId,id,text,wake,parentTurnId)=>tasks.enqueueHost(taskId,id,text,'notification',wake,parentTurnId),wakeLogin:taskId=>tasks.kick(taskId),acquire:(taskId,_operation,signal)=>delegations.acquireBusiness(taskId,signal)});tasks.attachBusiness(requests);
+  const diffs=new TurnDiffs({store,storage:join(d.userData,'agent-diffs'),excluded:(taskId,cwd)=>scheduledWorkspaceForTask(store.sqlite,taskId,d.baseEnv().HOME??homedir())?[d.userData]:git.snapshotExclusions(taskId,cwd,d.userData),stable:(taskId,turnId)=>{const run=runs.runForTask(taskId);return !delegations.businessBusy(taskId)&&(!run||!runs.busy(run.runId)&&!runs.nativeBusy(run.runId))&&!store.sqlite.prepare("SELECT 1 FROM agent_turns WHERE task_id=? AND turn_id<>? AND status IN ('dispatching','started')").get(taskId,turnId);},changed:taskId=>store.tx(emit=>emit(taskId,'diff.changed',{}))});
   tasks.attachDiffs(diffs, taskId => delegations.businessBusy(taskId));
   let links:MessageLinks|undefined;
   void git.recoverIntents().catch(() => { /* explicit needs_review records retain ownership */ });
-  store.subscribe((e: StoredEvent) => d.emitEvent(boundedEvent(e)));
+  store.subscribe((e:StoredEvent)=>{
+    const origin=e.type==='request.opened'?(e.payload as {origin?:{turnId?:string}})?.origin:undefined;
+    d.emitEvent({...boundedEvent(e),...(origin&&store.scheduledOrigin(origin.turnId)?{scheduled:true}:{})});
+  });
   const liveOutput = new AgentLiveOutput(d.emitLive);
   const live: LiveListener = ({ taskId, runId, event }) => {
     if (event.type === 'message.delta') liveOutput.append({ taskId, runId, itemKey: event.nativeItemId, text: event.text });
@@ -386,8 +394,14 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (!antigravity && !nativeLogin) return { status: 'ready', models: [] };
     if (profile.loggedOut || !profile.available) return { status: 'unavailable', models: [] };
     const task = scope.kind === 'task' ? store.task(scope.taskId) : undefined;
-    if (scope.kind !== 'project' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
-    const cwd = scope.kind === 'project' ? registeredProjectCwd(d.sqlite, scope.projectId, scope.dirId) : canonicalPath(task!.cwd);
+    if (scope.kind === 'task' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
+    // A standalone plan needs the account catalog before any task exists.
+    // The preview uses the host's own root, not a renderer-supplied path.
+    let cwd: string;
+    if (scope.kind === 'project') cwd=registeredProjectCwd(d.sqlite,scope.projectId,scope.dirId);
+    else if (scope.kind === 'standalone') cwd=canonicalPath(d.userData);
+    else if (task) cwd=canonicalPath(task.cwd);
+    else throw new DriverError('REJECTED','模型目录作用域不可用');
     const tool = checked?.tool ?? d.agents.tools().find(item => item.id === profile.toolId);
     if (!tool) throw new DriverError('REJECTED', '执行器不可用');
     if (profile.kind === 'claude') {
@@ -449,8 +463,15 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     return readSubscriptionCatalog(profile, tool, cwd, mode);
   };
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskProject: taskId => store.task(taskId)?.project_id ?? null, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
-  const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData });
+  const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData,onTaskRemoved:d.onTaskRemoved });
   tasks.attachAttachmentCleanup((taskId,data)=>projectResources.discardAttachments(taskId,data));
-  return { store, runs, tasks, profiles, terminals, homeSkillCatalog, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await tasks.closePrewarms(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
+  const scheduleProfile=(id:string)=>{
+    const c=config(id),tool=d.agents.tools().find(t=>t.id===c.toolId);if(!tool||!c.available)throw new DriverError('REJECTED','智能体不可用');
+    const provider=c.providerId?d.agents.providers().find(p=>p.id===c.providerId):undefined;
+    const connection=provider?d.providers.runtimeConnection(provider.id,codeAgentKindSchema.parse(c.kind)):undefined;
+    const launch=resolveProfileLaunch({config:c,tool,provider,key:connection?.target.key,cwd:d.userData,userData:d.userData,runId:randomUUID(),baseEnv:d.baseEnv()});
+    return{available:true,compatibility:sha256(JSON.stringify({driver:launch.driverId,profile:launch.compatibility})),kind:c.kind,providerBacked:c.source==='provider',models:c.models,modelOptions:providerModelOptions(provider,c)};
+  };
+  return { store, runs, tasks, profiles, scheduleProfile, terminals, homeSkillCatalog, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await tasks.closePrewarms(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

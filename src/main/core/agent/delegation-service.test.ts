@@ -16,6 +16,7 @@ import { HostBusinessRequests } from './host-business-requests';
 import { Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
 import { until, tick } from './test-doubles';
+import {ScheduleService} from '../schedules/service';
 let pid = 50000;
 const goals = new Map<string, { objective: string; status: string; createdAt: number; updatedAt: number }>();
 class Instance implements DriverInstance {
@@ -235,6 +236,64 @@ it('A19/A24/A32: delegation is durable/idempotent and returns before the child s
   expect(f.co.view(receipt.childTaskId).parentTaskId).toBe(f.taskId);
   expect(() => f.co.setMode(receipt.childTaskId, true)).toThrow('子任务');
 });
+it('M16 A49 keeps the scheduled occurrence open across the real delegation queue, child and final parent result notification',async()=>{
+  const f=fixture();const schedules=new ScheduleService({agent:{store:f.store,runs:f.runs,tasks:f.tasks,delegations:f.co} as unknown as import('./wiring').AgentWorkspace,home:f.root,userData:f.root,profile:()=>({available:true,compatibility:'fixture'}),changed:()=>{}});
+  try{
+    schedules.start();const plan=await schedules.save({schedule:{type:'interval',zone:'UTC',minutes:60},config:{title:'scheduled parent',prompt:'root prompt',projectId:null,dirId:null,cwd:f.root,workspace:'directory',baseRef:null,destination:'existing',boundTask:f.taskId,profileId:'main',tier:'ask',delegation:true,notifyCompleted:false},grace:60,enabled:false});
+    const claim=schedules.runNow(plan.id,plan.revision,'scheduled-parent');if(!('run'in claim))throw Error();
+    await until(()=>f.instances[0]?.turns.length===1);const occurrence=schedules.store.run(claim.run.id)!;const root=occurrence.turnId!;
+    const child=await f.delegate('scheduled-child');f.instances[0].finish('EARLY PARENT');await until(()=>f.instances.length===2&&!!f.instances[1].turns.length,5000);
+    const childTurn=f.store.turns(child.childTaskId)[0];expect(f.store.scheduledOrigin(childTurn.turn_id)?.occurrence_id).toBe(occurrence.id);
+    expect(schedules.store.run(occurrence.id)?.status).toBe('running');expect(schedules.runNow(plan.id,plan.revision,'tree-busy').kind).toBe('busy');
+    f.instances[1].finish('CHILD ACTUAL RESULT');await until(()=>f.instances.length===3&&!!f.instances[2].turns.length,5000);
+    expect(f.instances[2].turns[0].text).toContain('结果通知');const follow=f.store.turns(f.taskId).at(-1)!;expect(f.store.scheduledOrigin(follow.turn_id)?.root_turn_id).toBe(root);
+    expect(schedules.store.run(occurrence.id)?.status).toBe('running');f.instances[2].finish('FINAL OWNED PARENT');
+    await until(()=>schedules.store.run(occurrence.id)?.status==='completed',6000);
+    const result=schedules.detail(occurrence.id);expect(result.result?.payload.text).toBe('FINAL OWNED PARENT');expect(result.items.some(i=>i.payload.text==='CHILD ACTUAL RESULT')).toBe(true);expect(schedules.history(plan.id)[0].summary).toBe('FINAL OWNED PARENT');
+  }finally{await schedules.stop();}
+});
+it('M16 A36 stops an accepted occurrence’s delegated work without launching a stale parent continuation or stopping later ordinary input',async()=>{
+  const f=fixture();const schedules=new ScheduleService({agent:{store:f.store,runs:f.runs,tasks:f.tasks,delegations:f.co} as unknown as import('./wiring').AgentWorkspace,home:f.root,userData:f.root,profile:()=>({available:true,compatibility:'fixture'}),changed:()=>{}});
+  try{
+    schedules.start();const plan=await schedules.save({schedule:{type:'interval',zone:'UTC',minutes:60},config:{title:'scheduled parent',prompt:'root prompt',projectId:null,dirId:null,cwd:f.root,workspace:'directory',baseRef:null,destination:'existing',boundTask:f.taskId,profileId:'main',tier:'ask',delegation:true,notifyCompleted:false},grace:60,enabled:true});
+    const claim=schedules.runNow(plan.id,plan.revision,'scheduled-parent-stop');if(!('run'in claim))throw Error();await until(()=>f.instances[0]?.turns.length===1);
+    const occurrence=schedules.store.run(claim.run.id)!;const child=await f.delegate('owned-child-stop');f.instances[0].finish('EARLY PARENT');await until(()=>f.instances.length===2&&!!f.instances[1].turns.length,5000);
+    const stop=schedules.stopRun(occurrence.id);await until(()=>f.instances[1].interrupts>0);f.instances[1].events.emit({type:'turn.completed',nativeTurnId:'turn-1',status:'interrupted'});await stop;
+    await until(()=>schedules.store.run(occurrence.id)?.status==='stopped'||f.instances.length>2,5000);expect(schedules.store.run(occurrence.id)?.status).toBe('stopped');
+    expect(f.store.turns(child.childTaskId).at(-1)?.status).toBe('interrupted');expect(f.instances.length).toBe(2);
+    const ordinary=await f.send('later unrelated ordinary input');await expect(schedules.stopRun(occurrence.id)).rejects.toThrow();expect(ordinary.interrupts).toBe(0);ordinary.finish('ordinary remains available');
+    expect(schedules.store.plan(plan.id)?.enabled).toBe(true);
+  }finally{await schedules.stop();}
+},15000);
+it('M16 A36 cancels a queued owned child before native launch while stopping the actual root',async()=>{
+  const f=fixture();const schedules=new ScheduleService({agent:{store:f.store,runs:f.runs,tasks:f.tasks,delegations:f.co} as unknown as import('./wiring').AgentWorkspace,home:f.root,userData:f.root,profile:()=>({available:true,compatibility:'fixture'}),changed:()=>{}});
+  try{
+    schedules.start();const plan=await schedules.save({schedule:{type:'interval',zone:'UTC',minutes:60},config:{title:'scheduled root',prompt:'root prompt',projectId:null,dirId:null,cwd:f.root,workspace:'directory',baseRef:null,destination:'existing',boundTask:f.taskId,profileId:'main',tier:'ask',delegation:true,notifyCompleted:false},grace:60,enabled:true});
+    const claim=schedules.runNow(plan.id,plan.revision,'root-stop');if(!('run'in claim))throw Error();await until(()=>f.instances[0]?.turns.length===1);
+    const c=await f.delegate('queued-owned-child');const stop=schedules.stopRun(claim.run.id);await until(()=>f.instances[0].interrupts>0);f.instances[0].events.emit({type:'turn.completed',nativeTurnId:'turn-1',status:'interrupted'});await stop;
+    await until(()=>schedules.store.run(claim.run.id)?.status==='stopped',5000);expect(f.instances).toHaveLength(1);
+    expect(f.store.turns(c.childTaskId).every(t=>t.status==='canceled')).toBe(true);expect(schedules.store.plan(plan.id)?.enabled).toBe(true);
+  }finally{await schedules.stop();}
+},15000);
+it('M16 A36 retires only the owned result delivery when stopping its already queued parent notification',async()=>{
+  const f=fixture();const schedules=new ScheduleService({agent:{store:f.store,runs:f.runs,tasks:f.tasks,delegations:f.co} as unknown as import('./wiring').AgentWorkspace,home:f.root,userData:f.root,profile:()=>({available:true,compatibility:'fixture'}),changed:()=>{}});
+  try{
+    schedules.start();const plan=await schedules.save({schedule:{type:'interval',zone:'UTC',minutes:60},config:{title:'scheduled parent',prompt:'root prompt',projectId:null,dirId:null,cwd:f.root,workspace:'directory',baseRef:null,destination:'existing',boundTask:f.taskId,profileId:'main',tier:'ask',delegation:true,notifyCompleted:false},grace:60,enabled:true});
+    const claim=schedules.runNow(plan.id,plan.revision,'queued-result-stop');if(!('run'in claim))throw Error();await until(()=>f.instances[0]?.turns.length===1);
+    const c=await f.delegate('owned-child-result');f.instances[0].finish('EARLY PARENT');await until(()=>f.instances.length===2&&!!f.instances[1].turns.length,5000);
+    // Hold only the test fixture dispatch notification at its natural boundary.
+    const kick=f.tasks.kick.bind(f.tasks),gate=vi.spyOn(f.tasks,'kick').mockImplementation(id=>{if(id!==f.taskId)kick(id);});
+    try{
+      f.instances[1].finish('CHILD FINISHED');await until(()=>f.store.queuedTurns(f.taskId).some(t=>t.source_kind==='notification'),5000);
+      await schedules.stopRun(claim.run.id);
+      await until(()=>schedules.store.run(claim.run.id)?.status==='stopped',1500);
+      expect(f.co.view(f.taskId).children.find(ch=>ch.childTaskId===c.childTaskId)?.state).toBe('canceled');
+      expect(f.store.turns(f.taskId).at(-1)?.status).toBe('canceled');
+      expect(f.store.turns(c.childTaskId).at(-1)?.status).toBe('completed');
+    }finally{gate.mockRestore();}
+    expect(f.instances).toHaveLength(2);const ordinary=await f.send('ordinary after queue stop');expect(ordinary.interrupts).toBe(0);ordinary.finish('ordinary still works');
+  }finally{await schedules.stop();}
+},15000);
 it('A24/A31/A32: two children and a new parent input share FIFO; the parent cannot reacquire ahead of either child', async () => {
   const f = fixture(), p = await f.send('start'); const c1 = await f.delegate(), c2 = await f.delegate();
   await f.tasks.submit(f.taskId, { clientInputId: randomUUID(), text: 'parent later', expectedSelectionRevision: f.tasks.snapshot(f.taskId).selectionRevision });

@@ -4,6 +4,7 @@ import type {BrowserScope,BrowserService} from '../browser/service';
 import type {AgentStore} from './agent-store';
 import type {AgentTaskService} from './agent-task-service';
 import {DriverError} from './driver';
+import {taskApplicationScope} from './task-application-scope';
 import type {BusinessRecord,HostBusinessRequests} from './host-business-requests';
 
 export function attachBrowserLoginRequests(options:{
@@ -21,7 +22,7 @@ export function attachBrowserLoginRequests(options:{
     validate:async(record,_decision,run)=>{
       const input=data(record),task=store.task(record.row.task_id),binding=store.binding(record.origin.bindingId);
       assertEnabled(input.projectId);
-      if(!task||task.project_id!==input.projectId||binding?.task_id!==task.id||
+      if(!task||taskApplicationScope(store.sqlite,task.id)!==input.projectId||binding?.task_id!==task.id||
         run&&run.bindingId!==record.origin.bindingId)
         throw new ApplicationError('INTENT_STALE','原任务或执行器绑定已变化');
       const selection=JSON.parse(task.selection_json);
@@ -51,13 +52,13 @@ export function attachBrowserLoginRequests(options:{
       }
       const notice=JSON.stringify({pageId:input.pageId,checkpoint:input.checkpoint});
       const turn=tasks.enqueueHost(record.row.task_id,`browser-login-${record.row.request_id}-${record.row.revision}`,
-        'WillYou 宿主已核验本人登录及原业务页。只继续第一个未完成的依赖步骤，先观察原标签，避免重发旧动作。已核验的原标签和接续位置 '+notice,'system');
+        'WillYou 宿主已核验本人登录及原业务页。只继续第一个未完成的依赖步骤，先观察原标签，避免重发旧动作。已核验的原标签和接续位置 '+notice,'system',false,record.origin.turnId);
       return{status:'verified',pageId:input.pageId,turnId:turn.turn.turn_id};
     },
   });
   browser.attachLoginRequest((scope,input)=>{
     const run=store.run(scope.runId);
-    if(!run?.binding_id||run.task_id!==scope.taskId)throw new ApplicationError('SCOPE_DENIED','登录接力需要原任务运行身份');
+    if(!run?.binding_id||run.task_id!==scope.taskId||run.project_id!==scope.projectId||taskApplicationScope(store.sqlite,scope.taskId)!==scope.projectId)throw new ApplicationError('SCOPE_DENIED','登录接力需要原任务运行身份');
     assertEnabled(scope.projectId);
     return requests.create({taskId:scope.taskId,runId:scope.runId,bindingId:run.binding_id,generation:run.generation},{
       operationId:scope.operationId,kind:'browser_login',title:'请在原网页完成登录',

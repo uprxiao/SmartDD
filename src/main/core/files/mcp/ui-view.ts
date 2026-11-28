@@ -1,4 +1,5 @@
-import {app,session,WebContentsView,type BrowserWindow,type Session} from 'electron';
+import {claimNativeFront,releaseNativeFront} from '@main/app/window-host';
+import {app,session,WebContentsView,type BaseWindow,type WebContents,type Session} from 'electron';
 import {randomUUID} from 'node:crypto';
 import {join} from 'node:path';
 import {FileError} from '@shared/files';
@@ -9,19 +10,19 @@ import {ViewerNotificationBudget} from './policy';
 import {nativeViewerDocument} from './ui-document';
 export interface McpUiSource { html:string;signal:AbortSignal;assert():void }
 export interface McpUiEvent {id:string;payload?:unknown;error?:string}
-interface View {owner:string;id:string;parent:BrowserWindow;source:McpUiSource;abort:AbortController;view?:WebContentsView;bounds?:HtmlViewBounds;ready:boolean;sheet:boolean;cleanups:(()=>void)[];emit(value:McpUiEvent):void}
+interface View {owner:string;id:string;parent:BaseWindow;parentContents:WebContents;source:McpUiSource;abort:AbortController;view?:WebContentsView;bounds?:HtmlViewBounds;ready:boolean;sheet:boolean;cleanups:(()=>void)[];emit(value:McpUiEvent):void}
 export class FileMcpUiService {
  private views=new Map<string,View>();
  private cancelled=new Map<string,number>();
  private sessions=new Map<string,{session:Session;ready:Promise<void>}>();
  constructor(private readonly resolve:(owner:string,input:ViewerResourceInput)=>McpUiSource){}
- async open(owner:string,input:ViewerResourceInput,parent:BrowserWindow,emit:(event:McpUiEvent)=>void){
+ async open(owner:string,input:ViewerResourceInput,parent:BaseWindow,emit:(event:McpUiEvent)=>void,parentContents:WebContents){
   for(const [key,until] of this.cancelled)if(until<Date.now())this.cancelled.delete(key);
   if(this.cancelled.has(`${owner}/${input.id}`))throw new FileError('CANCELLED','扩展界面打开已取消');
   const source=this.resolve(owner,input);source.assert();source.signal.throwIfAborted();
   if(this.views.get(owner)?.id===input.id)throw new FileError('IDEMPOTENCY','扩展界面会话已经打开');
   this.closeOwner(owner);
-  const record:View={owner,id:input.id,parent,source,abort:new AbortController(),ready:false,sheet:false,cleanups:[],emit:value=>{try{emit(value)}catch{this.closeOwner(owner)}}};this.views.set(owner,record);
+  const record:View={owner,id:input.id,parent,parentContents,source,abort:new AbortController(),ready:false,sheet:false,cleanups:[],emit:value=>{try{emit(value)}catch{this.closeOwner(owner)}}};this.views.set(owner,record);
   const alive=()=>this.views.get(owner)===record&&!record.abort.signal.aborted;
   const assert=()=>{if(!alive())throw new FileError('CANCELLED','扩展界面已关闭');source.assert();source.signal.throwIfAborted()};
   const fail=(message:string,hung=false)=>{if(alive()){record.emit({id:record.id,error:message});this.drop(record,hung)}};
@@ -86,7 +87,7 @@ export class FileMcpUiService {
  bounds(owner:string,raw:HtmlViewBounds){const input=htmlBoundsSchema.parse(raw),record=this.views.get(owner);if(record?.id===input.id){record.bounds=input;this.layout(record)}}
  close(owner:string,id:string){this.cancelled.set(`${owner}/${id}`,Date.now()+60000);while(this.cancelled.size>2048)this.cancelled.delete(this.cancelled.keys().next().value!);const record=this.views.get(owner);if(record?.id===id)this.drop(record)}
  closeOwner(owner:string){const record=this.views.get(owner);if(record)this.close(owner,record.id)}
- private layout(r:View){if(!r.view||r.parent.isDestroyed())return;const [w,h]=r.parent.getContentSize(),bounds=r.bounds?htmlBounds(r.bounds,w,h,r.parent.webContents.getZoomFactor()):{x:0,y:0,width:0,height:0};const visible=r.ready&&!!r.bounds?.visible&&!r.sheet&&bounds.width>0&&bounds.height>0&&r.parent.isVisible()&&!r.parent.isMinimized();if(!visible)this.focus(r);r.view.setBounds(bounds);r.view.setVisible(visible)}
- private focus(r:View){if(r.view&&!r.sheet&&!r.parent.isDestroyed()&&r.parent.isFocused()&&r.parent.isVisible()&&!r.parent.isMinimized()&&!r.view.webContents.isDestroyed()&&r.view.webContents.isFocused())r.parent.webContents.focus()}
- private drop(r:View,hung=false){if(r.abort.signal.aborted)return;r.abort.abort();if(this.views.get(r.owner)===r)this.views.delete(r.owner);const view=r.view;if(view){this.focus(r);r.view=undefined;view.setVisible(false);if(!r.parent.isDestroyed())r.parent.contentView.removeChildView(view);if(!view.webContents.isDestroyed()){if(hung)view.webContents.forcefullyCrashRenderer();view.webContents.close({waitForBeforeUnload:false})}}r.cleanups.splice(0).forEach(f=>f())}
+ private layout(r:View){if(!r.view||r.parent.isDestroyed()||r.parentContents.isDestroyed())return;const [w,h]=r.parent.getContentSize(),bounds=r.bounds?htmlBounds(r.bounds,w,h,r.parentContents.getZoomFactor()):{x:0,y:0,width:0,height:0};const visible=r.ready&&!!r.bounds?.visible&&!r.sheet&&bounds.width>0&&bounds.height>0&&r.parent.isVisible()&&!r.parent.isMinimized();if(!visible)this.focus(r);const view=r.view;view.setBounds(bounds);if(visible)claimNativeFront(r.parent,view,()=>{if(!view.webContents.isDestroyed())view.setVisible(false);});else{releaseNativeFront(r.parent,view);view.setVisible(false);}}
+ private focus(r:View){if(r.view&&!r.sheet&&!r.parent.isDestroyed()&&r.parent.isFocused()&&r.parent.isVisible()&&!r.parent.isMinimized()&&!r.view.webContents.isDestroyed()&&r.view.webContents.isFocused()&&!r.parentContents.isDestroyed())r.parentContents.focus()}
+ private drop(r:View,hung=false){if(r.abort.signal.aborted)return;r.abort.abort();if(this.views.get(r.owner)===r)this.views.delete(r.owner);const view=r.view;if(view){this.focus(r);r.view=undefined;releaseNativeFront(r.parent,view);view.setVisible(false);if(!r.parent.isDestroyed())r.parent.contentView.removeChildView(view);if(!view.webContents.isDestroyed()){if(hung)view.webContents.forcefullyCrashRenderer();view.webContents.close({waitForBeforeUnload:false})}}r.cleanups.splice(0).forEach(f=>f())}
 }

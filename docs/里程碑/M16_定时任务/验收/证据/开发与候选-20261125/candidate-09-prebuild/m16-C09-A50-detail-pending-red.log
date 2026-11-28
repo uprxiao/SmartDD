@@ -1,0 +1,41 @@
+[1126/010140.244315:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/010140.387722:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-task-service.test.ts (119 tests | 1 failed | 118 skipped) 71ms
+     × M16 A44/B12 keeps a scheduled login occurrence occupied until the same-task approved continuation completes 70ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > M16 A44/B12 keeps a scheduled login occurrence occupied until the same-task approved continuation completes
+AssertionError: expected [] to match object [ { …(3) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "requestId": "6ee3e3b6-bcb2-4c9f-8a05-c4ec56237653",
+-     "taskId": "d1eaac18-3d77-4979-a7e9-16c98ed14212",
+-     "turnId": "c4140f8d-9016-45a5-9592-9811e00ab77c",
+-   },
+- ]
++ []
+
+ ❯ src/main/core/agent/agent-task-service.test.ts:2008:52
+    2006|       expect(await requests.respond(taskId,request.requestId,1,{choice…
+    2007|       f.schedule.reconcile();expect(f.schedule.store.run(c.run.id)?.st…
+    2008|       expect(f.schedule.detail(c.run.id).requests).toMatchObject([{tas…
+       |                                                    ^
+    2009|       expect(f.schedule.runNow(p.id,p.revision,'still-occupied').kind)…
+    2010|       wake=true;f.svc.kick(taskId);await until(()=>f.insts.length===2&…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 118 skipped (119)
+   Start at  01:01:40
+   Duration  388ms (transform 210ms, setup 0ms, import 243ms, tests 71ms, environment 0ms)
+

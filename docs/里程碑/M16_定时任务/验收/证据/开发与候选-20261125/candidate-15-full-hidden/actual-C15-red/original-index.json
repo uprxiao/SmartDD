@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "date": "2026-11-26T00:55:47.477483+00:00",
+  "case": "M16 B03.2 C15 same-root native screenshot product regression RED",
+  "candidate": "cc722a0a8a7eac65dd460f7702d0802d5816534a969b70fc77886222cc41fa56",
+  "realStatus": "B03.2-hidden-screenshot-not-proven",
+  "retainedC14RootCause": {
+    "path": "/private/tmp/willyou-m16-f36-paint-3UHS1I/B03-hidden-capture-root-cause-evidence-index.json",
+    "sha256": "b25f943c800c5961b062508febd6f3a03e0e7291e2cadb4e68bf276055761e8c",
+    "bytes": 8431
+  },
+  "actualResult": {
+    "path": "/private/tmp/willyou-m16-f36-paint-3UHS1I/B03-C15-native-hidden-cli-result.json",
+    "sha256": "7c66e2756eeb68b8377445c1470d064127bccf8f8ef081649ba7452604f8e9d9",
+    "bytes": 82141
+  },
+  "actualSource": {
+    "path": "/private/tmp/willyou-m16-f36-qa/browser-driver-b03-C15-hidden-cli-recheck.mjs",
+    "sha256": "7656e28e27efa6f9935fbc26835efdd232bd2344a6b6de19618ff4de16c5b793",
+    "bytes": 42645
+  },
+  "geometryComparison": {
+    "path": "/private/tmp/willyou-m16-f36-paint-3UHS1I/B03-C15-geometry-comparison.json",
+    "sha256": "f9693093b266293e1dda773eadec992d4d3fae2f1a22cc90113ca8f77b998cf2",
+    "bytes": 17037
+  },
+  "actualCleanup": {
+    "path": "/private/tmp/willyou-m16-f36-paint-3UHS1I/B03-C15-hidden-cli-independent-cleanup.json",
+    "sha256": "3e819c21461baf3e8623e015aee685e9c37bbd56cd613be0d27de4d7f79ceab5",
+    "bytes": 390
+  },
+  "redFacts": {
+    "actualNativeMethod": [
+      {
+        "kind": "native",
+        "startedAt": 1795654465404,
+        "hostAtStart": {
+          "id": 1,
+          "visible": false,
+          "minimized": false
+        },
+        "parameters": {
+          "rect": null,
+          "options": {
+            "stayHidden": false
+          }
+        }
+      }
+    ],
+    "hiddenSamples": 70,
+    "paintVisibleSamples": 70,
+    "terminal": {
+      "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+      "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+      "tool_name": "browser.nav.screenshot",
+      "state": "failed",
+      "started_at": "2026-11-26T00:54:24.933Z",
+      "ended_at": "2026-11-26T00:54:35.437Z",
+      "error_code": "BROWSER_TIMEOUT",
+      "effect_state": "read-only"
+    },
+    "rawNativeCliToolReceipts": [
+      {
+        "output": "Chunk ID: c49109\nWall time: 8.0023 seconds\nProcess running with session ID 21478\nOriginal token count: 0\nOutput:\n",
+        "at": 1795654472665
+      },
+      {
+        "output": "Chunk ID: e6ec3c\nWall time: 2.7762 seconds\nProcess exited with code 2\nOriginal token count: 94\nOutput:\nwillyou-app: BROWSER_TIMEOUT\n{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"CDP Page.captureScreenshot 超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"8dbf7db3-2380-4b96-a614-97322f157565\",\"requestId\":\"8850334c-2745-4588-9563-c6e787a10cb1\"}\n",
+        "at": 1795654475456
+      }
+    ],
+    "restored": {
+      "prior": {
+        "visible": false,
+        "minimized": false,
+        "count": 1,
+        "id": 1
+      },
+      "after": {
+        "visible": true,
+        "minimized": false,
+        "id": 1
+      },
+      "action": "showInactive",
+      "at": 1795654478199
+    },
+    "lateNativeAfterRestore": [
+      {
+        "kind": "native",
+        "startedAt": 1795654465404,
+        "hostAtStart": {
+          "id": 1,
+          "visible": false,
+          "minimized": false
+        },
+        "parameters": {
+          "rect": null,
+          "options": {
+            "stayHidden": false
+          }
+        },
+        "completedAt": 1795654478205,
+        "hostAtCompletion": {
+          "id": 1,
+          "visible": true,
+          "minimized": false
+        },
+        "nativeImageSize": {
+          "width": 1248,
+          "height": 1524
+        },
+        "empty": false
+      }
+    ]
+  },
+  "boundary": "Actual public native CLI on C15 reached changed stayHidden:false branch while hidden but still fails BROWSER_TIMEOUT; native promise merely observed, not artificially delayed. Native capture only settles after own showInactive (6ms); no hidden screenshot artifact. All exact own resources normal exit. No further App, no production/system/daily data changes."
+}

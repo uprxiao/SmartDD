@@ -13,6 +13,14 @@ const service=()=>new McpProjectionService({selected:()=>items.filter(x=>x.manag
 const input=(runner:'claude'|'codex'='codex')=>({runner,cwd:join(root,'project'),runRoot:join(root,'agents/runs',randomUUID()),injectedNames:['OPENAI_API_KEY','ANTHROPIC_AUTH_TOKEN','CUSTOM_MODEL_KEY']});
 beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'m13-mcp-')));mkdirSync(join(root,'project'));items=[];definitions=Object.create(null);environment={PUBLIC_SOURCE_KEY:'PUBLIC_SOURCE_ONLY'};});
 afterEach(()=>rmSync(root,{recursive:true,force:true}));
+it('M16 A43 projects only global MCP for an explicit unassociated task even when cwd is the registered project root',()=>{
+ items=[item('global'),{...item('project'),sourceScope:'project',projectRoot:join(root,'project')}];
+ definitions.global=parseMcpSource('global-fixture','claude',{command:'/usr/bin/true'});definitions.project=parseMcpSource('project-fixture','claude',{command:'/usr/bin/true'});
+ for(const runner of ['codex','claude'] as const){
+  const unassociated=service().prepare({...input(runner),globalOnly:true});expect(unassociated.configured).toEqual(['global']);expect(unassociated.serverNames).toEqual(['global-fixture']);
+  const associated=service().prepare(input(runner));expect(associated.configured).toEqual(['global','project']);expect(associated.serverNames).toEqual(['global-fixture','project-fixture']);
+ }
+});
 it('preserves the server name under Codex literal dotted override parsing',()=>{
  items=[item('alpha')];definitions.alpha=parseMcpSource('alpha-server_2','codex',{command:'/usr/bin/true'});
  const actual=service().prepare(input()),override=actual.args[1],separator=override.indexOf('=');

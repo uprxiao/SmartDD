@@ -1,0 +1,763 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/agent/agent-task-service.test.ts (116 tests | 22 failed | 94 skipped) 12ms
+     × commits the actual task turn, scheduled provenance and persistent occurrence before notifying or kicking the driver 5ms
+     × skips a scheduled attempt when a real ordinary input already owns the task; never appends a second input 0ms
+     × rolls back actual acceptance if the ledger receipt write fails 0ms
+     × A24 fifty plans with ten due together create one receipt per due plan without serial model waits 0ms
+     × A30 dispatches two actual task receipts independently before either model finishes 0ms
+     × A15 independent-new plans create distinct task, input, real driver binding and native conversation 0ms
+     × A12/A16 waits for the exact ended turn’s diff settlement before the schedule finishes and allows next reuse 0ms
+     × A16 reuse binds exactly once and appends a distinct turn with the original actual native session 0ms
+     × A29 preserves a completed manual request receipt across edit, archive and a new ledger instance 0ms
+     × A33 retries once before any acceptance with stable identities, never starts a third preparation after repeat failure 0ms
+     × A33/A34 startup retries a proved pre-accept dispatch once with the same reserved identities 0ms
+     × A34 an already accepted durable turn is reconciled after startup, never replaced by a second input 0ms
+     × A32 scheduled-vs-ordinary acceptance in both orders respects the ordinary task receipt queue 0ms
+     × A18 rejects changed binding identity, exposes diff, rejects stale confirmation and uses only future config after exact confirmation 0ms
+     × A17 existing and reuse follow the current compatible model/effort on the same real task and keep old actual snapshots 0ms
+     × A19 archive of the actual bound task repairs the plan, keeps original history and never accepts a replacement task 1ms
+     × M16 A44/B12 keeps a scheduled login occurrence occupied until the same-task approved continuation completes 0ms
+     × A50 persists repair and failure notices independently while respecting system preference, without duplicate on reconcile 0ms
+     × A31/A35/A50 waiting and unknown are occupied, request identity deduplicates, and the known failed run can be rerun independently 0ms
+     × A41/A49 history and recent results use the actual final owned parent turn and exact observed file rows, never a later ordinary turn 0ms
+     × A26/A39 does not repeatedly scan an empty plan set, and freezes future claims while quit is pending 0ms
+     × A37/A38/A39 pause, edit or archive during actual isolated preparation rejects the old occurrence with no accepted input or empty new task 0ms
+ ❯ src/main/core/agent/delegation-service.test.ts (42 tests | 4 failed | 38 skipped) 6ms
+   × M16 A49 keeps the scheduled occurrence open across the real delegation queue, child and final parent result notification 4ms
+   × M16 A36 stops an accepted occurrence’s delegated work without launching a stale parent continuation or stopping later ordinary input 1ms
+   × M16 A36 cancels a queued owned child before native launch while stopping the actual root 1ms
+   × M16 A36 retires only the owned result delivery when stopping its already queued parent notification 1ms
+ ❯ src/main/core/agent/host-business-requests.test.ts (18 tests | 1 failed | 17 skipped) 3ms
+   × preserves an early login confirmation and only queues one authenticated continuation 3ms
+ ❯ src/main/core/applications/__tests__/agent-business-tools.test.ts (9 tests | 3 failed | 6 skipped) 4ms
+   × tells a browser caller to end its dependent turn so the queued approval result can arrive 2ms
+   × M16 A44/B12: a no-project task uses its own verified browser scope for approved writes 0ms
+   × M16 A44/B12: wrong standalone run scope and non-browser writes remain denied 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 30 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 real AgentStore scheduled acceptance boundary > commits the actual task turn, scheduled provenance and persistent occurrence before notifying or kicking the driver
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ fixture src/main/core/agent/agent-task-service.test.ts:1765:36
+ ❯ src/main/core/agent/agent-task-service.test.ts:1766:148
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 real AgentStore scheduled acceptance boundary > skips a scheduled attempt when a real ordinary input already owns the task; never appends a second input
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ fixture src/main/core/agent/agent-task-service.test.ts:1765:36
+ ❯ src/main/core/agent/agent-task-service.test.ts:1767:137
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 real AgentStore scheduled acceptance boundary > rolls back actual acceptance if the ledger receipt write fails
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ fixture src/main/core/agent/agent-task-service.test.ts:1765:36
+ ❯ src/main/core/agent/agent-task-service.test.ts:1768:95
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A24 fifty plans with ten due together create one receipt per due plan without serial model waits
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1775:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A30 dispatches two actual task receipts independently before either model finishes
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1787:115
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A15 independent-new plans create distinct task, input, real driver binding and native conversation
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1789:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A12/A16 waits for the exact ended turn’s diff settlement before the schedule finishes and allows next reuse
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1802:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A16 reuse binds exactly once and appends a distinct turn with the original actual native session
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1817:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A29 preserves a completed manual request receipt across edit, archive and a new ledger instance
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1830:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A33 retries once before any acceptance with stable identities, never starts a third preparation after repeat failure
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1848:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A33/A34 startup retries a proved pre-accept dispatch once with the same reserved identities
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1865:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A34 an already accepted durable turn is reconciled after startup, never replaced by a second input
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1876:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A32 scheduled-vs-ordinary acceptance in both orders respects the ordinary task receipt queue
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1890:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A18 rejects changed binding identity, exposes diff, rejects stale confirmation and uses only future config after exact confirmation
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1906:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A17 existing and reuse follow the current compatible model/effort on the same real task and keep old actual snapshots
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1924:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A19 archive of the actual bound task repairs the plan, keeps original history and never accepts a replacement task
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1948:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > M16 A44/B12 keeps a scheduled login occurrence occupied until the same-task approved continuation completes
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1960:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A50 persists repair and failure notices independently while respecting system preference, without duplicate on reconcile
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1982:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A31/A35/A50 waiting and unknown are occupied, request identity deduplicates, and the known failed run can be rerun independently
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:1995:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A41/A49 history and recent results use the actual final owned parent turn and exact observed file rows, never a later ordinary turn
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:2016:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A26/A39 does not repeatedly scan an empty plan set, and freezes future claims while quit is pending
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:2039:132
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/30]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > A37/A38/A39 pause, edit or archive during actual isolated preparation rejects the old occurrence with no accepted input or empty new task
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ setup src/main/core/agent/agent-task-service.test.ts:49:14
+
+ ❯ host src/main/core/agent/agent-task-service.test.ts:1773:71
+ ❯ src/main/core/agent/agent-task-service.test.ts:2042:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/30]⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > M16 A49 keeps the scheduled occurrence open across the real delegation queue, child and final parent result notification
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/agent/delegation-service.test.ts:52:137
+
+ ❯ src/main/core/agent/delegation-service.test.ts:240:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/30]⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > M16 A36 stops an accepted occurrence’s delegated work without launching a stale parent continuation or stopping later ordinary input
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/agent/delegation-service.test.ts:52:137
+
+ ❯ src/main/core/agent/delegation-service.test.ts:256:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/30]⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > M16 A36 cancels a queued owned child before native launch while stopping the actual root
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/agent/delegation-service.test.ts:52:137
+
+ ❯ src/main/core/agent/delegation-service.test.ts:269:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/30]⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > M16 A36 retires only the owned result delivery when stopping its already queued parent notification
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/agent/delegation-service.test.ts:52:137
+
+ ❯ src/main/core/agent/delegation-service.test.ts:279:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/30]⎯
+
+ FAIL  src/main/core/agent/host-business-requests.test.ts > preserves an early login confirmation and only queues one authenticated continuation
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/agent/host-business-requests.test.ts:13:12
+     11| const clean: (() => void)[]=[];afterEach(()=>clean.splice(0).forEach(f…
+     12| function fixture(needsRun=false, executionMs?:number) {
+     13|   const db=new Database(':memory:');db.pragma('foreign_keys=ON');runBu…
+       |            ^
+     14|   const taskId=store.createTask({projectId:null,dirId:null,cwd:'/fixtu…
+     15|   const bindingId=store.createBinding({task_id:taskId,driver_id:'codex…
+ ❯ src/main/core/agent/host-business-requests.test.ts:66:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/30]⎯
+
+ FAIL  src/main/core/applications/__tests__/agent-business-tools.test.ts > tells a browser caller to end its dependent turn so the queued approval result can arrive
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/applications/__tests__/agent-business-tools.test.ts:7:11
+
+ ❯ src/main/core/applications/__tests__/agent-business-tools.test.ts:24:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/30]⎯
+
+ FAIL  src/main/core/applications/__tests__/agent-business-tools.test.ts > M16 A44/B12: a no-project task uses its own verified browser scope for approved writes
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/applications/__tests__/agent-business-tools.test.ts:7:11
+
+ ❯ src/main/core/applications/__tests__/agent-business-tools.test.ts:96:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/30]⎯
+
+ FAIL  src/main/core/applications/__tests__/agent-business-tools.test.ts > M16 A44/B12: wrong standalone run scope and non-browser writes remain denied
+Error: Could not locate the bindings file. Tried:
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Debug/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/Release/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/default/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/compiled/24.19.0/darwin/arm64/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node
+ → /Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/binding/node-v146-darwin-arm64/better_sqlite3.node
+ ❯ bindings node_modules/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9
+ ❯ new Database node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/database.js:48:64
+ ❯ fixture src/main/core/applications/__tests__/agent-business-tools.test.ts:7:11
+
+ ❯ src/main/core/applications/__tests__/agent-business-tools.test.ts:106:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/30]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  30 failed | 155 skipped (185)
+   Start at  00:35:20
+   Duration  490ms (transform 375ms, setup 0ms, import 574ms, tests 26ms, environment 0ms)
+

@@ -1,4 +1,5 @@
-import { BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
+import { dialog, shell, type IpcMainInvokeEvent } from 'electron';
+import {mainWindowForContents} from '@main/app/window-host';
 import { z } from 'zod';
 import { createScopedRPCController } from '@shared/ipc/rpc';
 import { passphraseIssue, type TransferDraft, type TransferReply } from '@shared/project-transfer';
@@ -23,7 +24,7 @@ export function createTransferController(svc: ProjectTransferService) {
     catch (e) { return e instanceof TransferError ? { ok: false, code: e.code, message: e.message } : { ok: false, code: 'INVALID_DRAFT', message: '无法完成项目迁移，请检查选择后重试' }; }
   };
   const open = (event: IpcMainInvokeEvent, options: Electron.OpenDialogOptions) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
+    const win = mainWindowForContents(event.sender);
     return win ? dialog.showOpenDialog(win, options) : dialog.showOpenDialog(options);
   };
   return createScopedRPCController({
@@ -32,7 +33,7 @@ export function createTransferController(svc: ProjectTransferService) {
       if (typeof input?.passphrase !== 'string' || typeof input?.confirmation !== 'string') throw new TransferError('INVALID_DRAFT', '请输入并确认导出口令');
       const issue = passphraseIssue(input.passphrase, input.confirmation); if (issue) throw new TransferError('INVALID_DRAFT', issue);
       const description = svc.describeExport(input.projectId, input.profileIds);
-      const win = BrowserWindow.fromWebContents(e.sender);
+      const win = mainWindowForContents(e.sender);
       const options: Electron.SaveDialogOptions = { title: '导出项目', defaultPath: transferFilename(description.project.name), ...(process.platform === 'darwin' ? {} : { filters: [{ name: 'WillYou 项目', extensions: ['willyou'] }] }), properties: ['showOverwriteConfirmation', 'createDirectory'] };
       const chosen = win ? await dialog.showSaveDialog(win, options) : await dialog.showSaveDialog(options);
       if (chosen.canceled || !chosen.filePath) return null;

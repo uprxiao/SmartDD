@@ -1,0 +1,8 @@
+function verifyC24BusyQuitReceipt(v,h){
+ assert(h&&Number.isInteger(h.pid)&&h.pid>0&&typeof h.rawExe==='string'&&typeof h.exe==='string');const expected=realpathSync(h.exe);assert.equal(expected,h.exe);assert.equal(realpathSync(h.rawExe),expected);
+ verifyNativeActualReceipt(v,h,'quit');
+ // Canonical comparison only after the independent real OS frontmost observation. Keep each raw executable string for audit; never trust a guessed /tmp alias or match a pathname without exact PID.
+ assert(Array.isArray(v.focusSamples)&&v.focusSamples.length>=2);
+ for(const sample of v.focusSamples){assert.equal(sample.pid,h.pid);assert.equal(sample.focusConfirmed,true);assert(typeof sample.rawExe==='string'&&sample.rawExe.startsWith('/'));assert.equal(realpathSync(sample.rawExe),expected);assert.equal(realpathSync(sample.exe),expected);assert.equal(sample.exe,expected);}
+ return v;
+}

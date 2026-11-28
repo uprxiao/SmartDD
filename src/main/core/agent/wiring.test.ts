@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, rmdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -13,6 +13,8 @@ import { CapabilityService } from '../capabilities/capability-service';
 import { CapabilityRegistryService } from '../capabilities/capability-registry';
 import { capabilityScanContexts } from '../capabilities/scan-contexts';
 import { SkillProjectionService } from '../capabilities/skill-projection';
+import {McpProjectionService} from '../capabilities/mcp-projection';
+import {ScheduleService} from '../schedules/service';
 import { ProjectService } from '../projects/project-service';
 import { secretKeys } from '../projects/secret-keys';
 import { evaluateCapabilities, type DriverId } from './capabilities';
@@ -48,6 +50,7 @@ class RecordingDriver implements DriverInstance {
     this.input = input;
     const nativeTurnId = randomUUID();
     this.emitter.emit({ type: 'turn.started', nativeTurnId, clientInputId: input.clientInputId });
+    if(input.text.includes('M16-A50-REQUEST-FIXTURE'))this.emitter.emit({type:'request',requestKey:randomUUID(),kind:'command_approval',payload:{command:'echo local fixture'}});
     setImmediate(() => this.emitter.emit({ type: 'turn.completed', nativeTurnId, status: 'completed' }));
     return { nativeTurnId };
   }
@@ -61,7 +64,7 @@ class RecordingDriver implements DriverInstance {
   }
 }
 
-function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp = false) {
+function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp = false, withProjection = false) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-project-launch-')));
   const home = join(root, 'home');
   mkdirSync(home);
@@ -103,6 +106,7 @@ function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp 
     order: 0, available: true, legacyReason: null,
   };
   const instances: RecordingDriver[] = [];
+  const emitted:Parameters<AgentWorkspaceDeps['emitEvent']>[0][]=[];
   let failBeforeFork = false;
   (DRIVERS as Map<DriverId, { id: DriverId; command: string; create(): RecordingDriver }>).set(driverId, {
     id: driverId, command: kind, create: () => {
@@ -130,10 +134,10 @@ function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp 
       ownedGroup: () => ({ state: 'stopped' as const, processes: [] }),
     },
     host: { instanceId: randomUUID(), pid: process.pid, startedAt: null },
-    emitEvent() {}, emitLive() {},
+    emitEvent(event:Parameters<AgentWorkspaceDeps['emitEvent']>[0]) {emitted.push(event);}, emitLive() {},
   };
   const skills = new CapabilityRegistryService(db, () => capabilityScanContexts(home, {}, [], [root]));
-  const workspace = createAgentWorkspace({ ...deps, capabilityRegistry: skills, skillProjection: new SkillProjectionService(db, skills) });
+  const workspace = createAgentWorkspace({ ...deps, capabilityRegistry: skills, skillProjection: new SkillProjectionService(db, skills), ...(withProjection?{mcpProjection:new McpProjectionService(skills,{userData:root,executable:'/fixture/WillYou',launcherSource:'// fixture carrier'})}:{}) });
   const { taskId } = workspace.tasks.create({
     projectId: project.id, dirId: project.dirs[0].id, cwd: root, title: 'Fixture', profileId: config.id, tier: 'ask',
   });
@@ -145,7 +149,7 @@ function fixture(kind: 'codex' | 'claude' | 'antigravity', version: string, mcp 
     return workspace.store.turn(turnId);
   }
   return {
-    root, home, workspace, taskId, project, capabilities, database, server, instances, submit, secrets, skills,
+    root, home, workspace, taskId, project, projects, capabilities, database, server, instances, submit, secrets, skills,emitted,
     failBeforeFork() { failBeforeFork = true; },
     async close() { await workspace.closeAll(); capabilities.dispose(); sqlite.close(); rmSync(root, { recursive: true, force: true }); },
   };
@@ -259,6 +263,137 @@ it('keeps project shell credentials out of Antigravity while launching its autho
   } finally { await f.close(); }
 });
 
+it('M16 A19 does not dispatch a retained bound task after its actual source project was archived',async()=>{
+  const f=fixture('codex','0.171.0');
+  const schedules=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile:f.workspace.scheduleProfile,changed:()=>{}});
+  try{
+    schedules.start();
+    const plan=await schedules.save({schedule:{type:'daily',time:'09:00',zone:'UTC'},config:{title:'Archived project fixture',prompt:'fixture',projectId:f.project.id,dirId:f.project.dirs[0].id,cwd:f.root,workspace:'directory',baseRef:null,destination:'existing',boundTask:f.taskId,profileId:'fixture-profile',tier:'ask',delegation:false,notifyCompleted:false},grace:60,enabled:false});
+    f.projects.setArchived(f.project.id,true);
+    expect(f.workspace.store.task(f.taskId)?.archived_at).toBeNull(); // project archive is distinct from task archive
+    schedules.auditConfigurations();const repaired=schedules.store.plan(plan.id)!;
+    expect(repaired.repair).toBeTruthy();expect(repaired.repair).toMatch(/项目.*失效/);expect(schedules.runNow(plan.id,repaired.revision,randomUUID()).kind).toBe('repair');
+    expect(f.instances).toHaveLength(0);expect(f.workspace.store.turns(f.taskId)).toEqual([]);
+  }finally{await schedules.stop();await f.close();}
+});
+it('M16 A19 revalidates the real project after async preparation and before creating any task',async()=>{
+  const f=fixture('codex','0.171.0');const schedules=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile:f.workspace.scheduleProfile,changed:()=>{}});
+  let release!:()=>void;const gate=new Promise<void>(r=>{release=r;});
+  const prepare=vi.spyOn(schedules.workspaces,'prepare').mockImplementation(async()=>{await gate;return f.root;});
+  try{
+    schedules.start();const p=await schedules.save({schedule:{type:'daily',time:'09:00',zone:'UTC'},config:{title:'Project preparation race',prompt:'fixture',projectId:f.project.id,dirId:f.project.dirs[0].id,cwd:f.root,workspace:'directory',baseRef:null,destination:'new',boundTask:null,profileId:'fixture-profile',tier:'ask',delegation:false,notifyCompleted:false},grace:60,enabled:false});
+    const claim=schedules.runNow(p.id,p.revision,randomUUID());if(!('run'in claim))throw Error();
+    await vi.waitFor(()=>expect(prepare).toHaveBeenCalledOnce());f.projects.setArchived(f.project.id,true);release();
+    await vi.waitFor(()=>expect(schedules.store.run(claim.run.id)?.status).toBe('failed'));
+    expect(schedules.store.plan(p.id)?.repair).toMatch(/项目.*失效/);
+    expect(f.workspace.store.task(claim.run.taskId!)).toBeUndefined();expect(f.instances).toHaveLength(0);
+  }finally{release();await schedules.stop();await f.close();}
+});
+it.each((['profile','model','directory'] as const).flatMap(kind=>(['existing','reuse'] as const).map(destination=>({kind,destination}))))('M16 A19 keeps a $destination bound task unsubmitted after $kind becomes unavailable',async ({kind,destination})=>{
+  const f=fixture('codex','0.171.0');const isolated=join(f.root,'local-'+kind);mkdirSync(isolated);
+  const task=destination==='existing'?f.workspace.tasks.create({projectId:null,dirId:null,cwd:isolated,title:'Actual bound fixture',profileId:'fixture-profile',tier:'ask',model:'fixture-model',effort:'medium'}):null;
+  let available=true,models=['fixture-model'];const profile=()=>({available,compatibility:'fixed',kind:'codex',providerBacked:true,models,modelOptions:models.map(id=>({id,name:id,efforts:['medium']}))});
+  const schedules=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile,changed:()=>{}});
+  try{
+    schedules.start();const p=await schedules.save({schedule:{type:'daily',time:'09:00',zone:'UTC'},config:{title:'Unavailable '+kind,prompt:'fixture',projectId:null,dirId:null,cwd:isolated,workspace:'directory',baseRef:null,destination,boundTask:task?.taskId??null,profileId:'fixture-profile',model:'fixture-model',effort:'medium',tier:'ask',delegation:false,notifyCompleted:false},grace:60,enabled:false});
+    if(destination==='reuse'){
+      const first=schedules.runNow(p.id,p.revision,randomUUID());if(!('run'in first))throw Error('initial reuse claim failed');
+      await vi.waitFor(()=>expect(schedules.store.run(first.run.id)?.status).toBe('completed'));
+      expect(schedules.store.plan(p.id)?.boundTask).toBe(first.run.taskId);
+    }
+    const taskId=schedules.store.plan(p.id)?.boundTask;expect(taskId).toBeTruthy();
+    const originalTurns=f.workspace.store.turns(taskId!),originalInstances=f.instances.length,originalHistory=schedules.store.history(p.id);
+    if(kind==='profile')available=false;
+    if(kind==='model')models=[];
+    if(kind==='directory')rmdirSync(isolated);
+    schedules.auditConfigurations();const changed=schedules.store.plan(p.id)!;
+    expect(changed.repair).toBeTruthy();expect(schedules.runNow(p.id,changed.revision,randomUUID()).kind).toBe('repair');
+    expect(f.workspace.store.turns(taskId!)).toEqual(originalTurns);expect(f.instances).toHaveLength(originalInstances);
+    expect(schedules.store.plan(p.id)?.boundTask).toBe(taskId);expect(schedules.store.history(p.id)).toEqual(originalHistory);
+  }finally{await schedules.stop();await f.close();}
+});
+it('M16 A50 marks the emitted scheduled request origin only, keeping the ordinary request channel unchanged',async()=>{
+  const f=fixture('codex','0.171.0');
+  const schedules=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile:f.workspace.scheduleProfile,changed:()=>{}});
+  try{
+    schedules.start();
+    const plan=await schedules.save({schedule:{type:'daily',time:'09:00',zone:'UTC'},config:{title:'Scheduled notice fixture',prompt:'M16-A50-REQUEST-FIXTURE',projectId:f.project.id,dirId:f.project.dirs[0].id,cwd:f.root,workspace:'directory',baseRef:null,destination:'new',boundTask:null,profileId:'fixture-profile',tier:'ask',delegation:false,notifyCompleted:false},grace:60,enabled:false});
+    const first=schedules.runNow(plan.id,plan.revision,randomUUID());if(!('run'in first))throw Error('schedule claim failed');
+    await vi.waitFor(()=>expect(f.emitted.some(e=>e.taskId===first.run.taskId&&e.type==='request.opened')).toBe(true));
+    const scheduled=f.emitted.filter(e=>e.taskId===first.run.taskId&&e.type==='request.opened');
+    expect(scheduled).toHaveLength(1);expect(scheduled[0]).toMatchObject({scheduled:true});
+    await f.submit('M16-A50-REQUEST-FIXTURE');
+    const ordinary=f.emitted.filter(e=>e.taskId===f.taskId&&e.type==='request.opened');
+    expect(ordinary).toHaveLength(1);expect(ordinary[0]).not.toHaveProperty('scheduled');
+    expect(schedules.listNotices().filter(n=>n.taskId===f.taskId)).toHaveLength(0);
+  }finally{await schedules.stop();await f.close();}
+});
+it('M16 A23 validates a native model and reasoning choice for a schedule with no project or task yet',async()=>{
+  const f=fixture('codex','0.171.0');
+  const catalog=vi.spyOn(f.workspace,'modelCatalog').mockResolvedValue({status:'ready',models:[{id:'native-model',name:'Native model',efforts:['medium','high']}]});
+  const schedule=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile:()=>({available:true,compatibility:'fixture',kind:'codex',providerBacked:false,models:[]}),changed:()=>{}});
+  try{
+    const base={title:'Standalone native choice',prompt:'fixture',projectId:null,dirId:null,cwd:null,workspace:'directory' as const,baseRef:null,destination:'new' as const,boundTask:null,profileId:'fixture-profile',tier:'ask' as const,delegation:false,notifyCompleted:false};
+    const choice=await schedule.save({schedule:{type:'daily',time:'09:00',zone:'UTC'},config:{...base,model:'native-model',effort:'medium'},grace:60,enabled:false});
+    expect(choice.config).toMatchObject({projectId:null,dirId:null,model:'native-model',effort:'medium'});expect(catalog).toHaveBeenCalledWith({kind:'standalone'},'fixture-profile','wait');
+    await expect(schedule.save({schedule:{type:'daily',time:'09:00',zone:'UTC'},config:{...base,model:'native-model',effort:'unsupported'},grace:60,enabled:false})).rejects.toThrow('推理档位');
+    expect(f.instances).toHaveLength(0);
+  }finally{await schedule.stop();await f.close();}
+});
+it('M16 A43 same physical cwd runs scheduled project and standalone through the real launch wiring without inheriting project resources',async()=>{
+  const f=fixture('claude','2.1.329',true,true);
+  const prepareAgent=vi.fn(async()=>({mcpServers:{willYouHost:{command:'/bin/sh',args:[]}}}));
+  f.workspace.attachBusiness({agentDelivery:()=> 'verified',prepareAgent,attachAgentTools(){},attachAgentRequests(){}} as unknown as Parameters<typeof f.workspace.attachBusiness>[0]);
+  const schedules=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile:f.workspace.scheduleProfile,changed:()=>{}});
+  try{
+    for(const [base,name] of [[f.home,'global-m16'],[f.root,'project-m16']]){
+      const path=join(base,'.claude','skills',name,'SKILL.md');mkdirSync(dirname(path),{recursive:true});writeFileSync(path,`---\nname: ${name}\ndescription: fixture skill\n---\nPUBLIC SYNTHETIC FIXTURE ${name}\n`);
+    }
+    mkdirSync(join(f.home,'.claude'),{recursive:true});
+    writeFileSync(join(f.home,'.claude.json'),JSON.stringify({mcpServers:{globalM16:{command:'/usr/bin/true'}}}));
+    writeFileSync(join(f.home,'.claude','.claude.json'),JSON.stringify({mcpServers:{globalM16:{command:'/usr/bin/true'}}}));
+    writeFileSync(join(f.root,'.mcp.json'),JSON.stringify({mcpServers:{projectM16:{command:'/usr/bin/true'}}}));
+    f.skills.scan();f.skills.adoptAll();
+    schedules.start();
+    for(const project of [true,false]){
+      const plan=await schedules.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{title:project?'project fixture':'standalone fixture',prompt:'Use $global-m16 and $project-m16',projectId:project?f.project.id:null,dirId:project?f.project.dirs[0].id:null,cwd:f.root,workspace:'directory',baseRef:null,destination:'new',boundTask:null,profileId:'fixture-profile',tier:'ask',delegation:false,notifyCompleted:false},grace:60,enabled:false});
+      const claim=schedules.runNow(plan.id,plan.revision,randomUUID());if(!('run'in claim))throw Error();
+      await vi.waitFor(()=>expect(schedules.store.run(claim.run.id)?.status).toBe('completed'),{timeout:4000});
+      const source=schedules.store.run(claim.run.id)!;const driver=f.instances.at(-1)!,options=driver.openOptions!;
+      expect(f.workspace.store.task(source.taskId!)?.project_id).toBe(project?f.project.id:null);
+      expect(driver.input?.text).toContain('global-m16');expect(options.cwd).toBe(f.root);
+      if(project){
+        expect(options.settingSources).toEqual(['user','project','local']);
+        expect(options.env.PROJECT_DB_CONFIG).toBeDefined();expect(options.env.REMOTE_SERVERS_CONFIG).toBeDefined();
+        expect(options.projectContextMcp).toBeDefined();
+        expect(JSON.stringify(options.claudeMcp)).toContain('projectM16');
+      }else{
+        expect(options.settingSources).toEqual(['user']);
+        expect(options.env.PROJECT_DB_CONFIG).toBeUndefined();expect(options.env.REMOTE_SERVERS_CONFIG).toBeUndefined();
+        expect(options.projectContextMcp).toBeUndefined();
+        expect(Object.values(options.env)).not.toContain('fixture-db-credential');expect(Object.values(options.env)).not.toContain('other-project-credential');
+        expect(JSON.stringify(options.claudeMcp)).toContain('globalM16');expect(JSON.stringify(options.claudeMcp)).not.toContain('projectM16');
+        expect(JSON.stringify(prepareAgent.mock.calls.at(-1))).toContain('"applicationScope":"browser"');
+      }
+    }
+  }finally{await schedules.stop();await f.close();}
+});
+it('M16 A43 forwards isolated native Codex project configuration and Skill paths only to the real standalone task scope',async()=>{
+  const f=fixture('codex','0.169.0');
+  const schedules=new ScheduleService({agent:f.workspace,home:f.home,userData:f.root,profile:f.workspace.scheduleProfile,changed:()=>{}});
+  try{
+    mkdirSync(join(f.root,'.git'));const skill=join(f.root,'.agents/skills/project-fixture/SKILL.md');mkdirSync(dirname(skill),{recursive:true});writeFileSync(skill,'---\nname: project-fixture\ndescription: public fixture\n---\n');
+    schedules.start();
+    for(const project of [true,false]){
+      const plan=await schedules.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{title:project?'project scope':'standalone scope',prompt:'public fixture',projectId:project?f.project.id:null,dirId:project?f.project.dirs[0].id:null,cwd:f.root,workspace:'directory',baseRef:null,destination:'new',boundTask:null,profileId:'fixture-profile',tier:'ask',delegation:false,notifyCompleted:false},grace:60,enabled:false});
+      const claim=schedules.runNow(plan.id,plan.revision,randomUUID());if(!('run'in claim))throw Error();await vi.waitFor(()=>expect(schedules.store.run(claim.run.id)?.status).toBe('completed'));
+      const opts=f.instances.at(-1)!.openOptions!;
+      expect(opts.cwd).toBe(f.root);
+      if(project){expect(opts.nativeProjectSkillRoots).toBeUndefined();expect(opts.extraArgs?.some(a=>a.startsWith('projects='))).toBe(false);}
+      else{expect(opts.nativeProjectSkillRoots).toContain(join(f.root,'.agents/skills'));expect(opts.extraArgs?.some(a=>a.startsWith('projects=')&&a.includes('trust_level="untrusted"'))).toBe(true);expect(opts.extraArgs?.some(a=>a.startsWith('skills.config=')&&a.includes('project-fixture/SKILL.md')&&a.includes('false'))).toBe(true);}
+    }
+  }finally{await schedules.stop();await f.close();}
+});
 it('keeps project context out of the required MCP set and preserves shell resources when its name is occupied', async () => {
   const f = fixture('codex', '0.171.0', true);
   try {

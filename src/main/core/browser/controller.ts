@@ -1,3 +1,4 @@
+import {getMainWindow} from '@main/app/window-host';
 import type {IpcMainInvokeEvent} from 'electron';
 import {z} from 'zod';
 import {createScopedRPCController} from '@shared/ipc/rpc';
@@ -12,10 +13,14 @@ export function createBrowserController(service:BrowserService|undefined,trusted
   };
   const ui=(event:IpcMainInvokeEvent)=>host(event).workspace;
   return createScopedRPCController({
+    acknowledgePresentation:(event,input:{taskId:string;pageId:string;operationId:string;clientInputId:string;shown:boolean})=>{
+      const service=host(event),v=z.strictObject({taskId:z.string().min(1),pageId:z.uuid(),operationId:z.string().min(1),clientInputId:z.string().min(1),shown:z.boolean()}).parse(input);
+      service.presentation.acknowledge(v,v.shown);
+    },
     focusChrome:event=>{ui(event);event.sender.focus();},
     snapshot:(event,input:{taskId:string})=>ui(event).snapshot(browserTaskInput.parse(input).taskId),
     create:(event,input:{taskId:string;address?:string})=>{const w=ui(event),v=browserCreateInput.parse(input);return w.create(v.taskId,v.address);},
-    select:(event,input:{taskId:string;tabId:string|null})=>{const w=ui(event),v=browserTaskInput.extend({tabId:z.string().uuid().nullable()}).strict().parse(input);return w.select(v.taskId,v.tabId);},
+    select:(event,input:{taskId:string;tabId:string|null;automated?:boolean})=>{const w=ui(event),v=browserTaskInput.extend({tabId:z.string().uuid().nullable(),automated:z.boolean().optional()}).strict().parse(input);return w.select(v.taskId,v.tabId,v.automated);},
     navigate:(event,input:{taskId:string;tabId:string;address:string})=>{
       const service=host(event),v=browserNavigationInput.parse(input);
       service.userChangedScriptPage(v.taskId,v.tabId);
@@ -26,12 +31,12 @@ export function createBrowserController(service:BrowserService|undefined,trusted
       if(v.action!=='focus')service.userChangedScriptPage(v.taskId,v.tabId);
       return service.workspace.action(v.taskId,v.tabId,v.action);
     },
-    placement:(event,input:{taskId:string;tabId:string;rect:Electron.Rectangle|null})=>{const w=ui(event),v=browserPlacementInput.parse(input);return w.placement(v.taskId,v.tabId,v.rect);},
+    placement:(event,input:{taskId:string;tabId:string;rect:Electron.Rectangle|null;instance?:number;sequence?:number})=>{const w=ui(event),v=browserPlacementInput.parse(input);const root=getMainWindow();let rect=v.rect;if(rect&&root){const scale=event.sender.getZoomFactor(),[width,height]=root.getContentSize();const x=Math.max(0,Math.round(rect.x*scale)),y=Math.max(0,Math.round(rect.y*scale));rect={x,y,width:Math.min(width-x,Math.round(rect.width*scale)),height:Math.min(height-y,Math.round(rect.height*scale))};if(rect.width<1||rect.height<1)rect=null;}return w.placement(v.taskId,v.tabId,rect,v.instance,v.sequence);},
     close:(event,input:{taskId:string;tabId:string})=>{const w=ui(event),v=browserTabInput.parse(input);return w.close(v.taskId,v.tabId);},
     reopen:(event,input:{taskId:string})=>ui(event).reopen(browserTaskInput.parse(input).taskId),
     find:(event,input:{taskId:string;tabId:string;text:string;forward:boolean;next:boolean})=>{const w=ui(event),v=browserTabInput.extend({text:z.string(),forward:z.boolean(),next:z.boolean()}).strict().parse(input);return w.find(v.taskId,v.tabId,v.text,v.forward,v.next);},
     external:(event,input:{taskId:string;id:string;allow:boolean})=>{const w=ui(event),v=browserTaskInput.extend({id:z.string().uuid(),allow:z.boolean()}).strict().parse(input);return w.confirmExternal(v.taskId,v.id,v.allow);},
-    overlay:(event,input:{taskId:string;tabId:string;open:boolean;capture?:boolean;owner?:string})=>{const w=ui(event),v=browserTabInput.extend({open:z.boolean(),capture:z.boolean().optional(),owner:z.string().min(1).max(128).optional()}).strict().parse(input);return w.overlay(v.taskId,v.tabId,v.open,v.capture,v.owner);},
+    overlay:(event,input:{taskId:string;tabId:string;open:boolean;capture?:boolean;owner?:string;instance?:string})=>{const w=ui(event),v=browserTabInput.extend({open:z.boolean(),capture:z.boolean().optional(),owner:z.string().min(1).max(128).optional(),instance:z.string().min(1).max(128).optional()}).strict().parse(input);return w.overlay(v.taskId,v.tabId,v.open,v.capture,v.owner,v.instance);},
     preferences:(event,input:{taskId:string})=>host(event).preferences(browserTaskInput.parse(input).taskId),
     settings:(event,input:{taskId:string;searchEngine?:'bing'|'google'|'duckduckgo'|'kagi';identity?:'clean'|'native'})=>{
       const s=host(event),v=browserTaskInput.extend({searchEngine:browserSettingsSchema.shape.searchEngine.optional(),identity:browserSettingsSchema.shape.identity.optional()}).strict().parse(input);s.workspace.snapshot(v.taskId);

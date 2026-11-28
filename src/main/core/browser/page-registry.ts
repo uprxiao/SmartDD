@@ -1,11 +1,12 @@
-import { BaseWindow, WebContentsView, session, type Session, type BrowserWindow, type Rectangle, type WebContents, type BrowserWindowConstructorOptions } from 'electron';
+import { BaseWindow, WebContentsView, session, type Session, type Rectangle, type WebContents, type BrowserWindowConstructorOptions } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { BrowserCdpProxy } from './cdp-proxy';
 import { BrowserHelper, type BrowserHelperOptions } from './agent-browser';
 import { BrowserReferences } from './references';
 import { BrowserPageQueue } from './queue';
-import { BrowserParkWindow } from './park-window';
+import { BrowserParkWindow, nativeHostVisibility } from './park-window';
+import { createTemporaryPaintHost } from './temporary-paint-host';
 import { browserDigest } from './artifacts';
 import { BrowserError } from './errors';
 import {browserProjectProfile,type BrowserProfiles} from './profiles';
@@ -19,25 +20,26 @@ export interface BrowserPage {
   kind:'tab'|'popup';openerPageId?:string;popupWindow?:BaseWindow;
 }
 type BrowserPopupOptions=BrowserWindowConstructorOptions&{webContents?:WebContents};
-export type BrowserPageEvent={type:'created'|'closed';page:BrowserPage};
+export type BrowserPageEvent={type:'created'|'closed'|'lost';page:BrowserPage};
 export class BrowserPageRegistry {
   private readonly pages=new Map<string,BrowserPage>();
   private readonly active=new Map<string,string>();
-  private readonly park=new BrowserParkWindow();
+  private readonly park:BrowserParkWindow;
   private mounted?:BrowserPage;
+  private placementTail:Promise<void>=Promise.resolve();
   private readonly observers=new Set<(event:BrowserPageEvent)=>void>();
   private readonly closing=new Map<string,Promise<void>>();
   private readonly navigationRequests=new WeakMap<BrowserPage,object>();
-  private readonly initializing=new Map<WebContents,{profileId:string;settled:Promise<void>;finish:()=>void}>();
+  private readonly initializing=new Map<WebContents,{taskId:string;profileId:string;settled:Promise<void>;finish:()=>void}>();
   private stopping=false;
   private disposing?:Promise<void>;
-  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles;prepareSession?:(session:Session)=>void;configure?:(page:BrowserPage)=>void}){}
+  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BaseWindow|null;ensureWindow?:()=>Promise<BaseWindow>;profiles?:BrowserProfiles;prepareSession?:(session:Session)=>void;configure?:(page:BrowserPage)=>void}){this.park=new BrowserParkWindow(options.window,options.ensureWindow,process.platform==='darwin'?createTemporaryPaintHost:undefined);}
   observe(listener:(event:BrowserPageEvent)=>void):()=>void{this.observers.add(listener);return()=>{this.observers.delete(listener);};}
   private publish(type:BrowserPageEvent['type'],page:BrowserPage){for(const listener of this.observers)listener({type,page});}
-  list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed);}
+  list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed&&!page.contents.isDestroyed());}
   all(){return[...this.pages.values()].filter(page=>!page.closed);}
-  private trackInitialization(contents:WebContents,profileId:string):()=>void{
-    let finish!:()=>void;const settled=new Promise<void>(resolve=>{finish=resolve;});this.initializing.set(contents,{profileId,settled,finish});
+  private trackInitialization(contents:WebContents,taskId:string,profileId:string):()=>void{
+    let finish!:()=>void;const settled=new Promise<void>(resolve=>{finish=resolve;});this.initializing.set(contents,{taskId,profileId,settled,finish});
     return()=>{this.initializing.delete(contents);finish();};
   }
   /** Called only with the profile lifecycle lock held. Closing unpublished
@@ -45,6 +47,13 @@ export class BrowserPageRegistry {
   async cancelProfileInitializations(profileId:string):Promise<void>{
     const pending=[...this.initializing].filter(([,entry])=>entry.profileId===profileId);
     for(const[contents]of pending)if(!contents.isDestroyed())contents.close();
+    await Promise.all(pending.map(([,entry])=>entry.settled));
+  }
+  /** Task retirement must also stop unpublished views using a shared project
+   * profile; deleting the entire shared partition would be incorrect. */
+  async cancelTaskInitializations(taskId:string):Promise<void>{
+    const pending=[...this.initializing].filter(([,entry])=>entry.taskId===taskId);
+    for(const[contents]of pending)if(!contents.isDestroyed())contents.close({waitForBeforeUnload:false});
     await Promise.all(pending.map(([,entry])=>entry.settled));
   }
   get(taskId:string,id?:string):BrowserPage {
@@ -61,11 +70,13 @@ export class BrowserPageRegistry {
     if(requestedProfile&&requestedProfile!==browserProjectProfile(projectId)&&!this.options.profiles)throw new BrowserError('BROWSER_UNAVAILABLE','登录态注册表尚未就绪');
     const profile=this.options.profiles?.binding(taskId,projectId,profileId),partition=profile?.partition??'persist:wy-browser-'+profileId;
     this.options.profiles?.assertAvailable(profileId);
+    const retired=this.closing.get(id);if(retired)await retired;
+    if(this.stopping)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');
     if(this.pages.has(id))throw new BrowserError('BROWSER_ERROR','网页身份已经存在');
     if(this.options.prepareSession)this.options.prepareSession(session.fromPartition(partition));
     const view=new WebContentsView({webPreferences:{partition,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
-    const initialized=this.trackInitialization(view.webContents,profileId);
-    const proxy=new BrowserCdpProxy(view.webContents),references=new BrowserReferences(proxy,short);
+    const initialized=this.trackInitialization(view.webContents,taskId,profileId);
+    const proxy=new BrowserCdpProxy(view.webContents,undefined,()=>this.park.hostVisibility(view),()=>this.park.acquire(view)),references=new BrowserReferences(proxy,short);
     const page:BrowserPage={id,short,taskId,projectId,profileId,view,contents:view.webContents,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:1000,height:700},closed:false,abort:new AbortController(),hostNavigation:null,kind:'tab'};
     view.webContents.setWindowOpenHandler(()=>({action:'deny'})); // Popup UI/lifecycle is implemented in S2.
     const denyUnsafeNavigation=(event:Electron.Event,url:string)=>{
@@ -76,17 +87,19 @@ export class BrowserPageRegistry {
     try {
       this.options.configure?.(page);
       await this.park.park(view,page.rect);
-      await view.webContents.loadURL('about:blank');
-      await proxy.start();await references.initialize();
-      page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),
+      const release=this.park.acquire(view);
+      try{await view.webContents.loadURL('about:blank');await proxy.start();await references.initialize();}finally{release();}
+      page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id,short),
         // Darwin Unix-domain sockets have a short pathname limit. The home remains under userData.
-        sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
-      if(this.stopping||view.webContents.isDestroyed())throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');
+        sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id+short).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
+      if(this.stopping||page.contents.isDestroyed())throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');
       this.options.profiles?.assertAvailable(profileId);
       this.pages.set(id,page);if(!this.active.has(taskId))this.active.set(taskId,id);
+      const lost=()=>{if(this.pages.get(id)===page&&!page.closed)void this.retire(page,false,'lost').catch(error=>console.warn('[browser] original native page cleanup failed',error instanceof Error?error.name:'Error'));};
+      view.webContents.once('destroyed',lost);view.webContents.on('render-process-gone',lost);
       this.publish('created',page);
       return page;
-    }catch(error){await proxy.stop();this.park.remove(view);if(!view.webContents.isDestroyed())view.webContents.close();throw error;}finally{initialized();}
+    }catch(error){await proxy.stop();this.park.remove(view);if(!page.contents.isDestroyed())page.contents.close();throw error;}finally{initialized();}
   }
   /** Electron binds the opener to the returned WebContents. The child uses its
    * own native window and the opener's exact session, never an App preload. */
@@ -97,10 +110,10 @@ export class BrowserPageRegistry {
     // Adopt Electron's supplied contents to preserve the native opener identity.
     const view=new WebContentsView({...(options.webContents===undefined?{}:{webContents:options.webContents}),webPreferences:{...options.webPreferences,session:opener.contents.session,sandbox:true,contextIsolation:true,nodeIntegration:false,webSecurity:true,backgroundThrottling:false}});
     const contents=view.webContents;
-    const initialized=this.trackInitialization(contents,opener.profileId);
+    const initialized=this.trackInitialization(contents,opener.taskId,opener.profileId);
     const window=asTab?undefined:new BaseWindow({width:Math.max(320,Math.min(options.width??800,1400)),height:Math.max(240,Math.min(options.height??600,1000)),show:false,title:'WillYou · 网页登录'});
     const bounds=window?.getContentBounds()??{width:1000,height:700};window?.contentView.addChildView(view);view.setBounds({x:0,y:0,width:bounds.width,height:bounds.height});
-    const proxy=new BrowserCdpProxy(contents),references=new BrowserReferences(proxy,short);
+    const proxy=new BrowserCdpProxy(contents,undefined,()=>window?nativeHostVisibility(window):this.park.hostVisibility(view)),references=new BrowserReferences(proxy,short);
     const page:BrowserPage={id,short,taskId:opener.taskId,projectId:opener.projectId,profileId:opener.profileId,view,contents,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:bounds.width,height:bounds.height},closed:false,abort:new AbortController(),hostNavigation:null,kind:asTab?'tab':'popup',openerPageId:opener.id,popupWindow:window};
     contents.setWindowOpenHandler(()=>({action:'deny'}));
     const guard=(event:Electron.Event,url:string)=>{try{if(!['http:','https:','about:','javascript:'].includes(new URL(url).protocol))event.preventDefault();}catch{event.preventDefault();}};
@@ -115,7 +128,7 @@ export class BrowserPageRegistry {
         await proxy.start();await references.initialize();
         if(this.stopping||contents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');
         this.options.profiles?.assertAvailable(opener.profileId);
-        page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
+        page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id,short),sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id+short).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
         this.pages.set(id,page);this.publish('created',page);if(this.mounted?.taskId===page.taskId)window?.showInactive();
       }catch{await proxy.stop();this.park.remove(view);if(window&&!window.isDestroyed())window.close();if(!contents.isDestroyed())contents.close();}finally{initialized();}
     })();
@@ -144,43 +157,60 @@ export class BrowserPageRegistry {
       navigationSignal.removeEventListener('abort',stop);
       if(this.navigationRequests.get(page)===request){this.navigationRequests.delete(page);page.hostNavigation=null;}
     }})();
+    const release=this.acquirePaint(page);
+    void navigation.finally(release).catch(()=>{});
     await awaitBrowserNavigation(navigation,navigationSignal);
   }
-  async placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{
+  placement(taskId:string,pageId:string,rect:Rectangle|null,valid=()=>true):Promise<void>{
+    const pending=this.placementTail.then(()=>valid()?this.place(taskId,pageId,rect,valid):undefined);
+    this.placementTail=pending.catch(()=>undefined);return pending;
+  }
+  private async place(taskId:string,pageId:string,rect:Rectangle|null,valid:()=>boolean):Promise<void>{
+    if(!valid())return;
     const page=this.get(taskId,pageId),window=this.options.window?.();
     if(page.kind==='popup')throw new BrowserError('BROWSER_ERROR','子窗口不能挂到工作区');
-    if(this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
-      window.contentView.removeChildView(this.mounted.view);await this.park.park(this.mounted.view,this.mounted.rect);this.mounted=undefined;
+    if(rect&&this.mounted&&this.mounted!==page&&window&&!window.isDestroyed()){
+      await this.park.park(this.mounted.view,this.mounted.rect);this.mounted=undefined;
     }
+    if(!valid())return;
     if(rect&&window&&!window.isDestroyed()){
       if(!Object.values(rect).every(Number.isFinite)||rect.width<1||rect.height<1)throw new BrowserError('BROWSER_ERROR','网页显示区域无效');
-      this.park.remove(page.view);window.contentView.addChildView(page.view);page.rect=rect;page.view.setBounds(rect);this.mounted=page;this.active.set(taskId,pageId);
+      this.park.foreground(page.view,rect);page.rect=rect;this.mounted=page;this.active.set(taskId,pageId);
     }else{
-      if(this.mounted===page&&window&&!window.isDestroyed()){window.contentView.removeChildView(page.view);this.mounted=undefined;}
+      if(this.mounted===page){this.mounted=undefined;}
       await this.park.park(page.view,page.rect);
     }
     for(const child of this.pages.values())if(child.popupWindow&&!child.popupWindow.isDestroyed()){
       if(this.mounted?.taskId===child.taskId)child.popupWindow.showInactive();else child.popupWindow.hide();
     }
   }
+  acquirePaint(page:BrowserPage):()=>void{if(page.closed)throw new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭');return this.park.acquire(page.view);}
+  invalidatePlacement():void{this.mounted=undefined;this.park.demoteAll();for(const page of this.pages.values())if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.hide();}
   activate(taskId:string,pageId:string):void{this.get(taskId,pageId);this.active.set(taskId,pageId);}
-  isMounted(page:BrowserPage):boolean{return this.mounted===page;}
+  isMounted(page:BrowserPage):boolean{return this.mounted===page&&this.park.isForeground(page.view);}
   close(taskId:string,pageId:string,fromPageQueue=false):Promise<void>{
     const page=this.pages.get(pageId);
     if(!page||page.taskId!==taskId)return Promise.reject(new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签'));
-    const pending=this.closing.get(pageId);if(pending)return pending;
-    const closing=this.closePage(page,fromPageQueue).finally(()=>{this.closing.delete(pageId);});this.closing.set(pageId,closing);return closing;
+    return this.retire(page,fromPageQueue,'closed');
   }
-  private async closePage(page:BrowserPage,fromPageQueue=false):Promise<void>{
-    const {taskId,id:pageId}=page;page.closed=true;page.queue.close();page.abort.abort(new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭'));
+  private retire(page:BrowserPage,fromPageQueue:boolean,cause:'closed'|'lost'):Promise<void>{
+    const pageId=page.id,pending=this.closing.get(pageId);if(pending)return pending;
+    const closing=this.closePage(page,fromPageQueue,cause).finally(()=>{this.closing.delete(pageId);});this.closing.set(pageId,closing);return closing;
+  }
+  private async closePage(page:BrowserPage,fromPageQueue=false,cause:'closed'|'lost'='closed'):Promise<void>{
+    const {taskId,id:pageId}=page;page.closed=true;if(this.mounted===page)this.mounted=undefined;this.park.remove(page.view);page.queue.close();page.abort.abort(new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭'));
     for(const child of this.list(taskId).filter(p=>p.kind==='popup'&&p.openerPageId===pageId))await this.close(taskId,child.id);
     if(page.references)page.references.invalidate(true);
     await page.helper.close();
     // The CLI close is the current serialized item; it cannot wait for itself.
     // UI/dispose closes still wait for any active page work to finish.
     if(!fromPageQueue)await page.queue.settled();await page.proxy.stop();
-    const window=this.options.window?.();if(this.mounted===page&&window&&!window.isDestroyed()){window.contentView.removeChildView(page.view);this.mounted=undefined;}
-    this.park.remove(page.view);if(!page.contents.isDestroyed())page.contents.close();if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.close();this.pages.delete(pageId);this.publish('closed',page);
+    // The current CLI close owns the queue item itself; all other page work is already drained.
+    if(page.helper.dispose)try{await page.helper.dispose();}catch(error){console.warn('[browser] terminal helper cleanup deferred',page.id,error instanceof Error?error.message:'Error');}
+    this.park.remove(page.view);if(!page.contents.isDestroyed())await new Promise<void>((resolve,reject)=>{
+      const timer=setTimeout(()=>{page.contents.removeListener('destroyed',done);reject(new BrowserError('BROWSER_TIMEOUT','网页内容关闭超时'));},5000);
+      function done(){clearTimeout(timer);resolve();}page.contents.once('destroyed',done);page.contents.close({waitForBeforeUnload:false});if(page.contents.isDestroyed())done();
+    });if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.close();this.pages.delete(pageId);this.publish(cause,page);
     if(this.active.get(taskId)===pageId){const next=this.list(taskId)[0];if(next)this.active.set(taskId,next.id);else this.active.delete(taskId);}
   }
   dispose():Promise<void>{
@@ -188,7 +218,7 @@ export class BrowserPageRegistry {
     this.stopping=true;
     this.disposing=(async()=>{
       // A view can exist before create() publishes it. Close those contents and
-      // wait for their initialization cleanup before destroying the park window.
+      // wait for their initialization cleanup before releasing host attachments.
       const pending=[...this.initializing.entries()];
       for(const[contents]of pending)if(!contents.isDestroyed())contents.close({waitForBeforeUnload:false});
       await Promise.all(pending.map(([,entry])=>entry.settled));

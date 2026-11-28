@@ -1,0 +1,10 @@
+# B09.2 four original 1440×900 geometry combinations — proposed, not executed
+
+Use existing M12 `App041-1080-A016-captured32-reviewed/driver/host-ui.mjs:7` keyboard resizing method, but actual current panel query `[data-testid=agent-workspace-panel]` and existing separator `[role=separator][aria-label="调整文件区域宽度"]`. Exact current native App and same local synthetic content/viewport/zoom; no app/system focus takeover. First compare actual window inner 1440×900, not a CSS-emulated size. Verify theme with actual settings menu. Use two actual themes light/dark.
+
+1. Read separator min/max, panel actual `getBoundingClientRect`, ensure target 480/900 achievable. If max<900, normal actual sidebar toggle, re-read geometry. Both comparison captures must use matching sidebar/viewport state. If still impossible, mark that combo blocked.
+2. Focus actual real separator by unobscured UI click; if necessary ordinary Tab traversal (bounded, verify `document.activeElement===separator` before any width key), no programmatic focus/DOM writes.
+3. Following historical tested procedure, use real CDP keyDown/keyUp `ArrowRight` VK39, observe actual width steps, until native min clamped 420 (not arbitrary rounding). Verify min exactly. Use 6 or 48 `ArrowLeft` VK37 for 480 or 900, respectively, actual panel width increases 10 each step. Wait for real settled geometry/DOM and native page placement. If event doesn't change expected width, stop instead of overriding.
+4. Capture existing actual long/short tabs selected and normal, full address/toolbar, hover tooltip with genuine native parking and own page preview, and menu. Save actual shell PNG and separate native page frame PNG plus relationship/geometry. No whole-window OS composite, native OS tooltip, physical focus/dual-display claim. The 57-state original matrix remains distinct, this is only matched subset.
+
+Original pointer attempt 652.078→480 failed, no 480 pass. Original T146 same-shape C16 actual red and C17 retest use 652.078, deliberately separate from these original width combinations. Do not lower criteria or retroactively recategorize existing artifacts.

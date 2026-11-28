@@ -1,0 +1,18 @@
+{
+  "status": "source and packaged switch preflight verified; runtime not yet verified",
+  "candidateAsar": "8e0e01b1838417c505b864ddce9ac5a62fae0d579e2c31e978599c851ea7ac11",
+  "electronVersionFromLock": "42.11.14",
+  "actualBinaryExactFlagString": "use-mock-keychain",
+  "primarySources": [
+    {
+      "url": "https://releases.electronjs.org/pr/53790",
+      "evidence": "Electron upstream test uses mock keychain for unsigned spawned test processes whose network service reads the cookie encryption key."
+    },
+    {
+      "url": "https://chromium.googlesource.com/chromium/src/+/refs/tags/137.0.7131.1/components/os_crypt/sync/os_crypt_switches.h",
+      "evidence": "Chromium defines mock keychain for blocking-dialog-free testing."
+    }
+  ],
+  "boundary": "Only a privately copied QA launcher with fresh synthetic data and independent HOME, no real Keychain or existing database/cookie partition copied, no production launch modification. Any A result is real packaged UI/native business behavior with simulated crypto fixture; no true encryption, system authorization or existing identity migration claim. Real storage S remains outstanding.",
+  "prior": "C14 isolated isEncryptionAvailable=false; user saw storage/keychain alerts during tests; no assertion daily App caused them."
+}

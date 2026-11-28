@@ -1,6 +1,7 @@
 // Codex 程序化驱动：本机 codex app-server（stdio JSON-RPC）。每轮在 turn/start 显式下发档位参数，
 // 恢复线程也重新下发，不依赖创建时默认值（技术方案 T1.5 §7.2，V08／V09）。
 import { spawn, type ChildProcess } from 'node:child_process';
+import { isAbsolute, relative, sep } from 'node:path';
 import { CODEX_TIERS, codexSupportsTurnPermissions, type CodexTierParams } from '../permissions';
 import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverEvent, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
@@ -153,12 +154,19 @@ export class CodexAppServerInstance implements DriverInstance {
           this.emitter.emit({ type: 'diagnostic', message: '恢复前发现原生目标仍在进行，已先暂停；不会因恢复会话自动续轮。' });
         }
       }
-      if (o.skillRoots?.length) {
-        await this.rpc!.call('skills/extraRoots/set', { extraRoots: o.skillRoots.map(s => s.path) });
+      if (o.skillRoots?.length||o.nativeProjectSkillRoots?.length) {
+        if(o.skillRoots?.length)await this.rpc!.call('skills/extraRoots/set', { extraRoots: o.skillRoots.map(s => s.path) });
         // Updating the extra roots already invalidates the native Skill cache.
         const listed = await this.rpc!.call<{ data?: { skills?: { name: string; path: string; enabled: boolean }[] }[] }>('skills/list', { cwds: [o.cwd] });
         const skills = listed.data?.flatMap(d => d.skills ?? []) ?? [];
-        for (const root of o.skillRoots) if (skills.filter(s => s.name === root.name && s.enabled).length !== 1 || !skills.some(s => s.name === root.name && s.path === root.path + '/SKILL.md' && s.enabled)) throw new DriverError('REJECTED', `Skill 未按冻结目录加载：${root.name}`);
+        for (const root of o.skillRoots??[]) if (skills.filter(s => s.name === root.name && s.enabled).length !== 1 || !skills.some(s => s.name === root.name && s.path === root.path + '/SKILL.md' && s.enabled)) throw new DriverError('REJECTED', `Skill 未按冻结目录加载：${root.name}`);
+        if(o.nativeProjectSkillRoots?.length){
+          if(!Array.isArray(listed?.data))throw new DriverError('REJECTED','无法核对通用任务的原生 Skill 目录');
+          for(const skill of skills.filter(s=>s.enabled!==false)){
+            if(typeof skill.path!=='string'||!isAbsolute(skill.path)||o.nativeProjectSkillRoots.some(root=>{const rel=relative(root,skill.path);return !isAbsolute(rel)&&rel!=='..'&&!rel.startsWith('..'+sep);}))
+              throw new DriverError('REJECTED','通用任务检测到原生项目 Skill 仍启用，已停止本次启动以保留原项目作用域');
+          }
+        }
       }
       // 新线程不带模型打开，响应里的 model 即执行器默认；所选模型随每轮显式发送（模型覆盖对后续轮次持续生效，复核 FR03）。
       const sandbox = !this.readOnly && o.tier !== 'full' && o.codexCliPermissions

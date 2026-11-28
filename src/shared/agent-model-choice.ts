@@ -19,7 +19,8 @@ export function offersCodexLoginDefault(models: readonly {id: string; efforts: r
 
 export type AgentModelScope =
   | { kind: 'project'; projectId: string; dirId: string }
-  | { kind: 'task'; taskId: string };
+  | { kind: 'task'; taskId: string }
+  | { kind: 'standalone' };
 
 export const agentModelsSchema = z.array(z.object({
   id: z.string().min(1).max(256), name: z.string().max(160),

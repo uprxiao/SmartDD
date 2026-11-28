@@ -1,3 +1,4 @@
+import {standaloneTaskId,verifyStandaloneScope} from '../agent/task-application-scope';
 import {SelectionPreconditionError} from './selection-precondition-error';
 import { createHash, randomUUID } from 'node:crypto';
 import { ApplicationError } from '@shared/applications';
@@ -163,6 +164,10 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
   }
   /** Local draft operations depend only on application policy, not unrelated external slots. */
   requireApplicationEnabled(projectId: string,appId: A): void {
+    if(standaloneTaskId(projectId)){
+      if(appId!=='browser'||!verifyStandaloneScope(this.store.sqlite,projectId))throw new ApplicationError('SCOPE_DENIED','通用任务仅允许其独立浏览器空间');
+      const catalog=this.catalogState(appId);if(!catalog.added||!catalog.enabled)throw new ApplicationError('SCOPE_DENIED','内置浏览器已停用');return;
+    }
     this.deps.requireProject(projectId); const catalog = this.catalogState(appId);
     const row = this.store.sqlite.prepare('SELECT enabled,pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id=?').get(projectId,appId) as { enabled: number;pending_operation_id: string | null } | undefined;
     if (!catalog.added || !catalog.enabled || row?.enabled !== 1) throw new ApplicationError('SCOPE_DENIED','当前项目未启用此应用');
@@ -171,6 +176,7 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
   /** Local business operations depend on enablement, not unrelated source/SMTP slot edits. */
   policyStamp(projectId: string,appId: A): {globalRevision:number;projectPolicyRevision:number} {
     this.requireApplicationEnabled(projectId,appId);
+    if(standaloneTaskId(projectId))return{globalRevision:this.catalogState(appId).revision,projectPolicyRevision:0};
     const row=this.store.sqlite.prepare('SELECT policy_revision FROM application_project_settings WHERE project_id=? AND app_id=?').get(projectId,appId) as {policy_revision:number};
     return {globalRevision:this.catalogState(appId).revision,projectPolicyRevision:row.policy_revision};
   }

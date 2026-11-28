@@ -7,6 +7,7 @@ import type { ProjectTransferService } from './transfer-service';
 import { TransferError } from './transfer-format';
 
 const native = vi.hoisted(() => ({ open: vi.fn(), save: vi.fn(), reveal: vi.fn(), window: { title: 'QA' } }));
+vi.mock('@main/app/window-host',()=>({mainWindowForContents:()=>native.window}));
 vi.mock('electron', () => ({ BrowserWindow: { fromWebContents: () => native.window }, dialog: { showOpenDialog: native.open, showSaveDialog: native.save }, shell: { showItemInFolder: native.reveal } }));
 let handlers: Map<string, (...args: any[]) => any>;
 let svc: ReturnType<typeof service>;

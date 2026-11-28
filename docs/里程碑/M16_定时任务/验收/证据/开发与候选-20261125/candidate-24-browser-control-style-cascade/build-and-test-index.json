@@ -1,0 +1,61 @@
+{
+  "scope": "actual C24 test-first source fix and independent build summary; no real App acceptance yet",
+  "base": "4148950b8",
+  "priorCandidate": "C23",
+  "sourceManifest": "../candidate-24-source.json",
+  "sourceManifestSha256": "1e5327c33daecb1fd2cb9ff7840afb7655565399ff977ab8dc57410f72cdcf3b",
+  "frozenFileCount": 153,
+  "changedFromC23": [
+    "src/renderer/features/browser/workspace.css",
+    "src/renderer/features/browser/profile-site-states.test.tsx"
+  ],
+  "testFirst": {
+    "command": "pnpm test src/renderer/features/browser/profile-site-states.test.tsx --maxWorkers=1",
+    "before": {
+      "exit": 1,
+      "passed": 7,
+      "failed": 2,
+      "actual": "13px,0px,5px",
+      "expected": "12px,1px,7px",
+      "bothOrders": true
+    },
+    "initialScopedRepair": {
+      "exit": 1,
+      "actual": "12px,0px,7px",
+      "detail": "jsdom did not resolve CSS var inside border shorthand; same minimal input reproduced. CSS longhands equivalent in Chromium and expose correct width/style in jsdom."
+    },
+    "final": {
+      "exit": 0,
+      "passed": 9,
+      "failed": 0
+    }
+  },
+  "relatedTests": {
+    "command": "pnpm test src/renderer/features/browser src/renderer/features/agent-tasks --maxWorkers=2",
+    "exit": 0,
+    "filesPassed": 22,
+    "passed": 248
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0
+  },
+  "build": {
+    "command": "pnpm package --output-dir /private/tmp/willyou-m16-c24-build.pn0wa8ey/standard",
+    "exit": 0,
+    "bundle": "/private/tmp/willyou-m16-c24-build.pn0wa8ey/standard/mac-arm64/WillYou.app",
+    "appAsarSha256": "68302db0dec3c11291e94a67d5c7cca5b4f9ae98303eff5666194a35419da684",
+    "nativeProcessIdentitySha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeSmoke": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "codesignDeepStrictExit": 0,
+    "postBuildSourceMismatches": 0,
+    "notInstalledOrReleased": true
+  }
+}

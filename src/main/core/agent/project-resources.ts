@@ -36,6 +36,7 @@ export class AgentProjectResources {
     diffs: TurnDiffs;
     terminals?: AgentManualTerminals;
     userData: string;
+    onTaskRemoved?: (taskId: string) => void;
   }) {
     this.retryTimer = setInterval(() => this.kick(), MINUTE);
     this.sweepTimer = setInterval(() => this.sweepPrepared(), HOUR);
@@ -116,6 +117,10 @@ export class AgentProjectResources {
       this.d.store.deleteTask(taskId, () => this.purgeTasks('task', taskId));
       this.clearDraftLeases(new Set([taskId]));
     });
+    // Resource owners observe the committed deletion, never an attempted or
+    // archived task. A cleanup failure cannot undo or disguise that commit.
+    try { this.d.onTaskRemoved?.(taskId); }
+    catch { console.warn('[agent] dependent task cleanup pending'); }
     this.kick();
   }
 

@@ -1,0 +1,117 @@
+{
+  "candidates": [
+    {
+      "report": "/private/tmp/willyou-m16-f36-run-XxAWsD/result.json",
+      "report_sha256": "cc1a223d5efcb2690ab27cfffc43731276d30685a1c18f259cae5078ffed5059",
+      "log": "/private/tmp/willyou-m16-f36-run-XxAWsD/electron.log",
+      "log_sha256": "b2ef6b162b4bfa183f94f8d075bf672de9d4056731b1bf98023b7f2588c87e20",
+      "pid": 26098,
+      "actions": [
+        {
+          "stage": "B02.2-actual-helper-wait-survives-panel-and-hide",
+          "kind": "UI-click",
+          "selector": ".agent-panel-menu button",
+          "label": "终端T",
+          "point": {
+            "x": 1202,
+            "y": 138
+          },
+          "at": 1795622846430
+        },
+        {
+          "stage": "B02.2-actual-helper-wait-survives-panel-and-hide",
+          "kind": "UI-click",
+          "selector": "button[aria-label=\"关闭终端面板\"]",
+          "label": null,
+          "point": {
+            "x": 1172,
+            "y": 22
+          },
+          "at": 1795622846471
+        }
+      ],
+      "agent_turn_status_counts": {
+        "completed": 8
+      },
+      "cleanup": [
+        {
+          "id": "976cd581-da7a-4bc1-8115-bd35d35d5579",
+          "wasActive": false,
+          "action": "retire isolated test task execution after all assertions; cleanup only, not acceptance evidence"
+        },
+        {
+          "id": "4854aa3f-f387-4719-be62-a3dda1faf640",
+          "wasActive": false,
+          "action": "retire isolated test task execution after all assertions; cleanup only, not acceptance evidence"
+        },
+        {
+          "id": "58cbb8a7-6708-443b-a2e2-e916d42512c1",
+          "wasActive": false,
+          "action": "retire isolated test task execution after all assertions; cleanup only, not acceptance evidence"
+        }
+      ],
+      "exit_error": "Isolated App did not finish its normal exit",
+      "log_reported_teardown_failure": false,
+      "observation": "No actual native dialog/PTY count captured; process already retired by original child-specific fallback."
+    },
+    {
+      "report": "/private/tmp/willyou-m16-f36-run-cfdb4H/result.json",
+      "report_sha256": "26a60a06ae2bac893b1bda4f03af22e2f90f18906c368bb2b87f8a3a3f28cf5e",
+      "log": "/private/tmp/willyou-m16-f36-run-cfdb4H/electron.log",
+      "log_sha256": "543d0ffbf99f9edf433dd9a3e64309286871e3b3b3c821b3070a2463112d6b69",
+      "pid": 31276,
+      "actions": [
+        {
+          "stage": "B02.2-actual-helper-wait-survives-panel-and-hide",
+          "kind": "UI-click",
+          "selector": ".agent-panel-menu button",
+          "label": "终端T",
+          "point": {
+            "x": 1202,
+            "y": 138
+          },
+          "at": 1795622934721
+        },
+        {
+          "stage": "B02.2-actual-helper-wait-survives-panel-and-hide",
+          "kind": "UI-click",
+          "selector": "button[aria-label=\"关闭终端面板\"]",
+          "label": null,
+          "point": {
+            "x": 1055,
+            "y": 22
+          },
+          "at": 1795622934755
+        }
+      ],
+      "agent_turn_status_counts": {
+        "completed": 1
+      },
+      "cleanup": [
+        {
+          "id": "5c823ed0-859c-4c67-b281-d14cff354cf5",
+          "wasActive": false,
+          "action": "retire isolated test task execution after all assertions; cleanup only, not acceptance evidence"
+        },
+        {
+          "id": "dcd34b56-fa41-4d7e-ab0f-bcb4178aa9e4",
+          "wasActive": false,
+          "action": "retire isolated test task execution after all assertions; cleanup only, not acceptance evidence"
+        }
+      ],
+      "exit_error": "Isolated App did not finish its normal exit",
+      "log_reported_teardown_failure": false,
+      "observation": "No actual native dialog/PTY count captured; process already retired by original child-specific fallback."
+    }
+  ],
+  "source_hashes": {
+    "src/renderer/features/agent-tasks/workspace-panels.tsx": "f1e9af2803f0fcfae4c1cf9e74b2dab074f1e84b19a7b0c83cadad6a5ccc7bd5",
+    "src/renderer/features/agent-tasks/agent-terminal.tsx": "489621d00f9b83d489098703e4bf099c64e79436ee75c797f92e3d23b2188882",
+    "src/main/core/agent/manual-terminal.ts": "9549826bf2a2bf6addbf4200837180f82b7918f9ad244686b8b981d3ceeae93d",
+    "src/main/index.ts": "410a1f729b344acb30afe561297c68427a987737714bc23aaac2f223b97b024d",
+    "src/main/pty-manager.ts": "fff776c0da7a9befa565e8a69d306a879ce2b828844efb273620710343355416",
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69"
+  },
+  "diagnosis": "Strongly explains both cleanup timeouts: real terminal panel opens manual PTY; header close panel hides/unmounts without stopping PTY; main before-quit synchronous native confirm on active PTY. Actual database and UI cleanup did not show active agent turns. Native confirmation/PTY count not observed, cannot assert cause as directly proven; normal exits unconfirmed, not product hang evidence.",
+  "proposed_test": "Independent exact own isolated candidate. Open actual terminal pane and await actual shell descendant; close header pane, assert same shell still running; reopen pane, assert same shell, click actual inner close button, await own shell descendant gone; dispatch normal quit and observe original child code 0. Do not alter native confirmation nor retry already retired processes."
+}

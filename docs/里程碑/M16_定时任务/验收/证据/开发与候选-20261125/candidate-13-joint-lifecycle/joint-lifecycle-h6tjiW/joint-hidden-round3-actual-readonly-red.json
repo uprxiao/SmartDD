@@ -1,0 +1,176 @@
+{
+  "occurrence": {
+    "id": "49302d0a-2dc2-4e84-9591-48ed9a011a23",
+    "plan_id": "a753b754-9565-4e71-a617-6ba0b5f3f09e",
+    "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+    "turn_id": "745e6751-e9b8-4023-8a21-8a97f051885e",
+    "status": "failed",
+    "due": 1795641950851,
+    "trigger": "scheduled",
+    "reason": "原回合失败"
+  },
+  "turn": {
+    "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+    "turn_id": "745e6751-e9b8-4023-8a21-8a97f051885e",
+    "run_id": "c126e1eb-8de8-4c37-995a-cac645cdb7fa",
+    "status": "failed",
+    "source_kind": "system"
+  },
+  "origin": {
+    "occurrence_id": "49302d0a-2dc2-4e84-9591-48ed9a011a23",
+    "turn_id": "745e6751-e9b8-4023-8a21-8a97f051885e",
+    "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+  },
+  "commands": [
+    {
+      "itemId": "8caa33c4-82de-4ca5-8802-46f83eba27d3",
+      "command": "/bin/zsh -lc 'willyou-app browser tab list --show-profile true'",
+      "exitCode": 0,
+      "status": "completed",
+      "receipt": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba",
+          "connections": []
+        },
+        "data": {
+          "tabs": [
+            {
+              "pageId": "233db84b-97eb-4132-96e9-926f237c1911",
+              "index": 0,
+              "active": true,
+              "browserPageId": "233db84b-97eb-4132-96e9-926f237c1911",
+              "title": "Joint page A",
+              "kind": "tab",
+              "profileId": "project-5ca76dcd7c23763a1b69e151",
+              "url": "http://127.0.0.1:3425/m16-joint/A"
+            }
+          ]
+        },
+        "resources": [],
+        "operation": {
+          "id": "0258fa0a-1c56-4af9-a0e5-8e492d1fddc0",
+          "requestId": "150b03a2-7b64-4661-a661-ea2905e41d04",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.list"
+      }
+    },
+    {
+      "itemId": "3b96ef57-347e-407e-a19b-f2ab13d98f26",
+      "command": "/bin/zsh -lc 'willyou-app browser snapshot --page 233db84b-97eb-4132-96e9-926f237c1911'",
+      "exitCode": 0,
+      "status": "completed",
+      "receipt": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba",
+          "connections": []
+        },
+        "data": {
+          "origin": "http://127.0.0.1:3425/m16-joint/A",
+          "generation": "k2b18372ee60941cabc150023ea2430d9:1",
+          "browserPageId": "233db84b-97eb-4132-96e9-926f237c1911",
+          "snapshot": "- main\n  - heading \"Joint page A\" [level=1, ref=@k2b18372ee60941cabc150023ea2430d9s6e1]\n  - paragraph\n    - StaticText \"M16_JOINT_T1_PAGE_A\"",
+          "refs": [
+            {
+              "available": true,
+              "name": "Joint page A",
+              "role": "heading",
+              "ref": "@k2b18372ee60941cabc150023ea2430d9s6e1"
+            }
+          ],
+          "title": "Joint page A",
+          "url": "http://127.0.0.1:3425/m16-joint/A"
+        },
+        "resources": [],
+        "operation": {
+          "id": "c18f62e1-c40c-4028-8477-bcfda9b0d16e",
+          "requestId": "aed88189-2a7c-4f8f-acd3-a5c7a3b23845",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.nav.snapshot"
+      }
+    },
+    {
+      "itemId": "115b8699-0040-441e-9684-52192792e762",
+      "command": "/bin/zsh -lc 'willyou-app browser screenshot --page 233db84b-97eb-4132-96e9-926f237c1911 --format png'",
+      "exitCode": 2,
+      "status": "failed",
+      "receipt": {
+        "error": {
+          "effectState": "read-only",
+          "code": "BROWSER_TIMEOUT",
+          "layer": "provider",
+          "message": "CDP Page.captureScreenshot 超时",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "fd8ecb36-041b-42b2-be37-b72beb52fe2b",
+        "requestId": "4480666c-7b2d-4003-85c7-d831e1f8d4c4"
+      }
+    }
+  ],
+  "actualRound3SuccessfulReads": [
+    {
+      "round": 3,
+      "kind": "list",
+      "page": "233db84b-97eb-4132-96e9-926f237c1911",
+      "profile": "project-5ca76dcd7c23763a1b69e151",
+      "status": "ok",
+      "entry": "cli",
+      "capability": "browser.tab.list",
+      "at": 1795641952036,
+      "receiptHash": "0001659d7b43b907920a086da5fb6d3c0af35f877165b4cbe3f5b4aabb3e187a",
+      "file": null
+    },
+    {
+      "round": 3,
+      "kind": "snapshot",
+      "page": "233db84b-97eb-4132-96e9-926f237c1911",
+      "profile": "project-5ca76dcd7c23763a1b69e151",
+      "status": "ok",
+      "entry": "cli",
+      "capability": "browser.nav.snapshot",
+      "at": 1795641953097,
+      "receiptHash": "7187fdb69eedf18b876f1805ce29e01314cbe3578a57a387dda30c87178c4e6d",
+      "file": null
+    }
+  ],
+  "actualHiddenEvidenceBoundary": "native restore handoff emitted after initial handoff expired only because independent observeWindow saw root not visible/minimized; root actual CUA separate. Foreground/restore handoff receipts absent, no claim other-app S or restore. Actual browser screenshot native CLI failure occurred in this scheduled attempt.",
+  "originalDriverError": "Error: Timeout actual native CUA handoff restore-original; last=null\n    at wait (file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:139:151)\n    at async file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:451:206\n    at async scenario (file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:272:94)\n    at async file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:433:5",
+  "cleanup": {
+    "at": "2026-11-25T21:26:29.590Z",
+    "case": "B12.1-real-natural-visible-hidden-browser",
+    "action": "normal exit",
+    "data": {
+      "pid": 27475,
+      "code": 0,
+      "signal": null
+    }
+  },
+  "planPaused": true,
+  "fixtureNotFabricated": "fixture rejects actual error receipt, no alternate command, no reissue browser side effect. Native model transport repeated response while original screenshot failure remained exact one business invocation."
+}

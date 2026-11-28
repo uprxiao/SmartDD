@@ -5,6 +5,7 @@ import {BrowserError} from './errors';
 import {awaitBrowserNavigation} from './navigation-wait';
 import type {BrowserOperations} from './operations';
 import type {BrowserPage} from './page-registry';
+import type {PresentationStatus} from './presentation';
 import type {BrowserScope} from './service';
 import type {BrowserWorkspace} from './workspace';
 
@@ -44,6 +45,7 @@ export class BrowserTabOpen {
   start(scope:BrowserScope,input:OpenInput,profileId:string,options:{
     authorize:()=>void;
     dispatch:()=>void;
+    present?:(pageId:string)=>void|Promise<PresentationStatus>;
     ready:(page:BrowserPage,options:NonNullable<OpenInput['ready']>,signal:AbortSignal,authorize:()=>void)=>Promise<unknown>;
   }){
     const {runId,runSignal,requestId,taskId,operationId}=scope;
@@ -59,16 +61,18 @@ export class BrowserTabOpen {
     }
     options.authorize();
     this.operations.begin(runId,requestId,taskId,null,'tab open');
-    const tab=this.workspace.reserveAgentOpen(taskId,{pageId:input.pageId,url:input.url,profileId,forceNew:input.intent==='new'});
+    const tab=this.workspace.reserveAgentOpen(taskId,{pageId:input.pageId,url:input.url,profileId,forceNew:input.intent==='new',
+      exclude:id=>this.loads.get(id)?.abort.signal.aborted===true});
     options.dispatch();
     const base={pageId:tab.pageId,url:tab.url,reused:tab.reused,operationId,presentation:input.presentation};
     this.operations.page(runId,requestId,tab.pageId);
-    const update=(phase:'loading'|'ready'|'failed'|'cancelled',code?:string)=>{
+    const update=(phase:'loading'|'ready'|'failed'|'cancelled',code?:string,presentationState?:PresentationStatus)=>{
       this.operations.update(runId,requestId,phase==='loading'?'running':phase==='ready'?'succeeded':'failed','completed',{
-        summary:{...base,phase,hash},code,
+        summary:{...base,phase,hash,...(presentationState?{presentationState}:{})},code,
       });
     };
     update('loading');
+    const presentation=input.presentation==='show'?options.present?.(tab.pageId):undefined;
     const deadline=new AbortController();
     const timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT','网页打开超时')),60000);
     const signal=AbortSignal.any([runSignal,deadline.signal]);
@@ -100,7 +104,7 @@ export class BrowserTabOpen {
       const release=()=>{
         if(this.loads.get(tab.pageId)!==shared)return;
         this.loads.delete(tab.pageId);
-        this.workspace.abandonAgentOpen(taskId,tab.pageId);
+        this.workspace.abandonAgentOpen(taskId,tab.pageId,shared.abort.signal.aborted);
       };
       void promise.then(release,release).catch(()=>console.warn('[browser] tab navigation cleanup unavailable'));
       loading=shared;
@@ -124,7 +128,8 @@ export class BrowserTabOpen {
           checkDocument();
         }
         check();
-        update('ready');
+        const presented=presentation?await awaitBrowserNavigation(presentation,signal):undefined;
+        check();update('ready',undefined,presented);
       }catch(error){
         const cancelled=signal.aborted&&!(signal.reason instanceof BrowserError&&signal.reason.code==='BROWSER_TIMEOUT')
           ||error instanceof ApplicationError&&['CANCELED','SCOPE_DENIED'].includes(error.code);

@@ -1,0 +1,4186 @@
+{
+  "schema": "M16-B09.5-C28-native-voice-subsection",
+  "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+  "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+  "pins": {
+    "specs": [
+      {
+        "side": "old-clean",
+        "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/old-reference/WillYou.app",
+        "hash": "697bb2d273a743c22a2d2c2ebc3c509b0fcee3f9c4bbeeb34146c590b2d9afe2",
+        "native": "3ea4c07164ebd92391822629e00f4efa4a07a97f33088ef53b3c9b6b532c6040"
+      },
+      {
+        "side": "new",
+        "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/build/mac-arm64/WillYou.app",
+        "hash": "5d715b34f16a31a1edf95692501b58e19e70048bc0f131f4bb33ac1bbcb3ba9e",
+        "native": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080"
+      }
+    ],
+    "filesPin": "e07fbff84183650e8b3482d8c2499038787c9fd7aea691180cbf86e84fb3aea5",
+    "manifestSha": "118c3a0c40b4952b277df394a6cfcb931317f0660b6cd1a4b3ab5c59b2ac85cf"
+  },
+  "observerSha": "b5c0805b46f25476bfacb665e884f67f3c993df16d68a03a26132f1ddab786fe",
+  "scope": "Actual native keyboard and voice recorder self-contained subsection. No microphone, audio, external login, background page operation or global shortcut persistence.",
+  "steps": [
+    {
+      "stage": "starting",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768658860
+    },
+    {
+      "kind": "private-real-UI-click",
+      "selector": "[data-testid=nav-settings]",
+      "text": null,
+      "at": 1795768663558,
+      "point": {
+        "x": 26,
+        "y": 872
+      }
+    },
+    {
+      "kind": "private-real-UI-click",
+      "selector": ".settings-nav button",
+      "text": "语音输入",
+      "at": 1795768663711,
+      "point": {
+        "x": 171,
+        "y": 348
+      }
+    },
+    {
+      "kind": "private-real-UI-click",
+      "selector": "button[aria-label=\"启用全局唤起\"]",
+      "text": null,
+      "at": 1795768663822,
+      "point": {
+        "x": 1169,
+        "y": 625
+      }
+    },
+    {
+      "stage": "await-native-front",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768663902,
+      "pid": 96144,
+      "ready": {
+        "exists": true,
+        "busy": false,
+        "focus": false,
+        "documentFocus": true,
+        "value": "Command+Shift+Space",
+        "button": "录制",
+        "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+        "sidebarCollapsed": false
+      },
+      "deadline": 1795768903902
+    },
+    {
+      "kind": "private-real-UI-click",
+      "selector": ".voice-key-editor button",
+      "text": "录制",
+      "at": 1795768707524,
+      "point": {
+        "x": 1161,
+        "y": 691
+      }
+    },
+    {
+      "stage": "await-native-capture",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768707750,
+      "instruction": "按一次 ⌘B，等按钮恢复为录制，保持测试窗前台。"
+    },
+    {
+      "stage": "await-native-menu-after-capture",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768723057,
+      "instruction": "等录制结束2秒，按第二次 ⌘B，保持前台。"
+    },
+    {
+      "kind": "private-real-UI-click",
+      "selector": ".voice-key-editor button",
+      "text": "录制",
+      "at": 1795768757737,
+      "point": {
+        "x": 1161,
+        "y": 365
+      }
+    },
+    {
+      "stage": "await-native-cancel",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768757902,
+      "instruction": "看到正在录制后按 Esc；待按钮恢复为录制2秒，再按一次 ⌘B。"
+    },
+    {
+      "stage": "await-native-menu-after-cancel",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768760066
+    },
+    {
+      "kind": "private-real-UI-click",
+      "selector": ".voice-key-editor button",
+      "text": "录制",
+      "at": 1795768760850,
+      "point": {
+        "x": 1161,
+        "y": 365
+      }
+    },
+    {
+      "stage": "await-real-60s-timeout",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768760917,
+      "instruction": "保持测试窗前台，至少60秒，请勿点击、按键或切换。出现录制已超时后再按一次 ⌘B。",
+      "startedAt": 1795768760744
+    },
+    {
+      "stage": "finished",
+      "root": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e",
+      "out": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence",
+      "title": "WillYou · M16 B09 语音快捷键测试 IBSx7e",
+      "at": 1795768764300,
+      "status": "native-voice-subsection-incomplete-or-failed"
+    }
+  ],
+  "front": [
+    {
+      "at": 1795768663438,
+      "own": true
+    },
+    {
+      "at": 1795768663543,
+      "own": true
+    },
+    {
+      "at": 1795768663648,
+      "own": true
+    },
+    {
+      "at": 1795768663753,
+      "own": true
+    },
+    {
+      "at": 1795768663858,
+      "own": true
+    },
+    {
+      "at": 1795768663962,
+      "own": true
+    },
+    {
+      "at": 1795768664066,
+      "own": true
+    },
+    {
+      "at": 1795768664170,
+      "own": true
+    },
+    {
+      "at": 1795768664275,
+      "own": true
+    },
+    {
+      "at": 1795768664379,
+      "own": true
+    },
+    {
+      "at": 1795768664485,
+      "own": true
+    },
+    {
+      "at": 1795768664587,
+      "own": true
+    },
+    {
+      "at": 1795768664693,
+      "own": true
+    },
+    {
+      "at": 1795768664798,
+      "own": true
+    },
+    {
+      "at": 1795768664903,
+      "own": true
+    },
+    {
+      "at": 1795768665008,
+      "own": true
+    },
+    {
+      "at": 1795768665112,
+      "own": true
+    },
+    {
+      "at": 1795768665218,
+      "own": true
+    },
+    {
+      "at": 1795768665320,
+      "own": true
+    },
+    {
+      "at": 1795768665424,
+      "own": true
+    },
+    {
+      "at": 1795768665529,
+      "own": true
+    },
+    {
+      "at": 1795768665634,
+      "own": false
+    },
+    {
+      "at": 1795768665740,
+      "own": false
+    },
+    {
+      "at": 1795768665845,
+      "own": false
+    },
+    {
+      "at": 1795768665951,
+      "own": false
+    },
+    {
+      "at": 1795768666056,
+      "own": false
+    },
+    {
+      "at": 1795768666162,
+      "own": false
+    },
+    {
+      "at": 1795768666267,
+      "own": false
+    },
+    {
+      "at": 1795768666372,
+      "own": false
+    },
+    {
+      "at": 1795768666477,
+      "own": false
+    },
+    {
+      "at": 1795768666581,
+      "own": false
+    },
+    {
+      "at": 1795768666687,
+      "own": false
+    },
+    {
+      "at": 1795768666791,
+      "own": false
+    },
+    {
+      "at": 1795768666895,
+      "own": false
+    },
+    {
+      "at": 1795768667000,
+      "own": false
+    },
+    {
+      "at": 1795768667105,
+      "own": false
+    },
+    {
+      "at": 1795768667210,
+      "own": false
+    },
+    {
+      "at": 1795768667312,
+      "own": false
+    },
+    {
+      "at": 1795768667417,
+      "own": false
+    },
+    {
+      "at": 1795768667523,
+      "own": false
+    },
+    {
+      "at": 1795768667628,
+      "own": false
+    },
+    {
+      "at": 1795768667733,
+      "own": false
+    },
+    {
+      "at": 1795768667839,
+      "own": false
+    },
+    {
+      "at": 1795768667943,
+      "own": false
+    },
+    {
+      "at": 1795768668049,
+      "own": false
+    },
+    {
+      "at": 1795768668154,
+      "own": false
+    },
+    {
+      "at": 1795768668259,
+      "own": false
+    },
+    {
+      "at": 1795768668361,
+      "own": false
+    },
+    {
+      "at": 1795768668466,
+      "own": false
+    },
+    {
+      "at": 1795768668571,
+      "own": false
+    },
+    {
+      "at": 1795768668676,
+      "own": false
+    },
+    {
+      "at": 1795768668781,
+      "own": false
+    },
+    {
+      "at": 1795768668886,
+      "own": false
+    },
+    {
+      "at": 1795768668991,
+      "own": false
+    },
+    {
+      "at": 1795768669097,
+      "own": false
+    },
+    {
+      "at": 1795768669204,
+      "own": false
+    },
+    {
+      "at": 1795768669310,
+      "own": false
+    },
+    {
+      "at": 1795768669414,
+      "own": false
+    },
+    {
+      "at": 1795768669520,
+      "own": false
+    },
+    {
+      "at": 1795768669624,
+      "own": false
+    },
+    {
+      "at": 1795768669730,
+      "own": false
+    },
+    {
+      "at": 1795768669835,
+      "own": false
+    },
+    {
+      "at": 1795768669942,
+      "own": false
+    },
+    {
+      "at": 1795768670049,
+      "own": false
+    },
+    {
+      "at": 1795768670153,
+      "own": false
+    },
+    {
+      "at": 1795768670258,
+      "own": false
+    },
+    {
+      "at": 1795768670363,
+      "own": false
+    },
+    {
+      "at": 1795768670467,
+      "own": false
+    },
+    {
+      "at": 1795768670572,
+      "own": false
+    },
+    {
+      "at": 1795768670677,
+      "own": false
+    },
+    {
+      "at": 1795768670782,
+      "own": false
+    },
+    {
+      "at": 1795768670886,
+      "own": false
+    },
+    {
+      "at": 1795768670991,
+      "own": false
+    },
+    {
+      "at": 1795768671095,
+      "own": false
+    },
+    {
+      "at": 1795768671199,
+      "own": false
+    },
+    {
+      "at": 1795768671304,
+      "own": false
+    },
+    {
+      "at": 1795768671409,
+      "own": false
+    },
+    {
+      "at": 1795768671513,
+      "own": false
+    },
+    {
+      "at": 1795768671617,
+      "own": false
+    },
+    {
+      "at": 1795768671722,
+      "own": false
+    },
+    {
+      "at": 1795768671826,
+      "own": false
+    },
+    {
+      "at": 1795768671930,
+      "own": false
+    },
+    {
+      "at": 1795768672034,
+      "own": false
+    },
+    {
+      "at": 1795768672137,
+      "own": false
+    },
+    {
+      "at": 1795768672238,
+      "own": false
+    },
+    {
+      "at": 1795768672343,
+      "own": false
+    },
+    {
+      "at": 1795768672447,
+      "own": false
+    },
+    {
+      "at": 1795768672550,
+      "own": false
+    },
+    {
+      "at": 1795768672654,
+      "own": false
+    },
+    {
+      "at": 1795768672759,
+      "own": false
+    },
+    {
+      "at": 1795768672861,
+      "own": false
+    },
+    {
+      "at": 1795768672966,
+      "own": false
+    },
+    {
+      "at": 1795768673069,
+      "own": false
+    },
+    {
+      "at": 1795768673174,
+      "own": false
+    },
+    {
+      "at": 1795768673278,
+      "own": false
+    },
+    {
+      "at": 1795768673383,
+      "own": false
+    },
+    {
+      "at": 1795768673486,
+      "own": false
+    },
+    {
+      "at": 1795768673591,
+      "own": false
+    },
+    {
+      "at": 1795768673695,
+      "own": false
+    },
+    {
+      "at": 1795768673799,
+      "own": false
+    },
+    {
+      "at": 1795768673906,
+      "own": false
+    },
+    {
+      "at": 1795768674012,
+      "own": false
+    },
+    {
+      "at": 1795768674117,
+      "own": false
+    },
+    {
+      "at": 1795768674220,
+      "own": false
+    },
+    {
+      "at": 1795768674324,
+      "own": false
+    },
+    {
+      "at": 1795768674428,
+      "own": false
+    },
+    {
+      "at": 1795768674533,
+      "own": false
+    },
+    {
+      "at": 1795768674637,
+      "own": false
+    },
+    {
+      "at": 1795768674742,
+      "own": false
+    },
+    {
+      "at": 1795768674847,
+      "own": false
+    },
+    {
+      "at": 1795768674951,
+      "own": false
+    },
+    {
+      "at": 1795768675055,
+      "own": false
+    },
+    {
+      "at": 1795768675159,
+      "own": false
+    },
+    {
+      "at": 1795768675263,
+      "own": false
+    },
+    {
+      "at": 1795768675367,
+      "own": false
+    },
+    {
+      "at": 1795768675470,
+      "own": false
+    },
+    {
+      "at": 1795768675574,
+      "own": false
+    },
+    {
+      "at": 1795768675678,
+      "own": false
+    },
+    {
+      "at": 1795768675783,
+      "own": false
+    },
+    {
+      "at": 1795768675886,
+      "own": false
+    },
+    {
+      "at": 1795768675991,
+      "own": false
+    },
+    {
+      "at": 1795768676095,
+      "own": false
+    },
+    {
+      "at": 1795768676201,
+      "own": false
+    },
+    {
+      "at": 1795768676303,
+      "own": false
+    },
+    {
+      "at": 1795768676408,
+      "own": false
+    },
+    {
+      "at": 1795768676512,
+      "own": false
+    },
+    {
+      "at": 1795768676617,
+      "own": false
+    },
+    {
+      "at": 1795768676721,
+      "own": false
+    },
+    {
+      "at": 1795768676826,
+      "own": false
+    },
+    {
+      "at": 1795768676929,
+      "own": false
+    },
+    {
+      "at": 1795768677034,
+      "own": false
+    },
+    {
+      "at": 1795768677137,
+      "own": false
+    },
+    {
+      "at": 1795768677239,
+      "own": false
+    },
+    {
+      "at": 1795768677345,
+      "own": false
+    },
+    {
+      "at": 1795768677449,
+      "own": false
+    },
+    {
+      "at": 1795768677553,
+      "own": false
+    },
+    {
+      "at": 1795768677658,
+      "own": false
+    },
+    {
+      "at": 1795768677762,
+      "own": false
+    },
+    {
+      "at": 1795768677867,
+      "own": false
+    },
+    {
+      "at": 1795768677971,
+      "own": false
+    },
+    {
+      "at": 1795768678076,
+      "own": false
+    },
+    {
+      "at": 1795768678180,
+      "own": false
+    },
+    {
+      "at": 1795768678286,
+      "own": false
+    },
+    {
+      "at": 1795768678390,
+      "own": false
+    },
+    {
+      "at": 1795768678494,
+      "own": false
+    },
+    {
+      "at": 1795768678598,
+      "own": false
+    },
+    {
+      "at": 1795768678703,
+      "own": false
+    },
+    {
+      "at": 1795768678807,
+      "own": false
+    },
+    {
+      "at": 1795768678911,
+      "own": false
+    },
+    {
+      "at": 1795768679015,
+      "own": false
+    },
+    {
+      "at": 1795768679118,
+      "own": false
+    },
+    {
+      "at": 1795768679223,
+      "own": false
+    },
+    {
+      "at": 1795768679326,
+      "own": false
+    },
+    {
+      "at": 1795768679431,
+      "own": false
+    },
+    {
+      "at": 1795768679536,
+      "own": false
+    },
+    {
+      "at": 1795768679641,
+      "own": false
+    },
+    {
+      "at": 1795768679744,
+      "own": false
+    },
+    {
+      "at": 1795768679846,
+      "own": false
+    },
+    {
+      "at": 1795768679951,
+      "own": false
+    },
+    {
+      "at": 1795768680055,
+      "own": false
+    },
+    {
+      "at": 1795768680160,
+      "own": false
+    },
+    {
+      "at": 1795768680263,
+      "own": false
+    },
+    {
+      "at": 1795768680367,
+      "own": false
+    },
+    {
+      "at": 1795768680471,
+      "own": false
+    },
+    {
+      "at": 1795768680576,
+      "own": false
+    },
+    {
+      "at": 1795768680681,
+      "own": false
+    },
+    {
+      "at": 1795768680786,
+      "own": false
+    },
+    {
+      "at": 1795768680891,
+      "own": false
+    },
+    {
+      "at": 1795768680996,
+      "own": false
+    },
+    {
+      "at": 1795768681101,
+      "own": false
+    },
+    {
+      "at": 1795768681206,
+      "own": false
+    },
+    {
+      "at": 1795768681311,
+      "own": false
+    },
+    {
+      "at": 1795768681416,
+      "own": false
+    },
+    {
+      "at": 1795768681519,
+      "own": false
+    },
+    {
+      "at": 1795768681625,
+      "own": false
+    },
+    {
+      "at": 1795768681730,
+      "own": false
+    },
+    {
+      "at": 1795768681834,
+      "own": false
+    },
+    {
+      "at": 1795768681939,
+      "own": false
+    },
+    {
+      "at": 1795768682044,
+      "own": false
+    },
+    {
+      "at": 1795768682149,
+      "own": false
+    },
+    {
+      "at": 1795768682256,
+      "own": false
+    },
+    {
+      "at": 1795768682361,
+      "own": false
+    },
+    {
+      "at": 1795768682466,
+      "own": false
+    },
+    {
+      "at": 1795768682569,
+      "own": false
+    },
+    {
+      "at": 1795768682674,
+      "own": false
+    },
+    {
+      "at": 1795768682778,
+      "own": false
+    },
+    {
+      "at": 1795768682884,
+      "own": false
+    },
+    {
+      "at": 1795768682987,
+      "own": false
+    },
+    {
+      "at": 1795768683093,
+      "own": false
+    },
+    {
+      "at": 1795768683198,
+      "own": false
+    },
+    {
+      "at": 1795768683303,
+      "own": false
+    },
+    {
+      "at": 1795768683407,
+      "own": false
+    },
+    {
+      "at": 1795768683511,
+      "own": false
+    },
+    {
+      "at": 1795768683617,
+      "own": false
+    },
+    {
+      "at": 1795768683722,
+      "own": false
+    },
+    {
+      "at": 1795768683827,
+      "own": false
+    },
+    {
+      "at": 1795768683932,
+      "own": false
+    },
+    {
+      "at": 1795768684036,
+      "own": false
+    },
+    {
+      "at": 1795768684141,
+      "own": false
+    },
+    {
+      "at": 1795768684247,
+      "own": false
+    },
+    {
+      "at": 1795768684352,
+      "own": false
+    },
+    {
+      "at": 1795768684457,
+      "own": false
+    },
+    {
+      "at": 1795768684561,
+      "own": false
+    },
+    {
+      "at": 1795768684665,
+      "own": false
+    },
+    {
+      "at": 1795768684770,
+      "own": false
+    },
+    {
+      "at": 1795768684874,
+      "own": false
+    },
+    {
+      "at": 1795768684980,
+      "own": false
+    },
+    {
+      "at": 1795768685084,
+      "own": false
+    },
+    {
+      "at": 1795768685188,
+      "own": false
+    },
+    {
+      "at": 1795768685293,
+      "own": false
+    },
+    {
+      "at": 1795768685398,
+      "own": false
+    },
+    {
+      "at": 1795768685500,
+      "own": false
+    },
+    {
+      "at": 1795768685605,
+      "own": false
+    },
+    {
+      "at": 1795768685709,
+      "own": false
+    },
+    {
+      "at": 1795768685813,
+      "own": false
+    },
+    {
+      "at": 1795768685917,
+      "own": false
+    },
+    {
+      "at": 1795768686020,
+      "own": false
+    },
+    {
+      "at": 1795768686125,
+      "own": false
+    },
+    {
+      "at": 1795768686230,
+      "own": false
+    },
+    {
+      "at": 1795768686335,
+      "own": false
+    },
+    {
+      "at": 1795768686439,
+      "own": false
+    },
+    {
+      "at": 1795768686544,
+      "own": false
+    },
+    {
+      "at": 1795768686649,
+      "own": false
+    },
+    {
+      "at": 1795768686752,
+      "own": false
+    },
+    {
+      "at": 1795768686855,
+      "own": false
+    },
+    {
+      "at": 1795768686959,
+      "own": false
+    },
+    {
+      "at": 1795768687064,
+      "own": false
+    },
+    {
+      "at": 1795768687167,
+      "own": false
+    },
+    {
+      "at": 1795768687269,
+      "own": false
+    },
+    {
+      "at": 1795768687373,
+      "own": false
+    },
+    {
+      "at": 1795768687476,
+      "own": false
+    },
+    {
+      "at": 1795768687579,
+      "own": false
+    },
+    {
+      "at": 1795768687684,
+      "own": false
+    },
+    {
+      "at": 1795768687788,
+      "own": false
+    },
+    {
+      "at": 1795768687893,
+      "own": false
+    },
+    {
+      "at": 1795768687996,
+      "own": false
+    },
+    {
+      "at": 1795768688100,
+      "own": false
+    },
+    {
+      "at": 1795768688203,
+      "own": false
+    },
+    {
+      "at": 1795768688308,
+      "own": false
+    },
+    {
+      "at": 1795768688412,
+      "own": false
+    },
+    {
+      "at": 1795768688517,
+      "own": false
+    },
+    {
+      "at": 1795768688619,
+      "own": false
+    },
+    {
+      "at": 1795768688724,
+      "own": false
+    },
+    {
+      "at": 1795768688827,
+      "own": false
+    },
+    {
+      "at": 1795768688932,
+      "own": false
+    },
+    {
+      "at": 1795768689036,
+      "own": false
+    },
+    {
+      "at": 1795768689140,
+      "own": false
+    },
+    {
+      "at": 1795768689244,
+      "own": false
+    },
+    {
+      "at": 1795768689348,
+      "own": false
+    },
+    {
+      "at": 1795768689453,
+      "own": false
+    },
+    {
+      "at": 1795768689556,
+      "own": false
+    },
+    {
+      "at": 1795768689661,
+      "own": false
+    },
+    {
+      "at": 1795768689764,
+      "own": false
+    },
+    {
+      "at": 1795768689868,
+      "own": false
+    },
+    {
+      "at": 1795768689973,
+      "own": false
+    },
+    {
+      "at": 1795768690078,
+      "own": false
+    },
+    {
+      "at": 1795768690182,
+      "own": false
+    },
+    {
+      "at": 1795768690285,
+      "own": false
+    },
+    {
+      "at": 1795768690391,
+      "own": false
+    },
+    {
+      "at": 1795768690493,
+      "own": false
+    },
+    {
+      "at": 1795768690595,
+      "own": false
+    },
+    {
+      "at": 1795768690700,
+      "own": false
+    },
+    {
+      "at": 1795768690804,
+      "own": false
+    },
+    {
+      "at": 1795768690909,
+      "own": false
+    },
+    {
+      "at": 1795768691013,
+      "own": false
+    },
+    {
+      "at": 1795768691117,
+      "own": false
+    },
+    {
+      "at": 1795768691223,
+      "own": false
+    },
+    {
+      "at": 1795768691326,
+      "own": false
+    },
+    {
+      "at": 1795768691429,
+      "own": false
+    },
+    {
+      "at": 1795768691534,
+      "own": false
+    },
+    {
+      "at": 1795768691639,
+      "own": false
+    },
+    {
+      "at": 1795768691743,
+      "own": false
+    },
+    {
+      "at": 1795768691848,
+      "own": false
+    },
+    {
+      "at": 1795768691953,
+      "own": false
+    },
+    {
+      "at": 1795768692059,
+      "own": false
+    },
+    {
+      "at": 1795768692163,
+      "own": false
+    },
+    {
+      "at": 1795768692267,
+      "own": false
+    },
+    {
+      "at": 1795768692372,
+      "own": false
+    },
+    {
+      "at": 1795768692478,
+      "own": false
+    },
+    {
+      "at": 1795768692583,
+      "own": false
+    },
+    {
+      "at": 1795768692687,
+      "own": false
+    },
+    {
+      "at": 1795768692791,
+      "own": false
+    },
+    {
+      "at": 1795768692894,
+      "own": false
+    },
+    {
+      "at": 1795768693000,
+      "own": false
+    },
+    {
+      "at": 1795768693104,
+      "own": false
+    },
+    {
+      "at": 1795768693209,
+      "own": false
+    },
+    {
+      "at": 1795768693311,
+      "own": false
+    },
+    {
+      "at": 1795768693416,
+      "own": false
+    },
+    {
+      "at": 1795768693521,
+      "own": false
+    },
+    {
+      "at": 1795768693626,
+      "own": false
+    },
+    {
+      "at": 1795768693731,
+      "own": false
+    },
+    {
+      "at": 1795768693836,
+      "own": false
+    },
+    {
+      "at": 1795768693941,
+      "own": false
+    },
+    {
+      "at": 1795768694045,
+      "own": false
+    },
+    {
+      "at": 1795768694149,
+      "own": false
+    },
+    {
+      "at": 1795768694255,
+      "own": false
+    },
+    {
+      "at": 1795768694359,
+      "own": false
+    },
+    {
+      "at": 1795768694464,
+      "own": false
+    },
+    {
+      "at": 1795768694567,
+      "own": false
+    },
+    {
+      "at": 1795768694671,
+      "own": false
+    },
+    {
+      "at": 1795768694776,
+      "own": false
+    },
+    {
+      "at": 1795768694878,
+      "own": false
+    },
+    {
+      "at": 1795768694984,
+      "own": false
+    },
+    {
+      "at": 1795768695086,
+      "own": false
+    },
+    {
+      "at": 1795768695190,
+      "own": false
+    },
+    {
+      "at": 1795768695295,
+      "own": false
+    },
+    {
+      "at": 1795768695399,
+      "own": false
+    },
+    {
+      "at": 1795768695503,
+      "own": false
+    },
+    {
+      "at": 1795768695607,
+      "own": false
+    },
+    {
+      "at": 1795768695711,
+      "own": false
+    },
+    {
+      "at": 1795768695816,
+      "own": false
+    },
+    {
+      "at": 1795768695919,
+      "own": false
+    },
+    {
+      "at": 1795768696024,
+      "own": false
+    },
+    {
+      "at": 1795768696128,
+      "own": false
+    },
+    {
+      "at": 1795768696232,
+      "own": false
+    },
+    {
+      "at": 1795768696336,
+      "own": false
+    },
+    {
+      "at": 1795768696440,
+      "own": false
+    },
+    {
+      "at": 1795768696544,
+      "own": false
+    },
+    {
+      "at": 1795768696648,
+      "own": false
+    },
+    {
+      "at": 1795768696753,
+      "own": false
+    },
+    {
+      "at": 1795768696858,
+      "own": false
+    },
+    {
+      "at": 1795768696961,
+      "own": false
+    },
+    {
+      "at": 1795768697065,
+      "own": false
+    },
+    {
+      "at": 1795768697170,
+      "own": false
+    },
+    {
+      "at": 1795768697277,
+      "own": false
+    },
+    {
+      "at": 1795768697382,
+      "own": false
+    },
+    {
+      "at": 1795768697486,
+      "own": false
+    },
+    {
+      "at": 1795768697588,
+      "own": false
+    },
+    {
+      "at": 1795768697693,
+      "own": false
+    },
+    {
+      "at": 1795768697799,
+      "own": false
+    },
+    {
+      "at": 1795768697904,
+      "own": false
+    },
+    {
+      "at": 1795768698009,
+      "own": false
+    },
+    {
+      "at": 1795768698114,
+      "own": false
+    },
+    {
+      "at": 1795768698218,
+      "own": false
+    },
+    {
+      "at": 1795768698323,
+      "own": false
+    },
+    {
+      "at": 1795768698426,
+      "own": false
+    },
+    {
+      "at": 1795768698530,
+      "own": false
+    },
+    {
+      "at": 1795768698634,
+      "own": false
+    },
+    {
+      "at": 1795768698736,
+      "own": false
+    },
+    {
+      "at": 1795768698839,
+      "own": false
+    },
+    {
+      "at": 1795768698945,
+      "own": false
+    },
+    {
+      "at": 1795768699049,
+      "own": false
+    },
+    {
+      "at": 1795768699155,
+      "own": false
+    },
+    {
+      "at": 1795768699260,
+      "own": false
+    },
+    {
+      "at": 1795768699365,
+      "own": false
+    },
+    {
+      "at": 1795768699469,
+      "own": false
+    },
+    {
+      "at": 1795768699574,
+      "own": false
+    },
+    {
+      "at": 1795768699678,
+      "own": false
+    },
+    {
+      "at": 1795768699783,
+      "own": false
+    },
+    {
+      "at": 1795768699886,
+      "own": false
+    },
+    {
+      "at": 1795768699991,
+      "own": false
+    },
+    {
+      "at": 1795768700095,
+      "own": false
+    },
+    {
+      "at": 1795768700199,
+      "own": false
+    },
+    {
+      "at": 1795768700303,
+      "own": false
+    },
+    {
+      "at": 1795768700407,
+      "own": false
+    },
+    {
+      "at": 1795768700511,
+      "own": false
+    },
+    {
+      "at": 1795768700616,
+      "own": false
+    },
+    {
+      "at": 1795768700721,
+      "own": false
+    },
+    {
+      "at": 1795768700826,
+      "own": true
+    },
+    {
+      "at": 1795768700929,
+      "own": true
+    },
+    {
+      "at": 1795768701034,
+      "own": true
+    },
+    {
+      "at": 1795768701140,
+      "own": true
+    },
+    {
+      "at": 1795768701244,
+      "own": true
+    },
+    {
+      "at": 1795768701349,
+      "own": true
+    },
+    {
+      "at": 1795768701453,
+      "own": true
+    },
+    {
+      "at": 1795768701559,
+      "own": true
+    },
+    {
+      "at": 1795768701664,
+      "own": true
+    },
+    {
+      "at": 1795768701770,
+      "own": true
+    },
+    {
+      "at": 1795768701874,
+      "own": true
+    },
+    {
+      "at": 1795768701978,
+      "own": true
+    },
+    {
+      "at": 1795768702083,
+      "own": true
+    },
+    {
+      "at": 1795768702187,
+      "own": true
+    },
+    {
+      "at": 1795768702292,
+      "own": true
+    },
+    {
+      "at": 1795768702396,
+      "own": true
+    },
+    {
+      "at": 1795768702501,
+      "own": true
+    },
+    {
+      "at": 1795768702606,
+      "own": true
+    },
+    {
+      "at": 1795768702711,
+      "own": true
+    },
+    {
+      "at": 1795768702816,
+      "own": true
+    },
+    {
+      "at": 1795768702922,
+      "own": true
+    },
+    {
+      "at": 1795768703026,
+      "own": true
+    },
+    {
+      "at": 1795768703131,
+      "own": true
+    },
+    {
+      "at": 1795768703236,
+      "own": true
+    },
+    {
+      "at": 1795768703340,
+      "own": true
+    },
+    {
+      "at": 1795768703444,
+      "own": true
+    },
+    {
+      "at": 1795768703549,
+      "own": true
+    },
+    {
+      "at": 1795768703654,
+      "own": true
+    },
+    {
+      "at": 1795768703759,
+      "own": true
+    },
+    {
+      "at": 1795768703863,
+      "own": true
+    },
+    {
+      "at": 1795768703967,
+      "own": true
+    },
+    {
+      "at": 1795768704072,
+      "own": true
+    },
+    {
+      "at": 1795768704178,
+      "own": true
+    },
+    {
+      "at": 1795768704282,
+      "own": true
+    },
+    {
+      "at": 1795768704387,
+      "own": true
+    },
+    {
+      "at": 1795768704493,
+      "own": true
+    },
+    {
+      "at": 1795768704597,
+      "own": true
+    },
+    {
+      "at": 1795768704703,
+      "own": true
+    },
+    {
+      "at": 1795768704807,
+      "own": true
+    },
+    {
+      "at": 1795768704911,
+      "own": true
+    },
+    {
+      "at": 1795768705016,
+      "own": true
+    },
+    {
+      "at": 1795768705117,
+      "own": true
+    },
+    {
+      "at": 1795768705220,
+      "own": true
+    },
+    {
+      "at": 1795768705325,
+      "own": true
+    },
+    {
+      "at": 1795768705428,
+      "own": true
+    },
+    {
+      "at": 1795768705533,
+      "own": true
+    },
+    {
+      "at": 1795768705637,
+      "own": true
+    },
+    {
+      "at": 1795768705742,
+      "own": true
+    },
+    {
+      "at": 1795768705847,
+      "own": true
+    },
+    {
+      "at": 1795768705952,
+      "own": true
+    },
+    {
+      "at": 1795768706055,
+      "own": true
+    },
+    {
+      "at": 1795768706161,
+      "own": true
+    },
+    {
+      "at": 1795768706265,
+      "own": true
+    },
+    {
+      "at": 1795768706369,
+      "own": true
+    },
+    {
+      "at": 1795768706474,
+      "own": true
+    },
+    {
+      "at": 1795768706579,
+      "own": true
+    },
+    {
+      "at": 1795768706684,
+      "own": true
+    },
+    {
+      "at": 1795768706787,
+      "own": true
+    },
+    {
+      "at": 1795768706893,
+      "own": true
+    },
+    {
+      "at": 1795768706998,
+      "own": true
+    },
+    {
+      "at": 1795768707103,
+      "own": true
+    },
+    {
+      "at": 1795768707207,
+      "own": true
+    },
+    {
+      "at": 1795768707312,
+      "own": true
+    },
+    {
+      "at": 1795768707415,
+      "own": true
+    },
+    {
+      "at": 1795768707521,
+      "own": true
+    },
+    {
+      "at": 1795768707626,
+      "own": true
+    },
+    {
+      "at": 1795768707729,
+      "own": true
+    },
+    {
+      "at": 1795768707834,
+      "own": true
+    },
+    {
+      "at": 1795768707936,
+      "own": true
+    },
+    {
+      "at": 1795768708040,
+      "own": true
+    },
+    {
+      "at": 1795768708145,
+      "own": true
+    },
+    {
+      "at": 1795768708249,
+      "own": true
+    },
+    {
+      "at": 1795768708352,
+      "own": true
+    },
+    {
+      "at": 1795768708456,
+      "own": true
+    },
+    {
+      "at": 1795768708560,
+      "own": true
+    },
+    {
+      "at": 1795768708664,
+      "own": true
+    },
+    {
+      "at": 1795768708767,
+      "own": true
+    },
+    {
+      "at": 1795768708871,
+      "own": true
+    },
+    {
+      "at": 1795768708975,
+      "own": true
+    },
+    {
+      "at": 1795768709077,
+      "own": true
+    },
+    {
+      "at": 1795768709182,
+      "own": true
+    },
+    {
+      "at": 1795768709286,
+      "own": true
+    },
+    {
+      "at": 1795768709389,
+      "own": true
+    },
+    {
+      "at": 1795768709495,
+      "own": true
+    },
+    {
+      "at": 1795768709595,
+      "own": true
+    },
+    {
+      "at": 1795768709701,
+      "own": true
+    },
+    {
+      "at": 1795768709804,
+      "own": true
+    },
+    {
+      "at": 1795768709909,
+      "own": true
+    },
+    {
+      "at": 1795768710011,
+      "own": true
+    },
+    {
+      "at": 1795768710116,
+      "own": true
+    },
+    {
+      "at": 1795768710219,
+      "own": true
+    },
+    {
+      "at": 1795768710324,
+      "own": true
+    },
+    {
+      "at": 1795768710429,
+      "own": true
+    },
+    {
+      "at": 1795768710534,
+      "own": true
+    },
+    {
+      "at": 1795768710637,
+      "own": true
+    },
+    {
+      "at": 1795768710742,
+      "own": true
+    },
+    {
+      "at": 1795768710845,
+      "own": true
+    },
+    {
+      "at": 1795768710949,
+      "own": true
+    },
+    {
+      "at": 1795768711053,
+      "own": true
+    },
+    {
+      "at": 1795768711156,
+      "own": true
+    },
+    {
+      "at": 1795768711261,
+      "own": true
+    },
+    {
+      "at": 1795768711363,
+      "own": true
+    },
+    {
+      "at": 1795768711467,
+      "own": true
+    },
+    {
+      "at": 1795768711574,
+      "own": true
+    },
+    {
+      "at": 1795768711679,
+      "own": true
+    },
+    {
+      "at": 1795768711784,
+      "own": true
+    },
+    {
+      "at": 1795768711888,
+      "own": true
+    },
+    {
+      "at": 1795768711992,
+      "own": true
+    },
+    {
+      "at": 1795768712094,
+      "own": true
+    },
+    {
+      "at": 1795768712199,
+      "own": true
+    },
+    {
+      "at": 1795768712303,
+      "own": true
+    },
+    {
+      "at": 1795768712407,
+      "own": true
+    },
+    {
+      "at": 1795768712511,
+      "own": true
+    },
+    {
+      "at": 1795768712613,
+      "own": true
+    },
+    {
+      "at": 1795768712717,
+      "own": true
+    },
+    {
+      "at": 1795768712820,
+      "own": true
+    },
+    {
+      "at": 1795768712925,
+      "own": true
+    },
+    {
+      "at": 1795768713031,
+      "own": true
+    },
+    {
+      "at": 1795768713136,
+      "own": true
+    },
+    {
+      "at": 1795768713237,
+      "own": true
+    },
+    {
+      "at": 1795768713342,
+      "own": true
+    },
+    {
+      "at": 1795768713445,
+      "own": true
+    },
+    {
+      "at": 1795768713550,
+      "own": true
+    },
+    {
+      "at": 1795768713654,
+      "own": true
+    },
+    {
+      "at": 1795768713760,
+      "own": true
+    },
+    {
+      "at": 1795768713865,
+      "own": true
+    },
+    {
+      "at": 1795768713970,
+      "own": true
+    },
+    {
+      "at": 1795768714075,
+      "own": true
+    },
+    {
+      "at": 1795768714179,
+      "own": true
+    },
+    {
+      "at": 1795768714284,
+      "own": true
+    },
+    {
+      "at": 1795768714388,
+      "own": true
+    },
+    {
+      "at": 1795768714493,
+      "own": true
+    },
+    {
+      "at": 1795768714599,
+      "own": true
+    },
+    {
+      "at": 1795768714701,
+      "own": true
+    },
+    {
+      "at": 1795768714805,
+      "own": true
+    },
+    {
+      "at": 1795768714909,
+      "own": true
+    },
+    {
+      "at": 1795768715012,
+      "own": true
+    },
+    {
+      "at": 1795768715118,
+      "own": true
+    },
+    {
+      "at": 1795768715223,
+      "own": true
+    },
+    {
+      "at": 1795768715328,
+      "own": true
+    },
+    {
+      "at": 1795768715432,
+      "own": true
+    },
+    {
+      "at": 1795768715536,
+      "own": true
+    },
+    {
+      "at": 1795768715640,
+      "own": true
+    },
+    {
+      "at": 1795768715745,
+      "own": true
+    },
+    {
+      "at": 1795768715849,
+      "own": true
+    },
+    {
+      "at": 1795768715953,
+      "own": true
+    },
+    {
+      "at": 1795768716057,
+      "own": true
+    },
+    {
+      "at": 1795768716161,
+      "own": true
+    },
+    {
+      "at": 1795768716262,
+      "own": true
+    },
+    {
+      "at": 1795768716367,
+      "own": true
+    },
+    {
+      "at": 1795768716470,
+      "own": true
+    },
+    {
+      "at": 1795768716574,
+      "own": true
+    },
+    {
+      "at": 1795768716678,
+      "own": true
+    },
+    {
+      "at": 1795768716782,
+      "own": true
+    },
+    {
+      "at": 1795768716885,
+      "own": true
+    },
+    {
+      "at": 1795768716989,
+      "own": true
+    },
+    {
+      "at": 1795768717093,
+      "own": true
+    },
+    {
+      "at": 1795768717197,
+      "own": true
+    },
+    {
+      "at": 1795768717301,
+      "own": true
+    },
+    {
+      "at": 1795768717405,
+      "own": true
+    },
+    {
+      "at": 1795768717509,
+      "own": true
+    },
+    {
+      "at": 1795768717613,
+      "own": true
+    },
+    {
+      "at": 1795768717717,
+      "own": true
+    },
+    {
+      "at": 1795768717821,
+      "own": true
+    },
+    {
+      "at": 1795768717926,
+      "own": true
+    },
+    {
+      "at": 1795768718029,
+      "own": true
+    },
+    {
+      "at": 1795768718134,
+      "own": true
+    },
+    {
+      "at": 1795768718236,
+      "own": true
+    },
+    {
+      "at": 1795768718340,
+      "own": true
+    },
+    {
+      "at": 1795768718445,
+      "own": true
+    },
+    {
+      "at": 1795768718549,
+      "own": true
+    },
+    {
+      "at": 1795768718653,
+      "own": true
+    },
+    {
+      "at": 1795768718758,
+      "own": true
+    },
+    {
+      "at": 1795768718863,
+      "own": true
+    },
+    {
+      "at": 1795768718968,
+      "own": true
+    },
+    {
+      "at": 1795768719073,
+      "own": true
+    },
+    {
+      "at": 1795768719178,
+      "own": true
+    },
+    {
+      "at": 1795768719283,
+      "own": true
+    },
+    {
+      "at": 1795768719388,
+      "own": true
+    },
+    {
+      "at": 1795768719492,
+      "own": true
+    },
+    {
+      "at": 1795768719597,
+      "own": true
+    },
+    {
+      "at": 1795768719700,
+      "own": true
+    },
+    {
+      "at": 1795768719804,
+      "own": true
+    },
+    {
+      "at": 1795768719909,
+      "own": true
+    },
+    {
+      "at": 1795768720011,
+      "own": true
+    },
+    {
+      "at": 1795768720116,
+      "own": true
+    },
+    {
+      "at": 1795768720220,
+      "own": true
+    },
+    {
+      "at": 1795768720325,
+      "own": true
+    },
+    {
+      "at": 1795768720430,
+      "own": true
+    },
+    {
+      "at": 1795768720534,
+      "own": true
+    },
+    {
+      "at": 1795768720637,
+      "own": true
+    },
+    {
+      "at": 1795768720742,
+      "own": true
+    },
+    {
+      "at": 1795768720844,
+      "own": true
+    },
+    {
+      "at": 1795768720948,
+      "own": true
+    },
+    {
+      "at": 1795768721053,
+      "own": true
+    },
+    {
+      "at": 1795768721155,
+      "own": true
+    },
+    {
+      "at": 1795768721259,
+      "own": true
+    },
+    {
+      "at": 1795768721362,
+      "own": true
+    },
+    {
+      "at": 1795768721467,
+      "own": true
+    },
+    {
+      "at": 1795768721572,
+      "own": true
+    },
+    {
+      "at": 1795768721676,
+      "own": true
+    },
+    {
+      "at": 1795768721780,
+      "own": true
+    },
+    {
+      "at": 1795768721884,
+      "own": true
+    },
+    {
+      "at": 1795768721988,
+      "own": true
+    },
+    {
+      "at": 1795768722094,
+      "own": true
+    },
+    {
+      "at": 1795768722196,
+      "own": true
+    },
+    {
+      "at": 1795768722300,
+      "own": true
+    },
+    {
+      "at": 1795768722404,
+      "own": true
+    },
+    {
+      "at": 1795768722509,
+      "own": true
+    },
+    {
+      "at": 1795768722613,
+      "own": true
+    },
+    {
+      "at": 1795768722717,
+      "own": true
+    },
+    {
+      "at": 1795768722820,
+      "own": true
+    },
+    {
+      "at": 1795768722925,
+      "own": true
+    },
+    {
+      "at": 1795768723030,
+      "own": true
+    },
+    {
+      "at": 1795768723134,
+      "own": true
+    },
+    {
+      "at": 1795768723236,
+      "own": true
+    },
+    {
+      "at": 1795768723341,
+      "own": true
+    },
+    {
+      "at": 1795768723444,
+      "own": true
+    },
+    {
+      "at": 1795768723548,
+      "own": true
+    },
+    {
+      "at": 1795768723653,
+      "own": true
+    },
+    {
+      "at": 1795768723755,
+      "own": true
+    },
+    {
+      "at": 1795768723859,
+      "own": true
+    },
+    {
+      "at": 1795768723964,
+      "own": true
+    },
+    {
+      "at": 1795768724069,
+      "own": true
+    },
+    {
+      "at": 1795768724173,
+      "own": true
+    },
+    {
+      "at": 1795768724279,
+      "own": true
+    },
+    {
+      "at": 1795768724384,
+      "own": true
+    },
+    {
+      "at": 1795768724486,
+      "own": true
+    },
+    {
+      "at": 1795768724587,
+      "own": true
+    },
+    {
+      "at": 1795768724689,
+      "own": true
+    },
+    {
+      "at": 1795768724794,
+      "own": true
+    },
+    {
+      "at": 1795768724898,
+      "own": true
+    },
+    {
+      "at": 1795768725003,
+      "own": true
+    },
+    {
+      "at": 1795768725107,
+      "own": true
+    },
+    {
+      "at": 1795768725212,
+      "own": true
+    },
+    {
+      "at": 1795768725317,
+      "own": true
+    },
+    {
+      "at": 1795768725421,
+      "own": true
+    },
+    {
+      "at": 1795768725525,
+      "own": true
+    },
+    {
+      "at": 1795768725627,
+      "own": true
+    },
+    {
+      "at": 1795768725732,
+      "own": true
+    },
+    {
+      "at": 1795768725835,
+      "own": true
+    },
+    {
+      "at": 1795768725939,
+      "own": true
+    },
+    {
+      "at": 1795768726044,
+      "own": true
+    },
+    {
+      "at": 1795768726149,
+      "own": true
+    },
+    {
+      "at": 1795768726254,
+      "own": true
+    },
+    {
+      "at": 1795768726359,
+      "own": true
+    },
+    {
+      "at": 1795768726463,
+      "own": true
+    },
+    {
+      "at": 1795768726568,
+      "own": true
+    },
+    {
+      "at": 1795768726672,
+      "own": true
+    },
+    {
+      "at": 1795768726777,
+      "own": true
+    },
+    {
+      "at": 1795768726880,
+      "own": true
+    },
+    {
+      "at": 1795768726986,
+      "own": true
+    },
+    {
+      "at": 1795768727089,
+      "own": true
+    },
+    {
+      "at": 1795768727193,
+      "own": true
+    },
+    {
+      "at": 1795768727297,
+      "own": true
+    },
+    {
+      "at": 1795768727400,
+      "own": true
+    },
+    {
+      "at": 1795768727504,
+      "own": true
+    },
+    {
+      "at": 1795768727609,
+      "own": true
+    },
+    {
+      "at": 1795768727712,
+      "own": true
+    },
+    {
+      "at": 1795768727817,
+      "own": true
+    },
+    {
+      "at": 1795768727921,
+      "own": true
+    },
+    {
+      "at": 1795768728026,
+      "own": true
+    },
+    {
+      "at": 1795768728130,
+      "own": true
+    },
+    {
+      "at": 1795768728234,
+      "own": true
+    },
+    {
+      "at": 1795768728336,
+      "own": true
+    },
+    {
+      "at": 1795768728440,
+      "own": true
+    },
+    {
+      "at": 1795768728544,
+      "own": true
+    },
+    {
+      "at": 1795768728649,
+      "own": true
+    },
+    {
+      "at": 1795768728753,
+      "own": true
+    },
+    {
+      "at": 1795768728857,
+      "own": true
+    },
+    {
+      "at": 1795768728961,
+      "own": true
+    },
+    {
+      "at": 1795768729065,
+      "own": true
+    },
+    {
+      "at": 1795768729170,
+      "own": true
+    },
+    {
+      "at": 1795768729275,
+      "own": true
+    },
+    {
+      "at": 1795768729380,
+      "own": true
+    },
+    {
+      "at": 1795768729484,
+      "own": true
+    },
+    {
+      "at": 1795768729587,
+      "own": true
+    },
+    {
+      "at": 1795768729692,
+      "own": true
+    },
+    {
+      "at": 1795768729797,
+      "own": true
+    },
+    {
+      "at": 1795768729900,
+      "own": true
+    },
+    {
+      "at": 1795768730005,
+      "own": true
+    },
+    {
+      "at": 1795768730110,
+      "own": true
+    },
+    {
+      "at": 1795768730215,
+      "own": true
+    },
+    {
+      "at": 1795768730319,
+      "own": true
+    },
+    {
+      "at": 1795768730422,
+      "own": true
+    },
+    {
+      "at": 1795768730527,
+      "own": true
+    },
+    {
+      "at": 1795768730629,
+      "own": true
+    },
+    {
+      "at": 1795768730734,
+      "own": true
+    },
+    {
+      "at": 1795768730835,
+      "own": true
+    },
+    {
+      "at": 1795768730940,
+      "own": true
+    },
+    {
+      "at": 1795768731044,
+      "own": true
+    },
+    {
+      "at": 1795768731148,
+      "own": true
+    },
+    {
+      "at": 1795768731253,
+      "own": true
+    },
+    {
+      "at": 1795768731356,
+      "own": true
+    },
+    {
+      "at": 1795768731460,
+      "own": true
+    },
+    {
+      "at": 1795768731565,
+      "own": true
+    },
+    {
+      "at": 1795768731669,
+      "own": true
+    },
+    {
+      "at": 1795768731774,
+      "own": true
+    },
+    {
+      "at": 1795768731879,
+      "own": true
+    },
+    {
+      "at": 1795768731984,
+      "own": true
+    },
+    {
+      "at": 1795768732089,
+      "own": true
+    },
+    {
+      "at": 1795768732194,
+      "own": true
+    },
+    {
+      "at": 1795768732299,
+      "own": true
+    },
+    {
+      "at": 1795768732403,
+      "own": true
+    },
+    {
+      "at": 1795768732507,
+      "own": true
+    },
+    {
+      "at": 1795768732612,
+      "own": true
+    },
+    {
+      "at": 1795768732717,
+      "own": true
+    },
+    {
+      "at": 1795768732819,
+      "own": true
+    },
+    {
+      "at": 1795768732924,
+      "own": true
+    },
+    {
+      "at": 1795768733028,
+      "own": true
+    },
+    {
+      "at": 1795768733132,
+      "own": true
+    },
+    {
+      "at": 1795768733235,
+      "own": true
+    },
+    {
+      "at": 1795768733340,
+      "own": true
+    },
+    {
+      "at": 1795768733444,
+      "own": true
+    },
+    {
+      "at": 1795768733549,
+      "own": true
+    },
+    {
+      "at": 1795768733652,
+      "own": true
+    },
+    {
+      "at": 1795768733756,
+      "own": true
+    },
+    {
+      "at": 1795768733861,
+      "own": true
+    },
+    {
+      "at": 1795768733964,
+      "own": true
+    },
+    {
+      "at": 1795768734068,
+      "own": true
+    },
+    {
+      "at": 1795768734174,
+      "own": true
+    },
+    {
+      "at": 1795768734278,
+      "own": true
+    },
+    {
+      "at": 1795768734382,
+      "own": true
+    },
+    {
+      "at": 1795768734486,
+      "own": true
+    },
+    {
+      "at": 1795768734590,
+      "own": true
+    },
+    {
+      "at": 1795768734693,
+      "own": true
+    },
+    {
+      "at": 1795768734796,
+      "own": true
+    },
+    {
+      "at": 1795768734901,
+      "own": true
+    },
+    {
+      "at": 1795768735003,
+      "own": true
+    },
+    {
+      "at": 1795768735105,
+      "own": true
+    },
+    {
+      "at": 1795768735209,
+      "own": true
+    },
+    {
+      "at": 1795768735313,
+      "own": true
+    },
+    {
+      "at": 1795768735417,
+      "own": true
+    },
+    {
+      "at": 1795768735520,
+      "own": true
+    },
+    {
+      "at": 1795768735626,
+      "own": true
+    },
+    {
+      "at": 1795768735729,
+      "own": true
+    },
+    {
+      "at": 1795768735834,
+      "own": true
+    },
+    {
+      "at": 1795768735936,
+      "own": true
+    },
+    {
+      "at": 1795768736041,
+      "own": true
+    },
+    {
+      "at": 1795768736146,
+      "own": true
+    },
+    {
+      "at": 1795768736250,
+      "own": true
+    },
+    {
+      "at": 1795768736353,
+      "own": true
+    },
+    {
+      "at": 1795768736457,
+      "own": true
+    },
+    {
+      "at": 1795768736561,
+      "own": true
+    },
+    {
+      "at": 1795768736665,
+      "own": true
+    },
+    {
+      "at": 1795768736769,
+      "own": true
+    },
+    {
+      "at": 1795768736874,
+      "own": true
+    },
+    {
+      "at": 1795768736978,
+      "own": true
+    },
+    {
+      "at": 1795768737080,
+      "own": true
+    },
+    {
+      "at": 1795768737185,
+      "own": true
+    },
+    {
+      "at": 1795768737290,
+      "own": true
+    },
+    {
+      "at": 1795768737395,
+      "own": true
+    },
+    {
+      "at": 1795768737500,
+      "own": true
+    },
+    {
+      "at": 1795768737603,
+      "own": true
+    },
+    {
+      "at": 1795768737708,
+      "own": true
+    },
+    {
+      "at": 1795768737813,
+      "own": true
+    },
+    {
+      "at": 1795768737917,
+      "own": true
+    },
+    {
+      "at": 1795768738019,
+      "own": true
+    },
+    {
+      "at": 1795768738124,
+      "own": true
+    },
+    {
+      "at": 1795768738228,
+      "own": true
+    },
+    {
+      "at": 1795768738332,
+      "own": true
+    },
+    {
+      "at": 1795768738436,
+      "own": true
+    },
+    {
+      "at": 1795768738541,
+      "own": true
+    },
+    {
+      "at": 1795768738646,
+      "own": true
+    },
+    {
+      "at": 1795768738751,
+      "own": true
+    },
+    {
+      "at": 1795768738854,
+      "own": true
+    },
+    {
+      "at": 1795768738959,
+      "own": true
+    },
+    {
+      "at": 1795768739061,
+      "own": true
+    },
+    {
+      "at": 1795768739165,
+      "own": true
+    },
+    {
+      "at": 1795768739269,
+      "own": true
+    },
+    {
+      "at": 1795768739374,
+      "own": true
+    },
+    {
+      "at": 1795768739479,
+      "own": true
+    },
+    {
+      "at": 1795768739584,
+      "own": true
+    },
+    {
+      "at": 1795768739689,
+      "own": true
+    },
+    {
+      "at": 1795768739793,
+      "own": true
+    },
+    {
+      "at": 1795768739897,
+      "own": true
+    },
+    {
+      "at": 1795768740000,
+      "own": true
+    },
+    {
+      "at": 1795768740105,
+      "own": true
+    },
+    {
+      "at": 1795768740211,
+      "own": true
+    },
+    {
+      "at": 1795768740315,
+      "own": true
+    },
+    {
+      "at": 1795768740420,
+      "own": true
+    },
+    {
+      "at": 1795768740524,
+      "own": true
+    },
+    {
+      "at": 1795768740627,
+      "own": true
+    },
+    {
+      "at": 1795768740732,
+      "own": true
+    },
+    {
+      "at": 1795768740837,
+      "own": true
+    },
+    {
+      "at": 1795768740942,
+      "own": true
+    },
+    {
+      "at": 1795768741047,
+      "own": true
+    },
+    {
+      "at": 1795768741151,
+      "own": true
+    },
+    {
+      "at": 1795768741252,
+      "own": true
+    },
+    {
+      "at": 1795768741355,
+      "own": true
+    },
+    {
+      "at": 1795768741459,
+      "own": true
+    },
+    {
+      "at": 1795768741564,
+      "own": true
+    },
+    {
+      "at": 1795768741667,
+      "own": true
+    },
+    {
+      "at": 1795768741772,
+      "own": true
+    },
+    {
+      "at": 1795768741876,
+      "own": true
+    },
+    {
+      "at": 1795768741979,
+      "own": true
+    },
+    {
+      "at": 1795768742084,
+      "own": true
+    },
+    {
+      "at": 1795768742188,
+      "own": true
+    },
+    {
+      "at": 1795768742293,
+      "own": true
+    },
+    {
+      "at": 1795768742396,
+      "own": true
+    },
+    {
+      "at": 1795768742501,
+      "own": true
+    },
+    {
+      "at": 1795768742604,
+      "own": true
+    },
+    {
+      "at": 1795768742709,
+      "own": true
+    },
+    {
+      "at": 1795768742812,
+      "own": true
+    },
+    {
+      "at": 1795768742918,
+      "own": true
+    },
+    {
+      "at": 1795768743020,
+      "own": true
+    },
+    {
+      "at": 1795768743124,
+      "own": true
+    },
+    {
+      "at": 1795768743229,
+      "own": true
+    },
+    {
+      "at": 1795768743334,
+      "own": true
+    },
+    {
+      "at": 1795768743439,
+      "own": true
+    },
+    {
+      "at": 1795768743542,
+      "own": true
+    },
+    {
+      "at": 1795768743646,
+      "own": true
+    },
+    {
+      "at": 1795768743751,
+      "own": true
+    },
+    {
+      "at": 1795768743855,
+      "own": true
+    },
+    {
+      "at": 1795768743960,
+      "own": true
+    },
+    {
+      "at": 1795768744065,
+      "own": true
+    },
+    {
+      "at": 1795768744170,
+      "own": true
+    },
+    {
+      "at": 1795768744274,
+      "own": true
+    },
+    {
+      "at": 1795768744379,
+      "own": true
+    },
+    {
+      "at": 1795768744484,
+      "own": true
+    },
+    {
+      "at": 1795768744588,
+      "own": true
+    },
+    {
+      "at": 1795768744693,
+      "own": true
+    },
+    {
+      "at": 1795768744798,
+      "own": true
+    },
+    {
+      "at": 1795768744900,
+      "own": true
+    },
+    {
+      "at": 1795768745003,
+      "own": true
+    },
+    {
+      "at": 1795768745106,
+      "own": true
+    },
+    {
+      "at": 1795768745209,
+      "own": true
+    },
+    {
+      "at": 1795768745313,
+      "own": true
+    },
+    {
+      "at": 1795768745417,
+      "own": true
+    },
+    {
+      "at": 1795768745520,
+      "own": true
+    },
+    {
+      "at": 1795768745625,
+      "own": true
+    },
+    {
+      "at": 1795768745729,
+      "own": true
+    },
+    {
+      "at": 1795768745834,
+      "own": true
+    },
+    {
+      "at": 1795768745937,
+      "own": true
+    },
+    {
+      "at": 1795768746042,
+      "own": true
+    },
+    {
+      "at": 1795768746145,
+      "own": true
+    },
+    {
+      "at": 1795768746249,
+      "own": true
+    },
+    {
+      "at": 1795768746353,
+      "own": true
+    },
+    {
+      "at": 1795768746459,
+      "own": true
+    },
+    {
+      "at": 1795768746561,
+      "own": true
+    },
+    {
+      "at": 1795768746665,
+      "own": true
+    },
+    {
+      "at": 1795768746769,
+      "own": true
+    },
+    {
+      "at": 1795768746872,
+      "own": true
+    },
+    {
+      "at": 1795768746977,
+      "own": true
+    },
+    {
+      "at": 1795768747080,
+      "own": true
+    },
+    {
+      "at": 1795768747185,
+      "own": true
+    },
+    {
+      "at": 1795768747290,
+      "own": true
+    },
+    {
+      "at": 1795768747393,
+      "own": true
+    },
+    {
+      "at": 1795768747498,
+      "own": true
+    },
+    {
+      "at": 1795768747601,
+      "own": true
+    },
+    {
+      "at": 1795768747705,
+      "own": true
+    },
+    {
+      "at": 1795768747809,
+      "own": true
+    },
+    {
+      "at": 1795768747913,
+      "own": true
+    },
+    {
+      "at": 1795768748017,
+      "own": true
+    },
+    {
+      "at": 1795768748120,
+      "own": true
+    },
+    {
+      "at": 1795768748226,
+      "own": true
+    },
+    {
+      "at": 1795768748329,
+      "own": true
+    },
+    {
+      "at": 1795768748434,
+      "own": true
+    },
+    {
+      "at": 1795768748537,
+      "own": true
+    },
+    {
+      "at": 1795768748640,
+      "own": true
+    },
+    {
+      "at": 1795768748745,
+      "own": true
+    },
+    {
+      "at": 1795768748848,
+      "own": true
+    },
+    {
+      "at": 1795768748952,
+      "own": true
+    },
+    {
+      "at": 1795768749057,
+      "own": true
+    },
+    {
+      "at": 1795768749161,
+      "own": true
+    },
+    {
+      "at": 1795768749265,
+      "own": true
+    },
+    {
+      "at": 1795768749369,
+      "own": true
+    },
+    {
+      "at": 1795768749473,
+      "own": true
+    },
+    {
+      "at": 1795768749576,
+      "own": true
+    },
+    {
+      "at": 1795768749681,
+      "own": true
+    },
+    {
+      "at": 1795768749787,
+      "own": true
+    },
+    {
+      "at": 1795768749890,
+      "own": true
+    },
+    {
+      "at": 1795768749994,
+      "own": true
+    },
+    {
+      "at": 1795768750100,
+      "own": true
+    },
+    {
+      "at": 1795768750204,
+      "own": true
+    },
+    {
+      "at": 1795768750309,
+      "own": true
+    },
+    {
+      "at": 1795768750412,
+      "own": true
+    },
+    {
+      "at": 1795768750517,
+      "own": true
+    },
+    {
+      "at": 1795768750621,
+      "own": true
+    },
+    {
+      "at": 1795768750726,
+      "own": true
+    },
+    {
+      "at": 1795768750829,
+      "own": true
+    },
+    {
+      "at": 1795768750934,
+      "own": true
+    },
+    {
+      "at": 1795768751039,
+      "own": true
+    },
+    {
+      "at": 1795768751142,
+      "own": true
+    },
+    {
+      "at": 1795768751243,
+      "own": true
+    },
+    {
+      "at": 1795768751345,
+      "own": true
+    },
+    {
+      "at": 1795768751449,
+      "own": true
+    },
+    {
+      "at": 1795768751553,
+      "own": true
+    },
+    {
+      "at": 1795768751657,
+      "own": true
+    },
+    {
+      "at": 1795768751761,
+      "own": true
+    },
+    {
+      "at": 1795768751865,
+      "own": true
+    },
+    {
+      "at": 1795768751970,
+      "own": true
+    },
+    {
+      "at": 1795768752075,
+      "own": true
+    },
+    {
+      "at": 1795768752179,
+      "own": true
+    },
+    {
+      "at": 1795768752284,
+      "own": true
+    },
+    {
+      "at": 1795768752388,
+      "own": true
+    },
+    {
+      "at": 1795768752493,
+      "own": true
+    },
+    {
+      "at": 1795768752595,
+      "own": true
+    },
+    {
+      "at": 1795768752701,
+      "own": true
+    },
+    {
+      "at": 1795768752806,
+      "own": true
+    },
+    {
+      "at": 1795768752911,
+      "own": true
+    },
+    {
+      "at": 1795768753015,
+      "own": true
+    },
+    {
+      "at": 1795768753121,
+      "own": true
+    },
+    {
+      "at": 1795768753226,
+      "own": true
+    },
+    {
+      "at": 1795768753329,
+      "own": true
+    },
+    {
+      "at": 1795768753434,
+      "own": true
+    },
+    {
+      "at": 1795768753537,
+      "own": true
+    },
+    {
+      "at": 1795768753641,
+      "own": true
+    },
+    {
+      "at": 1795768753745,
+      "own": true
+    },
+    {
+      "at": 1795768753849,
+      "own": true
+    },
+    {
+      "at": 1795768753953,
+      "own": true
+    },
+    {
+      "at": 1795768754057,
+      "own": true
+    },
+    {
+      "at": 1795768754161,
+      "own": true
+    },
+    {
+      "at": 1795768754265,
+      "own": true
+    },
+    {
+      "at": 1795768754369,
+      "own": true
+    },
+    {
+      "at": 1795768754474,
+      "own": true
+    },
+    {
+      "at": 1795768754578,
+      "own": true
+    },
+    {
+      "at": 1795768754681,
+      "own": true
+    },
+    {
+      "at": 1795768754787,
+      "own": true
+    },
+    {
+      "at": 1795768754892,
+      "own": true
+    },
+    {
+      "at": 1795768754998,
+      "own": true
+    },
+    {
+      "at": 1795768755103,
+      "own": true
+    },
+    {
+      "at": 1795768755208,
+      "own": true
+    },
+    {
+      "at": 1795768755313,
+      "own": true
+    },
+    {
+      "at": 1795768755417,
+      "own": true
+    },
+    {
+      "at": 1795768755522,
+      "own": true
+    },
+    {
+      "at": 1795768755626,
+      "own": true
+    },
+    {
+      "at": 1795768755729,
+      "own": true
+    },
+    {
+      "at": 1795768755834,
+      "own": true
+    },
+    {
+      "at": 1795768755937,
+      "own": true
+    },
+    {
+      "at": 1795768756040,
+      "own": true
+    },
+    {
+      "at": 1795768756145,
+      "own": true
+    },
+    {
+      "at": 1795768756248,
+      "own": true
+    },
+    {
+      "at": 1795768756353,
+      "own": true
+    },
+    {
+      "at": 1795768756456,
+      "own": true
+    },
+    {
+      "at": 1795768756561,
+      "own": true
+    },
+    {
+      "at": 1795768756665,
+      "own": true
+    },
+    {
+      "at": 1795768756770,
+      "own": true
+    },
+    {
+      "at": 1795768756872,
+      "own": true
+    },
+    {
+      "at": 1795768756978,
+      "own": true
+    },
+    {
+      "at": 1795768757082,
+      "own": true
+    },
+    {
+      "at": 1795768757186,
+      "own": true
+    },
+    {
+      "at": 1795768757290,
+      "own": true
+    },
+    {
+      "at": 1795768757394,
+      "own": true
+    },
+    {
+      "at": 1795768757499,
+      "own": true
+    },
+    {
+      "at": 1795768757603,
+      "own": true
+    },
+    {
+      "at": 1795768757707,
+      "own": true
+    },
+    {
+      "at": 1795768757811,
+      "own": true
+    },
+    {
+      "at": 1795768757913,
+      "own": true
+    },
+    {
+      "at": 1795768758017,
+      "own": true
+    },
+    {
+      "at": 1795768758120,
+      "own": true
+    },
+    {
+      "at": 1795768758226,
+      "own": true
+    },
+    {
+      "at": 1795768758329,
+      "own": true
+    },
+    {
+      "at": 1795768758434,
+      "own": true
+    },
+    {
+      "at": 1795768758538,
+      "own": true
+    },
+    {
+      "at": 1795768758643,
+      "own": true
+    },
+    {
+      "at": 1795768758748,
+      "own": true
+    },
+    {
+      "at": 1795768758851,
+      "own": true
+    },
+    {
+      "at": 1795768758956,
+      "own": true
+    },
+    {
+      "at": 1795768759062,
+      "own": true
+    },
+    {
+      "at": 1795768759166,
+      "own": true
+    },
+    {
+      "at": 1795768759270,
+      "own": true
+    },
+    {
+      "at": 1795768759374,
+      "own": true
+    },
+    {
+      "at": 1795768759478,
+      "own": true
+    },
+    {
+      "at": 1795768759584,
+      "own": true
+    },
+    {
+      "at": 1795768759687,
+      "own": true
+    },
+    {
+      "at": 1795768759792,
+      "own": true
+    },
+    {
+      "at": 1795768759896,
+      "own": true
+    },
+    {
+      "at": 1795768760000,
+      "own": true
+    },
+    {
+      "at": 1795768760104,
+      "own": true
+    },
+    {
+      "at": 1795768760209,
+      "own": true
+    },
+    {
+      "at": 1795768760313,
+      "own": true
+    },
+    {
+      "at": 1795768760417,
+      "own": true
+    },
+    {
+      "at": 1795768760521,
+      "own": true
+    },
+    {
+      "at": 1795768760626,
+      "own": true
+    },
+    {
+      "at": 1795768760729,
+      "own": true
+    },
+    {
+      "at": 1795768760834,
+      "own": true
+    },
+    {
+      "at": 1795768760937,
+      "own": true
+    },
+    {
+      "at": 1795768761042,
+      "own": true
+    },
+    {
+      "at": 1795768761145,
+      "own": true
+    },
+    {
+      "at": 1795768761249,
+      "own": true
+    },
+    {
+      "at": 1795768761354,
+      "own": true
+    },
+    {
+      "at": 1795768761459,
+      "own": true
+    },
+    {
+      "at": 1795768761564,
+      "own": true
+    },
+    {
+      "at": 1795768761667,
+      "own": true
+    },
+    {
+      "at": 1795768761773,
+      "own": true
+    },
+    {
+      "at": 1795768761878,
+      "own": true
+    },
+    {
+      "at": 1795768761983,
+      "own": true
+    },
+    {
+      "at": 1795768762086,
+      "own": true
+    },
+    {
+      "at": 1795768762190,
+      "own": true
+    },
+    {
+      "at": 1795768762295,
+      "own": true
+    },
+    {
+      "at": 1795768762400,
+      "own": true
+    },
+    {
+      "at": 1795768762505,
+      "own": true
+    },
+    {
+      "at": 1795768762609,
+      "own": true
+    },
+    {
+      "at": 1795768762713,
+      "own": true
+    },
+    {
+      "at": 1795768762817,
+      "own": true
+    },
+    {
+      "at": 1795768762921,
+      "own": true
+    },
+    {
+      "at": 1795768763026,
+      "own": true
+    },
+    {
+      "at": 1795768763129,
+      "own": true
+    },
+    {
+      "at": 1795768763234,
+      "own": true
+    },
+    {
+      "at": 1795768763339,
+      "own": true
+    },
+    {
+      "at": 1795768763442,
+      "own": true
+    },
+    {
+      "at": 1795768763546,
+      "own": true
+    },
+    {
+      "at": 1795768763651,
+      "own": true
+    },
+    {
+      "at": 1795768763753,
+      "own": true
+    },
+    {
+      "at": 1795768763857,
+      "own": true
+    },
+    {
+      "at": 1795768763962,
+      "own": true
+    },
+    {
+      "at": 1795768764066,
+      "own": true
+    },
+    {
+      "at": 1795768764169,
+      "own": true
+    }
+  ],
+  "screenshots": [
+    {
+      "label": "ready",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/ready.png",
+      "sha": "96f783fc193dd779947baff1aa9996153a99770034f5c3fb6ceabd588611b6d9"
+    },
+    {
+      "label": "capture-recording",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/capture-recording.png",
+      "sha": "f55c29e0f0d1732219fdf0464da2c3dac3bd4ed96e00c400d0151604abd196f8"
+    },
+    {
+      "label": "capture-completed",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/capture-completed.png",
+      "sha": "5769594983352a71237e6a5219f5edc1eca9011a7f823a8809a6203e585fb021"
+    },
+    {
+      "label": "capture-menu-restored",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/capture-menu-restored.png",
+      "sha": "ac5dd7ae8f88424c20e6afb9fc0dc9b471f0aefd9b9bc2d1431bbb7f01b1b188"
+    },
+    {
+      "label": "cancel-recording",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/cancel-recording.png",
+      "sha": "c894975a9050ecbcf5a9bcc1c98101f772886365fcaaa259b1752979ce128b7e"
+    },
+    {
+      "label": "cancel-completed",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/cancel-completed.png",
+      "sha": "c5c9d0e44a0a1ba84b2e48f01dd2fa8a99736afdb35bd75556c73fb38c6fbc83"
+    },
+    {
+      "label": "cancel-menu-restored",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/cancel-menu-restored.png",
+      "sha": "a03a306db9c9f9af65fbace618c81172822340e74c6bffe2dc278f9e887cc54f"
+    },
+    {
+      "label": "timeout-recording",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/timeout-recording.png",
+      "sha": "266b9c1cd4a80de40c4453149f6fe92c198078694165dfb3fe7280add9f4cd91"
+    },
+    {
+      "label": "failure",
+      "file": "/private/tmp/willyou-m16-b09-c28-side-IBSx7e/voice-evidence/failure.png",
+      "sha": "5aa34cb4c32fd490b0a6bd5ead06d17e79f838a32225d7faf537d2e9a28ef76c"
+    }
+  ],
+  "status": "native-voice-subsection-incomplete-or-failed",
+  "pid": 96144,
+  "baselinePersisted": {
+    "enabled": true,
+    "globalEnabled": false,
+    "globalShortcut": "Command+Shift+Space",
+    "shortcutOverride": null
+  },
+  "capture": {
+    "before": {
+      "before": {
+        "exists": true,
+        "busy": false,
+        "focus": false,
+        "documentFocus": true,
+        "value": "Command+Shift+Space",
+        "button": "录制",
+        "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+        "sidebarCollapsed": false
+      },
+      "busy": {
+        "exists": true,
+        "busy": true,
+        "focus": true,
+        "documentFocus": true,
+        "value": "按下组合键…",
+        "button": "取消",
+        "hint": "按住 Command、Control、Option 或 Shift，再按字母、数字、空格或功能键即可录入。Esc 取消。",
+        "sidebarCollapsed": false
+      },
+      "clickedAt": 1795768707409
+    },
+    "captured": {
+      "exists": true,
+      "busy": false,
+      "focus": true,
+      "documentFocus": true,
+      "value": "Command+B",
+      "button": "录制",
+      "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+      "sidebarCollapsed": false
+    },
+    "menuRestored": {
+      "exists": true,
+      "busy": false,
+      "focus": false,
+      "documentFocus": true,
+      "value": "Command+B",
+      "button": "录制",
+      "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+      "sidebarCollapsed": true
+    }
+  },
+  "cancel": {
+    "before": {
+      "before": {
+        "exists": true,
+        "busy": false,
+        "focus": false,
+        "documentFocus": true,
+        "value": "Command+B",
+        "button": "录制",
+        "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+        "sidebarCollapsed": true
+      },
+      "busy": {
+        "exists": true,
+        "busy": true,
+        "focus": true,
+        "documentFocus": true,
+        "value": "按下组合键…",
+        "button": "取消",
+        "hint": "按住 Command、Control、Option 或 Shift，再按字母、数字、空格或功能键即可录入。Esc 取消。",
+        "sidebarCollapsed": true
+      },
+      "clickedAt": 1795768757630
+    },
+    "canceled": {
+      "exists": true,
+      "busy": false,
+      "focus": true,
+      "documentFocus": true,
+      "value": "Command+B",
+      "button": "录制",
+      "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+      "sidebarCollapsed": true
+    },
+    "menuRestored": {
+      "exists": true,
+      "busy": false,
+      "focus": true,
+      "documentFocus": true,
+      "value": "Command+B",
+      "button": "录制",
+      "hint": "退出 WillYou 后释放全局键。默认关闭，可随时启用。",
+      "sidebarCollapsed": false
+    }
+  },
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(elapsed>=59500&&elapsed<=70000)\n\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/b09-voice-recovery/driver.mjs:136:40",
+  "observerExit": {
+    "code": null,
+    "signal": "SIGTERM"
+  },
+  "exit": {
+    "pid": 96144,
+    "code": 0,
+    "signal": null
+  }
+}

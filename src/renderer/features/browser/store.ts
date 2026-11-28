@@ -3,7 +3,7 @@ import {rpc} from '@renderer/lib/ipc';
 import {navigation} from '@renderer/core/navigation';
 import {panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
 import {agentTasksStore} from '@renderer/core/agent-tasks-store';
-import {authorizeBrowserPresentation,type BrowserPresentationEvent} from './open-presentation';
+import {activateBrowserPresentation,authorizeBrowserPresentation,invalidateBrowserPresentation,type BrowserPresentationEvent} from './open-presentation';
 export class BrowserWorkspaceStore {
   private value:{state:BrowserWorkspaceState|null;error:string}={state:null,error:''};
   private readonly listeners=new Set<()=>void>();
@@ -33,7 +33,7 @@ export class BrowserWorkspaceStore {
     if(request===this.request)this.value={state,error:''};
   });
   select=(tabId:string|null)=>this.run(()=>rpc.browser.select({taskId:this.taskId,tabId}));
-  close=(tabId:string)=>this.run(()=>rpc.browser.close({taskId:this.taskId,tabId}));
+  close=(tabId:string)=>{invalidateBrowserPresentation();return this.run(()=>rpc.browser.close({taskId:this.taskId,tabId}));};
   reopen=()=>this.openTab(()=>this.run(()=>rpc.browser.reopen({taskId:this.taskId})));
 }
 const stores=new Map<string,BrowserWorkspaceStore>();
@@ -42,7 +42,7 @@ function isCurrentBrowserTask(taskId:string){
   return navigation.currentViewId==='agentTask'&&navigation.currentAgentTaskId===taskId&&!navigation.agentTaskReadOnly;
 }
 export function openNewBrowserTab(taskId:string){
-  if(!isCurrentBrowserTask(taskId)||!agentTasksStore.tasks.find(task=>task.taskId===taskId)?.projectId)return;
+  if(!isCurrentBrowserTask(taskId)||!agentTasksStore.tasks.some(task=>task.taskId===taskId))return;
   panelsFor({kind:'task',taskId}).open('browser');
   void browserWorkspaceFor(taskId).create();
 }
@@ -59,8 +59,27 @@ export async function revealBrowserTab(taskId: string, tabId: string) {
 }
 export async function showBrowserPresentation(event:BrowserPresentationEvent){
   if(!authorizeBrowserPresentation(event))return;
-  await rpc.browser.select({taskId:event.taskId,tabId:event.pageId});
-  if(!authorizeBrowserPresentation(event))return;
-  panelsFor({kind:'task',taskId:event.taskId}).open('browser',true);
-  await browserWorkspaceFor(event.taskId).refresh();
+  let shown=false;
+  try{
+    await rpc.browser.select({taskId:event.taskId,tabId:event.pageId,automated:true});
+    if(!authorizeBrowserPresentation(event))return;
+    if(!activateBrowserPresentation(event,()=>panelsFor({kind:'task',taskId:event.taskId}).open('browser',true)))return;
+    const store=browserWorkspaceFor(event.taskId);await store.refresh();
+    if(!authorizeBrowserPresentation(event))return;
+    // The UI commits its selected surface asynchronously; acknowledge the
+    // actual rendered viewport, not just the persisted activeId.
+    shown=await new Promise<boolean>(resolve=>{
+      let finished=false;let frame=0;const timer=setTimeout(()=>finish(false),1200);
+      function finish(value:boolean){if(finished)return;finished=true;clearTimeout(timer);cancelAnimationFrame(frame);resolve(value);}
+      function check(){
+        if(!authorizeBrowserPresentation(event)){finish(false);return;}
+        if(store.snapshot().state?.activeId!==event.pageId){frame=requestAnimationFrame(check);return;}
+        const el=[...document.querySelectorAll<HTMLElement>('[data-browser-task][data-browser-page]')].find(el=>el.dataset.browserTask===event.taskId&&el.dataset.browserPage===event.pageId);
+        const bounds=el?.getBoundingClientRect();
+        if(bounds&&bounds.width>0&&bounds.height>0&&el?.checkVisibility()){finish(true);return;}
+        frame=requestAnimationFrame(check);
+      }
+      frame=requestAnimationFrame(check);
+    });
+  }finally{await rpc.browser.acknowledgePresentation({...event,shown}).catch(()=>{});}
 }

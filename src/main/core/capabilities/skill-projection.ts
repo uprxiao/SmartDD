@@ -13,7 +13,7 @@ import { skillAdapter } from './skill-adapters';
 
 const canonical=(path:string)=>{try{return realpathSync(path);}catch{return resolve(path);}};
 const present=(path:string)=>{try{return lstatSync(path);}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;}};
-export interface SkillProjectionInput {runner:Runner;home:string;stateRoot:string;cwd:string;runRoot:string;nativeLogin:boolean}
+export interface SkillProjectionInput {runner:Runner;home:string;stateRoot:string;cwd:string;runRoot:string;nativeLogin:boolean;globalOnly?:boolean}
 export interface SkillProjectionResult {
   args: string[];
   configured: string[];
@@ -30,7 +30,7 @@ export class SkillProjectionService {
     const result:SkillProjectionResult={args:[],configured:[],issues:[],privateRoots:[],references:[]};let plugin=false;
     const adapter = skillAdapter(input.runner);
     if (!adapter) return result;
-    for(const item of this.registry.selected(input.cwd).filter(x=>x.kind==='skill')){
+    for(const item of this.registry.selected(input.cwd).filter(x=>x.kind==='skill'&&(!input.globalOnly||x.sourceScope==='user'))){
       try{
         const placement = adapter.placement(input, item.projectRoot);
         const { root } = placement;

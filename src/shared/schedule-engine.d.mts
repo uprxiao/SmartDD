@@ -1,0 +1,12 @@
+import type {Schedule} from './schedule';
+export const MINUTE:number;
+export function effectiveZone(zone?:string):string;
+export function wallParts(epoch:number,zone?:string):Record<string,number>;
+export function parseCron(expression:string):{times:number[];dayMatches:(p:Record<string,number>)=>boolean};
+export function resolveOnce(schedule:Schedule):number;
+export function nextOccurrence(schedule:Schedule,epoch?:number):number|null;
+export function lastOccurrence(schedule:Schedule,epoch:number):number|null;
+export function previewOccurrences(schedule:Schedule,epoch:number,limit?:number):number[];
+export function validateSchedule(schedule:Schedule,epoch?:number):{ok:true;next:number}|{ok:false;error:string};
+export function occurrenceIdentity(schedule:Schedule,due:number):string;
+export function assessDeadline(due:number,now:number,graceMinutes:number,reason?:string,jitterMs?:number):'not_due'|'on_time'|'catch_up'|'missed';

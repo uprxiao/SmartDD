@@ -32,6 +32,7 @@ export interface ResolvedLaunch {
   model?: string;
   extraArgs: string[];
   settingSources?: ('user' | 'project' | 'local')[];
+  nativeProjectSkillRoots?: string[];
   capabilities?: Record<CapabilityName, CapabilityResult>;
   modelsWithoutImageInput?: ReadonlySet<string>;
   assertCurrent?(): void;
@@ -192,7 +193,8 @@ export class AgentTaskService {
   private readonly trustedInputs=new Map<string,import('../applications/execution-context').ApplicationUiSender>();private readonly humanSequences=new Map<string,number>();private recordHuman?: (runId:string,sender:import('../applications/execution-context').ApplicationUiSender,text:string,sequence:number)=>void;
   attachHumanRecorder(record:NonNullable<AgentTaskService['recordHuman']>){this.recordHuman=record;}
   private humanSent(turnId:string,run:RunHandle,text:string){const sender=this.trustedInputs.get(turnId);this.trustedInputs.delete(turnId);if(sender){const n=(this.humanSequences.get(run.runId)??0)+1;this.humanSequences.set(run.runId,n);try{this.recordHuman?.(run.runId,sender,text,n);}catch{/* Unavailable source evidence grants no authority; business approval remains explicit. */}}}
-  private business?: HostBusinessRequests; private diffs?: Pick<TurnDiffs, 'before' | 'after' | 'capturing' | 'beginTaskRemoval'>;private diffBusy?:(taskId:string)=>boolean; private readonly finishingTurns=new Set<string>();
+  private business?: HostBusinessRequests; private diffs?: Pick<TurnDiffs, 'before' | 'after' | 'capturing' | 'beginTaskRemoval'>;private diffBusy?:(taskId:string)=>boolean; private readonly finishingTurns=new Set<string>();private readonly finishingTurnIdentity=new Map<string,Set<string>>();
+  isSettlingTurn(taskId:string,turnId:string){return this.finishingTurnIdentity.get(taskId)?.has(turnId)===true;}
   attachBusiness(value:HostBusinessRequests){this.business=value;}
   attachDiffs(value:NonNullable<AgentTaskService['diffs']>,busy?:(taskId:string)=>boolean){this.diffs=value;this.diffBusy=busy;}
   private async finishDiff(taskId: string, turnId: string, runId: string | null | undefined) {
@@ -218,12 +220,31 @@ export class AgentTaskService {
     });
   }
   /** Trusted host messages retain their source and stable receipt; they never become fresh human authorization. */
-  enqueueHost(taskId: string, clientInputId: string, text: string, sourceKind: 'delegation' | 'notification' | 'system', wake = false) {
+  enqueueHost(taskId: string, clientInputId: string, text: string, sourceKind: 'delegation' | 'notification' | 'system', wake = false, parentTurnId?:string|null) {
     this.selection(taskId);
     if (Buffer.byteLength(text) > INPUT_TEXT_LIMIT) throw new DriverError('REJECTED', '宿主输入超出预算');
-    const receipt = this.d.store.acceptTurn({ taskId, clientInputId, text, sourceKind });
+    const receipt = this.d.store.tx(()=>{const value=this.d.store.acceptTurn({taskId,clientInputId,text,sourceKind});this.d.store.inheritScheduledOrigin(value.turn,parentTurnId);if(!value.duplicate&&this.d.store.scheduledStopRequested(parentTurnId)){this.d.store.endTurn(value.turn.turn_id,'canceled','SCHEDULE_STOPPED');return {...value,turn:this.d.store.turn(value.turn.turn_id)!};}return value;});
+    if(receipt.turn.status==='canceled'&&this.d.store.scheduledStopRequested(receipt.turn.turn_id))return receipt;
     if (wake) { this.paused.delete(taskId); this.stoppedByUser.delete(taskId); this.d.runs.hold(taskId, this.coordination?.blocked(taskId) ?? false); }
     this.kick(taskId); return receipt;
+  }
+  /** Scheduled inputs use the same synchronous acceptance boundary as ordinary
+   * submit, but never join an occupied task's queue. The ledger and actual turn
+   * receipt commit together; only then is the existing driver pump kicked. */
+  acceptScheduledOccurrence(ledger:import('../schedules/store').ScheduleStore,runId:string,expectedSelectionRevision:number){
+    if(ledger.db!==this.d.store.sqlite)throw new DriverError('STATE','定时任务与任务库不同');
+    const accepted=this.d.store.tx(()=>{
+      const run=ledger.beforeAccept(runId,Date.now());if(!run||!run.taskId)return undefined;
+      const taskId=run.taskId,{revision,selection,task}=this.selection(taskId);
+      if(revision!==expectedSelectionRevision||selection.pendingSwitch){ledger.finish(runId,'skipped',Date.now(),'selection_changed');return undefined;}
+      if(this.taskBlockers(taskId).length||this.d.store.turns(taskId).some(t=>['accepted','dispatching','started'].includes(t.status))){ledger.finish(runId,'skipped',Date.now(),'task_busy');return undefined;}
+      const receipt=this.d.store.acceptTurn({taskId,clientInputId:run.inputId,text:run.snapshot.config.prompt,sourceKind:'system'});
+      const event=this.d.store.sqlite.prepare("SELECT event_type FROM agent_events WHERE task_id=? AND event_type IN ('delegation.enabled','delegation.disabled') ORDER BY seq DESC LIMIT 1").get(taskId) as {event_type:string}|undefined;
+      const labels=this.d.store.sqlite.prepare("SELECT a.name AS profileName,p.name AS providerName,p.id AS providerId FROM ai_profiles a LEFT JOIN ai_run_configs c ON c.profile_id=a.id LEFT JOIN ai_providers p ON p.id=c.provider_id WHERE a.id=?").get(selection.profileId) as {profileName?:string;providerName?:string|null;providerId?:string|null}|undefined;
+      ledger.accept(runId,taskId,run.inputId,receipt.turn.turn_id,{profileName:labels?.profileName,providerName:labels?.providerName??undefined,providerId:labels?.providerId??undefined,cwd:task.cwd,projectId:task.project_id,dirId:task.dir_id,profileId:selection.profileId,driverId:selection.driverId,model:selection.model,effort:selection.effort,tier:selection.tier,delegation:event?.event_type==='delegation.enabled'});return{taskId,turnId:receipt.turn.turn_id};
+    });
+    if(accepted){this.paused.delete(accepted.taskId);this.stoppedByUser.delete(accepted.taskId);this.d.runs.hold(accepted.taskId,this.coordination?.blocked(accepted.taskId)??false);this.kick(accepted.taskId);}
+    return accepted;
   }
   private readonly archiving = new Set<string>();
   private readonly switching = new Set<string>();
@@ -277,9 +298,13 @@ export class AgentTaskService {
         const runId = this.d.store.turn(turnId)?.run_id;
         const run = runId ? this.d.runs.active(runId) : undefined;
         if (!(run?.readOnly ?? this.coordination?.readOnly?.(e.taskId))) {
-          this.finishingTurns.add(e.taskId);
+          this.finishingTurns.add(e.taskId);const settling=this.finishingTurnIdentity.get(e.taskId)??new Set<string>();settling.add(turnId);this.finishingTurnIdentity.set(e.taskId,settling);
           void this.finishDiff(e.taskId, turnId, runId).catch(() => {}).finally(() => {
-            this.finishingTurns.delete(e.taskId);
+            const settling=this.finishingTurnIdentity.get(e.taskId);
+            if(settling?.delete(turnId)){
+              if(!settling.size){this.finishingTurns.delete(e.taskId);this.finishingTurnIdentity.delete(e.taskId);}
+              try{this.d.store.tx(emit=>emit(e.taskId,'turn.settled',{turnId}));}catch{/* Host may have closed storage. */}
+            }
             void this.advance(e.taskId);
           });
         }
@@ -759,7 +784,7 @@ export class AgentTaskService {
       this.coordination?.assertTargetCurrent(taskId);
       launch.assertCurrent?.();
     };
-    return { taskId, driverId: launch.driverId, modelCache: launch.modelCache, hostBusinessInstructions: this.business ? HOST_BUSINESS_INSTRUCTIONS : undefined, profileId: selection.profileId, executable: launch.executable, cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) };
+    return { taskId, driverId: launch.driverId, modelCache: launch.modelCache, hostBusinessInstructions: this.business ? HOST_BUSINESS_INSTRUCTIONS : undefined, profileId: selection.profileId, executable: launch.executable, cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, nativeProjectSkillRoots:launch.nativeProjectSkillRoots, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) };
   }
 
   private async commandContext(taskId: string, run: RunHandle) {
@@ -975,6 +1000,7 @@ export class AgentTaskService {
         if(transfer)this.handoffs.delivered(transfer.id,'unsent');
         return;
       }
+      this.d.store.recordScheduledDispatch(next.turn_id,model,effort,selection.tier);
       const savedTier = this.selection(taskId, true).selection.tier as Tier;
       if (!stoppedSince() && savedTier !== selection.tier) void this.d.runs.changeTurnTier(run.runId, savedTier);
       if (selection.initialCodexDefault) {
@@ -1288,15 +1314,14 @@ export class AgentTaskService {
     const pending = this.d.store.pendingRequests(taskId).some(r => r.status === 'pending');
     if (pending) return 'waiting';
     const native = this.d.runs.runForTask(taskId); if (native && this.d.runs.nativeBusy(native.runId)) return 'working';
-    const turns = this.d.store.turns(taskId);
+    const turns = this.d.store.turnStatusSummary(taskId);
     if (this.coordination?.hasUnfinishedChildren(taskId) && !this.paused.has(taskId)) return 'working';
-    if (this.stoppedByUser.has(taskId) && !turns.some(t => ['dispatching','started'].includes(t.status))) return 'stopped';
-    if (turns.some(t => ['accepted', 'dispatching', 'started'].includes(t.status))) return this.paused.has(taskId) && !turns.some(t => ['dispatching', 'started'].includes(t.status)) ? 'stopped' : 'working';
+    if (this.stoppedByUser.has(taskId) && !turns.has_running) return 'stopped';
+    if (turns.has_active) return this.paused.has(taskId) && !turns.has_running ? 'stopped' : 'working';
     if (this.coordination?.needsAttention?.(taskId)) return 'needs_attention';
-    const last = turns.filter(t => t.status !== 'canceled').at(-1);
-    if (!last) return 'idle';
-    if ((last.status === 'failed' || last.status === 'completed') && this.d.store.items(taskId, { limit: 200 }).some(i => i.turnId === last.turn_id && i.type === 'error' && i.payload?.limited)) return 'limited';
-    return last.status === 'completed' ? 'completed' : last.status === 'interrupted' ? 'stopped' : last.status === 'failed' || last.status === 'unknown' ? 'failed' : 'idle';
+    if (turns.turn_id === null) return 'idle';
+    if ((turns.status === 'failed' || turns.status === 'completed') && this.d.store.hasRecentLimitedError(taskId, turns.turn_id)) return 'limited';
+    return turns.status === 'completed' ? 'completed' : turns.status === 'interrupted' ? 'stopped' : turns.status === 'failed' || turns.status === 'unknown' ? 'failed' : 'idle';
   }
 
   list() {
@@ -1383,19 +1408,21 @@ export class AgentTaskService {
 
   /** 从新到旧装入条目（单项过大给预览），并带上这些条目所属的回合；字节与条数（2000）双重边界。 */
   private itemsPage(taskId: string, budget: number, allTurns: ReturnType<AgentStore['turns']>, keepTurns: ReturnType<AgentStore['turns']> = [], beforeOrdinal?: number) {
-    const all = this.d.store.items(taskId, beforeOrdinal !== undefined ? { beforeOrdinal, limit: 100 } : undefined);
     const turnMap = new Map(allTurns.map(t => [t.turn_id, t]));
     const turnIds = new Set(keepTurns.map(t => t.turn_id));
-    const out: typeof all = []; let bytes = 0;
-    for (const it of [...all].reverse()) {
+    const out: ReturnType<AgentStore['items']> = []; let bytes = 0;
+    let sawItem = false;
+    for (const it of this.d.store.itemsNewestFirst(taskId, beforeOrdinal !== undefined ? { beforeOrdinal, limit: 100 } : undefined)) {
+      sawItem = true;
       const shown = previewItem(it);
       const t = it.turnId && !turnIds.has(it.turnId) ? turnMap.get(it.turnId) : undefined;
       const size = jsonBytes(shown) + (t ? jsonBytes(t) : 0) + 1;
       if (bytes + size > budget) break;
-      bytes += size; out.unshift(shown); if (t) turnIds.add(t.turn_id);
+      bytes += size; out.push(shown); if (t) turnIds.add(t.turn_id);
     }
+    out.reverse();
     const turns = allTurns.filter(t => turnIds.has(t.turn_id));
-    return { items: out, turns, hasOlder: out.length ? !!this.d.store.sqlite.prepare("SELECT 1 FROM agent_items WHERE task_id=? AND ordinal<? AND type NOT IN ('subagent_message','subagent_status') LIMIT 1").get(taskId,out[0].ordinal) : all.length > 0 };
+    return { items: out, turns, hasOlder: out.length ? !!this.d.store.sqlite.prepare("SELECT 1 FROM agent_items WHERE task_id=? AND ordinal<? AND type NOT IN ('subagent_message','subagent_status') LIMIT 1").get(taskId,out[0].ordinal) : sawItem };
   }
   planForSaving(taskId: string, itemId: string, revision: number) {
     const { task } = this.selection(taskId);

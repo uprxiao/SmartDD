@@ -1,4 +1,5 @@
-import { shell, BrowserWindow, systemPreferences } from 'electron';
+import { shell, systemPreferences } from 'electron';
+import {getMainWindowContents} from '@main/app/window-host';
 import { createRPCController } from '@shared/ipc/rpc';
 import type { VoiceTrigger, VoiceSettings } from '@shared/voice';
 import type { VoiceService } from './voice-service';
@@ -9,7 +10,7 @@ export function createVoiceController(service: VoiceService) {
     if (recordingTimer) clearTimeout(recordingTimer);
     recordingTimer = null;
     service.setShortcutRecording(false);
-    for (const window of BrowserWindow.getAllWindows()) window.webContents.setIgnoreMenuShortcuts(false);
+    getMainWindowContents()?.setIgnoreMenuShortcuts(false);
   };
   return createRPCController({
     inspect: () => service.inspect(),
@@ -19,7 +20,7 @@ export function createVoiceController(service: VoiceService) {
       service.setShortcutRecording(enabled);
       if (recordingTimer) clearTimeout(recordingTimer);
       recordingTimer = setTimeout(finishRecording, 60_000); recordingTimer.unref();
-      for (const window of BrowserWindow.getAllWindows()) window.webContents.setIgnoreMenuShortcuts(enabled);
+      getMainWindowContents()?.setIgnoreMenuShortcuts(enabled);
     },
     trigger: (input: VoiceTrigger) => service.trigger(input),
     cancel: (id: string) => { if (typeof id === 'string' && id.length <= 80) service.cancel(id); },

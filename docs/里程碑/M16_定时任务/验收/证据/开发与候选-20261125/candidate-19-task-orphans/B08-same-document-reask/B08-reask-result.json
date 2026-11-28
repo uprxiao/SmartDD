@@ -1,0 +1,1211 @@
+{
+  "schema": "M16-B08.3-idle-detection-normal-app-permission-A",
+  "root": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc",
+  "userData": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/data",
+  "pin": "01f73ef543a7be751578c693a3964fa9ebcf55697e503805fe4f0279ce001f00",
+  "initialDataEmpty": true,
+  "initialCliStateEmpty": true,
+  "home": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/home",
+  "cliHome": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/cli-home",
+  "mockStorageFixture": true,
+  "harnessSha": "f541df92fb034abd3b2741e5074f02b2715143202e14c75e0dd2d0373cc87b80",
+  "actions": [
+    {
+      "stage": "B08-actual-idle-detection",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"bd5e497c-3707-47c9-b9a1-4ba1b5f93548\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795662808396
+    },
+    {
+      "stage": "B08-actual-idle-detection",
+      "kind": "UI-click",
+      "selector": "button[title=\"打开右侧面板\"]",
+      "label": null,
+      "point": {
+        "x": 1374,
+        "y": 21
+      },
+      "at": 1795662808484
+    },
+    {
+      "stage": "B08-actual-idle-detection",
+      "kind": "UI-click",
+      "selector": "button[aria-label=\"打开面板\"]",
+      "label": null,
+      "point": {
+        "x": 1251,
+        "y": 22
+      },
+      "at": 1795662808556
+    },
+    {
+      "stage": "B08-actual-idle-detection",
+      "kind": "UI-click",
+      "selector": ".agent-panel-menu button[title=\"新建网页标签\"]",
+      "label": null,
+      "point": {
+        "x": 1175,
+        "y": 101
+      },
+      "at": 1795662808691
+    },
+    {
+      "stage": "B08-actual-idle-detection",
+      "kind": "UI-click",
+      "selector": "[aria-label=\"网页地址\"]",
+      "label": null,
+      "point": {
+        "x": 1080,
+        "y": 70
+      },
+      "at": 1795662808779
+    },
+    {
+      "stage": "A-first-app-denial",
+      "kind": "native-page-click",
+      "wc": 2,
+      "selector": "#request",
+      "point": {
+        "x": 109,
+        "y": 212
+      },
+      "at": 1795662808988
+    },
+    {
+      "stage": "A-first-app-denial",
+      "kind": "UI-click",
+      "selector": "[role=\"alertdialog\"][aria-label=\"站点权限请求\"] button",
+      "label": "拒绝",
+      "point": {
+        "x": 1311,
+        "y": 120
+      },
+      "at": 1795662809125
+    },
+    {
+      "stage": "A-revoke-only",
+      "kind": "UI-click",
+      "selector": ".bw-profile",
+      "label": null,
+      "point": {
+        "x": 1297,
+        "y": 70
+      },
+      "at": 1795662809329
+    },
+    {
+      "stage": "A-revoke-only",
+      "kind": "UI-click",
+      "selector": "[role=\"dialog\"][aria-label=\"登录态管理\"] button",
+      "label": "完成",
+      "point": {
+        "x": 1336,
+        "y": 692
+      },
+      "at": 1795662809578
+    },
+    {
+      "stage": "A-ask-after-revoke",
+      "kind": "native-page-click",
+      "wc": 2,
+      "selector": "#request",
+      "point": {
+        "x": 109,
+        "y": 212
+      },
+      "at": 1795662809736
+    },
+    {
+      "stage": "A-ask-after-revoke",
+      "kind": "UI-click",
+      "selector": "[role=\"alertdialog\"][aria-label=\"站点权限请求\"] button",
+      "label": "拒绝",
+      "point": {
+        "x": 1311,
+        "y": 120
+      },
+      "at": 1795662809869
+    }
+  ],
+  "checks": [
+    {
+      "stage": "A-first-app-denial",
+      "kind": "actual-application-prompt",
+      "prompt": {
+        "id": "4348e7f2-7598-45c4-9abe-f2b6cdd37b97",
+        "pageId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+        "profileId": "project-4c3f4b2245a940ee1be3d7fe",
+        "origin": "http://127.0.0.1:3425",
+        "permissions": [
+          "idle-detection"
+        ]
+      },
+      "visible": {
+        "text": "http://127.0.0.1:3425 想要使用idle-detection。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。\n拒绝\n允许",
+        "rect": {
+          "x": 767.7265625,
+          "y": 95,
+          "width": 628.2734375,
+          "height": 51
+        }
+      },
+      "screenshot": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/A-first-app-denial-request.png",
+      "sha": "56b7da59a43b6588e7d5c626c625b0caf62c6731ec16d90aece8fba446429a8e"
+    },
+    {
+      "stage": "A-first-app-denial",
+      "kind": "actual-app-reject-and-durable-decision",
+      "promptId": "4348e7f2-7598-45c4-9abe-f2b6cdd37b97",
+      "observed": {
+        "secure": true,
+        "available": true,
+        "result": "denied:1",
+        "title": "M16 synthetic app permission request"
+      },
+      "persisted": {
+        "profileId": "project-4c3f4b2245a940ee1be3d7fe",
+        "owner": {
+          "kind": "project",
+          "id": "f15734d7-62ba-4667-a9da-21f1a39aa62f"
+        },
+        "permissions": [
+          {
+            "origin": "http://127.0.0.1:3425",
+            "permission": "idle-detection",
+            "decision": "deny",
+            "updatedAt": 1795662809124
+          }
+        ]
+      }
+    },
+    {
+      "stage": "A-revoke-only",
+      "kind": "actual-own-site-permission-revocation",
+      "before": [
+        {
+          "i": 0,
+          "text": "http://127.0.0.1:3425\nidle-detection · 拒绝\n撤销",
+          "buttons": [
+            "撤销"
+          ]
+        }
+      ],
+      "after": {
+        "profileId": "project-4c3f4b2245a940ee1be3d7fe",
+        "owner": {
+          "kind": "project",
+          "id": "f15734d7-62ba-4667-a9da-21f1a39aa62f"
+        },
+        "permissions": []
+      },
+      "shot": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/A-revoke-only-revoked.png",
+      "sha": "a2a7a3796ac4feef18355d75d6af0df6308b4d1c1d2948ae1288b15a8ec3777e"
+    },
+    {
+      "stage": "A-ask-after-revoke",
+      "kind": "actual-application-prompt",
+      "prompt": {
+        "id": "7438257e-9836-42ef-8da0-6e10b80997e0",
+        "pageId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+        "profileId": "project-4c3f4b2245a940ee1be3d7fe",
+        "origin": "http://127.0.0.1:3425",
+        "permissions": [
+          "idle-detection"
+        ]
+      },
+      "visible": {
+        "text": "http://127.0.0.1:3425 想要使用idle-detection。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。\n拒绝\n允许",
+        "rect": {
+          "x": 767.7265625,
+          "y": 95,
+          "width": 628.2734375,
+          "height": 51
+        }
+      },
+      "screenshot": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/A-ask-after-revoke-request.png",
+      "sha": "56b7da59a43b6588e7d5c626c625b0caf62c6731ec16d90aece8fba446429a8e"
+    },
+    {
+      "stage": "A-ask-after-revoke",
+      "kind": "actual-app-reject-and-durable-decision",
+      "promptId": "7438257e-9836-42ef-8da0-6e10b80997e0",
+      "observed": {
+        "secure": true,
+        "available": true,
+        "result": "denied:2",
+        "title": "M16 synthetic app permission request"
+      },
+      "persisted": {
+        "profileId": "project-4c3f4b2245a940ee1be3d7fe",
+        "owner": {
+          "kind": "project",
+          "id": "f15734d7-62ba-4667-a9da-21f1a39aa62f"
+        },
+        "permissions": [
+          {
+            "origin": "http://127.0.0.1:3425",
+            "permission": "idle-detection",
+            "decision": "deny",
+            "updatedAt": 1795662809869
+          }
+        ]
+      }
+    }
+  ],
+  "nativeReadiness": [
+    {
+      "label": "before-initial-denial",
+      "at": 1795662808918,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "initial"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "before-initial-denial",
+      "at": 1795662808982,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "initial"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "before-revocation",
+      "at": 1795662809134,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:1"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 148,
+                  "width": 624,
+                  "height": 746
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "before-revocation",
+      "at": 1795662809197,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:1"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "before-revocation",
+      "at": 1795662809261,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:1"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "after-dialog-close-before-reask",
+      "at": 1795662809582,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:1"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 0,
+            "si": 1,
+            "front": false,
+            "children": [
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": false,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 624,
+                  "height": 797
+                }
+              },
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "after-dialog-close-before-reask",
+      "at": 1795662809645,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:1"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": true,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "after-dialog-close-before-reask",
+      "at": 1795662809731,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:1"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": false,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "after-reask-denial",
+      "at": 1795662809875,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:2"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": false,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 148,
+                  "width": 624,
+                  "height": 746
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "after-reask-denial",
+      "at": 1795662809937,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:2"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": false,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "after-reask-denial",
+      "at": 1795662810000,
+      "selectedId": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "selectedUrl": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "loading": false,
+      "shellClosed": true,
+      "native": {
+        "id": 2,
+        "alive": true,
+        "url": "http://127.0.0.1:3425/b08-idle-permission",
+        "process": 8411,
+        "debuggerAttached": true,
+        "doc": {
+          "timeOrigin": 1795662808847.3,
+          "point": {
+            "x": 109,
+            "y": 212
+          },
+          "buttonClear": true,
+          "result": "denied:2"
+        },
+        "roots": [
+          {
+            "id": 1,
+            "visible": true,
+            "minimized": false,
+            "focused": false,
+            "wi": 1,
+            "si": 0,
+            "front": true,
+            "children": [
+              {
+                "id": 1,
+                "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+                "visible": true,
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1400,
+                  "height": 900
+                }
+              },
+              {
+                "id": 2,
+                "url": "http://127.0.0.1:3425/b08-idle-permission",
+                "visible": true,
+                "bounds": {
+                  "x": 770,
+                  "y": 97,
+                  "width": 624,
+                  "height": 797
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "priorIsolatedBEvidence": {
+    "sha256": "d468f9cede34bd9d02d1862f51d6a2d01d9dfc57b7429f9ad5c898d861ec71a1",
+    "path": "/private/tmp/willyou-m16-f36-b08-fresh-mock-LcTUKE/B08-fresh-mock-actual-evidence-index.json"
+  },
+  "requests": [
+    {
+      "stage": "B08-actual-idle-detection",
+      "path": "/v1/responses",
+      "method": "POST",
+      "at": 1795662808056
+    },
+    {
+      "stage": "B08-actual-idle-detection",
+      "path": "/b08-idle-permission",
+      "method": "GET",
+      "at": 1795662808856
+    },
+    {
+      "stage": "B08-actual-idle-detection",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "at": 1795662808878
+    }
+  ],
+  "launches": [
+    {
+      "label": "B08-actual-idle-detection",
+      "pid": 7738,
+      "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app",
+      "expected": "01f73ef543a7be751578c693a3964fa9ebcf55697e503805fe4f0279ce001f00",
+      "exeSha": "2c49e855b15c6088b85931bd63454861dc2e7613a35b6abbf8d23f083a4f4350",
+      "at": 1795662807492,
+      "exit": {
+        "pid": 7738,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "persistence": [],
+  "scope": "Fresh synthetic root; fixed Chromium mock cookie-key storage, not production or actual safeStorage/system authorization. Own synthetic browser page permission request only; no actual OS permission, notification, camera, media, geolocation, clipboard, keychain, idle information, or IdleDetector.start. All prompts denied, no grant. Single own A project; previous actual B isolation reused separately.",
+  "pid": 7738,
+  "actualMockCommandLine": {
+    "mockSwitch": true,
+    "occurrences": 1,
+    "cliHome": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/cli-home"
+  },
+  "initialActualStartup": {
+    "initialTrusted": {
+      "native": [
+        {
+          "id": 1,
+          "title": "WillYou",
+          "visible": true,
+          "minimized": false,
+          "bounds": {
+            "x": 56,
+            "y": 33,
+            "width": 1400,
+            "height": 900
+          },
+          "children": [
+            {
+              "id": 1,
+              "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 1400,
+                "height": 900
+              }
+            }
+          ]
+        }
+      ],
+      "shell": {
+        "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+        "api": true,
+        "navSettings": true,
+        "readyState": "complete"
+      }
+    },
+    "initialCounts": {
+      "secretCount": 0,
+      "taskCount": 0,
+      "providerCount": 0,
+      "browserV1": 0
+    },
+    "ownMockCommandLine": {
+      "mockSwitch": true,
+      "occurrences": 1,
+      "cliHome": "/private/tmp/willyou-m16-f36-b08-fresh-mock-B1aGAc/cli-home"
+    }
+  },
+  "providerChecks": [
+    {
+      "model": "m16-codex-one",
+      "probe": "synthetic loopback wy_ping only"
+    }
+  ],
+  "syntheticProfile": {
+    "providerId": "392d6b8e-e45f-4019-9227-885b9ab61283",
+    "profileId": "3d03795d-db12-4c5b-b549-7334372b8148",
+    "source": "public local preset without any key parameter or copied data"
+  },
+  "tasks": {
+    "A": {
+      "taskId": "bd5e497c-3707-47c9-b9a1-4ba1b5f93548",
+      "projectId": "f15734d7-62ba-4667-a9da-21f1a39aa62f"
+    }
+  },
+  "menuHitTests": [
+    {
+      "stage": "B08-actual-idle-detection",
+      "selector": ".agent-panel-menu button[title=\"新建网页标签\"]",
+      "label": null,
+      "point": {
+        "x": 1175,
+        "y": 101
+      },
+      "elapsedMs": 1,
+      "native": [
+        {
+          "id": 1,
+          "title": "WillYou",
+          "visible": true,
+          "minimized": false,
+          "bounds": {
+            "x": 56,
+            "y": 33,
+            "width": 1400,
+            "height": 900
+          },
+          "children": [
+            {
+              "id": 1,
+              "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 1400,
+                "height": 900
+              }
+            }
+          ]
+        }
+      ],
+      "at": 1795662808681
+    }
+  ],
+  "initial": {
+    "initialA": {
+      "profileId": "project-4c3f4b2245a940ee1be3d7fe",
+      "owner": {
+        "kind": "project",
+        "id": "f15734d7-62ba-4667-a9da-21f1a39aa62f"
+      },
+      "permissions": []
+    },
+    "a": {
+      "id": "cc9db521-60df-4633-ac51-cb8b408e9a17",
+      "url": "http://127.0.0.1:3425/b08-idle-permission",
+      "profile": "project-4c3f4b2245a940ee1be3d7fe",
+      "wc": 2,
+      "bounds": {
+        "x": 770,
+        "y": 97,
+        "width": 624,
+        "height": 797
+      }
+    }
+  },
+  "reaskSameDocument": {
+    "before": {
+      "id": 2,
+      "alive": true,
+      "url": "http://127.0.0.1:3425/b08-idle-permission",
+      "process": 8411,
+      "debuggerAttached": true,
+      "doc": {
+        "timeOrigin": 1795662808847.3,
+        "point": {
+          "x": 109,
+          "y": 212
+        },
+        "buttonClear": true,
+        "result": "initial"
+      },
+      "roots": [
+        {
+          "id": 1,
+          "visible": true,
+          "minimized": false,
+          "focused": true,
+          "wi": 1,
+          "si": 0,
+          "front": true,
+          "children": [
+            {
+              "id": 1,
+              "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 1400,
+                "height": 900
+              }
+            },
+            {
+              "id": 2,
+              "url": "http://127.0.0.1:3425/b08-idle-permission",
+              "visible": true,
+              "bounds": {
+                "x": 770,
+                "y": 97,
+                "width": 624,
+                "height": 797
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "after": {
+      "id": 2,
+      "alive": true,
+      "url": "http://127.0.0.1:3425/b08-idle-permission",
+      "process": 8411,
+      "debuggerAttached": true,
+      "doc": {
+        "timeOrigin": 1795662808847.3,
+        "point": {
+          "x": 109,
+          "y": 212
+        },
+        "buttonClear": true,
+        "result": "denied:1"
+      },
+      "roots": [
+        {
+          "id": 1,
+          "visible": true,
+          "minimized": false,
+          "focused": false,
+          "wi": 1,
+          "si": 0,
+          "front": true,
+          "children": [
+            {
+              "id": 1,
+              "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 1400,
+                "height": 900
+              }
+            },
+            {
+              "id": 2,
+              "url": "http://127.0.0.1:3425/b08-idle-permission",
+              "visible": true,
+              "bounds": {
+                "x": 770,
+                "y": 97,
+                "width": 624,
+                "height": 797
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "finalSameDocument": {
+    "process": 8411,
+    "timeOrigin": 1795662808847.3,
+    "wc": 2
+  },
+  "syntheticSecretCounts": {
+    "secretCount": 0,
+    "providerSecretCount": 0
+  },
+  "status": "actual-same-document-denial-revoke-reask-pass",
+  "finishedAt": "2026-11-26T03:13:30.123Z"
+}

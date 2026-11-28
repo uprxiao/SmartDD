@@ -12,7 +12,7 @@ class Pointer extends MouseEvent {
 const title = 'P075 超长网页标题 · ' + '完整标题检查 中文 '.repeat(18) + '结束';
 const url = 'http://fixture.invalid/' + 'long-address-'.repeat(100);
 function Fixture({ surfaceOpen = false, pageBlocked = false, model = 'page1' }) {
-  const tip = useTreePathTooltip(model);
+  const tip = useTreePathTooltip(model, { recoverPointerMove: true });
   const native = useBrowserTabTooltip({ taskId: 't1', tabId: model, tooltip: tip.target ? { target: tip.target, element: tip.element, dismiss: tip.dismiss } : null, pageBlocked, surfaceOpen });
   return <><button {...tip.bind(title + '\n' + url)}>tab</button>{native.element}<output data-testid="parking">{String(native.parked)}:{native.revision}</output>{native.image && <img alt="parked page" src={native.image} />}</>;
 }
@@ -60,4 +60,50 @@ it('does not reopen from an obsolete acknowledgement after switching tabs', asyn
   const view = render(<Fixture />); hover(); await tick(500); view.rerender(<Fixture model="page2" />); await tick(0);
   await act(async () => capture(null)); expect(screen.queryByRole('tooltip')).toBeNull();
   expect(api.overlay).toHaveBeenLastCalledWith(expect.objectContaining({ tabId: 'page1', open: false }));
+});
+
+it('recovers an effective hover from delivered pointer movement without a synthetic pointer enter, but does not reopen after explicit dismissal', async () => {
+  render(<Fixture />);
+  const tab = screen.getByRole('button');
+  fireEvent.pointerMove(tab, { pointerType: 'mouse', buttons: 0, clientX: 20, clientY: 20 });
+  await tick(300);
+  fireEvent.pointerMove(tab, { pointerType: 'mouse', buttons: 0, clientX: 21, clientY: 20 });
+  await tick(199);
+  expect(api.overlay).not.toHaveBeenCalled();
+  await tick(1);
+  expect(screen.getByRole('tooltip').textContent).toBe(title + '\n' + url);
+  fireEvent.keyDown(window, { key: 'Escape' }); await tick(0);
+  fireEvent.pointerMove(tab, { pointerType: 'mouse', buttons: 0, clientX: 22, clientY: 20 });
+  await tick(600);
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  expect(api.overlay.mock.calls.map(([input]) => input.open)).toEqual([true, false]);
+  fireEvent.pointerLeave(tab, { relatedTarget: document.body });
+  fireEvent.pointerMove(tab, { pointerType: 'mouse', buttons: 0, clientX: 20, clientY: 20 });
+  await tick(500);
+  expect(screen.getByRole('tooltip')).toBeTruthy();
+});
+
+it('restarts an invalidated hover only on a subsequent valid move, and preserves popup priority and gesture dismissal', async () => {
+  const view = render(<Fixture />);
+  const tab = screen.getByRole('button');
+  hover(); await tick(200);
+  fireEvent.resize(window); await tick(500);
+  expect(api.overlay).not.toHaveBeenCalled();
+  fireEvent.pointerMove(tab, { pointerType: 'mouse' }); await tick(500);
+  expect(screen.getByRole('tooltip')).toBeTruthy();
+  view.rerender(<Fixture surfaceOpen />); await tick(0);
+  fireEvent.pointerMove(tab, { pointerType: 'mouse' }); await tick(500);
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  expect(api.overlay.mock.calls.map(([input]) => input.open)).toEqual([true, false]);
+  view.rerender(<Fixture />);
+  fireEvent.pointerMove(tab, { pointerType: 'mouse' }); await tick(500);
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  fireEvent.pointerLeave(tab, { relatedTarget: document.body });
+  fireEvent.pointerMove(tab, { pointerType: 'mouse', buttons: 1 }); await tick(500);
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  fireEvent.pointerMove(tab, { pointerType: 'mouse', buttons: 0 }); await tick(500);
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  fireEvent.pointerLeave(tab, { relatedTarget: document.body });
+  fireEvent.pointerMove(tab, { pointerType: 'mouse' }); await tick(500);
+  expect(screen.getByRole('tooltip')).toBeTruthy();
 });

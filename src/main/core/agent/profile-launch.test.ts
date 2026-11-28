@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import type { CodeAgentTool, RunConfigView } from '@shared/ai-agents';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { resolveProfileLaunch } from './profile-launch';
+import { parse as parseToml } from 'smol-toml';
 const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach(p => rmSync(p, { recursive: true, force: true })));
 const tool: CodeAgentTool = { id: 't', kind: 'codex', executable: 'codex', installed: true, login: 'subscription', version: '0.169.0' };
@@ -28,6 +29,30 @@ it('A07: Claude login extension opt-out excludes user settings while retaining p
   const result = resolveProfileLaunch({ ...f.input, config: { ...config, kind: 'claude' }, tool: { ...tool, kind: 'claude', executable: 'claude' }, carryExtensions: false });
   expect(result.settingSources).toEqual(['project', 'local']);
   expect(result.compatibility.extensions).toBe(false);
+});
+
+it('M16 A43 standalone Codex excludes the trusted native project and all cwd ancestors on invocation only', () => {
+  const f=fixture(),project=join(f.home,'registered-project'),child=join(project,'child');mkdirSync(child,{recursive:true});
+  const skill=join(project,'.agents','skills','project-fixture','SKILL.md');mkdirSync(join(skill,'..'),{recursive:true});writeFileSync(skill,'---\nname: project-fixture\ndescription: Project fixture\n---\n');
+  const file=join(f.state,'config.toml'),original=`[projects.${JSON.stringify(project)}]\ntrust_level="trusted"\n[mcp_servers.global_fixture]\ncommand="/usr/bin/true"\n`;writeFileSync(file,original);
+  const ordinary=resolveProfileLaunch({...f.input,cwd:child});
+  const standalone=resolveProfileLaunch({...f.input,cwd:child,standalone:true});
+  expect(ordinary.extraArgs.some(a=>a.startsWith('projects='))).toBe(false);
+  const override=standalone.extraArgs.filter(a=>a.startsWith('projects=')).at(-1);expect(override).toBeTruthy();
+  const projects=(parseToml(override!) as unknown as {projects:Record<string,{trust_level:string}>}).projects;
+  expect(projects[child]).toEqual({trust_level:'untrusted'});expect(projects[project]).toEqual({trust_level:'untrusted'});
+  const skills=standalone.extraArgs.filter(a=>a.startsWith('skills.config=')).at(-1);expect(skills).toBeTruthy();
+  expect((parseToml(skills!) as unknown as {skills:{config:{path:string;enabled:boolean}[]}}).skills.config).toContainEqual({path:skill,enabled:false});
+  expect(ordinary.extraArgs.some(a=>a.startsWith('skills.config='))).toBe(false);
+  expect(readFileSync(file,'utf8')).toBe(original);
+  expect(standalone.stateRoot).toBe(ordinary.stateRoot);
+});
+
+it('M16 A43 standalone Claude excludes native project/local settings without altering ordinary project launch or personal extension choice',()=>{
+  const f=fixture(),input={...f.input,config:{...config,kind:'claude' as const},tool:{...tool,kind:'claude' as const,executable:'claude'}};
+  expect(resolveProfileLaunch(input).settingSources).toEqual(['user','project','local']);
+  expect(resolveProfileLaunch({...input,standalone:true}).settingSources).toEqual(['user']);
+  expect(resolveProfileLaunch({...input,standalone:true,carryExtensions:false}).settingSources).toEqual([]);
 });
 
 it('A07: managed Codex has a materialized private state root and does not inherit or modify the user root', () => {

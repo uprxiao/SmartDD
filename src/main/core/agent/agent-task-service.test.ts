@@ -1,4 +1,8 @@
 import Database from 'better-sqlite3';
+import {randomUUID} from 'node:crypto';
+import {HostBusinessRequests} from './host-business-requests';
+import {attachBrowserLoginRequests} from './business-browser-login';
+import {taskApplicationScope} from './task-application-scope';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore } from './agent-store';
@@ -1000,6 +1004,115 @@ describe('复核 1620 回归', () => {
 });
 
 describe('容量与分页（技术方案 §3.1）', () => {
+  it('任务状态不重复物化完整回合历史，快照仍保留原回合及同时间顺序', () => {
+    const { svc, store, db } = setup();
+    const insert = db.prepare('INSERT INTO agent_turns(turn_id,task_id,client_input_id,input_ref,source_kind,status,accepted_at) VALUES(?,?,?,?,?,?,?)');
+    const expected = new Map<string, string>();
+    const make = (title: string, states: string[], status: string) => {
+      const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title, profileId: 'cx', tier: 'ask' });
+      states.forEach((state, i) => insert.run(taskId + '-' + i, taskId, id(i), '{"text":"synthetic"}', 'user', state, '2026-01-01T00:00:00.000Z'));
+      expected.set(taskId, status);
+      return taskId;
+    };
+    make('idle', [], 'idle');
+    make('canceled', ['canceled'], 'idle');
+    const completed = make('last completed', ['failed','completed','canceled'], 'completed');
+    const failed = make('last failed', ['completed','failed'], 'failed');
+    make('interrupted', ['completed','interrupted','canceled'], 'stopped');
+    make('unknown', ['unknown'], 'failed');
+    make('accepted', ['accepted','completed'], 'working');
+    make('dispatching', ['dispatching','completed'], 'working');
+    make('started', ['started','canceled'], 'working');
+    const turns = vi.spyOn(store, 'turns');
+    try {
+      expect(new Map(svc.list().map(task => [task.taskId, task.status]))).toEqual(expected);
+      expect(turns).not.toHaveBeenCalled();
+      const snap = svc.snapshot(completed);
+      expect(snap.status).toBe('completed');
+      expect(snap.turns.map(turn => turn.status)).toEqual(['failed','completed','canceled']);
+      expect(turns).toHaveBeenCalledTimes(1);
+      db.prepare("UPDATE agent_turns SET status='completed' WHERE turn_id=?").run(failed + '-1');
+      expect(svc.status(failed)).toBe('completed'); // live ledger, not cached state
+    } finally { turns.mockRestore(); }
+  });
+
+  it('事件追加复用固定语句，跨任务水位、嵌套提交和回滚通知保持原合同', () => {
+    const { svc, store, db } = setup();
+    const prepares = vi.spyOn(db, 'prepare');
+    const seen: Array<{ taskId: string; seq: number; type: string }> = [];
+    const unsubscribe = store.subscribe(({ taskId, seq, type }) => seen.push({ taskId, seq, type }));
+    try {
+      const task = () => svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'fixture', profileId: 'cx', tier: 'ask' }).taskId;
+      const a = task(), b = task();
+      seen.length = 0;
+      store.tx(emit => {
+        emit(a, 'fixture.outer', {});
+        store.tx(nested => { nested(a, 'fixture.inner', {}); nested(b, 'fixture.inner', {}); });
+        expect(seen).toEqual([]);
+      });
+      expect(seen).toEqual([
+        { taskId: a, seq: 2, type: 'fixture.outer' },
+        { taskId: a, seq: 3, type: 'fixture.inner' },
+        { taskId: b, seq: 2, type: 'fixture.inner' },
+      ]);
+      expect(() => store.tx(emit => { emit(a, 'fixture.rollback', {}); throw new Error('rollback fixture'); })).toThrow('rollback fixture');
+      expect(store.watermark(a)).toBe(3);
+      expect(seen).toHaveLength(3);
+      store.tx(emit => emit(a, 'fixture.after', {}));
+      expect(seen.at(-1)).toEqual({ taskId: a, seq: 4, type: 'fixture.after' });
+      expect(db.prepare('SELECT task_id,seq FROM agent_events ORDER BY task_id,seq').all()).toHaveLength(6);
+      expect(prepares.mock.calls.filter(([sql]) => sql === 'SELECT COALESCE(MAX(seq),0)+1 AS seq FROM agent_events WHERE task_id=?')).toHaveLength(1);
+      expect(prepares.mock.calls.filter(([sql]) => sql === 'INSERT INTO agent_events(task_id,seq,event_type,item_id,revision,payload,created_at) VALUES(?,?,?,?,?,?,?)')).toHaveLength(1);
+    } finally { unsubscribe(); prepares.mockRestore(); }
+  });
+
+  it('任务状态仅解码最近 200 条可见历史中属于末轮的错误，保留原边界与真值语义', () => {
+    const { svc, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const first = store.acceptTurn({ taskId, clientInputId: id(1), text: 'first', sourceKind: 'user' }).turn.turn_id;
+    store.addHostItem(taskId, first, 'error', { limited: { kind: 'quota' }, detail: 'unrelated-status-body' });
+    store.endTurn(first, 'failed');
+    const last = store.acceptTurn({ taskId, clientInputId: id(2), text: 'last', sourceKind: 'user' }).turn.turn_id;
+    store.endTurn(last, 'completed');
+    store.addHostItem(taskId, last, 'error', { limited: false });
+    store.addHostItem(taskId, last, 'system_notice', { detail: 'unrelated-status-body' });
+
+    const parse = vi.spyOn(JSON, 'parse');
+    try {
+      expect(svc.status(taskId)).toBe('completed');
+      expect(parse.mock.calls.filter(([body]) => typeof body === 'string' && body.includes('unrelated-status-body'))).toHaveLength(0);
+    } finally { parse.mockRestore(); }
+
+    // 与旧实现相同：先按可见条目位次取最近 200 条，再限定最后一轮和 error。
+    store.addHostItem(taskId, last, 'error', { limited: {} }); // JS 中空对象仍是真值。
+    for (let i = 0; i < 199; i++) store.addHostItem(taskId, last, 'system_notice', { detail: `n${i}` });
+    store.upsertItem({ taskId, turnId: last, runId: null, nativeKey: 'child-only', type: 'subagent_message', payload: { text: 'child' }, terminalState: 'completed' });
+    expect(svc.status(taskId)).toBe('limited');
+    store.addHostItem(taskId, last, 'system_notice', { detail: 'moves error beyond 200' });
+    expect(svc.status(taskId)).toBe('completed');
+  });
+
+  it('快照按字节预算停止读取历史正文，不预先解码未返回的旧条目', () => {
+    const { svc, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const marker = 'm16-snapshot-history-body:';
+    for (let i = 0; i < 80; i++) {
+      store.addHostItem(taskId, null, 'system_notice', { detail: marker + i + ':' + 'a'.repeat(16 * 1024) });
+    }
+    const parse = vi.spyOn(JSON, 'parse');
+    let snap!: ReturnType<typeof svc.snapshot>;
+    try {
+      snap = svc.snapshot(taskId);
+      expect(snap.hasOlder).toBe(true);
+      expect(snap.items.at(-1)?.ordinal).toBe(80);
+      expect(snap.items.length).toBeLessThan(80);
+      expect(parse.mock.calls.filter(([body]) => typeof body === 'string' && body.includes(marker)).length).toBeLessThanOrEqual(snap.items.length + 1);
+    } finally { parse.mockRestore(); }
+    expect(snap.items).toEqual(store.items(taskId).slice(-snap.items.length));
+    const older = svc.history(taskId, snap.items[0].ordinal);
+    expect(older.items.at(-1)?.ordinal).toBe(snap.items[0].ordinal - 1);
+  });
+
   it('快照只带最近 2000 条，更早的按页读取', () => {
     const { svc, store } = setup();
     const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
@@ -1753,5 +1866,473 @@ describe('S1/S2 排队输入与确认未发送的重试', () => {
     await until(() => insts[0]?.turns.length === 1);
     expect(insts[0].turns[0].text).toBe('original');
     expect(store.turn(retry.turnId)?.client_input_id).not.toBe(id(4));
+  });
+});
+
+describe('M16 real AgentStore scheduled acceptance boundary',()=>{
+  const config={title:'定时摘要',prompt:'用原始回合完成摘要',projectId:null,dirId:null,cwd:'/w',workspace:'directory' as const,baseRef:null,destination:'existing' as const,boundTask:'',profileId:'cd',tier:'ask' as const,delegation:false,notifyCompleted:false};
+  async function fixture(){const f=setup(),{ScheduleStore}=await import('../schedules/store');const task=f.svc.create({projectId:null,dirId:null,cwd:'/w',title:'定时',profileId:'cd',tier:'ask'});const ledger=new ScheduleStore(f.db),p=ledger.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...config,boundTask:task.taskId},grace:60,enabled:true});const c=ledger.claim(p.id,{now:Date.now(),trigger:'manual',expected:p.revision,requestId:'manual'});if(!('run'in c))throw Error('claim');ledger.begin(c.run.id,Date.now());return{...f,ledger,taskId:task.taskId,p,run:c.run};}
+  it('commits the actual task turn, scheduled provenance and persistent occurrence before notifying or kicking the driver',async()=>{const f=await fixture();const kick=vi.spyOn(f.svc,'kick').mockImplementation(()=>{}),events:any[]=[];const off=f.store.subscribe(e=>{if(e.type==='turn.accepted'){events.push(e);expect(f.ledger.run(f.run.id)?.turnId).toBe((e.payload as any).turnId);}});const accepted=f.svc.acceptScheduledOccurrence(f.ledger,f.run.id,f.store.task(f.taskId)!.selection_revision);expect(accepted?.taskId).toBe(f.taskId);expect(f.store.scheduledOrigin(accepted?.turnId)?.occurrence_id).toBe(f.run.id);expect(f.store.turnByClientInput(f.taskId,f.run.inputId)?.source_kind).toBe('system');expect(events).toHaveLength(1);expect(kick).toHaveBeenCalledOnce();off();});
+  it('skips a scheduled attempt when a real ordinary input already owns the task; never appends a second input',async()=>{const f=await fixture();f.store.acceptTurn({taskId:f.taskId,clientInputId:'ordinary-input',text:'ordinary',sourceKind:'user'});expect(f.svc.acceptScheduledOccurrence(f.ledger,f.run.id,f.store.task(f.taskId)!.selection_revision)).toBeUndefined();expect(f.store.turns(f.taskId)).toHaveLength(1);expect(f.ledger.run(f.run.id)?.status).toBe('skipped');});
+  it('rolls back actual acceptance if the ledger receipt write fails',async()=>{const f=await fixture();const kick=vi.spyOn(f.svc,'kick'),events:any[]=[];const off=f.store.subscribe(e=>{if(e.type==='turn.accepted')events.push(e);});vi.spyOn(f.ledger,'accept').mockImplementation(()=>{throw new Error('simulated receipt storage failure');});expect(()=>f.svc.acceptScheduledOccurrence(f.ledger,f.run.id,f.store.task(f.taskId)!.selection_revision)).toThrow(/storage failure/);expect(f.store.turns(f.taskId)).toEqual([]);expect(f.ledger.run(f.run.id)?.status).toBe('dispatching');expect(events).toHaveLength(0);expect(kick).not.toHaveBeenCalled();off();});
+});
+
+describe('M16 scheduler lifecycle with actual AgentTaskService and fixture driver',()=>{
+  const baseConfig={title:'定时摘要',prompt:'固定原始提示词',projectId:null,dirId:null,cwd:null,workspace:'directory' as const,baseRef:null,destination:'new' as const,boundTask:null,profileId:'cd',tier:'ask' as const,delegation:false,notifyCompleted:false};
+  async function host(options:Parameters<typeof setup>[0]={}){const f=setup({distinctNativeIds:true,...options}),root=mkdtempSync(join(tmpdir(),'m16-scheduler-i-'));const {ScheduleService}=await import('../schedules/service');let compatibility='fixture-profile';const delivered:unknown[]=[];const agent={store:f.store,tasks:f.svc,runs:f.runs,delegations:{setMode:()=>{}}} as unknown as import('./wiring').AgentWorkspace;const schedule=new ScheduleService({agent,home:root,userData:root,profile:()=>({available:true,compatibility}),changed:()=>{},notify:n=>delivered.push(n)});return{...f,root,schedule,agent,delivered,setCompatibility:(value:string)=>{compatibility=value;},async close(){await schedule.stop();await f.runs.closeAll();rmSync(root,{recursive:true,force:true});}};}
+  it('A27 simulated suspension and resume use the current clock and preserve the consumed occurrence after rollback',async()=>{
+    const f=await host();const start=Date.parse('2026-11-25T10:00:00Z'),due=start+60000;let clock=start;
+    const now=vi.spyOn(Date,'now').mockImplementation(()=>clock);
+    try{
+      const once={type:'once' as const,zone:'UTC',date:'2026-11-25',time:'10:01'};
+      const inside=f.schedule.store.save({schedule:once,config:{...baseConfig,title:'wake within grace',compatibility:'fixture-profile'},grace:10,enabled:true},start);
+      const outside=f.schedule.store.save({schedule:once,config:{...baseConfig,title:'wake outside grace',compatibility:'fixture-profile'},grace:0,enabled:true},start);
+      f.schedule.start();expect(f.schedule.store.history(inside.id)).toEqual([]);expect(f.schedule.store.history(outside.id)).toEqual([]);
+      clock=due+5*60000;
+      // Advance the injected wall clock without running the scheduler or OS timers.
+      expect(f.schedule.store.history(inside.id)).toEqual([]);expect(f.schedule.store.history(outside.id)).toEqual([]);expect(f.insts).toHaveLength(0);
+      f.schedule.tick('resume');await until(()=>f.insts.length===1&&f.insts[0].turns.length===1);
+      const accepted=f.schedule.store.history(inside.id)[0],missed=f.schedule.store.history(outside.id)[0];
+      expect(accepted).toMatchObject({trigger:'scheduled',due,claimedAt:clock});expect(accepted.turnId).toBeTruthy();
+      expect(missed).toMatchObject({trigger:'scheduled',due,status:'skipped',reason:'missed_grace',taskId:null,turnId:null});
+      f.insts[0].finish();await until(()=>f.schedule.store.run(accepted.id)?.status==='completed');
+      clock=start;f.schedule.tick('resume');clock=due+6*60000;f.schedule.tick('resume');
+      expect(f.schedule.store.history(inside.id).map(r=>r.id)).toEqual([accepted.id]);expect(f.schedule.store.history(outside.id).map(r=>r.id)).toEqual([missed.id]);expect(f.insts).toHaveLength(1);
+    }finally{now.mockRestore();await f.close();}
+  });
+  it('A24 fifty plans with ten due together create one receipt per due plan without serial model waits',async()=>{
+    const f=await host();try{
+      const now=Date.now(),plans=Array.from({length:50},(_,i)=>f.schedule.store.save({schedule:{type:'interval',zone:'UTC',minutes:1},config:{...baseConfig,title:'plan-'+i,compatibility:'fixture-profile'},grace:60,enabled:true},i<10?now-60000:now));
+      f.schedule.start();
+      await until(()=>f.insts.length===10&&f.insts.every(i=>i.turns.length===1));
+      expect(f.schedule.store.active()).toHaveLength(10);
+      expect(new Set(f.schedule.store.active().map(r=>r.taskId)).size).toBe(10);
+      expect(plans.slice(10).every(p=>f.schedule.store.history(p.id).length===0)).toBe(true);
+      for(const plan of plans.slice(0,10)){const rows=f.schedule.store.history(plan.id);expect(rows).toHaveLength(1);expect(rows[0].claimedAt-rows[0].due).toBeLessThanOrEqual(5000);}
+      f.schedule.tick();expect(f.schedule.store.active()).toHaveLength(10);
+      for(const inst of f.insts)inst.finish();await until(()=>f.schedule.store.active().length===0);
+    }finally{await f.close();}
+  });
+  it('A30 dispatches two actual task receipts independently before either model finishes',async()=>{const f=await host();try{f.schedule.start();const create=(title:string)=>f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,title},grace:60,enabled:false});const p=await create('计划甲'),q=await create('计划乙');const a=f.schedule.runNow(p.id,p.revision,'request-a'),b=f.schedule.runNow(q.id,q.revision,'request-b');if(!('run'in a)||!('run'in b))throw Error('claim missing');await until(()=>f.insts.length===2&&f.insts.every(i=>i.turns.length===1));const runs=[f.schedule.store.run(a.run.id)!,f.schedule.store.run(b.run.id)!];expect(runs[0].taskId).not.toBe(runs[1].taskId);expect(runs.every(r=>r.status==='running'&&!!r.turnId)).toBe(true);expect(f.insts.every(i=>i.turns[0].text===baseConfig.prompt)).toBe(true);f.insts[1].finish();await until(()=>f.schedule.store.run(b.run.id)?.status==='completed'||f.schedule.store.run(a.run.id)?.status==='completed');expect(f.schedule.store.active()).toHaveLength(1);f.insts[0].finish();await until(()=>f.schedule.store.active().length===0);}finally{await f.close();}});
+  it('A15 independent-new plans create distinct task, input, real driver binding and native conversation',async()=>{
+    const f=await host();try{
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:baseConfig,grace:60,enabled:false});
+      const one=f.schedule.runNow(p.id,p.revision,'first');if(!('run'in one))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();await until(()=>f.schedule.store.run(one.run.id)?.status==='completed');
+      const two=f.schedule.runNow(p.id,p.revision,'second');if(!('run'in two))throw Error();
+      await until(()=>f.insts[1]?.turns.length===1);f.insts[1].finish();await until(()=>f.schedule.store.run(two.run.id)?.status==='completed');
+      expect(one.run.taskId).not.toBe(two.run.taskId);expect(one.run.inputId).not.toBe(two.run.inputId);
+      expect(f.schedule.store.run(one.run.id)?.turnId).not.toBe(f.schedule.store.run(two.run.id)?.turnId);
+      const bound=f.db.prepare('SELECT task_id,native_id FROM agent_bindings WHERE task_id IN (?,?)').all(one.run.taskId,two.run.taskId) as {task_id:string;native_id:string}[];
+      expect(new Set(bound.map(t=>t.native_id)).size).toBe(2);expect(f.insts[1].opened?.resumeNativeId).toBeUndefined();
+    }finally{await f.close();}
+  });
+  it('A12/A16 waits for the exact ended turn’s diff settlement before the schedule finishes and allows next reuse',async()=>{
+    const f=await host();let release!:()=>void;const gate=new Promise<void>(r=>release=r);
+    try{
+      f.svc.attachDiffs({before:async()=>{},after:async()=>gate,capturing:()=>true,beginTaskRemoval:()=>()=>{}});
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,destination:'reuse'},grace:60,enabled:false});
+      const one=f.schedule.runNow(p.id,p.revision,'one');if(!('run'in one))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();
+      const run=f.schedule.store.run(one.run.id)!;await until(()=>f.svc.isSettlingTurn(one.run.taskId!,run.turnId!));
+      expect(f.schedule.store.run(one.run.id)?.status).toBe('running');
+      expect(f.schedule.runNow(p.id,p.revision,'during-settlement').kind).toBe('busy');
+      release();await until(()=>f.schedule.store.run(one.run.id)?.status==='completed');
+      const two=f.schedule.runNow(p.id,p.revision,'after-settlement');expect(two.kind).toBe('claimed');
+      await until(()=>f.insts[0]?.turns.length===2);f.insts[0].finish();
+    }finally{release();await f.close();}
+  });
+  it('A16 reuse binds exactly once and appends a distinct turn with the original actual native session',async()=>{
+    const f=await host();try{
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,destination:'reuse'},grace:60,enabled:false});
+      const one=f.schedule.runNow(p.id,p.revision,'first');if(!('run'in one))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();await until(()=>f.schedule.store.run(one.run.id)?.status==='completed');
+      const retained=f.schedule.store.plan(p.id)!;expect(retained.boundTask).toBe(one.run.taskId);
+      const two=f.schedule.runNow(p.id,p.revision,'second');if(!('run'in two))throw Error();
+      await until(()=>f.insts[0]?.turns.length===2);expect(two.run.taskId).toBe(one.run.taskId);expect(two.run.inputId).not.toBe(one.run.inputId);
+      f.insts[0].finish();await until(()=>f.schedule.store.run(two.run.id)?.status==='completed');
+      expect(f.schedule.store.run(one.run.id)?.turnId).not.toBe(f.schedule.store.run(two.run.id)?.turnId);
+      expect(f.insts).toHaveLength(1);expect(f.store.turns(one.run.taskId!)).toHaveLength(2);
+    }finally{await f.close();}
+  });
+  it('A29 preserves a completed manual request receipt across edit, archive and a new ledger instance',async()=>{
+    const f=await host();try{
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:baseConfig,grace:60,enabled:false});
+      const first=f.schedule.runNow(p.id,p.revision,'durable-id');
+      expect(f.schedule.runNow(p.id,p.revision,'durable-id')).toEqual(first);
+      if(!('run'in first))throw Error('missing run');
+      await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();
+      await until(()=>f.schedule.store.run(first.run.id)?.status==='completed');
+      const edited=await f.schedule.save({id:p.id,revision:p.revision,schedule:p.schedule,config:{...baseConfig,title:'新版配置'},grace:60,enabled:false});
+      f.schedule.archive(p.id,edited.revision);
+      const {ScheduleStore}=await import('../schedules/store');const reopened=new ScheduleStore(f.db);
+      expect(reopened.claim(p.id,{now:Date.now(),expected:p.revision,trigger:'manual',requestId:'durable-id'})).toEqual(first);
+      expect(()=>reopened.claim(p.id,{now:Date.now(),expected:edited.revision,trigger:'manual',requestId:'durable-id'})).toThrow();
+      expect(reopened.claim(p.id,{now:Date.now(),expected:edited.revision,trigger:'manual',requestId:'new-id'}).kind).toBe('unavailable');
+      expect(reopened.history(p.id)).toHaveLength(1);
+      expect(f.store.turns(first.run.taskId!)).toHaveLength(1);
+    }finally{await f.close();}
+  });
+  it('A33 retries once before any acceptance with stable identities, never starts a third preparation after repeat failure',async()=>{
+    const f=await host();try{
+      f.schedule.start();const create=(title:string)=>f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,title},grace:60,enabled:false});
+      const prep=vi.spyOn(f.schedule.workspaces,'prepare');prep.mockRejectedValueOnce(new Error('isolated known-before-submit fixture'));
+      const plan=await create('retry');const first=f.schedule.runNow(plan.id,plan.revision,'one');if(!('run'in first))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);expect(prep).toHaveBeenCalledTimes(2);
+      expect(prep.mock.calls.map(([r])=>[r.id,r.taskId,r.inputId])).toEqual([[first.run.id,first.run.taskId,first.run.inputId],[first.run.id,first.run.taskId,first.run.inputId]]);
+      expect(f.schedule.store.run(first.run.id)?.attempts).toBe(2);
+      expect(f.store.turns(first.run.taskId!)).toHaveLength(1);
+      f.insts[0].finish();await until(()=>f.schedule.store.run(first.run.id)?.status==='completed');
+      prep.mockReset();prep.mockRejectedValue(new Error('fixture still fails before submit'));
+      const second=await create('failed');const claim=f.schedule.runNow(second.id,second.revision,'two');if(!('run'in claim))throw Error();
+      await until(()=>f.schedule.store.run(claim.run.id)?.status==='failed');
+      expect(prep).toHaveBeenCalledTimes(2);expect(f.schedule.store.run(claim.run.id)?.attempts).toBe(2);
+      expect(f.store.turns(claim.run.taskId!)).toHaveLength(0);
+    }finally{await f.close();}
+  });
+  it('A33/A34 startup retries a proved pre-accept dispatch once with the same reserved identities',async()=>{
+    const f=await host();try{
+      const p=f.schedule.store.save({schedule:{type:'interval',zone:'UTC',minutes:60},config:{...baseConfig,compatibility:'fixture-profile'},grace:60,enabled:false});
+      const c=f.schedule.store.claim(p.id,{now:Date.now(),expected:p.revision,trigger:'manual',requestId:'before-crash'});if(!('run'in c))throw Error();
+      f.schedule.store.begin(c.run.id,Date.now());expect(f.store.task(c.run.taskId!)).toBeUndefined();
+      f.schedule.start();
+      await until(()=>f.insts[0]?.turns.length===1);
+      const run=f.schedule.store.run(c.run.id)!;expect(run.attempts).toBe(2);expect(run.taskId).toBe(c.run.taskId);expect(run.inputId).toBe(c.run.inputId);
+      expect(f.store.turns(run.taskId!)).toHaveLength(1);f.insts[0].finish();await until(()=>f.schedule.store.run(run.id)?.status==='completed');
+    }finally{await f.close();}
+  });
+  it('A34 an already accepted durable turn is reconciled after startup, never replaced by a second input',async()=>{
+    const f=await host();try{
+      const p=f.schedule.store.save({schedule:{type:'interval',zone:'UTC',minutes:60},config:{...baseConfig,compatibility:'fixture-profile'},grace:60,enabled:false});
+      const c=f.schedule.store.claim(p.id,{now:Date.now(),expected:p.revision,trigger:'manual',requestId:'after-accept'});if(!('run'in c))throw Error();
+      f.schedule.store.begin(c.run.id,Date.now());const task=f.svc.create({clientTaskId:c.run.taskId!,projectId:null,dirId:null,cwd:f.root,title:'reserved',profileId:'cd',tier:'ask'});
+      const spy=vi.spyOn(f.svc,'kick').mockImplementation(()=>{});
+      const accepted=f.svc.acceptScheduledOccurrence(f.schedule.store,c.run.id,f.store.task(task.taskId)!.selection_revision);
+      expect(accepted?.taskId).toBe(task.taskId);spy.mockRestore();
+      f.schedule.start();expect(f.schedule.store.run(c.run.id)?.turnId).toBe(accepted?.turnId);
+      expect(f.store.turns(task.taskId)).toHaveLength(1);
+      f.svc.kick(task.taskId);await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();
+      await until(()=>f.schedule.store.run(c.run.id)?.status==='completed');expect(f.store.turns(task.taskId)).toHaveLength(1);
+    }finally{await f.close();}
+  });
+  it('A32 scheduled-vs-ordinary acceptance in both orders respects the ordinary task receipt queue',async()=>{
+    const f=await host();try{
+      f.schedule.start();const task=f.svc.create({projectId:null,dirId:null,cwd:f.root,title:'bound',profileId:'cd',tier:'ask'});
+      const create=()=>f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,cwd:f.root,destination:'existing',boundTask:task.taskId},grace:60,enabled:false});
+      const p=await create(),q=await create();
+      const a=f.schedule.runNow(p.id,p.revision,'a');const b=f.schedule.runNow(q.id,q.revision,'b');
+      expect(b.kind).toBe('busy');if(!('run'in a))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);
+      const ordinary=f.store.acceptTurn({taskId:task.taskId,clientInputId:'ordinary-after',text:'ordinary after',sourceKind:'user'});
+      expect(f.store.turn(ordinary.turn.turn_id)?.status).toBe('accepted');
+      expect(f.insts[0].turns).toHaveLength(1);
+      f.insts[0].finish();await until(()=>f.schedule.store.run(a.run.id)?.status==='completed');
+      expect(f.schedule.runNow(q.id,q.revision,'ordinary-occupies').kind).toBe('busy');
+      expect(f.schedule.store.history(q.id)).toHaveLength(0);
+    }finally{await f.close();}
+  });
+  it('A18 rejects changed binding identity, exposes diff, rejects stale confirmation and uses only future config after exact confirmation',async()=>{
+    const f=await host();try{
+      f.schedule.start();const task=f.svc.create({projectId:null,dirId:null,cwd:f.root,title:'bound',profileId:'cd',tier:'ask'});
+      const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,destination:'existing',boundTask:task.taskId,cwd:f.root},grace:60,enabled:false});
+      f.setCompatibility('provider-identity-2');
+      const result=f.schedule.runNow(p.id,p.revision,'first');if(!('run'in result))throw Error();
+      await until(()=>f.schedule.store.run(result.run.id)?.status==='failed');
+      expect(f.store.turns(task.taskId)).toEqual([]);const damaged=f.schedule.store.plan(p.id)!;expect(damaged.repair).toBeTruthy();
+      const diff=f.schedule.bindingPreview(p.id,damaged.revision);
+      expect(diff.before.compatibility).toBe('fixture-profile');expect(diff.after.compatibility).toBe('provider-identity-2');
+      f.setCompatibility('provider-identity-3');expect(()=>f.schedule.reconfirm(p.id,damaged.revision,diff.token)).toThrow();
+      const current=f.schedule.bindingPreview(p.id,damaged.revision);
+      const confirmed=f.schedule.reconfirm(p.id,damaged.revision,current.token);expect(confirmed.config.compatibility).toBe('provider-identity-3');expect(confirmed.repair).toBeNull();
+      expect(f.schedule.store.run(result.run.id)?.snapshot.config.compatibility).toBe('fixture-profile');
+      const next=f.schedule.runNow(p.id,confirmed.revision,'confirmed');if(!('run'in next))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();await until(()=>f.schedule.store.run(next.run.id)?.status==='completed');
+    }finally{await f.close();}
+  });
+  it.each(['existing','reuse'] as const)('M16 A18 %s detects live profile, permission, directory, delegation and launch identity changes before acceptance',async destination=>{
+    const f=await host();try{
+      f.schedule.start();
+      for(const kind of ['agent-provider','permission','cwd','delegation','endpoint-account'] as const){
+        const cwd=join(f.root,kind);mkdirSync(cwd,{recursive:true});
+        const actual=destination==='existing'?f.svc.create({projectId:null,dirId:null,cwd,title:kind,profileId:'cd',tier:'ask'}):null;
+        const plan=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,title:kind,cwd,destination,boundTask:actual?.taskId??null},grace:60,enabled:false});
+        const initial=f.schedule.runNow(plan.id,plan.revision,randomUUID());if(!('run'in initial))throw Error();
+        await until(()=>f.insts.some(inst=>inst.turns.some(t=>t.clientInputId===initial.run.inputId)));
+        f.insts.find(inst=>inst.turns.some(t=>t.clientInputId===initial.run.inputId))!.finish();
+        await until(()=>f.schedule.store.run(initial.run.id)?.status==='completed');
+        const old=f.schedule.store.run(initial.run.id)!,taskId=old.taskId!,selection=f.store.task(taskId)!;
+        const before=f.store.turns(taskId).length, revision=f.schedule.store.plan(plan.id)!.revision;
+        if(kind==='agent-provider')f.store.updateSelection(taskId,{profileId:'cc',driverId:'claude-sdk'},selection.selection_revision);
+        if(kind==='permission')f.store.updateSelection(taskId,{tier:'full'},selection.selection_revision);
+        if(kind==='cwd'){const different=join(cwd,'moved');mkdirSync(different);f.db.prepare('UPDATE tasks SET cwd=? WHERE id=?').run(different,taskId);}
+        if(kind==='delegation')f.store.tx(emit=>emit(taskId,'delegation.enabled',{enabled:true}));
+        if(kind==='endpoint-account')f.setCompatibility('changed-endpoint-account');
+        f.schedule.auditConfigurations();
+        const repaired=f.schedule.store.plan(plan.id)!;expect(repaired.repair,kind).toBeTruthy();expect(repaired.revision).toBeGreaterThan(revision);
+        expect(f.schedule.runNow(plan.id,repaired.revision,randomUUID()).kind).toBe('repair');expect(f.store.turns(taskId)).toHaveLength(before);
+        const preview=f.schedule.bindingPreview(plan.id,repaired.revision);
+        if(kind==='agent-provider')expect(preview.after.profileId).toBe('cc');
+        if(kind==='permission')expect(preview.after.tier).toBe('full');
+        if(kind==='cwd')expect(preview.after.cwd).toBe(join(cwd,'moved'));
+        if(kind==='delegation')expect(preview.after.delegation).toBe(true);
+        if(kind==='endpoint-account')expect(preview.after.compatibility).toBe('changed-endpoint-account');
+        expect(f.schedule.store.plan(plan.id)?.revision).toBe(repaired.revision);
+        const confirmed=f.schedule.reconfirm(plan.id,repaired.revision,preview.token);expect(confirmed.repair).toBeNull();
+        expect(f.schedule.store.run(old.id)?.actualConfig).toEqual(old.actualConfig);expect(f.schedule.store.run(old.id)?.snapshot).toEqual(old.snapshot);
+      }
+    }finally{await f.close();}
+  },20000);
+  it('A17 existing and reuse follow the current compatible model/effort on the same real task and keep old actual snapshots',async()=>{
+    const f=await host({modelCatalog:async()=>['first-model','second-model'].map(id=>({id,name:id,efforts:['medium','high'],defaultEffort:'medium'}))});try{
+      f.schedule.start();
+      for(const destination of ['existing','reuse'] as const){
+        const task=destination==='existing'?f.svc.create({projectId:null,dirId:null,cwd:f.root,title:'bound',profileId:'cd',tier:'ask',model:'first-model',effort:'medium'}):null;
+        const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,destination,boundTask:task?.taskId??null,cwd:f.root,model:destination==='existing'?'second-model':'first-model',effort:destination==='existing'?'high':'medium'},grace:60,enabled:false});
+        expect(p.config).toMatchObject({model:'first-model',effort:'medium'});
+        const first=f.schedule.runNow(p.id,p.revision,`${destination}-first`);if(!('run'in first))throw Error();
+        await until(()=>f.insts.some(i=>i.turns.some(t=>t.clientInputId===first.run.inputId)));
+        const inst=f.insts.find(i=>i.turns.some(t=>t.clientInputId===first.run.inputId))!;inst.finish();await until(()=>f.schedule.store.run(first.run.id)?.status==='completed');
+        const taskId=first.run.taskId!,prior=f.schedule.store.run(first.run.id)!;
+        expect(prior.actualConfig).toMatchObject({model:'first-model',effort:'medium'});expect(realpathSync(prior.actualConfig!.cwd)).toBe(realpathSync(f.root));
+        const selection=f.svc.snapshot(taskId);expect(f.svc.setSelection(taskId,{model:'second-model',effort:'high'},selection.selectionRevision).ok).toBe(true);
+        await until(()=>!f.svc.isDispatching(taskId));
+        expect(f.schedule.store.plan(p.id)?.repair).toBeNull();
+        const current=f.schedule.store.plan(p.id)!;const next=f.schedule.runNow(p.id,current.revision,`${destination}-second`);if(!('run'in next))throw Error();
+        await until(()=>inst.turns.some(t=>t.clientInputId===next.run.inputId));
+        expect(next.run.taskId).toBe(taskId);expect(inst.turns.at(-1)).toMatchObject({model:'second-model',effort:'high'});
+        inst.finish();await until(()=>f.schedule.store.run(next.run.id)?.status==='completed');
+        expect(f.schedule.store.run(next.run.id)?.actualConfig).toMatchObject({cwd:prior.actualConfig!.cwd,model:'second-model',effort:'high'});
+        expect(f.schedule.store.run(prior.id)?.actualConfig).toEqual(prior.actualConfig);
+      }
+    }finally{await f.close();}
+  });
+  it.each(['existing','reuse'] as const)('A19 archive of the actual %s bound task repairs the plan, keeps original history and never accepts a replacement task',async destination=>{
+    const f=await host();try{
+      f.schedule.start();const task=destination==='existing'?f.svc.create({projectId:null,dirId:null,cwd:f.root,title:'do not replace',profileId:'cd',tier:'ask'}):null;
+      const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,destination,boundTask:task?.taskId??null,cwd:f.root},grace:60,enabled:false});
+      const first=f.schedule.runNow(p.id,p.revision,'first');if(!('run'in first))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);f.insts[0].finish();await until(()=>f.schedule.store.run(first.run.id)?.status==='completed');
+      const taskId=first.run.taskId!;expect(taskId).toBeTruthy();if(task)expect(taskId).toBe(task.taskId);
+      expect(f.schedule.store.plan(p.id)?.boundTask).toBe(taskId);
+      await f.svc.archive(taskId);await until(()=>!!f.schedule.store.plan(p.id)?.repair);
+      const current=f.schedule.store.plan(p.id)!;expect(current.boundTask).toBe(taskId);expect(f.schedule.runNow(p.id,current.revision,'not-a-replacement').kind).toBe('repair');
+      expect(f.schedule.store.history(p.id)).toHaveLength(1);expect(f.schedule.detail(first.run.id).target).toMatchObject({taskId,archived:true});
+      expect(f.store.turns(taskId)).toHaveLength(1);expect(f.insts).toHaveLength(1);
+    }finally{await f.close();}
+  });
+  it('M16 A44/B12 keeps a scheduled login occurrence occupied until the same-task approved continuation completes',async()=>{
+    const f=await host();let wake=false,openLogin!:Function;
+    const requests=new HostBusinessRequests({store:f.store,run:taskId=>f.runs.runForTask(taskId),hasOwner:taskId=>!!(f.runs.runForTask(taskId)??f.runs.closingForTask(taskId)),currentTurn:runId=>f.runs.active(runId)?.turnId,notify:(taskId,id,text,shouldWake,parentTurnId)=>f.svc.enqueueHost(taskId,id,text,'notification',shouldWake,parentTurnId),wakeLogin:taskId=>{if(wake)f.svc.kick(taskId);}});
+    f.svc.attachBusiness(requests);
+    try{
+      attachBrowserLoginRequests({store:f.store,requests,tasks:f.svc,browser:{attachLoginGuard:()=>{},attachLoginRequest:(fn:Function)=>{openLogin=fn;},checkLoginReady:async()=>'ready',assertLoginTabIdentity:()=>{},validateLoginTab:()=>{}} as any,assertEnabled:()=>{}});
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:baseConfig,grace:60,enabled:false});
+      const c=f.schedule.runNow(p.id,p.revision,'login-test');if(!('run'in c))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);const first=f.schedule.store.run(c.run.id)!,taskId=first.taskId!,root=first.turnId!,native=f.runs.runForTask(taskId)!,scope=taskApplicationScope(f.db,taskId)!;
+      const request=openLogin({runId:native.runId,taskId,projectId:scope,operationId:randomUUID()},{pageId:randomUUID(),projectId:scope,profileId:'browser-fixture',origin:'https://example.invalid',readySelector:'#ready',checkpoint:'resume fixture'});
+      expect(f.store.pendingRequests(taskId)[0].origin.turnId).toBe(root);
+      f.insts[0].finish();await until(()=>f.store.turn(root)?.status==='completed');await f.runs.close(native.runId);
+      await until(()=>!f.runs.runForTask(taskId)&&!f.runs.closingForTask(taskId));
+      const frame={};const sender={sender:{isDestroyed:()=>false,mainFrame:frame},senderFrame:frame} as any;
+      expect(await requests.respond(taskId,request.requestId,1,{choice:'allow'},sender)).toMatchObject({state:'approved_pending_bind'});
+      f.schedule.reconcile();expect(f.schedule.store.run(c.run.id)?.status).toBe('waiting');
+      expect(f.schedule.detail(c.run.id).requests).toMatchObject([{taskId,turnId:root,requestId:request.requestId}]);
+      expect(f.schedule.runNow(p.id,p.revision,'still-occupied').kind).toBe('busy');
+      wake=true;f.svc.kick(taskId);await until(()=>f.insts.length===2&&f.insts[1].turns.length===1,5000);
+      const continuation=f.store.turns(taskId).at(-1)!;expect(f.store.scheduledOrigin(continuation.turn_id)?.root_turn_id).toBe(root);
+      expect(f.schedule.store.run(c.run.id)?.status).toBe('running');f.insts[1].finish();await until(()=>f.schedule.store.run(c.run.id)?.status==='completed',5000);
+    }finally{await requests.close();await f.close();}
+  },15000);
+  it('M16 A36 can stop an occurrence whose original turn ended while an owned unexecuted host request waits',async()=>{
+    const f=await host();
+    const requests=new HostBusinessRequests({store:f.store,run:taskId=>f.runs.runForTask(taskId),hasOwner:taskId=>!!(f.runs.runForTask(taskId)??f.runs.closingForTask(taskId)),currentTurn:runId=>f.runs.active(runId)?.turnId,notify:(taskId,id,text,wake,parentTurnId)=>f.svc.enqueueHost(taskId,id,text,'notification',wake,parentTurnId)});
+    f.svc.attachBusiness(requests);f.agent.requests=requests;
+    const executed=vi.fn(async()=>({status:'ok'}));requests.register('browser_login',{needsRun:true,validate:async()=>{},execute:executed});
+    try{
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,destination:'reuse'},grace:60,enabled:true});
+      const claim=f.schedule.runNow(p.id,p.revision,'stop-waiting');if(!('run'in claim))throw Error();
+      await until(()=>f.insts[0]?.turns.length===1);const occurrence=f.schedule.store.run(claim.run.id)!,taskId=occurrence.taskId!,live=f.runs.runForTask(taskId)!;
+      const request=requests.create({taskId,runId:live.runId,bindingId:live.bindingId,generation:live.generation},{operationId:randomUUID(),kind:'browser_login',title:'Owned waiting fixture',review:{},data:{}});
+      f.insts[0].finish();await until(()=>f.store.turn(occurrence.turnId!)?.status==='completed'&&f.schedule.store.run(occurrence.id)?.status==='waiting');
+      await f.runs.close(live.runId);await f.schedule.stopRun(occurrence.id);
+      await until(()=>f.schedule.store.run(occurrence.id)?.status==='stopped');
+      expect(f.store.request(request.requestId)?.status).toBe('retired');expect(executed).not.toHaveBeenCalled();expect(f.schedule.store.plan(p.id)?.enabled).toBe(true);
+      const ordinary=await f.svc.submit(taskId,{clientInputId:'new_ordinary_after_scoped_stop',text:'ordinary',expectedSelectionRevision:f.svc.snapshot(taskId).selectionRevision});
+      await until(()=>f.store.turn(ordinary.turnId)?.status==='started');await expect(f.schedule.stopRun(occurrence.id)).rejects.toThrow();
+      expect(f.store.turn(ordinary.turnId)?.status).toBe('started');f.insts.at(-1)!.finish();
+    }finally{await requests.close();await f.close();}
+  },15000);
+  it('ordinary task Stop retires the exact scheduled waiting host request without a stranded scheduled notification or swallowing ordinary queued input',async()=>{
+    const f=await host();
+    const requests=new HostBusinessRequests({
+      store:f.store,run:taskId=>f.runs.runForTask(taskId),
+      hasOwner:taskId=>!!(f.runs.runForTask(taskId)??f.runs.closingForTask(taskId)),
+      currentTurn:runId=>f.runs.active(runId)?.turnId,
+      notify:(taskId,id,text,wake,parentTurnId)=>f.svc.enqueueHost(taskId,id,text,'notification',wake,parentTurnId),
+    });
+    f.svc.attachBusiness(requests);f.agent.requests=requests;
+    const executed=vi.fn(async()=>({status:'ok'})),retired=vi.fn();
+    // Not browser_login: retirement must exercise the actual generic host
+    // business-retired notification path, not its browser-login exception.
+    requests.register('mail_send',{validate:async()=>{},execute:executed,retire:retired});
+    try{
+      f.schedule.start();
+      const p=await f.schedule.save({
+        schedule:{type:'interval',minutes:60,zone:'UTC'},
+        config:{...baseConfig,destination:'reuse'},grace:60,enabled:true,
+      });
+      const claim=f.schedule.runNow(p.id,p.revision,'ordinary-stop-waiting');
+      if(!('run'in claim))throw Error('scheduled claim absent');
+      await until(()=>f.insts[0]?.turns.length===1);
+      const occurrence=f.schedule.store.run(claim.run.id)!;
+      const taskId=occurrence.taskId!,root=occurrence.turnId!,live=f.runs.runForTask(taskId)!;
+      const req=requests.create({
+        taskId,runId:live.runId,bindingId:live.bindingId,generation:live.generation,
+      },{
+        operationId:randomUUID(),kind:'mail_send',title:'Synthetic owned send waiting',
+        review:{},data:{},
+      });
+      expect(f.store.pendingRequests(taskId).find(r=>r.requestId===req.requestId)?.origin.turnId).toBe(root);
+      f.insts[0].finish();
+      await until(()=>f.store.turn(root)?.status==='completed'&&f.schedule.store.run(occurrence.id)?.status==='waiting');
+
+      // Genuine durable ordinary queue as an independent setup condition; do not
+      // kick between placing it and issuing Stop (matches an accepted queued
+      // user input at the moment of the user's existing Stop action).
+      const ordinary=f.store.acceptTurn({
+        taskId,clientInputId:'ordinary-queue-before-scheduled-stop',
+        text:'keep this ordinary queued input',sourceKind:'user',
+      }).turn;
+      expect(f.store.scheduledOrigin(ordinary.turn_id)).toBeUndefined();
+      expect(f.store.turn(ordinary.turn_id)?.status).toBe('accepted');
+
+      // Same API/expectedRunId as agent-task-view.tsx:1608 "停止本轮".
+      await f.svc.stop(taskId,false,f.runs.runForTask(taskId)?.runId);
+      expect(f.store.request(req.requestId)?.status).toBe('retired');
+      expect(retired).toHaveBeenCalledOnce();expect(executed).not.toHaveBeenCalled();
+      expect(f.store.turn(ordinary.turn_id)?.status).toBe('accepted');
+      const follow=f.store.turnByClientInput(taskId,'business-retired-'+req.requestId);
+      expect(follow).toBeDefined();
+      expect(f.store.scheduledOrigin(follow!.turn_id)).toMatchObject({occurrence_id:occurrence.id,root_turn_id:root});
+      // This is the regression. Current C21 leaves follow.status='accepted'
+      // while ordinary Stop has paused the task, and reconcile stays running.
+      f.schedule.reconcile();
+      expect(f.schedule.store.run(occurrence.id)?.status).toBe('stopped');
+      expect(f.store.turn(follow!.turn_id)?.status).toBe('canceled');
+      expect(f.schedule.store.plan(p.id)?.enabled).toBe(true);
+      expect(f.store.turn(ordinary.turn_id)?.status).toBe('accepted');
+
+      // Resume the retained ordinary queue through the existing normal user
+      // submission path. It must not inherit any old occurrence authority,
+      // rerun the retired request, or be stopped by requesting the old run.
+      const later=await f.svc.submit(taskId,{
+        clientInputId:'ordinary-after-scheduled-stop',
+        text:'a later ordinary input',expectedSelectionRevision:f.svc.snapshot(taskId).selectionRevision,
+      });
+      await until(()=>f.store.turn(ordinary.turn_id)?.status==='started');
+      expect(f.store.scheduledOrigin(ordinary.turn_id)).toBeUndefined();
+      await expect(f.schedule.stopRun(occurrence.id)).rejects.toThrow();
+      expect(f.store.turn(ordinary.turn_id)?.status).toBe('started');
+      const firstInst=f.insts.find(i=>i.turns.some(t=>t.clientInputId===ordinary.client_input_id))!;
+      firstInst.finish();
+      await until(()=>f.store.turn(later.turnId)?.status==='started');
+      expect(f.store.scheduledOrigin(later.turnId)).toBeUndefined();
+      const laterInst=f.insts.find(i=>i.turns.some(t=>t.clientInputId==='ordinary-after-scheduled-stop'))!;
+      laterInst.finish();
+      await until(()=>f.store.turn(later.turnId)?.status==='completed');
+      expect(f.schedule.store.run(occurrence.id)?.status).toBe('stopped');
+      expect(executed).not.toHaveBeenCalled();
+    }finally{await requests.close();await f.close();}
+  },15000);
+
+  it('A50 persists repair and failure notices independently while respecting system preference, without duplicate on reconcile',async()=>{
+    const f=await host();try{
+      f.schedule.start();const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:baseConfig,grace:60,enabled:false});
+      f.schedule.setNotifyEnabled(false);f.setCompatibility('changed');
+      const result=f.schedule.runNow(p.id,p.revision,'fail');if(!('run'in result))throw Error();
+      await until(()=>f.schedule.store.run(result.run.id)?.status==='failed');
+      const notices=f.schedule.listNotices();expect(notices.map(n=>n.status).sort()).toEqual(['failed','repair']);
+      expect(notices.find(n=>n.status==='repair')?.runId).toBeNull();expect(notices.find(n=>n.status==='failed')?.runId).toBe(result.run.id);
+      expect(f.delivered).toEqual([]);f.schedule.reconcile();f.schedule.reconcile();expect(f.schedule.listNotices()).toEqual(notices);
+      expect(f.schedule.runNow(p.id,f.schedule.store.plan(p.id)!.revision,'no-effect').kind).toBe('repair');
+      expect(f.schedule.store.history(p.id)).toHaveLength(1);
+    }finally{await f.close();}
+  });
+  it('M16 A50 recovers an uncertain preaccept occurrence without a confirmed turn as its original run notification',async()=>{
+    const f=await host();try{
+      const p=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:baseConfig,grace:60,enabled:false});
+      const claim=f.schedule.store.claim(p.id,{now:Date.now(),trigger:'manual',expected:p.revision,requestId:'original-preaccept'});
+      if(!('run'in claim))throw Error('missing initial claim');
+      const id=claim.run.id;f.schedule.store.begin(id,Date.now());expect(f.schedule.store.retryUnaccepted(id)).toBe(true);f.schedule.store.begin(id,Date.now());
+      expect(f.schedule.store.run(id)).toMatchObject({status:'dispatching',attempts:2,turnId:null});
+      // Second interrupted preparation: restart cannot prove that submission was accepted.
+      f.schedule.start();
+      const run=f.schedule.store.run(id)!;expect(run).toMatchObject({status:'unknown',turnId:null});expect(f.insts).toHaveLength(0);
+      expect(f.schedule.detail(id)).toMatchObject({target:null,result:null,requests:[],items:[]});
+      const notices=f.schedule.listNotices();expect(notices).toMatchObject([{runId:id,planId:p.id,turnId:null,status:'unknown'}]);
+      f.schedule.reconcile();expect(f.schedule.listNotices()).toEqual(notices);
+      expect(f.schedule.runNow(p.id,p.revision,'never-replay-unknown').kind).toBe('busy');
+    }finally{await f.close();}
+  });
+  it('A31/A35/A50 waiting and unknown are occupied, request identity deduplicates, and the known failed run can be rerun independently',async()=>{
+    const f=await host();try{
+      f.schedule.start();const plan=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:baseConfig,grace:60,enabled:false});
+      const one=f.schedule.runNow(plan.id,plan.revision,'one');if(!('run'in one))throw Error();await until(()=>f.insts[0]?.turns.length===1);
+      const inst=f.insts[0];inst.emit({type:'request',requestKey:'first-approval',kind:'command_approval',payload:{command:'echo test fixture'}});
+      await until(()=>f.schedule.store.run(one.run.id)?.status==='waiting');const req=f.store.pendingRequests(one.run.taskId!)[0];
+      expect(f.schedule.runNow(plan.id,plan.revision,'while-waiting').kind).toBe('busy');f.schedule.reconcile();f.schedule.reconcile();
+      expect(f.schedule.listNotices().filter(n=>n.status==='waiting')).toMatchObject([{runId:one.run.id,requestId:req.requestId}]);
+      await f.svc.respond(one.run.taskId!,req.requestId,req.revision,{decision:'decline'});
+      await until(()=>f.schedule.store.run(one.run.id)?.status==='running');
+      inst.emit({type:'turn.completed',nativeTurnId:'nt-1',status:'unknown',error:'fixture unknown acknowledgement'});
+      await until(()=>f.schedule.store.run(one.run.id)?.status==='unknown');expect(f.schedule.runNow(plan.id,plan.revision,'while-unknown').kind).toBe('busy');
+      expect(f.schedule.listNotices().filter(n=>n.status==='unknown')).toHaveLength(1);
+      // Explicit isolated fixture receipt recovery of the same accepted turn,
+      // never a new request or model invocation.
+      const run=f.schedule.store.run(one.run.id)!;f.db.prepare("UPDATE agent_turns SET status='failed' WHERE turn_id=?").run(run.turnId);f.schedule.reconcile();
+      expect(f.schedule.store.run(one.run.id)?.status).toBe('failed');expect(f.schedule.runNow(plan.id,plan.revision,'while-unknown').kind).toBe('busy');
+      const next=f.schedule.runNow(plan.id,plan.revision,'after-confirmed-failure');if(!('run'in next))throw Error();await until(()=>f.insts[1]?.turns.length===1);f.insts[1].finish();
+      await until(()=>f.schedule.store.run(next.run.id)?.status==='completed');expect(next.run.id).not.toBe(one.run.id);expect(next.run.taskId).not.toBe(one.run.taskId);expect(f.schedule.listNotices().filter(n=>n.status==='completed')).toHaveLength(0);
+    }finally{await f.close();}
+  });
+  it('A41/A49 history and recent results use the actual final owned parent turn and exact observed file rows, never a later ordinary turn',async()=>{
+    const f=await host();try{
+      f.schedule.start();const plan=await f.schedule.save({schedule:{type:'interval',minutes:60,zone:'UTC'},config:{...baseConfig,notifyCompleted:true,destination:'reuse'},grace:60,enabled:false});
+      const c=f.schedule.runNow(plan.id,plan.revision,'one');if(!('run'in c))throw Error();await until(()=>f.insts[0]?.turns.length===1);
+      const run=f.schedule.store.run(c.run.id)!,taskId=run.taskId!,root=run.turnId!,inst=f.insts[0];
+      const reply=(turnId:string,key:string,text:string)=>f.store.upsertItem({taskId,turnId,runId:null,nativeKey:key,type:'assistant_message',payload:{text},terminalState:'completed'});
+      reply(root,'early','EARLY PARENT');const continuation=f.svc.enqueueHost(taskId,'owned-result','child result notification','notification',true,root).turn.turn_id;
+      inst.finish();await until(()=>inst.turns.length===2);expect(f.schedule.store.run(run.id)?.status).toBe('running');reply(continuation,'final','FINAL OWNED PARENT');
+      const change=(turnId:string,path:string)=>f.db.prepare("INSERT INTO agent_turn_changes(turn_id,task_id,changed_files_json,status) VALUES(?,?,?,'complete')").run(turnId,taskId,JSON.stringify([{path,added:1,removed:0,binary:false}]));change(continuation,'owned.txt');
+      inst.finish();await until(()=>f.schedule.store.run(run.id)?.status==='completed');
+      const ordinary=await f.svc.submit(taskId,{clientInputId:'ordinary-later',text:'later ordinary',expectedSelectionRevision:f.svc.snapshot(taskId).selectionRevision});
+      await until(()=>inst.turns.length===3);reply(ordinary.turnId,'later','LATER ORDINARY');change(ordinary.turnId,'unrelated.txt');inst.finish();
+      await until(()=>f.store.turn(ordinary.turnId)?.status==='completed');
+      // Long, later ordinary history must not evict the scheduled occurrence's
+      // own exact result when the normal task timeline's 2000-row cap is hit.
+      const lastOrdinal=(f.db.prepare('SELECT MAX(ordinal) n FROM agent_items WHERE task_id=?').get(taskId) as {n:number}).n;
+      const insert=f.db.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,'assistant_message',?,?,'completed',?,?)");
+      f.db.transaction(()=>{for(let i=1;i<=2001;i++){const at=new Date().toISOString();insert.run(`later-fixture-${i}`,taskId,ordinary.turnId,lastOrdinal+i,JSON.stringify({text:`later unrelated ${i}`}),at,at);}})();
+      const detail=f.schedule.detail(run.id);expect(detail.result?.payload.text).toBe('FINAL OWNED PARENT');expect(detail.changes).toMatchObject([{turnId:continuation,files:['owned.txt'],total:1}]);
+      expect(detail.items.some(i=>i.payload.text==='LATER ORDINARY')).toBe(false);
+      expect(f.schedule.history(plan.id)[0].summary).toBe('FINAL OWNED PARENT');expect(f.schedule.list().find(p=>p.id===plan.id)?.recent?.summary).toBe('FINAL OWNED PARENT');
+      expect(f.schedule.listNotices().filter(n=>n.status==='completed')).toMatchObject([{runId:run.id,turnId:root}]);f.schedule.reconcile();expect(f.schedule.listNotices()).toHaveLength(1);
+    }finally{await f.close();}
+  });
+  it('A26/A39 does not repeatedly scan an empty plan set, and freezes future claims while quit is pending',async()=>{const f=await host();vi.useFakeTimers();try{const due=vi.spyOn(f.schedule.store,'due');f.schedule.start();expect(due).toHaveBeenCalledTimes(1);await vi.advanceTimersByTimeAsync(30000);expect(due).toHaveBeenCalledTimes(1);const plan=await f.schedule.save({schedule:{type:'interval',minutes:1,zone:'UTC'},config:baseConfig,grace:60,enabled:true});f.schedule.pauseClaims();await vi.advanceTimersByTimeAsync(61000);expect(f.schedule.store.history(plan.id)).toHaveLength(0);f.schedule.resumeClaims();expect(f.schedule.store.history(plan.id)).toHaveLength(1);f.schedule.pauseClaims();}finally{vi.useRealTimers();await f.close();}});
+  it('A37/A38/A39 pause, edit or archive during actual isolated preparation rejects the old occurrence with no accepted input or empty new task',async()=>{
+    for(const action of ['pause','edit','archive'] as const){
+      const f=await host();let release!:()=>void;const gate=new Promise<void>(r=>release=r);
+      try{
+        const p=f.schedule.store.save({schedule:{type:'interval',minutes:1,zone:'UTC'},config:{...baseConfig,compatibility:'fixture-profile'},grace:60,enabled:true},Date.now()-60000);
+        const prepare=f.schedule.workspaces.prepare.bind(f.schedule.workspaces);const called=vi.spyOn(f.schedule.workspaces,'prepare').mockImplementation(async r=>{await gate;return prepare(r);});
+        f.schedule.start();await until(()=>called.mock.calls.length===1);const run=f.schedule.store.history(p.id)[0];expect(run.status).toBe('dispatching');
+        if(action==='pause')f.schedule.setEnabled(p.id,p.revision,false);
+        else if(action==='archive')f.schedule.archive(p.id,p.revision);
+        else await f.schedule.save({id:p.id,revision:p.revision,schedule:p.schedule,config:{...baseConfig,prompt:'next only'},grace:60,enabled:true});
+        release();await until(()=>f.schedule.store.run(run.id)?.status==='skipped');
+        expect(f.store.turns(run.taskId!)).toHaveLength(0);expect(f.store.task(run.taskId!)).toBeUndefined();expect(f.insts).toHaveLength(0);expect(f.schedule.store.run(run.id)?.snapshot.config.prompt).toBe(baseConfig.prompt);
+      }finally{release();await f.close();}
+    }
   });
 });

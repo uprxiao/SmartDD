@@ -1,0 +1,29 @@
+[1126/004612.863514:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/004612.995749:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-task-service.test.ts (119 tests | 1 failed | 118 skipped) 68ms
+     × M16 A36 can stop an occurrence whose original turn ended while an owned unexecuted host request waits 68ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > M16 scheduler lifecycle with actual AgentTaskService and fixture driver > M16 A36 can stop an occurrence whose original turn ended while an owned unexecuted host request waits
+Error: 原运行身份已变化，请查看任务
+ ❯ ScheduleService.stopRun src/main/core/schedules/service.ts:227:29
+    225|     const r=this.store.run(id);if(!r||!r.taskId||!r.turnId||!['running…
+    226|     const active=this.ownedTurns(id).filter(t=>['accepted','dispatchin…
+    227|     if(!active.length)throw new Error('原运行身份已变化，请查看任务');
+       |                             ^
+    228|     if(!this.store.requestStop(id))throw new Error('运行已结束或未受理');
+    229|     for(const t of active){
+ ❯ src/main/core/agent/agent-task-service.test.ts:2025:55
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 118 skipped (119)
+   Start at  00:46:12
+   Duration  360ms (transform 188ms, setup 0ms, import 221ms, tests 68ms, environment 0ms)
+

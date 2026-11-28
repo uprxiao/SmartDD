@@ -1,0 +1,359 @@
+{
+  "priorProof": {
+    "sourceRoot": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-G5IazW",
+    "originalRed": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(receipt.result?.payload?.text.includes(jointMarker+'_ROUND_'+round+'_ANSWER'))\n\n    at observeCompleted (file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:409:59)\n    at async file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:423:18\n    at async scenario (file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:272:94)\n    at async file:///private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-c12.mjs:421:5",
+    "round1": {
+      "id": "981c8e15-d889-4294-b67f-e9e867388557",
+      "plan_id": "a753b754-9565-4e71-a617-6ba0b5f3f09e",
+      "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+      "turn_id": "8b037b4b-b469-4906-9586-297677c811ce",
+      "status": "completed",
+      "due": 1795640713568,
+      "trigger": "scheduled"
+    },
+    "turn": {
+      "turn_id": "8b037b4b-b469-4906-9586-297677c811ce",
+      "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+      "run_id": "def6fc79-18cc-44dd-9aaa-3a3b25d62a45",
+      "source_kind": "system",
+      "status": "completed"
+    },
+    "source": [
+      {
+        "occurrence_id": "981c8e15-d889-4294-b67f-e9e867388557",
+        "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+        "turn_id": "8b037b4b-b469-4906-9586-297677c811ce"
+      }
+    ],
+    "user": {
+      "text": "WY_M16_JOINT_12_FIRST Read only this task’s existing local synthetic browser: list, actual accessibility snapshot and screenshot. Do not open, navigate, write, request access, or reveal a background page.",
+      "sourceKind": "system"
+    },
+    "actualFinal": "WY_M16_JOINTPROBE_12_FIRST_ROUND_1_ANSWER",
+    "commands": [
+      {
+        "item": "494ada6f-c9be-4b28-abba-c2362e1a7471",
+        "command": "/bin/zsh -lc 'willyou-app browser tab list --show-profile true'",
+        "receiptHash": "4cb9e4397deeb9e30d9c37753c90332abd63793aaeb9e26c1b300d95d8e31320",
+        "operation": {
+          "id": "39f2e854-821d-43b3-8c21-b9f92ac2345b",
+          "requestId": "87e570fb-2398-4e6e-9a10-c0c13920498b",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "invocation": {
+          "operation_id": "39f2e854-821d-43b3-8c21-b9f92ac2345b",
+          "tool_name": "browser.tab.list",
+          "state": "succeeded",
+          "effect_state": "read-only",
+          "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+        },
+        "expected": {
+          "round": 1,
+          "kind": "list",
+          "page": "233db84b-97eb-4132-96e9-926f237c1911",
+          "profile": "project-5ca76dcd7c23763a1b69e151",
+          "status": "ok",
+          "entry": "cli",
+          "capability": "browser.tab.list",
+          "at": 1795640714718,
+          "receiptHash": "4cb9e4397deeb9e30d9c37753c90332abd63793aaeb9e26c1b300d95d8e31320",
+          "file": null
+        }
+      },
+      {
+        "item": "be18145d-63c3-4bae-bc28-808c6c6ff683",
+        "command": "/bin/zsh -lc 'willyou-app browser snapshot --page 233db84b-97eb-4132-96e9-926f237c1911'",
+        "receiptHash": "1e916935604da67c93f8baae0abe44bc458bd8930c4d6a1dc7f27a7409316d6e",
+        "operation": {
+          "id": "aa80aa8f-c3c8-4fa5-bddc-8d429b2d6187",
+          "requestId": "e31692c5-7195-4c4a-88d8-f44952b1e876",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "invocation": {
+          "operation_id": "aa80aa8f-c3c8-4fa5-bddc-8d429b2d6187",
+          "tool_name": "browser.nav.snapshot",
+          "state": "succeeded",
+          "effect_state": "read-only",
+          "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+        },
+        "expected": {
+          "round": 1,
+          "kind": "snapshot",
+          "page": "233db84b-97eb-4132-96e9-926f237c1911",
+          "profile": "project-5ca76dcd7c23763a1b69e151",
+          "status": "ok",
+          "entry": "cli",
+          "capability": "browser.nav.snapshot",
+          "at": 1795640715719,
+          "receiptHash": "1e916935604da67c93f8baae0abe44bc458bd8930c4d6a1dc7f27a7409316d6e",
+          "file": null
+        }
+      },
+      {
+        "item": "91f5c4d0-3b55-4d74-949c-51916b77f222",
+        "command": "/bin/zsh -lc 'willyou-app browser screenshot --page 233db84b-97eb-4132-96e9-926f237c1911 --format png'",
+        "receiptHash": "b45a8f408a1780e4f8e1d721f8e9f3424d6ac2048628483bb5c05693ef357d5a",
+        "operation": {
+          "id": "349ad6ba-e8a8-42a6-bdeb-64270cdff635",
+          "requestId": "cb257ec8-82ed-4095-b022-78226e0af2e2",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "invocation": {
+          "operation_id": "349ad6ba-e8a8-42a6-bdeb-64270cdff635",
+          "tool_name": "browser.nav.screenshot",
+          "state": "succeeded",
+          "effect_state": "read-only",
+          "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+        },
+        "expected": {
+          "round": 1,
+          "kind": "screenshot",
+          "page": "233db84b-97eb-4132-96e9-926f237c1911",
+          "profile": "project-5ca76dcd7c23763a1b69e151",
+          "status": "ok",
+          "entry": "cli",
+          "capability": "browser.nav.screenshot",
+          "at": 1795640716743,
+          "receiptHash": "b45a8f408a1780e4f8e1d721f8e9f3424d6ac2048628483bb5c05693ef357d5a",
+          "file": {
+            "path": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/data/browser/artifacts/5014b122-9da7-4bb2-932e-4ea6b3084fcb/2026-11-25T21-05-16-495Z-screenshot-8d9e0c.png",
+            "bytes": 22937,
+            "sha256": "ef2232cf1521082f11c4256c311f5e926c1039d5f9f567d8e6f62201b8c8f017"
+          }
+        }
+      }
+    ],
+    "T2": {
+      "sampleCount": 548,
+      "first": {
+        "at": 1795640653874,
+        "owner": 13223,
+        "window": 1,
+        "task": "f47be5a2-b12b-4b7d-a9aa-ae3d3fed90e2",
+        "address": "http://127.0.0.1:3425/m16-joint/B",
+        "active": "55ba6061-77ef-4b78-a1a4-ccf308019915",
+        "visible": true
+      },
+      "last": {
+        "at": 1795640716948,
+        "owner": 13223,
+        "window": 1,
+        "task": "f47be5a2-b12b-4b7d-a9aa-ae3d3fed90e2",
+        "address": "http://127.0.0.1:3425/m16-joint/B",
+        "active": "55ba6061-77ef-4b78-a1a4-ccf308019915",
+        "visible": true
+      },
+      "maxGapMs": 893,
+      "allActualOriginalForeground": true
+    },
+    "note": "Original armed synthetic fixture round1 final marker took old ordinary probe history prefix; this exact unique real task/turn/plan source and CLI receipts prove actual scheduled browser work and persisted final. Original red remains; no repeated first natural slot."
+  },
+  "actual": {
+    "run": {
+      "id": "981c8e15-d889-4294-b67f-e9e867388557",
+      "planId": "a753b754-9565-4e71-a617-6ba0b5f3f09e",
+      "revision": 1,
+      "occurrenceKey": "instant:1795640713568",
+      "trigger": "scheduled",
+      "due": 1795640713568,
+      "claimedAt": 1795640713569,
+      "missedFrom": null,
+      "status": "completed",
+      "attempts": 1,
+      "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+      "inputId": "7e07aa03-b9b8-49db-b52c-4b58ec164469",
+      "snapshot": {
+        "schedule": {
+          "type": "interval",
+          "minutes": 1,
+          "anchor": 1795640653568,
+          "zone": ""
+        },
+        "config": {
+          "title": "B12.1/.3 joint recurring browser CLI retest",
+          "prompt": "WY_M16_JOINT_12_FIRST Read only this task’s existing local synthetic browser: list, actual accessibility snapshot and screenshot. Do not open, navigate, write, request access, or reveal a background page.",
+          "projectId": "0be98a8b-17ff-4d39-8104-2f54cc3dd1d1",
+          "dirId": "a8283c1e-d303-41b2-8cc0-f6c6ab9ca7d2",
+          "cwd": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/project",
+          "workspace": "directory",
+          "baseRef": null,
+          "destination": "existing",
+          "boundTask": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+          "profileId": "0b2c026f-3547-4675-9198-2caadf878e5e",
+          "tier": "ask",
+          "delegation": false,
+          "notifyCompleted": false,
+          "compatibility": "8ddc5c0fafa0cba1506039a1a5e443f0a89ae745c3c0f82156447b8bcd5d6b58"
+        },
+        "grace": 60
+      },
+      "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+      "reason": null,
+      "startedAt": 1795640713572,
+      "finishedAt": 1795640716925,
+      "workspaceId": null,
+      "actualConfig": {
+        "profileName": "M16 isolated codex",
+        "providerName": "M16 isolation fixture",
+        "providerId": "dbceb8f8-7fb6-4f46-80ad-ca29d41bef13",
+        "cwd": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/project",
+        "projectId": "0be98a8b-17ff-4d39-8104-2f54cc3dd1d1",
+        "dirId": "a8283c1e-d303-41b2-8cc0-f6c6ab9ca7d2",
+        "profileId": "0b2c026f-3547-4675-9198-2caadf878e5e",
+        "driverId": "codex-app-server",
+        "tier": "ask",
+        "delegation": false,
+        "model": "m16-codex-one"
+      }
+    },
+    "items": [
+      {
+        "itemId": "d5b8b957-9b23-44b2-8bab-61a18286b75f",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "runId": null,
+        "type": "user_message",
+        "ordinal": 19,
+        "revision": 1,
+        "payload": {
+          "text": "WY_M16_JOINT_12_FIRST Read only this task’s existing local synthetic browser: list, actual accessibility snapshot and screenshot. Do not open, navigate, write, request access, or reveal a background page.",
+          "sourceKind": "system"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-25T21:05:13.578Z",
+        "updatedAt": "2026-11-25T21:05:13.578Z",
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+      },
+      {
+        "itemId": "494ada6f-c9be-4b28-abba-c2362e1a7471",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "runId": "def6fc79-18cc-44dd-9aaa-3a3b25d62a45",
+        "type": "command_execution",
+        "ordinal": 20,
+        "revision": 2,
+        "payload": {
+          "command": "/bin/zsh -lc 'willyou-app browser tab list --show-profile true'",
+          "cwd": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/project",
+          "output": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba\",\"connections\":[]},\"data\":{\"tabs\":[{\"pageId\":\"233db84b-97eb-4132-96e9-926f237c1911\",\"index\":0,\"active\":true,\"browserPageId\":\"233db84b-97eb-4132-96e9-926f237c1911\",\"title\":\"Joint page A\",\"kind\":\"tab\",\"profileId\":\"project-5ca76dcd7c23763a1b69e151\",\"url\":\"http:\\/\\/127.0.0.1:3425\\/m16-joint\\/A\"}]},\"resources\":[],\"operation\":{\"id\":\"39f2e854-821d-43b3-8c21-b9f92ac2345b\",\"requestId\":\"87e570fb-2398-4e6e-9a10-c0c13920498b\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.list\"}\n",
+          "exitCode": 0,
+          "status": "completed"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-25T21:05:14.610Z",
+        "updatedAt": "2026-11-25T21:05:14.712Z",
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+      },
+      {
+        "itemId": "be18145d-63c3-4bae-bc28-808c6c6ff683",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "runId": "def6fc79-18cc-44dd-9aaa-3a3b25d62a45",
+        "type": "command_execution",
+        "ordinal": 21,
+        "revision": 2,
+        "payload": {
+          "command": "/bin/zsh -lc 'willyou-app browser snapshot --page 233db84b-97eb-4132-96e9-926f237c1911'",
+          "cwd": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/project",
+          "output": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba\",\"connections\":[]},\"data\":{\"origin\":\"http:\\/\\/127.0.0.1:3425\\/m16-joint\\/A\",\"generation\":\"k7b6462ab77084eea81fcccf11a18557e:1\",\"browserPageId\":\"233db84b-97eb-4132-96e9-926f237c1911\",\"snapshot\":\"- main\\n  - heading \\\"Joint page A\\\" [level=1, ref=@k7b6462ab77084eea81fcccf11a18557es6e1]\\n  - paragraph\\n    - StaticText \\\"M16_JOINT_T1_PAGE_A\\\"\",\"refs\":[{\"available\":true,\"name\":\"Joint page A\",\"role\":\"heading\",\"ref\":\"@k7b6462ab77084eea81fcccf11a18557es6e1\"}],\"title\":\"Joint page A\",\"url\":\"http:\\/\\/127.0.0.1:3425\\/m16-joint\\/A\"},\"resources\":[],\"operation\":{\"id\":\"aa80aa8f-c3c8-4fa5-bddc-8d429b2d6187\",\"requestId\":\"e31692c5-7195-4c4a-88d8-f44952b1e876\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+          "exitCode": 0,
+          "status": "completed"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-25T21:05:15.470Z",
+        "updatedAt": "2026-11-25T21:05:15.714Z",
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+      },
+      {
+        "itemId": "91f5c4d0-3b55-4d74-949c-51916b77f222",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "runId": "def6fc79-18cc-44dd-9aaa-3a3b25d62a45",
+        "type": "command_execution",
+        "ordinal": 22,
+        "revision": 2,
+        "payload": {
+          "command": "/bin/zsh -lc 'willyou-app browser screenshot --page 233db84b-97eb-4132-96e9-926f237c1911 --format png'",
+          "cwd": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/project",
+          "output": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"a86b61ac4544f5898b08c60108c078e6eeb2eadd8e97da979c3d59b8543fc5ba\",\"connections\":[]},\"data\":{\"height\":1524,\"file\":{\"path\":\"\\/private\\/tmp\\/willyou-m16-schedule-app-US7kWL\\/joint-lifecycle-36PcxT\\/data\\/browser\\/artifacts\\/5014b122-9da7-4bb2-932e-4ea6b3084fcb\\/2026-11-25T21-05-16-495Z-screenshot-8d9e0c.png\",\"bytes\":22937,\"sha256\":\"ef2232cf1521082f11c4256c311f5e926c1039d5f9f567d8e6f62201b8c8f017\"},\"width\":1248,\"format\":\"png\"},\"resources\":[],\"operation\":{\"id\":\"349ad6ba-e8a8-42a6-bdeb-64270cdff635\",\"requestId\":\"cb257ec8-82ed-4095-b022-78226e0af2e2\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.screenshot\"}\n",
+          "exitCode": 0,
+          "status": "completed"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-25T21:05:16.475Z",
+        "updatedAt": "2026-11-25T21:05:16.737Z",
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+      },
+      {
+        "itemId": "0927d7d7-3cf2-4349-93aa-1b8c21161595",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "runId": "def6fc79-18cc-44dd-9aaa-3a3b25d62a45",
+        "type": "assistant_message",
+        "ordinal": 23,
+        "revision": 1,
+        "payload": {
+          "text": "WY_M16_JOINTPROBE_12_FIRST_ROUND_1_ANSWER",
+          "phase": null
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-25T21:05:16.744Z",
+        "updatedAt": "2026-11-25T21:05:16.744Z",
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+      },
+      {
+        "itemId": "75b35dbb-45a7-4f8b-b86b-7c70abf19d5e",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "runId": null,
+        "type": "files_changed",
+        "ordinal": 24,
+        "revision": 1,
+        "payload": {
+          "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+          "fileCount": 0,
+          "status": "complete",
+          "observed": true,
+          "note": "记录这个区间观察到的工作区变化，可能包含用户或外部写入"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-25T21:05:16.924Z",
+        "updatedAt": "2026-11-25T21:05:16.924Z",
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+      }
+    ],
+    "hasMore": false,
+    "result": {
+      "itemId": "0927d7d7-3cf2-4349-93aa-1b8c21161595",
+      "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+      "runId": "def6fc79-18cc-44dd-9aaa-3a3b25d62a45",
+      "type": "assistant_message",
+      "ordinal": 23,
+      "revision": 1,
+      "payload": {
+        "text": "WY_M16_JOINTPROBE_12_FIRST_ROUND_1_ANSWER",
+        "phase": null
+      },
+      "terminal": "completed",
+      "createdAt": "2026-11-25T21:05:16.744Z",
+      "updatedAt": "2026-11-25T21:05:16.744Z",
+      "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb"
+    },
+    "requests": [],
+    "target": {
+      "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+      "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+      "archived": false
+    },
+    "changes": [
+      {
+        "taskId": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+        "turnId": "8b037b4b-b469-4906-9586-297677c811ce",
+        "status": "complete",
+        "reason": null,
+        "archived": false,
+        "total": 0,
+        "files": []
+      }
+    ],
+    "missingTarget": false
+  },
+  "notRepeated": true
+}

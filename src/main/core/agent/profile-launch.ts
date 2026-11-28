@@ -1,15 +1,17 @@
 // 配置档案到程序化驱动参数的适配（技术方案 T1.5 §7.2）。复用现有 planAgentLaunch 的来源、凭据与模型裁定，
 // 只把面向终端的命令行参数改写成驱动参数：权限参数一律丢弃（档位每轮由驱动显式下发）。
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { parse as parseToml } from 'smol-toml';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
 import { managedCodexRoot, planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
 import { RUNTIME_ISOLATION } from '../capabilities/capability-service';
 import type { DriverId } from './capabilities';
 import { antigravityArgs } from './drivers/antigravity-acp';
+import { codexConfigurationArgs, discoverCapabilities, projectLayers } from '../capabilities/discovery';
+import { skillAdapter } from '../capabilities/skill-adapters';
 
 export interface ProfileLaunch {
   driverId: DriverId;
@@ -22,6 +24,7 @@ export interface ProfileLaunch {
   model?: string;
   extraArgs: string[];
   settingSources?: ('user' | 'project' | 'local')[];
+  nativeProjectSkillRoots?: string[];
   plan: AgentLaunchPlan;
 }
 
@@ -37,6 +40,8 @@ export interface ProfileLaunchInput {
   model?: string;
   /** 订阅登录才有的“沿用我的扩展”开关；托管供应商始终隔离。 */
   carryExtensions?: boolean;
+  /** A real task without WillYou project ownership, even when cwd is a registered project directory. */
+  standalone?: boolean;
 }
 
 /** Codex 全局参数里只保留 -c 与 --disable 两类（成对）；-m 改为模型参数，沙箱与审批参数丢弃。 */
@@ -60,6 +65,47 @@ function isolatedEnv(base: Record<string, string>, prefixes: readonly string[], 
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(base)) if (!prefixes.some(p => k.startsWith(p)) && !names.includes(k)) env[k] = v;
   return { ...env, ...extra };
+}
+
+const physical=(path:string)=>{try{return realpathSync(path);}catch{return resolve(path);}};
+/** CLI-only trust/Skill overrides: never change a user's or a shared managed
+ * profile's persisted trust. Native Codex can load project config and project
+ * Skills from cwd even when WillYou's project_id is null. */
+function isolateCodexProject(cwd:string,home:string,stateRoot:string,extraArgs:string[]):string[]{
+  const paths=new Set<string>();
+  for(const start of [resolve(cwd),physical(cwd)])for(let path=start;;path=dirname(path)){
+    paths.add(path);if(dirname(path)===path)break;
+  }
+  extraArgs.push('-c','projects={'+[...paths].map(path=>JSON.stringify(path)+'={trust_level="untrusted"}').join(',')+'}');
+  const adapter=skillAdapter('codex')!;
+  const candidates=[{cwd:resolve(cwd),home:resolve(home)},{cwd:physical(cwd),home:physical(home)}];
+  const roots=[...new Set(candidates.flatMap(c=>projectLayers(c.cwd,c.home).flatMap(adapter.projectRoots)))].filter(existsSync);
+  const skills=[...new Set(candidates.flatMap(c=>discoverCapabilities({...c,runner:'codex',stateRoot,path:'',projectSkillsOnly:true})
+    .filter(row=>row.kind==='skill'&&!!row.projectRoot&&basename(row.path)==='SKILL.md').map(row=>row.path)))];
+  if(skills.length){
+    // The native CLI keeps lower file-layer path flags, but the last CLI array
+    // replaces an earlier CLI array. Preserve that original explicit selection.
+    let invalid=false;const {overrides}=codexConfigurationArgs(extraArgs,()=>{invalid=true;});
+    let flags:Record<string,unknown>[]=[];
+    for(const override of overrides){
+      const configured=(override.skills as {config?:unknown}|undefined)?.config;if(configured===undefined)continue;
+      if(!Array.isArray(configured)||configured.some(row=>!row||typeof row!=='object'||typeof row.path!=='string'||typeof row.enabled!=='boolean')){invalid=true;continue;}
+      flags=configured as Record<string,unknown>[];
+    }
+    if(invalid)throw new Error('无法核对通用任务的原 Codex Skill 启用配置');
+    const disabled=new Set(skills.map(path=>resolve(path)));
+    flags=flags.filter(row=>!disabled.has(resolve(cwd,row.path as string)));
+    flags.push(...skills.map(path=>({path,enabled:false})));
+    const inline=(value:unknown):string=>{
+      if(typeof value==='string')return JSON.stringify(value);
+      if(typeof value==='boolean'||typeof value==='bigint'||typeof value==='number'&&Number.isFinite(value))return String(value);
+      if(Array.isArray(value))return '['+value.map(inline).join(',')+']';
+      if(value&&typeof value==='object'&&[Object.prototype,null].includes(Object.getPrototypeOf(value)))return '{'+Object.entries(value).map(([k,v])=>JSON.stringify(k)+'='+inline(v)).join(',')+'}';
+      throw new Error('无法按原配置可靠保留通用任务的 Codex Skill 启用规则');
+    };
+    extraArgs.push('-c','skills.config='+inline(flags));
+  }
+  return roots;
 }
 
 export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
@@ -91,7 +137,7 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
       ...(plan.model ? { model: plan.model } : {}),
       extraArgs: [],
       // 托管根本身就是隔离的 user 配置；订阅登录关闭扩展时去掉 user（技术方案 §7.2）。
-      settingSources: managed ? ['user'] : carry ? ['user', 'project', 'local'] : ['project', 'local'],
+      settingSources: i.standalone ? managed||carry ? ['user'] : [] : managed ? ['user'] : carry ? ['user', 'project', 'local'] : ['project', 'local'],
       plan,
     };
   }
@@ -123,11 +169,12 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
         }
       }
     }
+    const nativeProjectSkillRoots=i.standalone?isolateCodexProject(i.cwd,env.HOME??homedir(),stateRoot,extraArgs):undefined;
     return {
       driverId: 'codex-app-server', command: i.tool.customPath || i.tool.executable, env, stateRoot,
       compatibility: { source: i.config.source, providerId: i.config.providerId, identity, extensions: carry },
       ...(model ?? plan.model ? { model: model ?? plan.model! } : {}),
-      extraArgs, plan,
+      extraArgs, plan,...(nativeProjectSkillRoots?{nativeProjectSkillRoots}:{}),
     };
   }
   throw new Error(`暂不支持的执行器：${p.runner}`);

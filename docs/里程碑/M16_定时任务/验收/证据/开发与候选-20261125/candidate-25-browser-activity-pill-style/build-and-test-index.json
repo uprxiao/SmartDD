@@ -1,0 +1,99 @@
+{
+  "scope": "C25 real test-first scoped UI fix, independent frozen package; not full real App acceptance",
+  "base": "4148950b8",
+  "priorCandidate": "C24",
+  "sourceManifest": "../candidate-25-source.json",
+  "sourceManifestSha256": "c43a3e7812f1edf82ba77fb00a9217932afe6b879212a502f541a0bf916cc21d",
+  "frozenFileCount": 153,
+  "changedFromC24": [
+    "src/renderer/features/browser/workspace.css",
+    "src/renderer/features/browser/workspace.test.tsx"
+  ],
+  "actualPriorRed": "../candidate-24-browser-control-style-cascade/B09-activity-four-paired-actual-red/index.json",
+  "testFirst": {
+    "command": "pnpm exec vitest run src/renderer/features/browser/workspace.test.tsx -t 'preserves the confirmed browser activity pills'",
+    "before": {
+      "exit": 1,
+      "failed": 2,
+      "bothCssLoadOrders": true,
+      "actualShape": [
+        "14px",
+        "400",
+        "0px",
+        "none",
+        "5px",
+        "6px",
+        "10px",
+        "5px"
+      ],
+      "expectedOriginalShape": [
+        "12px",
+        "500",
+        "1px",
+        "solid",
+        "22px",
+        "6px",
+        "10px",
+        "5px"
+      ]
+    },
+    "final": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "ordinaryPanelResetRetained": true
+    }
+  },
+  "relatedTests": {
+    "command": "pnpm test src/renderer/features/browser src/renderer/features/agent-tasks --maxWorkers=2",
+    "exit": 0,
+    "filesPassed": 22,
+    "passed": 250
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0
+  },
+  "build": {
+    "command": "pnpm package --output-dir /private/tmp/willyou-m16-c25-build.xGjlf6oK/standard",
+    "exit": 0,
+    "bundle": "/private/tmp/willyou-m16-c25-build.xGjlf6oK/standard/mac-arm64/WillYou.app",
+    "appAsarSha256": "71cd6489bd05b185e9a90011112e657bcd2577d6c89ff8b1901dbab002dea319",
+    "nativeProcessIdentitySha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeSmoke": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "codesignDeepStrictExit": 0,
+    "postBuildSourceMismatches": 0,
+    "installed": false,
+    "released": false
+  },
+  "rawLogPrivatePins": {
+    "red": {
+      "path": "/private/tmp/willyou-m16-c25-pills-red.log",
+      "sha256": "832ab914a81a6011a2a92122e3fcfe4cb5c6cf1f6b8df52c0c5327e1df15b617"
+    },
+    "green": {
+      "path": "/private/tmp/willyou-m16-c25-pills-green.log",
+      "sha256": "fd44764aa4ca3bb1571305ba13a3d00873cbb671e9c2efcc5df354db2c3c778a"
+    },
+    "related": {
+      "path": "/private/tmp/willyou-m16-c25-pills-related.log",
+      "sha256": "1591abf361be5fa47590b426534957c9c7408dcef2116c6dcb6fdd8fb701e879"
+    },
+    "typecheck": {
+      "path": "/private/tmp/willyou-m16-c25-pills-typecheck.log",
+      "sha256": "43cf3be635b5127a22c21769845059126ba438a663e10235634c93b509faa758"
+    },
+    "build": {
+      "path": "/private/tmp/willyou-m16-c25-build.xGjlf6oK/build.log",
+      "sha256": "1c4fa5df6a2bf7bc0e135a7c03321751c9ae881ce91b3387ea8589be7b9e7219"
+    }
+  },
+  "bounds": "Only scoped original browser pause/resume pill styles, original font/border/radius and hover/amber; no state, permission, workflow, generic panel CSS or other browser button change. Actual B09 four-state new build verification remains."
+}

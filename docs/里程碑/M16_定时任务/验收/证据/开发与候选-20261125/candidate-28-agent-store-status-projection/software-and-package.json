@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-27",
+  "baseCommit": "4148950b8664d35d37802e2d8e5488efce13e045",
+  "source": {
+    "manifest": "docs/里程碑/M16_定时任务/验收/证据/开发与候选-20261125/candidate-28-source.json",
+    "sha256": "c9c4a7eb001be8b12f852641f7836cda4058eaf17ba743c6f5c200d79c01fa15",
+    "sourceFiles": 153,
+    "actualPostBuildMismatch": 0,
+    "changedSinceC27": [
+      "src/main/core/agent/agent-store.ts",
+      "src/main/core/agent/agent-task-service.ts",
+      "src/main/core/agent/agent-task-service.test.ts"
+    ]
+  },
+  "testFirstPriorObserved": {
+    "redTests": 2,
+    "oldListHistoryCalls": 9,
+    "oldEventSequencePrepares": 7,
+    "greenTests": 2,
+    "evidenceBoundary": "Original raw temporary files were removed after host recovery. These original tool-observed facts are retained as history, with the same source checked below."
+  },
+  "softwareCurrent": {
+    "command": "pnpm test src/main/core/schedules src/main/core/agent src/renderer/features/agent-tasks src/renderer/features/schedules --maxWorkers=2",
+    "initialPassed": 679,
+    "initialFailures": "Two identical existing local relay tests stopped at localhost bind EPERM",
+    "localFixtureRerun": "pnpm test src/main/core/agent/drivers/gemini-response-relay.test.ts --maxWorkers=1",
+    "localRerunPassed": 2,
+    "uniquePassed": 681,
+    "originalSkipped": 10,
+    "typecheckExit": 0,
+    "rawLogs": {
+      "regression.log": {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/regression.log",
+        "sha256": "9efb59020c44f5702c55aece68155a31381152fe8cceed7a7c133004428f6252"
+      },
+      "local-fixture-regression.log": {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/local-fixture-regression.log",
+        "sha256": "3356cab752f009a5da3b159d3bbd19b2bddecd7720c4ee9efc98522f905caca2"
+      },
+      "typecheck.log": {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/typecheck.log",
+        "sha256": "43cf3be635b5127a22c21769845059126ba438a663e10235634c93b509faa758"
+      }
+    }
+  },
+  "build": {
+    "command": "pnpm package --output-dir /Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/build",
+    "exit": 0,
+    "sourceAndPackageSha256": "118c3a0c40b4952b277df394a6cfcb931317f0660b6cd1a4b3ab5c59b2ac85cf",
+    "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/build/mac-arm64/WillYou.app",
+    "appAsarSha256": "5d715b34f16a31a1edf95692501b58e19e70048bc0f131f4bb33ac1bbcb3ba9e",
+    "nativeProcessSha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeFilesSha256": "e07fbff84183650e8b3482d8c2499038787c9fd7aea691180cbf86e84fb3aea5",
+    "actualNativeSmoke": {
+      "version": "0.1.7",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "codesignDeepStrictExit": 0,
+    "rawBuildLog": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/build.log",
+      "sha256": "5a01dec52eac2ce5bdd980513d49b69822952776744f7fca64153d0d95a54ec0"
+    },
+    "originalC28TemporaryAsarSha256": "3401e0f30cac34d4a2ddc1f18ef81b808bf62b46eb6a861c88e694dcc863f83e",
+    "recoveredBuildAsarDiffers": true
+  },
+  "shortStatusDiagnostic": {
+    "scriptSha256": "aa4d937b7744023cf112dfe0d4b558e7a8fc6687f90fce228b4c05e1a82d51b3",
+    "rawSha256": "9a8874ee405eb28bbcc90d2bbf85a8c3db2364fcc6207ada10fd5d0eb6e08741",
+    "summarySha256": "14886df651e0b3b862bdd763b96ffc7bedfbf73604d9cec7d69f3a1b54e0d9de",
+    "scope": "isolated in-memory synthetic SQL only"
+  },
+  "mainCaseIncrement": 0,
+  "officialMainCasePasses": 58
+}

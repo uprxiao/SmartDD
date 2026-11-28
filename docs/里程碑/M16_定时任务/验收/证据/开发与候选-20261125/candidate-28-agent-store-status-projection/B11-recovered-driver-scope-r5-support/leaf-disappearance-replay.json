@@ -1,0 +1,112 @@
+{
+  "staticOnly": true,
+  "actualSources": {
+    "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/b11-recovery/run-0iKsJY/scope-attempts.jsonl": "cb7c3878abb7452ca1f48e7bd2214b063f67db541eccfab163feac71c47e9352",
+    "/Users/liubu/hx/4.uprxiao/SmartDD/docs/\u91cc\u7a0b\u7891/M16_\u5b9a\u65f6\u4efb\u52a1/\u9a8c\u6536/\u8bc1\u636e/\u5f00\u53d1\u4e0e\u5019\u9009-20261125/candidate-22-notification-ownership-and-cold-paint/B11-full-1800s-scoped-rss-trend-red-agent-staging/archive-safe/scope-attempts.jsonl.gz": "3068a92f426ef609e875526c52d0e9cc6dbb2c31f63d2e73175f9baceb633fec",
+    "/Users/liubu/hx/4.uprxiao/SmartDD/docs/\u91cc\u7a0b\u7891/M16_\u5b9a\u65f6\u4efb\u52a1/\u9a8c\u6536/\u8bc1\u636e/\u5f00\u53d1\u4e0e\u5019\u9009-20261125/candidate-27-schedule-active-query-reuse/B11-real-1800s-recheck/archive-safe/scope-attempts.jsonl.gz": "95f3249cef70d5c80752fb7f222bcc76004287c59729f2e3a96c00464d14adf5"
+  },
+  "actualR4": {
+    "originalVerdict": {
+      "state": "fatal",
+      "reason": "unreadable or unbound candidate; do not reclassify"
+    },
+    "currentEligibility": {
+      "state": "retry",
+      "reason": "previously verified owned leaf disappeared during second family inventory; retain both raw gaps and resample"
+    },
+    "rawGapsPreserved": [
+      {
+        "kind": "owned-parent-not-current",
+        "pid": 84385,
+        "minimalBefore": {
+          "pid": 84385,
+          "returnedPid": 0,
+          "ppid": 0,
+          "pgid": 0,
+          "uid": 0,
+          "status": 0,
+          "bytes": 0,
+          "errno": 3,
+          "birthSec": 0,
+          "birthUsec": 0
+        }
+      },
+      {
+        "kind": "candidate-identity-disappeared",
+        "pid": 84385,
+        "parent": 83351,
+        "parentBirth": "1795767401:241477",
+        "firstOwnedInventory": true,
+        "parentVerified": true,
+        "oldBirth": "1795767430:666729",
+        "minimalBefore": {
+          "pid": 84385,
+          "returnedPid": 0,
+          "ppid": 0,
+          "pgid": 0,
+          "uid": 0,
+          "status": 0,
+          "bytes": 0,
+          "errno": 3,
+          "birthSec": 0,
+          "birthUsec": 0
+        },
+        "minimalAfter": {
+          "pid": 84385,
+          "returnedPid": 0,
+          "ppid": 0,
+          "pgid": 0,
+          "uid": 0,
+          "status": 0,
+          "bytes": 0,
+          "errno": 3,
+          "birthSec": 0,
+          "birthUsec": 0
+        }
+      }
+    ],
+    "oldChildBirth": "1795767430:666729",
+    "parentBirth": "1795767401:241477",
+    "newEndpointActuallyRecorded": false,
+    "finalStatus": "original failed/current bounded-retry-only eligibility"
+  },
+  "hypotheticalConditionalControl": "Later stable endpoint uses R4 preceding actual member graph but explicitly synthetic later timestamps/counters; no actual resolved R4 sample exists. No prior result reclassified as a valid measurement.",
+  "actualC27AcceptedEndpoints": 18,
+  "actualC22AcceptedEndpoints": 18,
+  "actualR4PriorAcceptedEndpoints": 5,
+  "checks": [
+    "actual R4 original failure is retry-eligible only, not a closed sample",
+    "all 18 original C27 actual closed scope endpoints and RSS unchanged",
+    "all prior 5 actual R4 accepted endpoints and RSS unchanged",
+    "all original accepted C22 endpoints remain closed",
+    "retained C22 actual ESRCH and actual subsequent full closure still pass original resolution",
+    "hypothetical new complete same-CID endpoint after the actual R4 failure is eligible",
+    "actual earlier R4 closed sample must not be substituted as a new endpoint",
+    "generic family gap without independent paired disappearance remains fatal",
+    "non-ESRCH generic family read remains fatal",
+    "different child birth remains fatal",
+    "retained root cannot be retired by this rule",
+    "foreign UID remains fatal",
+    "foreign CID remains fatal",
+    "unknown role remains fatal",
+    "missing direct parent proof remains fatal",
+    "parent birth change remains fatal",
+    "leaf with earlier children remains fatal",
+    "failed original family inventory remains fatal",
+    "missing old PID from exact UID-before census remains fatal",
+    "reused PID in UID-after census remains fatal",
+    "uncertain matched UID identity remains fatal",
+    "unchanged exit counter cannot prove this disappearance class",
+    "other unrelated identity gap stays fatal",
+    "new endpoint beyond original two-second budget rejected",
+    "new endpoint missing complete UID-after member closure rejected",
+    "new endpoint UID-after still includes old numeric PID rejected",
+    "new endpoint still lists prior child in parent table rejected",
+    "new endpoint changed coalition rejected",
+    "new endpoint counters moving backwards rejected",
+    "new endpoint unknown product identity rejected",
+    "new endpoint original parent birth changed rejected"
+  ],
+  "passed": 31,
+  "failed": 0
+}

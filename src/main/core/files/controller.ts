@@ -4,7 +4,8 @@ import type { FileRootRetryInput } from '@shared/files';
 import type { DirectoryListRequest } from '@shared/files';
 import type { ViewerOpenInput, ViewerResourceInput, ViewerWriteInput } from '@shared/file-viewer';
 import type { IpcMainInvokeEvent } from 'electron';
-import { BrowserWindow, dialog, shell } from 'electron';
+import { dialog, shell } from 'electron';
+import {mainWindowForContents} from '@main/app/window-host';
 import { dirname, extname, join } from 'node:path';
 import { z } from 'zod';
 import { officeLossyCopySchema,type OfficeLossyCopyInput } from '@shared/file-office-fidelity';
@@ -107,9 +108,9 @@ export function createFileController(service: FileService, trusted: (event: IpcM
       return result;
     },
     viewerUiOpen: (event: IpcMainInvokeEvent, input: ViewerResourceInput) => {
-      const id = owner(event), win = BrowserWindow.fromWebContents(event.sender);
+      const id = owner(event), win = mainWindowForContents(event.sender);
       if (!win) throw new FileError('UNTRUSTED', '文件窗口已关闭');
-      return service.viewers.ui.open(id, input, win, value => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame && trusted(event)) event.sender.send(fileViewerUiEvent.name, value); });
+      return service.viewers.ui.open(id, input, win, value => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame && trusted(event)) event.sender.send(fileViewerUiEvent.name, value); }, event.sender);
     },
     viewerUiBounds: (event: IpcMainInvokeEvent, input: HtmlViewBounds) => service.viewers.ui.bounds(owner(event), input),
     viewerUiSend: (event: IpcMainInvokeEvent, input: ViewerResourceInput, payload: unknown) => service.viewers.ui.send(owner(event), input, payload),
@@ -172,9 +173,9 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     texChunk: (event: IpcMainInvokeEvent, id: string, offset: number, length: number) => service.tex.chunk(owner(event), id, offset, length),
     releaseTex: (event: IpcMainInvokeEvent, id: string) => service.tex.release(owner(event), id),
     openHtml: (event: IpcMainInvokeEvent, request: HtmlOpenInput) => {
-      const id = owner(event), win = BrowserWindow.fromWebContents(event.sender);
+      const id = owner(event), win = mainWindowForContents(event.sender);
       if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '文件窗口已关闭');
-      return service.html.open(id, request, win, (state) => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame) event.sender.send(fileHtmlEvent.name, { id: request.id, ...state }); });
+      return service.html.open(id, request, win, (state) => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame) event.sender.send(fileHtmlEvent.name, { id: request.id, ...state }); }, event.sender);
     },
     htmlBounds: (event: IpcMainInvokeEvent, request: HtmlViewBounds) => service.html.bounds(owner(event), request),
     closeHtml: (event: IpcMainInvokeEvent, id: string) => service.html.close(owner(event), id),
@@ -196,7 +197,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
       try{
         const document=input.kind==='xlsx'?service.office:service.pptx;
         const candidate=await document.lossyCandidate(id,input.id,input.token);
-        const selection=await service.actions.prepareOfficeCopy(id,candidate),win=BrowserWindow.fromWebContents(event.sender);
+        const selection=await service.actions.prepareOfficeCopy(id,candidate),win=mainWindowForContents(event.sender);
         if(!win||win.isDestroyed())throw new FileError('UNTRUSTED','另存窗口已关闭');
         const extension=extname(selection.name),stem=selection.name.slice(0,selection.name.length-extension.length);
         const chosen=await dialog.showSaveDialog(win,{title:'另存有损副本',buttonLabel:'保存有损副本',defaultPath:join(selection.context.lease.canonicalPath,dirname(selection.context.relativePath),`${stem} 有损副本${extension}`),showsTagField:false,filters:[{name:'Office 文件',extensions:[input.kind]}],properties:['createDirectory','showOverwriteConfirmation']});
@@ -211,7 +212,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
       copying.add(id);
       try {
         const selection = await service.actions.prepareCopy(id, request);
-        const win = BrowserWindow.fromWebContents(event.sender);
+        const win = mainWindowForContents(event.sender);
         if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '另存窗口已关闭');
         const extension = extname(selection.name), stem = selection.name.slice(0, selection.name.length - extension.length);
         const suggestedName = `${stem} 副本${extension}`.replace(/[<>:"/\\|?*]/g, '_');
@@ -226,7 +227,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
       const id = owner(event); if (copying.has(id)) throw new FileError('CONFLICT', '请先完成当前另存对话框');
       copying.add(id);
       try {
-        const selection = await service.actions.prepareContentCopy(id, request), win = BrowserWindow.fromWebContents(event.sender);
+        const selection = await service.actions.prepareContentCopy(id, request), win = mainWindowForContents(event.sender);
         if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '另存窗口已关闭');
         const defaultPath = join(selection.context.lease.canonicalPath, dirname(selection.context.relativePath), selection.name);
         const chosen = await dialog.showSaveDialog(win, { title: '另存副本', buttonLabel: '保存副本', defaultPath, showsTagField: false, filters: [{ name: '所有文件', extensions: ['*'] }], properties: ['createDirectory', 'showOverwriteConfirmation'] });

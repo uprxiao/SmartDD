@@ -3,6 +3,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {afterEach,beforeEach,describe,expect,it} from 'vitest';
 import {cleanupPreLibraryCopies} from '../legacy-copy-cleanup';
+import {applicationScopedHome} from '../../../launch-env';
 
 /** M11 R1.0 T45: only marked pre-R1.0 copies go; user Skills and other WillYou data directories stay. */
 let home:string;const store='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
@@ -31,5 +32,17 @@ describe('M11 R1.0 pre-library copy cleanup',()=>{
   skill('smartdd-m4',{'.smartdd-owned.json':JSON.stringify({owner:'SmartDD',schema:1})});mkdirSync(join(home,'.agents/skills/.willyou-trash-left'),{recursive:true});
   const result=cleanupPreLibraryCopies({home,storeId:store,unattributable:false});
   expect(result.removed).toEqual([]);expect(result.kept).toEqual([{name:'.agents/skills/smartdd-m4',reason:'unattributable'}]);expect(existsSync(join(home,'.agents/skills/.willyou-trash-left'))).toBe(false);
+ });
+ it('scopes packaged legacy cleanup to the explicit CLI HOME without touching a separate system HOME',()=>{
+  const systemHome=home, privateHome=join(systemHome,'isolated-cli');
+  const legacyMarker=JSON.stringify({owner:'SmartDD',schema:1});
+  const original=skill('smartdd-m4',{'SKILL.md':'system unchanged','.smartdd-owned.json':legacyMarker});
+  const isolated=join(privateHome,'.agents/skills/smartdd-m4');
+  mkdirSync(isolated,{recursive:true});writeFileSync(join(isolated,'SKILL.md'),'private legacy');writeFileSync(join(isolated,'.smartdd-owned.json'),legacyMarker);
+  const chosen=applicationScopedHome(systemHome,{HOME:systemHome,SMARTDD_CLI_HOME:privateHome});
+  expect(cleanupPreLibraryCopies({home:chosen,storeId:store,unattributable:true}).removed).toEqual(['.agents/skills/smartdd-m4']);
+  expect(existsSync(isolated)).toBe(false);
+  expect(readFileSync(join(original,'SKILL.md'),'utf8')).toBe('system unchanged');
+  expect(readFileSync(join(original,'.smartdd-owned.json'),'utf8')).toBe(legacyMarker);
  });
 });

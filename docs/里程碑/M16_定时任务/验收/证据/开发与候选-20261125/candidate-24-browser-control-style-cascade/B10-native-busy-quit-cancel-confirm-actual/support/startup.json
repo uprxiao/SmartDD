@@ -1,0 +1,155 @@
+{
+  "schema": "C24-B10-busy-quit-fresh-mock-native-load-readiness",
+  "root": "/private/tmp/willyou-m16-f36-b10-native-quit-c24-F3iqdD",
+  "data": "/private/tmp/willyou-m16-f36-b10-native-quit-c24-F3iqdD/data",
+  "exe": "/private/tmp/willyou-m16-c24-build.pn0wa8ey/standard/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "pin": "68302db0dec3c11291e94a67d5c7cca5b4f9ae98303eff5666194a35419da684",
+  "stages": [
+    {
+      "stage": "spawned",
+      "at": 1795727963611
+    },
+    {
+      "stage": "discover-trusted-shell",
+      "at": 1795727963611,
+      "budgetMs": 30000,
+      "originalCutoffMs": 15000
+    },
+    {
+      "stage": "connect-original-renderer",
+      "at": 1795727974080
+    },
+    {
+      "stage": "renderer-runtime-enable",
+      "at": 1795727974082
+    },
+    {
+      "stage": "renderer-inspector-enable",
+      "at": 1795727974130
+    },
+    {
+      "stage": "renderer-native-load",
+      "at": 1795727974130,
+      "productShellLoadBudgetMs": 30000,
+      "originalRendererBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-ready",
+      "at": 1795727974956,
+      "originalBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-arm",
+      "at": 1795727974957,
+      "originalBudgetMs": 25000
+    },
+    {
+      "stage": "startup-normal-ready",
+      "at": 1795727974957
+    }
+  ],
+  "rendererEvents": {
+    "Runtime.executionContextCreated": {
+      "count": 2,
+      "firstAt": 1795727974130,
+      "lastAt": 1795727974130
+    }
+  },
+  "requests": [
+    {
+      "id": 1,
+      "method": "Runtime.enable",
+      "stage": "renderer-runtime-enable",
+      "sentAt": 1795727974082,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795727974130
+    },
+    {
+      "id": 2,
+      "method": "Inspector.enable",
+      "stage": "renderer-inspector-enable",
+      "sentAt": 1795727974130,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795727974130
+    },
+    {
+      "id": 3,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-ready",
+      "sentAt": 1795727974956,
+      "budgetMs": 10000,
+      "status": "response",
+      "settledAt": 1795727974957
+    },
+    {
+      "id": 4,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-arm",
+      "sentAt": 1795727974957,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795727974957
+    }
+  ],
+  "boundary": "Exact private child and trusted renderer only; no raw logs, no user data, no storage/credential APIs. Original 15s target-discovery cutoff recorded; single 30s discovery budget follows actual verified product readiness outcome; native readiness, original renderer/arm guards separate. Failure observation is bounded separately; no navigation or business retry.",
+  "pid": 97360,
+  "cdpPort": 59022,
+  "discovery": {
+    "originalCutoffMs": 15000,
+    "budgetMs": 30000,
+    "originalCutoff": null,
+    "loaded": {
+      "at": 1795727974080,
+      "elapsedMs": 10469,
+      "observedTargets": 1,
+      "exactTrustedTarget": true
+    }
+  },
+  "selectedTarget": {
+    "id": "3B728518AF4C9CA2B10200753ECBCC1B",
+    "type": "page",
+    "trustedShell": true,
+    "observedTargets": 1
+  },
+  "nativeReadiness": {
+    "productBudgetMs": 30000,
+    "originalCutoffMs": 10000,
+    "observations": [
+      {
+        "elapsedMs": 0,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 97786,
+        "loading": true
+      },
+      {
+        "elapsedMs": 404,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 97786,
+        "loading": true
+      },
+      {
+        "elapsedMs": 825,
+        "rootId": 1,
+        "visible": true,
+        "wcId": 1,
+        "rendererPid": 97786,
+        "loading": false
+      }
+    ],
+    "originalCutoff": null,
+    "loaded": {
+      "elapsedMs": 825,
+      "rootId": 1,
+      "visible": true,
+      "wcId": 1,
+      "rendererPid": 97786,
+      "loading": false
+    }
+  }
+}

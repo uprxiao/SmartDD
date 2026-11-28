@@ -2,7 +2,7 @@ import {runInAction} from 'mobx';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {navigation} from '@renderer/core/navigation';
 import {
-  authorizeBrowserPresentation,browserViewRevision,enterBrowserPresentationTask,
+  activateBrowserPresentation,authorizeBrowserPresentation,browserViewRevision,enterBrowserPresentationTask,
   invalidateBrowserPresentation,observeBrowserPresentationView,rememberBrowserPresentation,
 } from './open-presentation';
 
@@ -44,4 +44,13 @@ it('transfers the home send to its automatic task transition',()=>{
   });
   expect(deferred).toEqual(event('home'));
   expect(authorizeBrowserPresentation(deferred!)).toBe(true);
+});
+
+it('reveal can open the right panel for the same intent without letting later manual view changes steal focus',()=>{
+  runInAction(()=>{navigation.currentViewId='agentTask';navigation.currentAgentTaskId='task';Reflect.set(navigation,"filePanelOpen",false);});
+  rememberBrowserPresentation('task','m16-hidden-panel');
+  const event={taskId:'task',pageId:'page',clientInputId:'m16-hidden-panel',operationId:'open'};
+  expect(activateBrowserPresentation(event,()=>runInAction(()=>{Reflect.set(navigation,"filePanelOpen",true);}))).toBe(true);
+  expect(authorizeBrowserPresentation(event)).toBe(true);
+  runInAction(()=>{Reflect.set(navigation,"filePanelOpen",false);});expect(authorizeBrowserPresentation(event)).toBe(false);
 });

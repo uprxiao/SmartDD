@@ -13,6 +13,7 @@ export interface McpProjectionInput {
   /** Only names are used. Values belong to the model runtime, never source expansion. */
   injectedNames:string[];
   requireKnownFields?:boolean;
+  globalOnly?:boolean;
 }
 export interface McpProjectionResult {
   args:string[];env:Record<string,string>;secretValues:string[];
@@ -69,7 +70,7 @@ export class McpProjectionService {
     const files:McpConversion['files']=[];
     const claude:ClaudeMcpProjection={servers:Object.create(null),allowTools:[],denyTools:[],askTools:[]};
     const runRoot=join(input.runRoot,'mcp');
-    for(const item of this.registry.selected(input.cwd).filter(row=>row.kind==='mcp')){
+    for(const item of this.registry.selected(input.cwd).filter(row=>row.kind==='mcp'&&(!input.globalOnly||row.sourceScope==='user'))){
       try{
         const resolved=this.registry.resolveMcpSource(item.id,input.requireKnownFields);if(!resolved)throw new McpSourceError('来源已删除，请重新扫描');
         const references=mcpReferenceNames(resolved.source,resolved.environment);

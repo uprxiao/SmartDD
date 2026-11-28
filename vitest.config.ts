@@ -22,6 +22,9 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'node',
+    // The diff renderer can be linked from the sibling worktree. Transform it
+    // with Vite so its React imports use this workspace's deduplicated instance.
+    server: { deps: { inline: ['@pierre/diffs', /@pierre[\/+]+diffs/] } },
     // Native fixtures launch helpers and competing writers. Keep CI resource
     // contention from consuming their bounded transaction-gate waits.
     maxWorkers: 2,

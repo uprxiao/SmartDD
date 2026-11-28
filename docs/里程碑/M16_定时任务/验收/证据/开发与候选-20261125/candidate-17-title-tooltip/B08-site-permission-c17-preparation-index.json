@@ -1,0 +1,26 @@
+{
+  "case": "M16 B08.3 application-level permission denial/revoke/reask/partition subset",
+  "status": "prepared only; no App, network listener, system permissions or real accounts accessed",
+  "candidateAsar": "8e0e01b1838417c505b864ddce9ac5a62fae0d579e2c31e978599c851ea7ac11",
+  "driver": {
+    "path": "/private/tmp/willyou-m16-f36-qa/browser-driver-b08-site-permissions-c17.mjs",
+    "sha256": "0dcee6c54d8bad6ce3649f190d7bf033b8525536afa08dbabcfe97393fc49ae9",
+    "preflight": "node --check + check-cdp-expressions 3 literals, 0 errors; static check exactly one IdleDetector.requestPermission call, no IdleDetector.start() or notification/media/geo calls, deny only"
+  },
+  "sourceAuthority": [
+    "node_modules/electron/electron.d.ts:13326,13335 (idle-detection supported check/request permission type)",
+    "src/main/core/browser/permissions.ts:25–40 (app-owned WebContents, origin, profile request callback decision; only app-owned prompt when no choice)",
+    "src/renderer/features/browser/permission-bar.tsx (actual station permission prompt Reject/Allow; driver only Reject)",
+    "src/renderer/features/browser/profile-site-states.tsx:31–32 (actual site permission row revoke)"
+  ],
+  "safeFixture": "Local secure context http://127.0.0.1:3425/b08-idle-permission; real user-visible button clicks request app-level idle-detection permission only. Does not instantiate or start idle monitoring nor use any external or native permission. If actual secure browser API lacks support or prompt is absent, stop and leave missing; never fall back to notification, geolocation, media, clipboard, real permissions or system prompt.",
+  "plannedActual": [
+    "Two independently created synthetic project/task default browser partitions; same local origin, distinct profile IDs and initial no decisions",
+    "A real page request -> actual app prompt bound exact profile/page/origin/permission; UI Reject -> actual denied response and saved denial",
+    "A same-profile second real request -> remembered deny and no new app prompt",
+    "B same-origin distinct closed-isolation profile -> real independent prompt, Reject saves only B",
+    "A actual profile dialog revoke exact permission row -> A absent and B unchanged",
+    "A real request again -> new app prompt UUID, Reject; B remains exact original deny"
+  ],
+  "preconditions": "Only when user and coordinator authorize an already available exact isolated App root and safe no-credential context. Uses existing known synthetic profile in independently initialized private root, creates only new project/tasks. No App launch now per user latest system prompt boundary. If later start requires system storage or permission prompt, stop and do not interact. This is a B08.3 submatrix, not full case or system S proof."
+}

@@ -1,0 +1,66 @@
+
+> smartdd@0.1.7 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/app/window.test.ts
+
+[1126/034155.722683:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/034156.068792:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/app/window.test.ts (10 tests | 3 failed) 2024ms
+     × recovers a lost trusted shell on an already visible native root without a second window or app activation 1009ms
+     × does not show or rebuild a hidden root after shell loss until native presentation, and coalesces show/focus/restore 4ms
+     × recovers a crashed visible shell renderer whose native WebContents is still live without replacing other views 1004ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/app/window.test.ts > single native main host and trusted renderer > recovers a lost trusted shell on an already visible native root without a second window or app activation
+AssertionError: expected null not to be null
+ ❯ src/main/app/window.test.ts:160:27
+    158|     await vi.waitFor(() => {
+    159|       const current = getMainWindowContents();
+    160|       expect(current).not.toBeNull();
+       |                           ^
+    161|       expect(current).not.toBe(old);
+    162|       expect(isMainRenderer({ sender: current!, senderFrame: current!.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/app/window.test.ts > single native main host and trusted renderer > does not show or rebuild a hidden root after shell loss until native presentation, and coalesces show/focus/restore
+AssertionError: expected [ WebContentsView{ …(2) } ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ src/main/app/window.test.ts:185:26
+    183|     root.emit('focus');
+    184|     root.emit('restore');
+    185|     expect(native.views).toHaveLength(2);
+       |                          ^
+    186|     release();
+    187|     await vi.waitFor(() => expect(getMainWindowContents()?.send).toHav…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/app/window.test.ts > single native main host and trusted renderer > recovers a crashed visible shell renderer whose native WebContents is still live without replacing other views
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/main/app/window.test.ts:199:33
+    197|     contents.emit('render-process-gone', {}, {} as never);
+    198|     await vi.waitFor(() => {
+    199|       expect(contents.loadFile).toHaveBeenCalledTimes(1);
+       |                                 ^
+    200|       expect(contents.send).toHaveBeenCalledWith('window:shown');
+    201|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 7 passed (10)
+   Start at  03:41:56
+   Duration  2.14s (transform 32ms, setup 0ms, import 39ms, tests 2.02s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

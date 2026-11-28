@@ -83,6 +83,8 @@ export function probeNativeCli(executable: string, args: string[], base: Record<
 
 type Dependencies = {
   env: () => Record<string, string>;
+  /** In an explicitly isolated CLI home, detect installations without querying the host account. */
+  probeLoginStatus?:boolean;
   onChanged?: () => void;
   discover?: typeof detectRunner;
   probe?: typeof probeNativeCli;
@@ -190,6 +192,7 @@ export class AgentToolService {
     const versionText = plain(`${version.stdout}\n${version.stderr}`).split(/\r?\n/).find(Boolean) ?? '';
     const numericVersion = /\b\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9.-]+)?\b/.exec(versionText)?.[0];
     if (!numericVersion) return missing('无法识别 Code Agent 版本');
+    if(this.dependencies.probeLoginStatus===false)return {tool:{...request,executable:discovered.path,version:numericVersion,installed:true,login:'none',loginSourceEnv:undefined},error:null};
     const login = parseCliLogin(kind, await probe(discovered.path, kind === 'claude' ? ['auth', 'status'] : ['login', 'status'], env));
     const tool = { ...request, executable: discovered.path, version: numericVersion, installed: true, login: login.login, loginSourceEnv: login.loginSourceEnv };
     return { tool, error: login.error, catalogAccount: login.catalogAccount };

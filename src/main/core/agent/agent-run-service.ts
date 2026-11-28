@@ -31,6 +31,7 @@ export interface OpenRunInput {
   model?: string;
   extraArgs?: readonly string[];
   settingSources?: readonly ('user' | 'project' | 'local')[];
+  nativeProjectSkillRoots?: readonly string[];
   /** 启动探测得到的逐项能力（复核 CR15）；缺省按版本计算。冻结进运行，供命令、界面与驱动共同判定。 */
   capabilities?: Record<CapabilityName, CapabilityResult>;
   /** 配置档案的默认模型（托管供应商为档案默认，订阅登录为空＝执行器默认）；“恢复默认”用它，不用最初的显式选择（复核 NR05）。 */
@@ -148,7 +149,7 @@ export class AgentRunService {
       const opened = await instance.open({
         resumedGoal,
         executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: run.hostBusinessInstructions,
-        cwd: input.cwd, env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs, settingSources: input.settingSources,
+        cwd: input.cwd, env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs, settingSources: input.settingSources,nativeProjectSkillRoots:input.nativeProjectSkillRoots,
         mcpServers: run.integration?.mcpServers, projectContextMcp: run.integration?.projectContextMcp,
         browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp,
         skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined,

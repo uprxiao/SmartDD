@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "date": "2026-11-25T23:34:04.129096+00:00",
+  "case": "M16-F36-B11.3 actual same logical page owner resource handoff",
+  "candidateAsar": "d6dde43641da16eae9c9757f9acb3aa2f76c23bb0e5108c3c6a14d745d68a930",
+  "scope": "Two separated freshly isolated synthetic business runs; exact logical page old/new generation and independently owned adjacent page. No daily data or credentials.",
+  "ordinary": {
+    "status": "failed-or-incomplete",
+    "nativeModelReceipts": 4,
+    "uiActions": 29,
+    "checks": [
+      {
+        "name": "actual-unsettled-read-same-page-profile-request-and-fresh-helper-command",
+        "status": "pass"
+      }
+    ],
+    "exit": {
+      "pid": 68492,
+      "code": 0,
+      "signal": null
+    },
+    "result": {
+      "path": "/private/tmp/willyou-m16-f36-owner-handoff-tJ5eZU/result.json",
+      "sha256": "3a82298a3c5e1fabf38a47a0d10f25139dc51f47d26efaebdfa804004f81c751",
+      "bytes": 49587
+    },
+    "driver": {
+      "path": "/private/tmp/willyou-m16-f36-qa/browser-driver-b11-owner-handoff.mjs",
+      "sha256": "1b3c09fd1bf8476b1f5a932eea0e89afcaa9c34573388f81954ace317fa0b377",
+      "bytes": 38770
+    },
+    "screenshots": [
+      {
+        "path": "/private/tmp/willyou-m16-f36-owner-handoff-tJ5eZU/B11.3-new-owner.png",
+        "sha256": "9ad9490b4192f8fa105ff51a2eaa0994d157a4a20a88cae655a912ed6f737a2c",
+        "bytes": 274173
+      },
+      {
+        "path": "/private/tmp/willyou-m16-f36-owner-handoff-tJ5eZU/failed-ui.png",
+        "sha256": "2a297fdf2b140eb86778ba320bd5db0eeb767d24e0ff1cdcc1672fe2acf1276b",
+        "bytes": 266685
+      }
+    ],
+    "cleanup": {
+      "path": "/private/tmp/willyou-m16-f36-owner-handoff-tJ5eZU/independent-cleanup.json",
+      "sha256": "7925ee8ffcceb96481cde635894161f4549527af5c27a68f285905dbc1f3dd95",
+      "bytes": 1770
+    }
+  },
+  "gateOnly": {
+    "status": "B11.3-native-close-gate-actual-subset-pass",
+    "nativeModelReceipts": 4,
+    "uiActions": 30,
+    "checks": [
+      {
+        "name": "controlled-bounded-final-native-close-serial-same-id-new-owner",
+        "status": "pass"
+      },
+      {
+        "name": "adjacent-owner-and-new-owner-remain-live-after-old-cleanup",
+        "status": "pass"
+      },
+      {
+        "name": "actual-normal-exit-terminal-helper-resources",
+        "status": "pass"
+      }
+    ],
+    "exit": {
+      "pid": 71637,
+      "code": 0,
+      "signal": null
+    },
+    "result": {
+      "path": "/private/tmp/willyou-m16-f36-owner-close-gate-mg7LUP/result.json",
+      "sha256": "fb40b265cca69d062983dee3e86247a5ee51d4c1ef1ca94b5a8be025091979a0",
+      "bytes": 56009
+    },
+    "driver": {
+      "path": "/private/tmp/willyou-m16-f36-qa/browser-driver-b11-owner-close-gate-stable.mjs",
+      "sha256": "acc4bbcfb45cb9dc8e6cc4fa395ae05a4ea0726f4109afa49a21b3722f906b91",
+      "bytes": 36436
+    },
+    "screenshots": [],
+    "cleanup": {
+      "path": "/private/tmp/willyou-m16-f36-owner-close-gate-mg7LUP/independent-cleanup.json",
+      "sha256": "f774aa28834cbe9c7ef7e65d3b39e3e9cd031b215b29d888fcddb8a5798dcc5a",
+      "bytes": 1779
+    }
+  },
+  "ordinaryFirstFailureBoundary": "Core actual normal pending and settled read/profile new-generation helper tests passed. Last separate neighbor read omitted actual task switch; locator correctly not found, no wrongly aimed input. Existing output kept unchanged. Normal exit and independent resources verified.",
+  "gateBoundary": "Final native close of exact owned synthetic WC was delayed and observed; checkpoint 55ms; release 56ms; automatic 3500ms release unused. No production gate, permission, task ownership, persistent data, helper teardown or system state modified. This is fault-injection A, separate from ordinary. Product serially waits old final native operation; new resource not published before old owner settles.",
+  "actualOutcome": "Old owner during ordinary unsettled read retained; eventual sameId new native/actual helper successfully operated and original owner fully retired. Gate sameId fresh owner retained and nearby page actual read after cleanup with original WC/doc/helper. Both normal exits plus exact native/helper processes and dirs/ports gone. Neighbor read in ordinary not complete; gate proves independent context only.",
+  "boundary": "B11.3 remaining non-overlapping requirements assessed by coordinator using original I and prior A results; not B11.1 long test or platform S; no new count inferred.",
+  "archiveOnly": "Listed synthetic receipts, snapshots, driver and independently checked cleanup; no data/HOME/credentials/raw model logs."
+}

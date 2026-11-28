@@ -6,35 +6,40 @@ const ignoredEvent = (event: PointerEvent<HTMLElement> | FocusEvent<HTMLElement>
 type Tooltip = { model: unknown; element: HTMLElement; path: string; x: number; y: number };
 
 /** File paths belong to the tree model, not the browser's native title timer. */
-export function useTreePathTooltip(model: unknown) {
+export function useTreePathTooltip(model: unknown, { recoverPointerMove = false } = {}) {
   const id = useId(), timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const candidate = useRef<HTMLElement | null>(null), popup = useRef<HTMLDivElement>(null);
+  const pointerTarget = useRef<HTMLElement | null>(null), dismissedTarget = useRef<HTMLElement | null>(null);
   const [tooltip, setTooltip] = useState<Tooltip | null>(null);
   const inPopup = (target: EventTarget | null) => target instanceof Node && !!popup.current?.contains(target);
-  const dismiss = useCallback(() => {
+  const clear = useCallback(() => {
     if (timer.current !== null) clearTimeout(timer.current);
     timer.current = null; candidate.current = null; setTooltip(null);
   }, []);
-  useEffect(() => { dismiss(); }, [model, dismiss]);
+  const dismiss = useCallback(() => {
+    dismissedTarget.current = pointerTarget.current;
+    clear();
+  }, [clear]);
+  useEffect(() => { clear(); }, [model, clear]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => { if (event.key === 'Escape') dismiss(); };
     const outside = (event: Event) => { if (!popup.current || !event.composedPath().includes(popup.current)) dismiss(); };
     window.addEventListener('keydown', key, true);
     window.addEventListener('pointerdown', outside, true);
     window.addEventListener('scroll', outside, true);
-    window.addEventListener('resize', dismiss);
+    window.addEventListener('resize', clear);
     return () => {
       if (timer.current !== null) clearTimeout(timer.current);
       window.removeEventListener('keydown', key, true);
       window.removeEventListener('pointerdown', outside, true);
       window.removeEventListener('scroll', outside, true);
-      window.removeEventListener('resize', dismiss);
+      window.removeEventListener('resize', clear);
     };
-  }, [dismiss]);
+  }, [dismiss, clear]);
   const schedule = (event: PointerEvent<HTMLElement> | FocusEvent<HTMLElement>, path: string, keyboard = false) => {
     const pointer = event as PointerEvent<HTMLElement>;
     if (pointer.pointerType === 'touch' || pointer.buttons || ignoredEvent(event) || keyboard && !event.currentTarget.matches(':focus-visible')) return;
-    dismiss(); const element = event.currentTarget; candidate.current = element;
+    clear(); const element = event.currentTarget; candidate.current = element;
     const show = () => {
       timer.current = null;
       if (!element.isConnected || candidate.current !== element) return;
@@ -49,10 +54,24 @@ export function useTreePathTooltip(model: unknown) {
     target: current,
     bind: (path: string) => ({
       'aria-describedby': current?.path === path ? id : undefined,
-      onPointerEnter: (event: PointerEvent<HTMLElement>) => schedule(event, path),
-      onPointerMove: (event: PointerEvent<HTMLElement>) => { if (event.buttons || event.pointerType === 'touch' || ignoredEvent(event)) dismiss(); },
-      onPointerLeave: (event: PointerEvent<HTMLElement>) => { if (!inPopup(event.relatedTarget)) dismiss(); },
-      onPointerDown: dismiss,
+      onPointerEnter: (event: PointerEvent<HTMLElement>) => {
+        pointerTarget.current = event.currentTarget; dismissedTarget.current = null;
+        schedule(event, path);
+      },
+      onPointerMove: (event: PointerEvent<HTMLElement>) => {
+        const element = event.currentTarget;
+        pointerTarget.current = element;
+        if (event.buttons || event.pointerType === 'touch' || ignoredEvent(event)) { dismiss(); return; }
+        // The native unified tab header can deliver real moves without an effective
+        // synthetic enter. Arm once; never restart a pending timer on each move.
+        if (recoverPointerMove && candidate.current !== element && dismissedTarget.current !== element) schedule(event, path);
+      },
+      onPointerLeave: (event: PointerEvent<HTMLElement>) => {
+        if (pointerTarget.current === event.currentTarget) pointerTarget.current = null;
+        if (dismissedTarget.current === event.currentTarget) dismissedTarget.current = null;
+        if (!inPopup(event.relatedTarget)) dismiss();
+      },
+      onPointerDown: (event: PointerEvent<HTMLElement>) => { pointerTarget.current = event.currentTarget; dismiss(); },
       onBlur: (event: FocusEvent<HTMLElement>) => { if (!inPopup(event.relatedTarget)) dismiss(); },
       onFocus: (event: FocusEvent<HTMLElement>) => schedule(event, path, true),
     }),

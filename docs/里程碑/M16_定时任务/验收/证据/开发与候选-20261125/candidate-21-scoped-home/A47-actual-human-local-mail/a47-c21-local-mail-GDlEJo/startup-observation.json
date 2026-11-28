@@ -1,0 +1,143 @@
+{
+  "schema": "C21-A47-owned-startup-readonly-instrumentation",
+  "root": "/private/tmp/willyou-m16-schedule-app-US7kWL/a47-c21-local-mail-AHSPMb",
+  "data": "/private/tmp/willyou-m16-schedule-app-US7kWL/a47-c21-local-mail-AHSPMb/data",
+  "exe": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "pin": "f46144e6f4ba924a30ffb5aa8ea08e15835a9cd8db0ec6e5b9595e20100c1060",
+  "stages": [
+    {
+      "stage": "spawned",
+      "at": 1795676793831
+    },
+    {
+      "stage": "discover-trusted-shell",
+      "at": 1795676793831,
+      "budgetMs": 15000
+    },
+    {
+      "stage": "connect-original-renderer",
+      "at": 1795676795864
+    },
+    {
+      "stage": "renderer-runtime-enable",
+      "at": 1795676795866
+    },
+    {
+      "stage": "renderer-inspector-enable",
+      "at": 1795676795914
+    },
+    {
+      "stage": "renderer-native-load",
+      "at": 1795676795914,
+      "productShellLoadBudgetMs": 30000,
+      "originalRendererBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-ready",
+      "at": 1795676796722,
+      "originalBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-arm",
+      "at": 1795676796722,
+      "originalBudgetMs": 25000
+    },
+    {
+      "stage": "startup-normal-ready",
+      "at": 1795676796723
+    }
+  ],
+  "rendererEvents": {
+    "Runtime.executionContextCreated": {
+      "count": 2,
+      "firstAt": 1795676795913,
+      "lastAt": 1795676795913
+    }
+  },
+  "requests": [
+    {
+      "id": 1,
+      "method": "Runtime.enable",
+      "stage": "renderer-runtime-enable",
+      "sentAt": 1795676795866,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795676795914
+    },
+    {
+      "id": 2,
+      "method": "Inspector.enable",
+      "stage": "renderer-inspector-enable",
+      "sentAt": 1795676795914,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795676795914
+    },
+    {
+      "id": 3,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-ready",
+      "sentAt": 1795676796722,
+      "budgetMs": 10000,
+      "status": "response",
+      "settledAt": 1795676796722
+    },
+    {
+      "id": 4,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-arm",
+      "sentAt": 1795676796722,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795676796723
+    }
+  ],
+  "boundary": "Exact private child and trusted renderer only; no raw logs, no user data, no storage/credential APIs. Original startup readiness/arm deadlines preserved. Failure observation is bounded separately; no navigation or business retry.",
+  "pid": 23216,
+  "cdpPort": 64418,
+  "selectedTarget": {
+    "id": "96EAD498B2D7E8075E98F0B423EAACBA",
+    "type": "page",
+    "trustedShell": true,
+    "observedTargets": 1
+  },
+  "nativeReadiness": {
+    "productBudgetMs": 30000,
+    "originalCutoffMs": 10000,
+    "observations": [
+      {
+        "elapsedMs": 0,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 23295,
+        "loading": true
+      },
+      {
+        "elapsedMs": 404,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 23295,
+        "loading": true
+      },
+      {
+        "elapsedMs": 807,
+        "rootId": 1,
+        "visible": true,
+        "wcId": 1,
+        "rendererPid": 23295,
+        "loading": false
+      }
+    ],
+    "originalCutoff": null,
+    "loaded": {
+      "elapsedMs": 807,
+      "rootId": 1,
+      "visible": true,
+      "wcId": 1,
+      "rendererPid": 23295,
+      "loading": false
+    }
+  }
+}

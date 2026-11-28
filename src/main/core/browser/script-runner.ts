@@ -212,6 +212,7 @@ export class BrowserScriptRunner {
         abort.abort(new ApplicationError('SCOPE_DENIED','原页面开始导航至测试范围以外的站点'));
     };
     page.contents.on('did-start-navigation',onNavigation);
+    const releasePaint=this.d.pages.acquirePaint(page);
     const work=(async()=>{
       let staging:string|undefined;
       let login:BrowserLoginState|undefined;
@@ -282,7 +283,7 @@ export class BrowserScriptRunner {
         try{
           record.report=await this.d.artifacts.write(taskId,'script-report','json',Buffer.from(JSON.stringify(this.response(record))));
           this.write(key,record);
-        }finally{this.pageJobs.delete(page.id);release();this.jobs.delete(key);}
+        }finally{this.pageJobs.delete(page.id);release();releasePaint();this.jobs.delete(key);}
         if(login&&requestLogin){
           try{requestLogin(login);}
           catch{record.reason='BROWSER_LOGIN_REQUEST_UNAVAILABLE';this.write(key,record,'paused');}

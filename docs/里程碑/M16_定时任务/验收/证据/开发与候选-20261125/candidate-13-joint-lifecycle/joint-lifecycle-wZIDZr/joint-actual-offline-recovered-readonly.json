@@ -1,0 +1,103 @@
+{
+  "sourceRoot": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-wZIDZr",
+  "actualNativeHandoff": {
+    "pid": 23036,
+    "data": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/data",
+    "exe": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "home": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/home",
+    "cliHome": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/home",
+    "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app",
+    "windowId": 1,
+    "action": "quit-before-natural-due",
+    "handoffId": "8a9a719d-59d6-496d-ad8f-a9928305c1e8",
+    "deadline": 1795641470851,
+    "releaseFile": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-wZIDZr/joint-c12-release-quit-before-natural-due-8a9a719d-59d6-496d-ad8f-a9928305c1e8.json",
+    "instruction": "Actual native Cmd+Q only this idle isolated WillYou; no forced shutdown or unrelated application actions.",
+    "expectedNoActiveTasks": true,
+    "metrics": [
+      {
+        "pid": 23036,
+        "type": "Browser"
+      },
+      {
+        "pid": 23057,
+        "type": "GPU"
+      },
+      {
+        "pid": 23058,
+        "type": "Utility"
+      },
+      {
+        "pid": 23087,
+        "type": "Tab"
+      }
+    ],
+    "scope": "Exact isolated WillYou native action only; no daily app or OS settings. Other foreground app only benign owned test sentinel. For minimize-other-front report actual foreground PID/bundle."
+  },
+  "release": {
+    "pid": 23036,
+    "handoffId": "8a9a719d-59d6-496d-ad8f-a9928305c1e8",
+    "action": "quit-before-natural-due",
+    "guiReleased": true
+  },
+  "exit": {
+    "at": "2026-11-25T21:14:59.221Z",
+    "case": "B12.3-real-pause-resume-exit-catchup-browser",
+    "action": "actual isolated native Cmd+Q normal exit",
+    "data": {
+      "pid": 23036,
+      "code": 0,
+      "signal": null
+    }
+  },
+  "observedOfflineAfterDueAt": "2026-11-25T21:18:55.370584+00:00",
+  "due": 1795641470851,
+  "oldPid": 23036,
+  "ownedMetrics": [
+    {
+      "pid": 23036,
+      "type": "Browser"
+    },
+    {
+      "pid": 23057,
+      "type": "GPU"
+    },
+    {
+      "pid": 23058,
+      "type": "Utility"
+    },
+    {
+      "pid": 23087,
+      "type": "Tab"
+    }
+  ],
+  "alive": [],
+  "plan": {
+    "id": "a753b754-9565-4e71-a617-6ba0b5f3f09e",
+    "enabled": 1,
+    "next_due": 1795641470851,
+    "schedule": "{\"type\":\"interval\",\"minutes\":4,\"anchor\":1795641230851,\"zone\":\"\"}"
+  },
+  "priorOccurrence": {
+    "id": "981c8e15-d889-4294-b67f-e9e867388557",
+    "status": "completed",
+    "task_id": "5014b122-9da7-4bb2-932e-4ea6b3084fcb",
+    "turn_id": "8b037b4b-b469-4906-9586-297677c811ce",
+    "due": 1795640713568
+  },
+  "fixtureCounts": {
+    "trace": 0,
+    "denied": 0,
+    "failures": 0,
+    "readReceipts": 0,
+    "browserObservations": 0
+  },
+  "closedDatabaseEvidence": {
+    "path": "/private/tmp/willyou-m16-schedule-app-US7kWL/joint-lifecycle-36PcxT/data/smartdd.db",
+    "sha256": "91f5ce7b5b81505c4ecaa29c4f232e9631b7b9690e1abc9be338deee968a3578",
+    "walBytes": 0,
+    "immutableReadonly": true,
+    "note": "Earlier direct stat after clean exit had only smartdd.db; diagnostic mode=ro created empty WAL/SHM sidecars, no business data writes, then immutable=1 verified full checkpointed file; leave sidecars intact."
+  },
+  "note": "Original script correctly waited beyond real offline due and passed exact process/network count checks but CLI sqlite readonly WAL cannot open after clean exit; independent read-only Python actual DB with zero-byte WAL confirms original sole occurrence; keep original red and cold restore separately."
+}

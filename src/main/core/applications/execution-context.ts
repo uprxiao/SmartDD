@@ -1,3 +1,4 @@
+import {standaloneTaskId,verifyStandaloneScope} from '../agent/task-application-scope';
 import {SelectionPreconditionError} from './selection-precondition-error';
 import {CredentialHandles,type CredentialHandle} from './credential-handles';
 import { randomUUID } from 'node:crypto';
@@ -27,7 +28,7 @@ import {requirePlanEntry} from './run-plan';
 export type ApplicationUiSender = Pick<IpcMainInvokeEvent,'sender'|'senderFrame'>;
 export interface ApplicationExecutionContext<A extends string=ApplicationId> {
   readonly operationId:string;readonly callerKind:'ui'|'agent-run'|'index-job';
-  readonly scopeKind:'project'|'connection-management'|'internal-index';
+  readonly scopeKind:'project'|'standalone'|'connection-management'|'internal-index';
   readonly projectId:string|null;readonly taskId:string|null;readonly runId:string|null;readonly jobId:string|null;
   readonly parentOperationId:string|null;readonly appId:A;readonly packageHash:string;readonly dataApi:1;
   readonly action:string;readonly semantics:'read'|'write';readonly allowedOperations:readonly string[];
@@ -101,7 +102,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
    * Only an authenticated, still-active opaque agent context can obtain it. */
   agentRunSignal(context:ApplicationExecutionContext<A>):AbortSignal{
     this.record(context);
-    if(context.callerKind!=='agent-run'||context.scopeKind!=='project'||!context.projectId||!context.taskId||!context.runId||!this.agentCalls.has(context))
+    if(context.callerKind!=='agent-run'||!['project','standalone'].includes(context.scopeKind)||!context.projectId||!context.taskId||!context.runId||!this.agentCalls.has(context))
       throw new ApplicationError('SCOPE_DENIED','运行生命周期只允许当前宿主签发的Agent业务上下文');
     const current=this.deps.assertRun(context.runId);
     if(current.run.runId!==context.runId||current.run.projectId!==context.projectId||current.run.taskId!==context.taskId||
@@ -336,9 +337,10 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     else if(entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');
     const selectedMajor=entry==='cli'&&known.snapshot.schema===3?known.snapshot.packages.find(p=>p.packageHash===binding.packageHash)?.capabilityContractMajors[binding.toolName]:entry==='mcp'?selected?.toolContractMajors[binding.toolName]:undefined;
     if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selectedMajor!==operation.contractMajor||(operation.entry??'mcp')!==entry||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');
-    const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);
+    const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),standalone=standaloneTaskId(known.run.projectId),stamp=this.selections.policyStamp(known.run.projectId,appId);
+    if(standalone&&(appId!=='browser'||!verifyStandaloneScope(this.store.sqlite,known.run.projectId,known.run.taskId)))throw new ApplicationError('SCOPE_DENIED','独立任务工具身份失效');
     const check=()=>{const current=this.deps.assertRun(known.run.runId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
-    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{
+    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:standaloneTaskId(known.run.projectId)?'standalone':'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{
       if(known.taskBusiness?.runtime)this.taskAgentRuntimes.set(context,known.taskBusiness.runtime);
       this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry,requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));
       return work(context);
@@ -364,6 +366,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   }
   private begin<T>(application:InstalledApplicationPackage,input:ApplicationExecutionContext<A>,check:()=>void,policy:unknown,work:(context:ApplicationExecutionContext<A>)=>Promise<T>,lease:boolean):Promise<T>{
     if(this.closed)throw new ApplicationError('CANCELED','应用业务服务已停止');this.registry.appId(input.appId);if(application.appId!==input.appId||application.packageHash!==input.packageHash)throw new ApplicationError('SCOPE_DENIED','业务上下文不能替换受信应用或原包');actionSchema.parse(input.action);if(!z.uuid().safeParse(input.operationId).success)throw new ApplicationError('INVALID_INPUT','业务操作编号无效');
+    if(input.scopeKind==='standalone'&&(input.callerKind!=='agent-run'||input.appId!=='browser'||!input.projectId||!input.taskId||!verifyStandaloneScope(this.store.sqlite,input.projectId,input.taskId)))throw new ApplicationError('SCOPE_DENIED','通用任务不能使用项目业务授权');
     if(input.scopeKind!=='connection-management'&&input.allowedOperations.some(p=>!application.manifest.permissions.includes(p)))throw new ApplicationError('SCOPE_DENIED','业务动作超过固定包能力范围');
     const abort=new AbortController(),context=Object.freeze({...input,allowedOperations:Object.freeze([...input.allowedOperations]),signal:AbortSignal.any([input.signal,abort.signal])}),scopeHash=digest(canonicalJson({callerKind:context.callerKind,scopeKind:context.scopeKind,projectId:context.projectId,taskId:context.taskId,runId:context.runId,jobId:context.jobId,parentOperationId:context.parentOperationId,appId:context.appId,packageHash:context.packageHash,action:context.action,semantics:context.semantics,policy}));
     const record:ContextRecord<C,A>={context,active:true,abort,check,allowed:new Set(context.allowedOperations),targets:new Map(),scopeHash};
@@ -374,7 +377,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
       await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
         if(this.closed||context.signal.aborted)throw new ApplicationError('CANCELED','本次业务操作已取消');check();const old=this.store.sqlite.prepare('SELECT scope_hash,targets_json,state,semantics,attempt_count FROM application_data_operations WHERE operation_id=?').get(context.operationId) as OperationRow|undefined;
         if(old){if(old.scope_hash!==scopeHash)throw new ApplicationError('SCOPE_DENIED','同一操作不能改变来源或授权代次');if(old.state==='running'||context.semantics==='write'||old.state==='succeeded')throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','业务操作已有执行记录，请读取原结果');this.store.sqlite.prepare("UPDATE application_data_operations SET state='running',error_code=NULL,ended_at=NULL,attempt_count=attempt_count+1 WHERE operation_id=?").run(context.operationId);}
-        else this.store.sqlite.prepare("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,task_id,run_id,job_id,parent_operation_id,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,'running',?)").run(context.operationId,context.callerKind,context.scopeKind,context.projectId,context.taskId,context.runId,context.jobId,context.parentOperationId,context.appId,context.packageHash,context.dataApi,context.action,context.semantics,scopeHash,context.startedAt);
+        else this.store.sqlite.prepare("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,task_id,run_id,job_id,parent_operation_id,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at,standalone_task_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,'running',?,?)").run(context.operationId,context.callerKind,context.scopeKind==='standalone'?'project':context.scopeKind,context.projectId,context.taskId,context.runId,context.jobId,context.parentOperationId,context.appId,context.packageHash,context.dataApi,context.action,context.semantics,scopeHash,context.startedAt,context.scopeKind==='standalone'?context.taskId:null);
       }).immediate());
       this.records.set(context,record);this.active.add(record);
       try{const value=await work(context);this.record(context);await this.end(context,'succeeded',null);this.record(context);return value;}
@@ -389,9 +392,9 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   assertAgentReceipt(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operationId:string):void{
     const known=this.deps.assertRun(claim.run.runId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
     if(!selected||!selected.allowedOperations.includes(binding.permission))throw new ApplicationError('SCOPE_DENIED','当前运行不能读取该原业务回执');
-    const row=this.store.sqlite.prepare('SELECT * FROM application_data_operations WHERE operation_id=?').get(operationId) as {caller_kind:string;scope_kind:string;project_id:string;task_id:string;run_id:string;job_id:null;parent_operation_id:null;app_id:A;package_hash:string;action:string;semantics:'read'|'write';scope_hash:string;targets_json:string}|undefined;
+    const row=this.store.sqlite.prepare('SELECT * FROM application_data_operations WHERE operation_id=?').get(operationId) as {caller_kind:string;scope_kind:string;standalone_task_id:string|null;project_id:string;task_id:string;run_id:string;job_id:null;parent_operation_id:null;app_id:A;package_hash:string;action:string;semantics:'read'|'write';scope_hash:string;targets_json:string}|undefined;
     if(!row||row.caller_kind!=='agent-run'||row.project_id!==known.run.projectId||row.task_id!==known.run.taskId||row.run_id!==known.run.runId||row.app_id!==binding.appId||row.package_hash!==binding.packageHash||row.action!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','回执不属于当前真实运行及固定工具');
-    const policy=this.selections.policyStamp(row.project_id,row.app_id),hash=digest(canonicalJson({callerKind:row.caller_kind,scopeKind:row.scope_kind,projectId:row.project_id,taskId:row.task_id,runId:row.run_id,jobId:row.job_id,parentOperationId:row.parent_operation_id,appId:row.app_id,packageHash:row.package_hash,action:row.action,semantics:row.semantics,policy}));
+    const policy=this.selections.policyStamp(row.project_id,row.app_id),hash=digest(canonicalJson({callerKind:row.caller_kind,scopeKind:row.standalone_task_id?'standalone':row.scope_kind,projectId:row.project_id,taskId:row.task_id,runId:row.run_id,jobId:row.job_id,parentOperationId:row.parent_operation_id,appId:row.app_id,packageHash:row.package_hash,action:row.action,semantics:row.semantics,policy}));
     if(hash!==row.scope_hash)throw new ApplicationError('SCOPE_DENIED','原回执对应的应用授权代次已变化');
     let targets:Target<C['kind']>[];try{targets=this.decodeTargets(row.targets_json,row.app_id);}catch{throw new ApplicationError('HASH_MISMATCH','原回执来源记录已损坏');}
     for(const target of targets)this.checkTarget({projectId:row.project_id,appId:row.app_id,semantics:row.semantics,callerKind:'agent-run',runId:row.run_id},target);
@@ -400,7 +403,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     this.assertAgentReceipt(claim,binding,originalOperationId);
     const known=this.deps.assertRun(claim.run.runId);const application=this.builtin.assertTrusted(binding.packageHash),id=randomUUID();
     const check=()=>this.assertAgentReceipt(known,binding,originalOperationId);
-    return this.begin(application,{operationId:id,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId:this.registry.appId(application.appId),packageHash:application.packageHash,dataApi:1,action:binding.toolName+'.receipt',semantics:'read',allowedOperations:[binding.permission],signal:AbortSignal.any([known.signal,...(signal?[signal]:[])]),startedAt:new Date(this.now()).toISOString()},check,{receiptOf:originalOperationId},async context=>{
+    return this.begin(application,{operationId:id,callerKind:'agent-run',scopeKind:standaloneTaskId(known.run.projectId)?'standalone':'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId:this.registry.appId(application.appId),packageHash:application.packageHash,dataApi:1,action:binding.toolName+'.receipt',semantics:'read',allowedOperations:[binding.permission],signal:AbortSignal.any([known.signal,...(signal?[signal]:[])]),startedAt:new Date(this.now()).toISOString()},check,{receiptOf:originalOperationId},async context=>{
       await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
         this.assertActive(context);const original=this.store.sqlite.prepare('SELECT targets_json FROM application_data_operations WHERE operation_id=?').get(originalOperationId) as {targets_json:string};
         const pinned=this.decodeTargets(original.targets_json,context.appId).filter(target=>target.readDefaults!==undefined),record=this.record(context);

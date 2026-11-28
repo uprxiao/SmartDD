@@ -55,3 +55,15 @@ export function authorizeBrowserPresentation(event:BrowserPresentationEvent):boo
   }
   return navigation.currentViewId==='agentTask'&&navigation.currentAgentTaskId===event.taskId&&!navigation.agentTaskReadOnly;
 }
+
+/** A synchronous host-directed reveal may open the right panel itself. Only that
+ * known local action rebases the same intent; subsequent human actions still
+ * invalidate it and late acknowledgements cannot steal a different view. */
+export function activateBrowserPresentation(event:BrowserPresentationEvent,activate:()=>void):boolean{
+  if(!authorizeBrowserPresentation(event))return false;
+  const intent=intentions.get(event.clientInputId)!;
+  activate();
+  if(intentions.get(event.clientInputId)!==intent||navigation.currentViewId!=='agentTask'||navigation.currentAgentTaskId!==event.taskId||navigation.agentTaskReadOnly)return false;
+  intent.revision=revision;
+  return authorizeBrowserPresentation(event);
+}

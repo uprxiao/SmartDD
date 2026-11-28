@@ -4,6 +4,7 @@ import { XIcon } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@renderer/lib/ui/button';
 import { cn } from '@renderer/utils/utils';
+import { holdNativeDialog } from './native-dialog-layer';
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -34,9 +35,27 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
   );
 }
 
+/** The portal mounts only for a real open/closing dialog. Keep the native
+ * layer parked through the popup's lifetime (including close animation). */
+function NativeDialogGate({children}:{children:React.ReactNode}) {
+  const native=typeof window.electronAPI?.invoke==='function';
+  const [status,setStatus]=React.useState<'pending'|'ready'|'failed'>(native?'pending':'ready');
+  React.useLayoutEffect(()=>{
+    if(!native)return;
+    let active=true;
+    const lease=holdNativeDialog();
+    void lease.ready.then(()=>{if(active)setStatus('ready');},()=>{if(active)setStatus('failed');});
+    return()=>{active=false;lease.release();};
+  },[native]);
+  if(status==='pending')return null;
+  if(status==='failed')return <><DialogOverlay/><DialogPrimitive.Popup className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-background p-6 shadow-lg" role="alertdialog"><DialogPrimitive.Title>无法打开对话框</DialogPrimitive.Title><DialogPrimitive.Description>原生显示层暂时不可用，请关闭后重试。</DialogPrimitive.Description><DialogPrimitive.Close render={<Button variant="outline"/>}>关闭</DialogPrimitive.Close></DialogPrimitive.Popup></>;
+  return <>{children}</>;
+}
+
 function DialogContent({ className, children, backdropProps, ...props }: DialogPrimitive.Popup.Props & { backdropProps?: DialogPrimitive.Backdrop.Props }) {
   return (
     <DialogPortal>
+      <NativeDialogGate>
       <DialogOverlay {...backdropProps} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
@@ -53,6 +72,7 @@ function DialogContent({ className, children, backdropProps, ...props }: DialogP
       >
         {children}
       </DialogPrimitive.Popup>
+      </NativeDialogGate>
     </DialogPortal>
   );
 }

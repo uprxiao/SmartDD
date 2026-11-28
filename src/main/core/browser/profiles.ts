@@ -1,3 +1,4 @@
+import {standaloneTaskId} from '../agent/task-application-scope';
 // Owner-based profile visibility follows Orca bd9455b6165 managed profiles;
 // WillYou uses project defaults and task ownership per M12 R05.3/R05.10.
 import type Database from 'better-sqlite3';
@@ -7,7 +8,9 @@ import {browserProfilesSchema,browserProfileSchema,type BrowserProfile,type Brow
 import {browserDigest} from './artifacts';
 
 const KEY='browserProfiles.v1';
-export const browserProjectProfile=(projectId:string)=>'project-'+browserDigest(projectId).slice(0,24);
+export const browserProjectProfile=(projectId:string)=>{
+  const hash=browserDigest(projectId);return standaloneTaskId(projectId)?`${hash.slice(0,8)}-${hash.slice(8,12)}-4${hash.slice(13,16)}-8${hash.slice(17,20)}-${hash.slice(20,32)}`:'project-'+hash.slice(0,24);
+};
 type AccessMode='observe'|'control';
 
 /** Metadata only. Session writes, remounting and durable import recovery belong
@@ -35,9 +38,10 @@ export class BrowserProfiles {
     this.options.sqlite.prepare('INSERT INTO app_settings(key,value,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').run(KEY,value,Date.now());
   }
   ensureProject(projectId:string):BrowserProfile{
-    const id=browserProjectProfile(projectId),found=this.profiles.get(id);
-    if(found){if(found.scope!=='project'||found.owner.id!==projectId)throw new ApplicationError('BROWSER_UNAVAILABLE','项目登录态归属损坏');return found;}
-    const profile:BrowserProfile={id,scope:'project',partition:'persist:wy-browser-'+id,label:'项目登录态',owner:{kind:'project',id:projectId},source:null};
+    const id=browserProjectProfile(projectId),found=this.profiles.get(id),standalone=standaloneTaskId(projectId);
+    if(standalone&&this.options.taskProject(standalone)!==projectId)throw new ApplicationError('SCOPE_DENIED','独立任务已失效');
+    if(found){if(found.scope!==(standalone?'isolated':'project')||found.owner.id!==(standalone??projectId))throw new ApplicationError('BROWSER_UNAVAILABLE','登录态归属损坏');return found;}
+    const profile:BrowserProfile={id,scope:standalone?'isolated':'project',partition:'persist:wy-browser-'+id,label:standalone?'任务登录态':'项目登录态',owner:{kind:standalone?'task':'project',id:standalone??projectId},source:null};
     this.profiles.set(id,profile);try{this.persist();}catch(error){this.profiles.delete(id);throw error;}return profile;
   }
   private visible(caller:BrowserProfileCaller,profile:BrowserProfile,mode:AccessMode):boolean{
@@ -67,7 +71,7 @@ export class BrowserProfiles {
     this.profiles.set(id,parsed.data);try{this.persist(dispatched);}catch(error){this.profiles.delete(id);throw error;}return parsed.data;
   }
   deletable(caller:BrowserProfileCaller,id:string):BrowserProfile{
-    const profile=this.require(caller,id,'control');if(profile.scope==='project')throw new ApplicationError('INVALID_INPUT','项目登录态不可单独删除');return profile;
+    const profile=this.require(caller,id,'control');if(profile.scope==='project'||profile.id===browserProjectProfile(caller.projectId))throw new ApplicationError('INVALID_INPUT','默认登录态不可单独删除');return profile;
   }
   known(id:string):BrowserProfile|undefined{return this.profiles.get(id);}
   all():BrowserProfile[]{return[...this.profiles.values()];}

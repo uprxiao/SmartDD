@@ -1,0 +1,3125 @@
+{
+  "schema": "M16-F36-B03.2-C15-hidden-cli-a",
+  "unit": "F36",
+  "mode": "b03-C15-hidden-cli",
+  "scope": "observe-only",
+  "sourceBaseline": "coordinator allocated candidate; working tree not inferred from later changes",
+  "layer": "Packaged A and read-only native observations; synthetic model cannot certify real provider or S",
+  "pin": "cc722a0a8a7eac65dd460f7702d0802d5816534a969b70fc77886222cc41fa56",
+  "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app",
+  "executableSha256": "ac537a7b79bb561a287749e681a7cf775486db4fd80fa2fd60ae602b03d55ae3",
+  "cliSha256": "739cda86e15d30a6e2b40cf8dcbbfb988aaf48b305b27065573bb8e9fd41d002",
+  "driverSha256": "7656e28e27efa6f9935fbc26835efdd232bd2344a6b6de19618ff4de16c5b793",
+  "root": "/private/tmp/willyou-m16-f36-paint-3UHS1I",
+  "userData": "/private/tmp/willyou-m16-f36-paint-3UHS1I/data",
+  "host": {
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "startedAt": "2026-11-26T00:54:16.012Z",
+  "actions": [
+    {
+      "stage": "existing-native-profile-and-c",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"90f3ce39-6fed-47ec-afa4-7966c36ce3a1\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 303
+      },
+      "at": 1795654462928
+    },
+    {
+      "stage": "existing-native-profile-and-c",
+      "kind": "native-page-click",
+      "wc": 2,
+      "selector": "#paint",
+      "point": {
+        "x": 213,
+        "y": 122
+      },
+      "at": 1795654463101
+    },
+    {
+      "stage": "existing-native-profile-and-c",
+      "kind": "native-page-click",
+      "wc": 2,
+      "selector": "#form",
+      "point": {
+        "x": 97,
+        "y": 123
+      },
+      "at": 1795654463109
+    },
+    {
+      "stage": "actual-ui-submit-and-true-hidden-native-capture",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"90f3ce39-6fed-47ec-afa4-7966c36ce3a1\"]",
+      "label": null,
+      "point": {
+        "x": 157,
+        "y": 303
+      },
+      "at": 1795654463228
+    },
+    {
+      "stage": "actual-ui-submit-and-true-hidden-native-capture",
+      "kind": "UI-click",
+      "selector": ".agent-task-view textarea",
+      "label": null,
+      "point": {
+        "x": 529,
+        "y": 786
+      },
+      "at": 1795654463296
+    },
+    {
+      "stage": "actual-ui-submit-and-true-hidden-native-capture",
+      "kind": "UI-click",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "label": null,
+      "point": {
+        "x": 721,
+        "y": 853
+      },
+      "at": 1795654463375
+    },
+    {
+      "stage": "actual-ui-submit-and-true-hidden-native-capture",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"90f3ce39-6fed-47ec-afa4-7966c36ce3a1\"]",
+      "label": null,
+      "point": {
+        "x": 165,
+        "y": 303
+      },
+      "at": 1795654478271
+    },
+    {
+      "stage": "actual-ui-submit-and-true-hidden-native-capture",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/C\"]",
+      "label": null,
+      "point": {
+        "x": 1028,
+        "y": 22
+      },
+      "at": 1795654478346
+    }
+  ],
+  "checks": [
+    {
+      "name": "normal-isolated-App-exit",
+      "status": "pass",
+      "exit": {
+        "pid": 36293,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "requests": [
+    {
+      "at": 1795654463037,
+      "path": "/C",
+      "search": ""
+    },
+    {
+      "at": 1795654463088,
+      "path": "/favicon.ico",
+      "search": ""
+    }
+  ],
+  "model": [
+    {
+      "protocol": "responses",
+      "at": 1795654464496,
+      "name": "exec_command",
+      "input": {
+        "cmd": "willyou-app browser screenshot --format png --page a49beda2-20d8-4917-9e3e-843bb50eea5a",
+        "workdir": "/private/tmp/willyou-m16-f36-paint-3UHS1I/project",
+        "yield_time_ms": 8000,
+        "max_output_tokens": 3000
+      },
+      "actualContract": {
+        "type": "object",
+        "properties": {
+          "cmd": {
+            "type": "string",
+            "description": "Shell command to execute."
+          },
+          "justification": {
+            "type": "string",
+            "description": "User-facing approval question for `require_escalated`; omit otherwise."
+          },
+          "login": {
+            "type": "boolean",
+            "description": "True runs the shell with -l/-i semantics; false disables them. Defaults to true."
+          },
+          "max_output_tokens": {
+            "type": "number",
+            "description": "Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy."
+          },
+          "prefix_rule": {
+            "type": "array",
+            "description": "Reusable approval prefix for `cmd`, only with `sandbox_permissions: \"require_escalated\"`; for example [\"git\", \"pull\"].",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sandbox_permissions": {
+            "type": "string",
+            "description": "Per-command sandbox override. Defaults to `use_default`; use `require_escalated` for unsandboxed execution.",
+            "enum": [
+              "use_default",
+              "require_escalated"
+            ]
+          },
+          "shell": {
+            "type": "string",
+            "description": "Shell binary to launch. Defaults to the user's default shell."
+          },
+          "tty": {
+            "type": "boolean",
+            "description": "True allocates a PTY for the command; false or omitted uses plain pipes."
+          },
+          "workdir": {
+            "type": "string",
+            "description": "Working directory for the command. Defaults to the turn cwd."
+          },
+          "yield_time_ms": {
+            "type": "number",
+            "description": "Wait before yielding output. Defaults to 10000 ms; effective range is 250-30000 ms."
+          }
+        },
+        "required": [
+          "cmd"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "protocol": "responses",
+      "actualToolReceipt": "\"Chunk ID: c49109\\nWall time: 8.0023 seconds\\nProcess running with session ID 21478\\nOriginal token count: 0\\nOutput:\\n\"",
+      "at": 1795654472665
+    },
+    {
+      "protocol": "responses",
+      "at": 1795654472666,
+      "name": "write_stdin",
+      "input": {
+        "session_id": 21478,
+        "chars": "",
+        "yield_time_ms": 3000,
+        "max_output_tokens": 3000
+      },
+      "actualContract": {
+        "type": "object",
+        "properties": {
+          "chars": {
+            "type": "string",
+            "description": "Bytes to write to stdin. Defaults to empty, which polls without writing."
+          },
+          "max_output_tokens": {
+            "type": "number",
+            "description": "Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy."
+          },
+          "session_id": {
+            "type": "number",
+            "description": "Identifier of the running unified exec session."
+          },
+          "yield_time_ms": {
+            "type": "number",
+            "description": "Wait before yielding output. Non-empty writes default to 250 ms and cap at 30000 ms; empty polls wait 5000-300000 ms by default."
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "protocol": "responses",
+      "actualToolReceipt": "\"Chunk ID: e6ec3c\\nWall time: 2.7762 seconds\\nProcess exited with code 2\\nOriginal token count: 94\\nOutput:\\nwillyou-app: BROWSER_TIMEOUT\\n{\\\"error\\\":{\\\"effectState\\\":\\\"read-only\\\",\\\"code\\\":\\\"BROWSER_TIMEOUT\\\",\\\"layer\\\":\\\"provider\\\",\\\"message\\\":\\\"CDP Page.captureScreenshot 超时\\\",\\\"retryable\\\":false,\\\"attemptCount\\\":1,\\\"nextAction\\\":\\\"核对本次错误后重新明确操作\\\",\\\"retryExhausted\\\":false},\\\"operationId\\\":\\\"8dbf7db3-2380-4b96-a614-97322f157565\\\",\\\"requestId\\\":\\\"8850334c-2745-4588-9563-c6e787a10cb1\\\"}\\n\"",
+      "at": 1795654475456
+    },
+    {
+      "protocol": "responses",
+      "assistant": "normal synthetic completion",
+      "at": 1795654478132
+    }
+  ],
+  "priorHiddenResult": "2bdba30336bc74d59e572fc35094e987cd7c4cfeafb9dbfc31fd81d2c165574f",
+  "retainedC14ProductRed": "baf71daed4d420adbc3d81ffa1d5ab9830e8d61457a5c7d04641775bebb90955",
+  "retainedC14ApiHypothesis": "8301a5d7b883d00d4129727e5ee95e7a3cffc23a50f939b7c66ea54cb4005a8b",
+  "originalGateSha": "d9e3febe28b577d5793df99aa619baea6556bf63808ab1e2c1d4b0658159955e",
+  "fixtureOrigin": "http://127.0.0.1:3425",
+  "pid": 36293,
+  "fixture": {
+    "t1": "90f3ce39-6fed-47ec-afa4-7966c36ce3a1",
+    "t2": "8fb41933-eb4a-4196-8370-af64d649aeb2",
+    "project": "5f2e3da8-cac0-4db5-a7f9-ea16af2f255a",
+    "origin": "http://127.0.0.1:3425"
+  },
+  "baseline": {
+    "c": {
+      "id": "a49beda2-20d8-4917-9e3e-843bb50eea5a",
+      "url": "http://127.0.0.1:3425/C",
+      "profile": "project-0e677fc43abdabaddf060a13",
+      "wc": 2,
+      "bounds": {
+        "x": 770,
+        "y": 97,
+        "width": 624,
+        "height": 797
+      }
+    },
+    "doc": {
+      "marker": "aadda00e-9985-4588-bbd1-397d8a760c35",
+      "form": "unchanged/ native-hidden-observeC",
+      "color": "rgb(214, 41, 56)",
+      "count": 1,
+      "width": 624,
+      "height": 797,
+      "dpr": 2
+    },
+    "actualBefore": {
+      "rootId": 1,
+      "rootCount": 1,
+      "rootVisible": true,
+      "rootMinimized": false,
+      "shellId": 1,
+      "childId": 2,
+      "alive": true,
+      "paintVisible": true,
+      "front": true,
+      "bounds": {
+        "x": 770,
+        "y": 97,
+        "width": 624,
+        "height": 797
+      },
+      "layerOrder": [
+        {
+          "id": 1,
+          "visible": true,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1400,
+            "height": 900
+          },
+          "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html"
+        },
+        {
+          "id": 2,
+          "visible": true,
+          "bounds": {
+            "x": 770,
+            "y": 97,
+            "width": 624,
+            "height": 797
+          },
+          "url": "http://127.0.0.1:3425/C"
+        }
+      ],
+      "at": 1795654463116
+    }
+  },
+  "nativeVisibility": [
+    {
+      "prior": {
+        "visible": true,
+        "minimized": false,
+        "count": 1,
+        "id": 1
+      },
+      "after": {
+        "visible": false,
+        "minimized": false,
+        "id": 1
+      },
+      "action": "hide",
+      "at": 1795654464493
+    },
+    {
+      "prior": {
+        "visible": false,
+        "minimized": false,
+        "count": 1,
+        "id": 1
+      },
+      "after": {
+        "visible": true,
+        "minimized": false,
+        "id": 1
+      },
+      "action": "showInactive",
+      "at": 1795654478199
+    }
+  ],
+  "observedStart": {
+    "ownedObserver": {
+      "id": 2,
+      "key": "Symbol(willyou.qa.b03.observe-capture.2)",
+      "host": {
+        "id": 1,
+        "visible": true,
+        "minimized": false
+      },
+      "at": 1795654464490,
+      "boundary": "Exact own WC observer only, original native promise returned synchronously unchanged, no artificial delay or security/product changes"
+    },
+    "comparable": {
+      "shape": {
+        "width": 624,
+        "height": 797,
+        "dpr": 2
+      },
+      "native": {
+        "rootId": 1,
+        "rootCount": 1,
+        "rootVisible": true,
+        "rootMinimized": false,
+        "shellId": 1,
+        "childId": 2,
+        "alive": true,
+        "paintVisible": true,
+        "front": true,
+        "bounds": {
+          "x": 770,
+          "y": 97,
+          "width": 624,
+          "height": 797
+        },
+        "layerOrder": [
+          {
+            "id": 1,
+            "visible": true,
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 1400,
+              "height": 900
+            },
+            "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html"
+          },
+          {
+            "id": 2,
+            "visible": true,
+            "bounds": {
+              "x": 770,
+              "y": 97,
+              "width": 624,
+              "height": 797
+            },
+            "url": "http://127.0.0.1:3425/C"
+          }
+        ],
+        "at": 1795654464490
+      },
+      "document": {
+        "marker": "aadda00e-9985-4588-bbd1-397d8a760c35",
+        "form": "unchanged/ native-hidden-observeC",
+        "color": "rgb(214, 41, 56)",
+        "count": 1,
+        "width": 624,
+        "height": 797,
+        "dpr": 2
+      }
+    },
+    "hide": {
+      "prior": {
+        "visible": true,
+        "minimized": false,
+        "count": 1,
+        "id": 1
+      },
+      "after": {
+        "visible": false,
+        "minimized": false,
+        "id": 1
+      },
+      "action": "hide",
+      "at": 1795654464493
+    },
+    "command": "willyou-app browser screenshot --format png --page a49beda2-20d8-4917-9e3e-843bb50eea5a",
+    "dispatchedAt": 1795654464496
+  },
+  "hiddenSamples": [
+    {
+      "at": 1795654464637,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [],
+      "rows": []
+    },
+    {
+      "at": 1795654464943,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "not-started"
+        }
+      ]
+    },
+    {
+      "at": 1795654465379,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654465568,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654465758,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654465947,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654466137,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654466326,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654466513,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654466702,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654466891,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654467081,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654467269,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654467458,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654467646,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654467835,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654468026,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654468214,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654468403,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654468592,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654468782,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654468975,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654469167,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654469357,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654469546,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654469735,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654469924,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654470113,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654470304,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654470494,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654470685,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654470877,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654471067,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654471256,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654471446,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654471636,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654471827,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654472018,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654472208,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654472398,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654472590,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654472780,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654472969,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654473160,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654473350,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654473541,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654473732,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654473922,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654474113,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654474303,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654474495,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654474686,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654474876,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654475066,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654475257,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "running",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": null,
+          "error_code": null,
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654475455,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654475644,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654475832,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654476026,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654476217,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654476408,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654476599,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654476789,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654476979,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654477170,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654477362,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654477553,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654477744,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654477936,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    },
+    {
+      "at": 1795654478127,
+      "rootId": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "paintVisible": true,
+      "events": [
+        {
+          "kind": "native",
+          "startedAt": 1795654465404,
+          "hostAtStart": {
+            "id": 1,
+            "visible": false,
+            "minimized": false
+          },
+          "parameters": {
+            "rect": null,
+            "options": {
+              "stayHidden": false
+            }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+          "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+          "tool_name": "browser.nav.screenshot",
+          "state": "failed",
+          "started_at": "2026-11-26T00:54:24.933Z",
+          "ended_at": "2026-11-26T00:54:35.437Z",
+          "error_code": "BROWSER_TIMEOUT",
+          "effect_state": "read-only"
+        }
+      ]
+    }
+  ],
+  "noPollBoundary": {
+    "session": null,
+    "advertisedPoll": true,
+    "polls": 1
+  },
+  "hiddenEnd": {
+    "at": 1795654478128,
+    "typed": null,
+    "rawReceipts": [
+      {
+        "output": "Chunk ID: c49109\nWall time: 8.0023 seconds\nProcess running with session ID 21478\nOriginal token count: 0\nOutput:\n",
+        "at": 1795654472665
+      },
+      {
+        "output": "Chunk ID: e6ec3c\nWall time: 2.7762 seconds\nProcess exited with code 2\nOriginal token count: 94\nOutput:\nwillyou-app: BROWSER_TIMEOUT\n{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"CDP Page.captureScreenshot 超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"8dbf7db3-2380-4b96-a614-97322f157565\",\"requestId\":\"8850334c-2745-4588-9563-c6e787a10cb1\"}\n",
+        "at": 1795654475456
+      }
+    ],
+    "nativeEvents": [
+      {
+        "kind": "native",
+        "startedAt": 1795654465404,
+        "hostAtStart": {
+          "id": 1,
+          "visible": false,
+          "minimized": false
+        },
+        "parameters": {
+          "rect": null,
+          "options": {
+            "stayHidden": false
+          }
+        }
+      }
+    ],
+    "terminalRow": {
+      "operation_id": "8dbf7db3-2380-4b96-a614-97322f157565",
+      "request_id": "8850334c-2745-4588-9563-c6e787a10cb1",
+      "tool_name": "browser.nav.screenshot",
+      "state": "failed",
+      "started_at": "2026-11-26T00:54:24.933Z",
+      "ended_at": "2026-11-26T00:54:35.437Z",
+      "error_code": "BROWSER_TIMEOUT",
+      "effect_state": "read-only"
+    },
+    "current": {
+      "rootId": 1,
+      "rootCount": 1,
+      "rootVisible": false,
+      "rootMinimized": false,
+      "shellId": 1,
+      "childId": 2,
+      "alive": true,
+      "paintVisible": true,
+      "front": true,
+      "bounds": {
+        "x": 770,
+        "y": 132,
+        "width": 624,
+        "height": 762
+      },
+      "layerOrder": [
+        {
+          "id": 1,
+          "visible": true,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1400,
+            "height": 900
+          },
+          "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html"
+        },
+        {
+          "id": 2,
+          "visible": true,
+          "bounds": {
+            "x": 770,
+            "y": 132,
+            "width": 624,
+            "height": 762
+          },
+          "url": "http://127.0.0.1:3425/C"
+        }
+      ],
+      "at": 1795654478130
+    },
+    "document": {
+      "marker": "aadda00e-9985-4588-bbd1-397d8a760c35",
+      "form": "unchanged/ native-hidden-observeC",
+      "color": "rgb(214, 41, 56)",
+      "count": 1,
+      "width": 624,
+      "height": 762,
+      "dpr": 2
+    },
+    "sampleCount": 70
+  },
+  "restore": {
+    "restored": {
+      "prior": {
+        "visible": false,
+        "minimized": false,
+        "count": 1,
+        "id": 1
+      },
+      "after": {
+        "visible": true,
+        "minimized": false,
+        "id": 1
+      },
+      "action": "showInactive",
+      "at": 1795654478199
+    },
+    "returnPage": {
+      "actual": {
+        "id": "a49beda2-20d8-4917-9e3e-843bb50eea5a",
+        "url": "http://127.0.0.1:3425/C",
+        "profile": "project-0e677fc43abdabaddf060a13",
+        "wc": 2,
+        "bounds": {
+          "x": 770,
+          "y": 132,
+          "width": 624,
+          "height": 762
+        }
+      },
+      "after": {
+        "marker": "aadda00e-9985-4588-bbd1-397d8a760c35",
+        "form": "unchanged/ native-hidden-observeC",
+        "color": "rgb(214, 41, 56)",
+        "count": 1,
+        "width": 624,
+        "height": 762,
+        "dpr": 2
+      }
+    },
+    "eventsAfter": [
+      {
+        "kind": "native",
+        "startedAt": 1795654465404,
+        "hostAtStart": {
+          "id": 1,
+          "visible": false,
+          "minimized": false
+        },
+        "parameters": {
+          "rect": null,
+          "options": {
+            "stayHidden": false
+          }
+        },
+        "completedAt": 1795654478205,
+        "hostAtCompletion": {
+          "id": 1,
+          "visible": true,
+          "minimized": false
+        },
+        "nativeImageSize": {
+          "width": 1248,
+          "height": 1524
+        },
+        "empty": false
+      }
+    ]
+  },
+  "status": "B03.2-hidden-screenshot-not-proven",
+  "windowsBeforeQuit": [
+    {
+      "id": 1,
+      "title": "WillYou",
+      "visible": true,
+      "minimized": false,
+      "bounds": {
+        "x": 56,
+        "y": 33,
+        "width": 1400,
+        "height": 900
+      },
+      "children": [
+        {
+          "id": 1,
+          "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+          "visible": true,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1400,
+            "height": 900
+          }
+        },
+        {
+          "id": 2,
+          "url": "http://127.0.0.1:3425/C",
+          "visible": true,
+          "bounds": {
+            "x": 770,
+            "y": 132,
+            "width": 624,
+            "height": 762
+          }
+        }
+      ]
+    }
+  ],
+  "exit": {
+    "pid": 36293,
+    "code": 0,
+    "signal": null
+  },
+  "originalGateUnchanged": true,
+  "finishedAt": "2026-11-26T00:54:38.598Z"
+}

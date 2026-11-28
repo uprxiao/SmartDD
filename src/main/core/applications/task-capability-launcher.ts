@@ -1,3 +1,4 @@
+import {standaloneTaskId,verifyStandaloneScope,taskApplicationScope} from '../agent/task-application-scope';
 import { AgentBusinessTools } from './agent-business-tools';
 import {SkillObservationMonitor} from './skill-observation-monitor';
 import {BridgeSupervisor} from './bridge-supervisor';
@@ -116,6 +117,7 @@ export class ManagedTaskCapabilities {
       return createApplicationRunPlan({runId,snapshotHash,snapshot:selected,applications:sources,skills,available,sandbox:this.planningCliPolicies.has(snapshot.taskId)?{source:this.planningCliPolicies.get(snapshot.taskId)!.source,digest:this.planningCliPolicies.get(snapshot.taskId)!.digest}:undefined,cliVersion:this.planningAgents.get(snapshot.taskId)?.version??'unverified'});
     },assertCurrent:snapshot=>{
       // Application enablement and current slots belong to each business call, not Agent liveness.
+      if(standaloneTaskId(snapshot.projectId)){if(!verifyStandaloneScope(store.sqlite,snapshot.projectId,snapshot.taskId)||snapshot.packages.some(p=>p.appId!=='browser')||snapshot.schema===3&&snapshot.externalPlugins?.length)throw new ApplicationError('SCOPE_DENIED','通用任务作用域已失效');return;}
       const project=store.sqlite.prepare('SELECT archived_at FROM projects WHERE id=?').get(snapshot.projectId) as {archived_at:number|null}|undefined;
       if(!project||project.archived_at!==null)throw new ApplicationError('SCOPE_DENIED','项目已删除或归档，不能继续使用此运行');
     },revoke:runId=>{const recoveryService=this.recoveryServices.get(runId);if(recoveryService)this.bridgeRecovery.revoke(runId,recoveryService);this.broker?.revokeRun(runId);this.cli?.revokeRun(runId);this.bridges?.revokeRun(runId);this.backends?.revokeRun(runId);const entry=this.active.get(runId),backend=entry?.codex?.stop();if(entry)this.options.stopPty(entry.run.ptyId);return backend;}});
@@ -190,6 +192,7 @@ export class ManagedTaskCapabilities {
   protected assertInitialSelection(snapshot:CapabilitySessionSnapshot):void{
     assertNoPendingApplicationSwitch(this.support.store,snapshot);
     const store=this.support.store,apps=this.selectedApps(snapshot.projectId);
+    if(standaloneTaskId(snapshot.projectId)){if(!verifyStandaloneScope(store.sqlite,snapshot.projectId,snapshot.taskId)||snapshot.packages.some(p=>p.appId!=='browser')||canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('SCOPE_DENIED','通用任务作用域已失效');return;}
     if(canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目应用或默认版本已变化');
     const bindings=this.bindings(snapshot.projectId,snapshot.packages.map(p=>p.appId));
     for(const app of snapshot.packages){const current=bindings.filter(b=>b.appId===app.appId&&b.connectionId).map(b=>({bindingId:`${snapshot.projectId}:${app.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!}));if(canonicalJson(current)!==canonicalJson(app.bindings))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目连接选择已变化');}
@@ -263,7 +266,7 @@ export class ManagedTaskCapabilities {
   }
   recordAgentHumanInput(runId:string,sender:import('./execution-context').ApplicationUiSender,text:string,sequence:number){const context=this.runs.assertActive(runId),row=this.support.store.sqlite.prepare('SELECT pty_id FROM capability_runs WHERE run_id=? AND binding_id IS NOT NULL').get(runId) as {pty_id:string}|undefined;if(row)this.applications.nativeInputs.observeAgent(sender,context,row.pty_id,text,sequence);}
   agentContext(runId:string){return this.runs.assertActive(runId);}
-  assertAgentApplication(taskId:string,appId:'browser'){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string}|undefined;if(!task)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(task.project_id,appId);}
+  assertAgentApplication(taskId:string,appId:'browser'){const scope=taskApplicationScope(this.support.store.sqlite,taskId);if(!scope)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(scope,appId);}
   async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; checkedCli?: CheckedNativeCli; applicationScope?: 'browser'; managedCodexHome?: string; projectContext?: { serverName: string; runtimeHash: string }; assertCurrent(): void }): Promise<ApplicationRunIntegration> {
     if (this.closed) throw new ApplicationError('CANCELED', '应用服务已关闭');
     const store = this.support.store, task = input.task, runner = this.support.adapters.deliveryAdapters.forRunner(task.profile.runner).id;

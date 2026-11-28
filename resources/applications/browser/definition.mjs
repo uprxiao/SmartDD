@@ -5,7 +5,7 @@ const mcpDescriptions = {
   'tab.list': 'List WillYou browser tabs in this task and their pageIds.',
   'tab.current': 'Read the current WillYou browser tab.',
   'tab.create': 'Create a WillYou browser tab, optionally opening url. Returns pageId for future calls.',
-  'tab.open': 'Open or reuse a WillYou tab in the current task. Supply an HTTP(S) url or existing pageId. Returns a pageId and navigation phase early. Keep the pageId to observe that tab.',
+  'tab.open': 'Open or reuse a WillYou tab in the current task. Supply exactly one HTTP(S) url or an existing pageId; pageId keeps its original identity. For a new target or intent use a new request ID. Returns a pageId and navigation phase early. Keep the pageId to observe that tab.',
   'tab.switch': 'Select an existing WillYou browser tab by pageId or index.',
   'tab.close': 'Close an existing WillYou browser tab.',
   'nav.goto': 'Navigate an existing WillYou browser tab to url. Pass the tab pageId as page.',
@@ -56,7 +56,7 @@ export function browserDefinition(runtime, resultEnvelope) {
   return {
     schema: 'smartdd-app-package-v2',
     appId: 'browser',
-    version: '0.1.4',
+    version: '0.1.5',
     displayName: '浏览器',
     description: '通过宿主工具使用本任务的内置浏览器。',
     hostApi: { min: 1, max: 1 },

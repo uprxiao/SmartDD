@@ -10,6 +10,7 @@ import type { FileService } from './file-service';
 import type { FileWorkspacePersistence } from './workspace-persistence';
 
 const native = vi.hoisted(() => ({ choose: vi.fn(), window: { isDestroyed: () => false } }));
+vi.mock('@main/app/window-host',()=>({mainWindowForContents:()=>native.window}));
 vi.mock('electron', () => ({ BrowserWindow: { fromWebContents: () => native.window }, dialog: { showSaveDialog: native.choose }, shell: { openExternal: vi.fn() } }));
 
 describe('file IPC sender boundary', () => {

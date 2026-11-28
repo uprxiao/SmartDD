@@ -1,4 +1,5 @@
-import { app, session, WebContentsView, type BrowserWindow, type Session } from 'electron';
+import {claimNativeFront,releaseNativeFront} from '@main/app/window-host';
+import { app, session, WebContentsView, type BaseWindow, type WebContents, type Session } from 'electron';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import { HTML_LIMITS, HTML_SCHEME, htmlBoundsSchema, htmlOpenSchema, type HtmlOpenInput, type HtmlPreviewState, type HtmlViewBounds } from '@shared/file-html';
@@ -8,7 +9,7 @@ import { buildHtmlResources, type HtmlSource } from './resources';
 import { htmlBounds, htmlLookup, htmlRequestType, HtmlResponses } from './policy';
 
 interface Preview {
-  owner: string; id: string; parent: BrowserWindow; abort: AbortController; source: HtmlSource;
+  owner: string; id: string; parent: BaseWindow; parentContents: WebContents; abort: AbortController; source: HtmlSource;
   state: HtmlPreviewState; emit(value: HtmlPreviewState): void; cleanups: (() => void)[];
   parser?: HtmlReferenceParser; view?: WebContentsView; bounds?: HtmlViewBounds; sheet: boolean;
 }
@@ -25,7 +26,7 @@ export class FileHtmlService {
   private readonly cancelled = new Map<string, number>();
   constructor(private readonly resolve: (owner: string, ref: FileRef) => HtmlSource, private readonly worker = join(__dirname, 'm9-html-resources.js')) {}
 
-  async open(owner: string, raw: HtmlOpenInput, parent: BrowserWindow, emit: (value: HtmlPreviewState) => void): Promise<HtmlPreviewState> {
+  async open(owner: string, raw: HtmlOpenInput, parent: BaseWindow, emit: (value: HtmlPreviewState) => void, parentContents: WebContents): Promise<HtmlPreviewState> {
     const input = htmlOpenSchema.parse(raw), key = `${owner}/${input.id}`;
     this.pruneCancelled();
     if (this.cancelled.has(key)) throw new FileError('CANCELLED', 'HTML预览已取消');
@@ -37,7 +38,7 @@ export class FileHtmlService {
     const previous = this.previews.get(owner); if (previous?.id === input.id) throw new FileError('IDEMPOTENCY', 'HTML预览编号已使用');
     if (previous) this.drop(previous);
     if (this.previews.size >= 4) throw new FileError('TOO_LARGE', '当前HTML预览数量已达上限');
-    const record: Preview = { owner, id: input.id, parent, source, abort: new AbortController(), state: { state: 'loading', warnings: [], blockedRequests: 0 }, emit: (value) => { try { emit(value); } catch { /* Renderer has navigated or closed; lifecycle releases the view. */ } }, cleanups: [], sheet: false };
+    const record: Preview = { owner, id: input.id, parent, parentContents, source, abort: new AbortController(), state: { state: 'loading', warnings: [], blockedRequests: 0 }, emit: (value) => { try { emit(value); } catch { /* Renderer has navigated or closed; lifecycle releases the view. */ } }, cleanups: [], sheet: false };
     this.previews.set(owner, record);
     const alive = () => !record.abort.signal.aborted && this.previews.get(owner) === record;
     const invalidate = () => this.fail(record, 'HTML所属文件或目录已关闭，请重新打开');
@@ -156,17 +157,17 @@ export class FileHtmlService {
     while (this.cancelled.size > 2048) this.cancelled.delete(this.cancelled.keys().next().value!);
   }
   private layout(record: Preview): void {
-    if (!record.view || record.parent.isDestroyed()) return;
+    if (!record.view || record.parent.isDestroyed() || record.parentContents.isDestroyed()) return;
     const input = record.bounds, [width, height] = record.parent.getContentSize();
-    const rect = input ? htmlBounds(input, width, height, record.parent.webContents.getZoomFactor()) : { x: 0, y: 0, width: 0, height: 0 };
+    const rect = input ? htmlBounds(input, width, height, record.parentContents.getZoomFactor()) : { x: 0, y: 0, width: 0, height: 0 };
     const visible = record.state.state === 'ready' && !!input?.visible && !record.sheet && rect.width > 0 && rect.height > 0 && record.parent.isVisible() && !record.parent.isMinimized();
     if (!visible) this.returnFocus(record, record.view);
-    record.view.setBounds(rect); record.view.setVisible(visible);
+    const view=record.view;view.setBounds(rect);if(visible)claimNativeFront(record.parent,view,()=>{if(!view.webContents.isDestroyed())view.setVisible(false);});else{releaseNativeFront(record.parent,view);view.setVisible(false);}
   }
   private returnFocus(record: Preview, view: WebContentsView): void {
     // Hiding a native child does not move its keyboard focus. Return it to the
     // App so Escape/menu shortcuts work, without stealing a system sheet's focus.
-    if (!record.sheet && !record.parent.isDestroyed() && record.parent.isFocused() && record.parent.isVisible() && !record.parent.isMinimized() && !view.webContents.isDestroyed() && view.webContents.isFocused()) record.parent.webContents.focus();
+    if (!record.sheet && !record.parent.isDestroyed() && record.parent.isFocused() && record.parent.isVisible() && !record.parent.isMinimized() && !view.webContents.isDestroyed() && view.webContents.isFocused() && !record.parentContents.isDestroyed()) record.parentContents.focus();
   }
   private fail(record: Preview, message: string, hung = false): void {
     if (record.abort.signal.aborted) return;
@@ -179,7 +180,7 @@ export class FileHtmlService {
     const view = record.view; record.view = undefined;
     if (view) {
       this.returnFocus(record, view);
-      view.setVisible(false); if (!record.parent.isDestroyed()) record.parent.contentView.removeChildView(view);
+      releaseNativeFront(record.parent,view); view.setVisible(false); if (!record.parent.isDestroyed()) record.parent.contentView.removeChildView(view);
       if (!view.webContents.isDestroyed()) { if (hung) view.webContents.forcefullyCrashRenderer(); view.webContents.close({ waitForBeforeUnload: false }); }
     }
     record.cleanups.splice(0).forEach((cleanup) => cleanup());

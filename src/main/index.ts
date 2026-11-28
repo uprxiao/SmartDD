@@ -1,4 +1,5 @@
-import { applicationChildEnvironment } from './launch-env';
+import {taskApplicationScope} from './core/agent/task-application-scope';
+import { applicationChildEnvironment, applicationScopedHome } from './launch-env';
 import { AgentTransferService } from './core/ai/agent-transfer';
 import {BrowserService} from './core/browser/service';
 import {browserDigest} from './core/browser/artifacts';
@@ -8,7 +9,7 @@ import {pluginHostReadOnlyRoots} from './core/applications/plugins/host-paths';
 import {existsSync,readFileSync} from 'node:fs';
 import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
 import { join } from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification, shell } from 'electron';
+import { app, dialog, ipcMain, globalShortcut, Notification, powerMonitor, shell } from 'electron';
 import {
   agentToolsChangedEvent,
   aiProfilesChangedEvent,
@@ -30,7 +31,8 @@ import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
 import { appIcon } from './app/icon';
-import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, markAppQuitting, showMainWindow } from './app/window';
+import { observeMainShell } from './app/window-host';
+import { applyNativeTheme, beginAppShutdown, createMainWindow, ensureMainWindow, getMainWindow, getMainWindowContents, isMainRenderer, markAppQuitting, showMainWindow } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { AgentService } from './core/ai/agent-service';
 import { ProviderService } from './core/ai/provider-service';
@@ -61,7 +63,10 @@ import { PtyAccess, registerPtyInput } from './pty-access';
 import { createRpcRouter } from './rpc';
 import { randomUUID as agentInstanceId } from 'node:crypto';
 import { createAgentWorkspace } from './core/agent/wiring';
-import { agentTaskEvent, agentTaskLiveEvent } from '@shared/events';
+import {ScheduleService} from './core/schedules/service';
+import {ScheduleNativeNotifications} from './core/schedules/native-notifications';
+import {scheduledWorkspaceForTask} from './core/schedules/workspace-authority';
+import { agentTaskEvent, agentTaskLiveEvent, scheduleChangedEvent, scheduleOpenEvent } from '@shared/events';
 import { safeStorageCipher } from './safe-storage-cipher';
 import { SecretsStore } from './secrets';
 import { VoiceService } from './core/voice/voice-service';
@@ -96,9 +101,13 @@ function baseEnv(): Record<string, string> {
   return applicationChildEnvironment(process.env);
 }
 
+function scopedHome(): string {
+  return applicationScopedHome(app.getPath('home'),process.env);
+}
+
 const events = createEventEmitter({
   emit: (channel, data) => {
-    getMainWindow()?.webContents.send(channel, data);
+    getMainWindowContents()?.send(channel, data);
   },
   on: (channel, cb) => {
     const listener = (_e: Electron.IpcMainEvent, data: unknown) => cb(data);
@@ -161,14 +170,14 @@ async function main(): Promise<void> {
   const agents = new AgentService(client.db, secrets);
   const providers = new ProviderService(client.db, secrets, agents);
   const agentTransfer = new AgentTransferService(client.db,secrets,agents,providers);
-  const agentTools = new AgentToolService(agents, { env: baseEnv, onChanged: () => events.emit(agentToolsChangedEvent, undefined) });
+  const agentTools = new AgentToolService(agents, { env: baseEnv, probeLoginStatus:!process.env.SMARTDD_CLI_HOME, onChanged: () => events.emit(agentToolsChangedEvent, undefined) });
   void agentTools.refresh().catch(() => console.warn('[agents] Tool detection incomplete; retry from agent settings'));
   const projectTransfer = new ProjectTransferService({ db: client.db, secrets, projects, profiles: aiProfiles, userData: app.getPath('userData'), appVersion: app.getVersion(), env: baseEnv });
   try { projectTransfer.recover(); }
   catch { console.warn('[project-transfer] recovery pending: check managed-key storage before importing'); }
   const capabilities = new CapabilityService({ db: client.db, projects, secrets, userData: app.getPath('userData') });
   let applications:ApplicationService|undefined;
-  const capabilityRegistry=new CapabilityRegistryService(client.db,()=>capabilityScanContexts(app.getPath('home'),baseEnv(),managedSourceProfiles(app.getPath('userData'),aiProfiles.list(),agents.configs(),agents.providers()),projects.listProjects().flatMap(p=>projects.getProject(p.id).dirs.map(dir=>dir.path))),()=>Date.now(),{revoke:id=>skillProjection.revoke(id),afterScan:()=>skillProjection.reconcileSources(),pluginSkills:()=>applications?.plugins?.catalog().flatMap(plugin=>{
+  const capabilityRegistry=new CapabilityRegistryService(client.db,()=>capabilityScanContexts(scopedHome(),baseEnv(),managedSourceProfiles(app.getPath('userData'),aiProfiles.list(),agents.configs(),agents.providers()),projects.listProjects().flatMap(p=>projects.getProject(p.id).dirs.map(dir=>dir.path))),()=>Date.now(),{revoke:id=>skillProjection.revoke(id),afterScan:()=>skillProjection.reconcileSources(),pluginSkills:()=>applications?.plugins?.catalog().flatMap(plugin=>{
     const stored=applications!.plugins!.lifecycle.packages.get(plugin.hash!);
     return stored.plugin.skills.map(skill=>({appId:plugin.appId,pluginName:plugin.displayName,id:skill.id,path:join(stored.directory,skill.path),version:plugin.version!,enabled:plugin.enabled}));
   })??[]});
@@ -193,9 +202,9 @@ async function main(): Promise<void> {
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
   const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,agentTools,providers,capabilities,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,capabilityRegistry,
-    host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e),ptys});
+    host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e),onTaskRemoved:browserOrphans,ptys});
   const fileBroker = new NativeFileBroker(app.isPackaged ? join(process.resourcesPath, 'native/willyou-files') : join(app.getAppPath(), 'out/native/willyou-files'));
-  const fileSources = new FileSourceResolver(client.db);agentWorkspace.attachFiles(fileSources);
+  const fileSources = new FileSourceResolver(client.db,id=>scheduledWorkspaceForTask(client.sqlite,id,baseEnv().HOME??app.getPath('home')));agentWorkspace.attachFiles(fileSources);
   const diagrams = new FileDiagramRenderer(join(app.getAppPath(), 'out/renderer'), process.env.ELECTRON_RENDERER_URL);
   const engineConfiguration = (engine: 'tex' | 'office' | 'libreoffice') => process.platform === 'darwin' ? { directory: app.isPackaged ? join(process.resourcesPath, 'native', engine) : join(app.getAppPath(), 'out/native', engine), userData: app.getPath('userData'), packagePath: app.isPackaged ? join(process.resourcesPath, '../..') : undefined } : undefined;
   const files = new FileService(new FileRootsService(fileSources, fileBroker), fileBroker, new FileRecoveryStore(fileBroker, app.getPath('userData'), fileSources), diagrams, { get: () => settings.get('fileOpener'), set: (value) => settings.update('fileOpener', value) }, engineConfiguration('tex'), engineConfiguration('office'), undefined, engineConfiguration('libreoffice'), undefined, undefined, { get: () => settings.get('fileViewers'), set: value => settings.update('fileViewers', value) }, { get: () => settings.get('fileLanguages'), set: value => settings.update('fileLanguages', value) });
@@ -224,11 +233,14 @@ async function main(): Promise<void> {
       const browserRoot=app.isPackaged?join(process.resourcesPath,'agent-browser'):join(app.getAppPath(),'out/agent-browser');
       if(process.platform==='darwin'&&existsSync(join(browserRoot,'SOURCE.json'))){
         const source=JSON.parse(readFileSync(join(browserRoot,'SOURCE.json'),'utf8')),binary=source.files.find((file:{arch:string})=>file.arch===process.arch);
-        if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,taskDirectory:id=>(agentSupport.store.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null,window:getMainWindow,changed:taskId=>{events.emit(browserChangedEvent,{taskId});browserLoginChanged?.(taskId);},accessChanged:()=>events.emit(browserAccessChangedEvent,{}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
+        if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),...(process.env.SMARTDD_CLI_HOME?{workspaceHome:scopedHome()}:{}),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>taskApplicationScope(agentSupport.store.sqlite,id),taskOwnerExists:id=>!!agentSupport.store.sqlite.prepare('SELECT 1 FROM tasks WHERE id=?').get(id),taskDirectory:id=>(agentSupport.store.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null,window:getMainWindow,ensureWindow:ensureMainWindow,scheduledRun:runId=>Boolean(agentWorkspace.store.scheduledOrigin(agentWorkspace.runs.active(runId)?.turnId)),changed:taskId=>{events.emit(browserChangedEvent,{taskId});browserLoginChanged?.(taskId);},accessChanged:()=>events.emit(browserAccessChangedEvent,{}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
       }
+      if(browser)observeMainShell(()=>{browser?.workspace.invalidateShell();browser?.presentation.invalidate();});
       browser?.attachOpenPresentation((scope,pageId)=>{
         const clientInputId=agentWorkspace.requests.browserPresentationInput(scope.taskId,scope.runId,scope.operationId);
-        if(clientInputId)events.emit(browserOpenPresentationEvent,{taskId:scope.taskId,pageId,operationId:scope.operationId,clientInputId});
+        if(!clientInputId)return Promise.resolve('unavailable' as const);
+        const intent={taskId:scope.taskId,pageId,operationId:scope.operationId,clientInputId};
+        return browser!.presentation.request(intent,()=>events.emit(browserOpenPresentationEvent,intent));
       });
       browser?.attachScriptUpdates((taskId,executionId)=>events.emit(browserScriptChangedEvent,{taskId,executionId}));
       browser?.attachCheckpointUpdates((taskId,receipt)=>agentWorkspace.store.upsertItem({
@@ -241,7 +253,7 @@ async function main(): Promise<void> {
       await applications.recover();
       if(browser)installBrowserProjectDefaults(projects,applications.selections,()=>events.emit(applicationsChangedEvent,undefined));
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
-        managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),skillLibraryHome:app.getPath('home'),cleanupUnattributable:app.isPackaged,stopPty:id=>ptys.kill(id)});
+        managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),skillLibraryHome:scopedHome(),cleanupUnattributable:app.isPackaged,stopPty:id=>ptys.kill(id)});
         agentWorkspace.attachBusiness(managedTasks);
         if(browser){
           agentWorkspace.attachBrowser(browser);
@@ -272,7 +284,7 @@ async function main(): Promise<void> {
   } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}
 
   const voice = new VoiceService({
-    adapter: new TypelessAdapter(app.isPackaged ? join(process.resourcesPath, 'native/smartdd-voice') : join(app.getAppPath(), 'out/native/smartdd-voice')),
+    adapter: new TypelessAdapter(app.isPackaged ? join(process.resourcesPath, 'native/smartdd-voice') : join(app.getAppPath(), 'out/native/smartdd-voice'),scopedHome()),
     settings: { get: () => settings.get('voice'), save: (value) => settings.update('voice', value) },
     shortcuts: globalShortcut,
     focused: () => Boolean(getMainWindow()?.isFocused()),
@@ -294,6 +306,15 @@ async function main(): Promise<void> {
       toggleLeftSidebar: () => events.emit(menuToggleLeftSidebarEvent, undefined),
     });
 
+  const scheduleNotifications=new ScheduleNativeNotifications({
+    create:options=>{if(!Notification.isSupported())throw new Error('系统通知不可用');return new Notification(options);},
+    open:async target=>{await showMainWindow();events.emit(scheduleOpenEvent,target);},
+    error:error=>console.warn('[schedule] native notification route failed',error instanceof Error?error.name:'Error'),
+    // On macOS getHistory is authoritative for delivered native IDs. Only IDs
+    // are used and only this presenter's own absent entries can be released.
+    ...(process.platform==='darwin'?{history:async()=>new Set((await Notification.getHistory()).map(n=>n.id))}:{})
+  });
+  const schedules=new ScheduleService({agent:agentWorkspace,home:baseEnv().HOME??app.getPath('home'),userData:app.getPath('userData'),profile:agentWorkspace.scheduleProfile,changed:()=>events.emit(scheduleChangedEvent,undefined),notify:(notice,shown)=>scheduleNotifications.show(notice,shown)});
   registerRPCRouter(
     createRpcRouter({
       files,
@@ -317,6 +338,7 @@ async function main(): Promise<void> {
       applications,
       browser,
       agentWorkspace,
+      schedules,
       onProjectDeleted:browserOrphans,
       ptys,
       ptyAccess,
@@ -332,10 +354,12 @@ async function main(): Promise<void> {
   applyNativeTheme(settings.get('theme'));
   rebuildMenu();
   await createMainWindow();
+  void agentWorkspace.runs.waitForPreviousRecoveries().then(()=>schedules.start());
+  powerMonitor.on('resume',()=>schedules.tick('resume'));
 
   app.on('activate', () => void showMainWindow());
 
-  let quitConfirmed = false, quitPending = false;
+  let quitConfirmed = false, quitPending = false, quitCommitted = false;
   app.on('before-quit', (event) => {
     if (quitConfirmed) return;
     event.preventDefault();
@@ -357,10 +381,11 @@ async function main(): Promise<void> {
       }
     }
     quitPending = true;
+    schedules.pauseClaims();
     void (async () => {
-      const win = getMainWindow();
-      if (win) {
-        const contents = win.webContents, frame = contents.mainFrame;
+      const win = getMainWindow(), contents = getMainWindowContents();
+      if (win && contents) {
+        const frame = contents.mainFrame;
         const owner = `${contents.id}:${frame.processId}:${frame.routingId}`;
         const send = (request: FileCloseRequest) => {
           if (contents.isDestroyed() || contents.mainFrame !== frame) throw new Error('原文件界面已经关闭');
@@ -387,6 +412,8 @@ async function main(): Promise<void> {
         if (!commit.ready) { resume(); return; }
       }
       // 退出已确认（含未保存文件的选择）后，才关闭新任务的 Agent 运行与手动终端，并等其收口再关数据库（复核 CR05）。
+      quitCommitted = true; beginAppShutdown();scheduleNotifications.dispose();
+      await schedules.stop();
       await agentWorkspace.closeAll().catch(() => {});
       ptys.killAll();
       // Keep read-only native evidence and storage available until owned run
@@ -396,10 +423,16 @@ async function main(): Promise<void> {
       await files.watcher.dispose({ shutdown: true });
       quitConfirmed = true; markAppQuitting(); app.quit();
     })().catch((error) => {
-      const win = getMainWindow();
-      if (win) win.webContents.send(fileCloseEvent.name, { id: '', action: 'resume' });
-      dialog.showErrorBox('文件保存确认未完成', rpcErrorMessage(error));
-    }).finally(() => { quitPending = false; });
+      if(quitCommitted){
+        // Confirmation already committed: do not restart a partially disposed scheduler/host.
+        console.error('[shutdown] confirmed teardown failed',error);
+        dialog.showErrorBox('退出清理未完成',rpcErrorMessage(error));
+        quitConfirmed=true;markAppQuitting();app.quit();
+      }else{
+        getMainWindowContents()?.send(fileCloseEvent.name,{id:'',action:'resume'});
+        dialog.showErrorBox('文件保存确认未完成',rpcErrorMessage(error));
+      }
+    }).finally(()=>{quitPending=false;if(!quitCommitted)schedules.resumeClaims();});
   });
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();

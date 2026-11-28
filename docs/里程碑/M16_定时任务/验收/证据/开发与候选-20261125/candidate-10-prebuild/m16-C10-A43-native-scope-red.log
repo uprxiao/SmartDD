@@ -1,0 +1,63 @@
+
+> smartdd@0.1.7 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/profile-launch.test.ts -t 'M16 A43'
+
+[1126/015949.022477:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/015949.358321:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/profile-launch.test.ts (7 tests | 2 failed | 5 skipped) 5ms
+   × M16 A43 standalone Codex excludes the trusted native project and all cwd ancestors on invocation only 4ms
+   × M16 A43 standalone Claude excludes native project/local settings without altering ordinary project launch or personal extension choice 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/profile-launch.test.ts > M16 A43 standalone Codex excludes the trusted native project and all cwd ancestors on invocation only
+AssertionError: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ src/main/core/agent/profile-launch.test.ts:41:100
+     39|   const standalone=resolveProfileLaunch({...f.input,cwd:child,standalo…
+     40|   expect(ordinary.extraArgs.some(a=>a.startsWith('projects='))).toBe(f…
+     41|   const override=standalone.extraArgs.filter(a=>a.startsWith('projects…
+       |                                                                                                    ^
+     42|   const projects=(parseToml(override!) as unknown as {projects:Record<…
+     43|   expect(projects[child]).toEqual({trust_level:'untrusted'});expect(pr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/agent/profile-launch.test.ts > M16 A43 standalone Claude excludes native project/local settings without altering ordinary project launch or personal extension choice
+AssertionError: expected [ 'user', 'project', 'local' ] to deeply equal [ 'user' ]
+
+- Expected
++ Received
+
+  [
+    "user",
++   "project",
++   "local",
+  ]
+
+ ❯ src/main/core/agent/profile-launch.test.ts:54:75
+     52|   const f=fixture(),input={...f.input,config:{...config,kind:'claude' …
+     53|   expect(resolveProfileLaunch(input).settingSources).toEqual(['user','…
+     54|   expect(resolveProfileLaunch({...input,standalone:true}).settingSourc…
+       |                                                                           ^
+     55|   expect(resolveProfileLaunch({...input,standalone:true,carryExtension…
+     56| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 skipped (7)
+   Start at  01:59:49
+   Duration  376ms (transform 138ms, setup 0ms, import 297ms, tests 5ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -449,7 +449,7 @@ export const capabilityBuiltinPackageSources = sqliteTable('capability_builtin_p
 
 // Business provenance retains IDs after project/package cleanup without pinning obsolete code.
 export const applicationDataOperations = sqliteTable('application_data_operations', {
-  operationId:text('operation_id').primaryKey(),callerKind:text('caller_kind').notNull(),scopeKind:text('scope_kind').notNull(),projectId:text('project_id'),taskId:text('task_id'),runId:text('run_id'),jobId:text('job_id'),parentOperationId:text('parent_operation_id'),
+  operationId:text('operation_id').primaryKey(),callerKind:text('caller_kind').notNull(),scopeKind:text('scope_kind').notNull(),standaloneTaskId:text('standalone_task_id'),projectId:text('project_id'),taskId:text('task_id'),runId:text('run_id'),jobId:text('job_id'),parentOperationId:text('parent_operation_id'),
   appId:text('app_id').notNull(),packageHash:text('package_hash').notNull(),dataApi:integer('data_api').notNull(),action:text('action').notNull(),semantics:text('semantics').notNull(),scopeHash:text('scope_hash').notNull(),targetsJson:text('targets_json').notNull().default('[]'),attemptCount:integer('attempt_count').notNull().default(1),state:text('state').notNull(),errorCode:text('error_code'),startedAt:text('started_at').notNull(),endedAt:text('ended_at'),
 },t=>({project:index('application_data_operations_project').on(t.projectId,t.startedAt),activity:index('application_data_operations_activity_time').on(t.startedAt,t.operationId)}));
 export const applicationDataResources = sqliteTable('application_data_resources', {
@@ -562,3 +562,23 @@ export const builtinPluginDefaults=sqliteTable('builtin_plugin_defaults',{
 export const builtinPluginProjectPreferences=sqliteTable('builtin_plugin_project_preferences',{
   projectId:text('project_id').notNull(),appId:text('app_id').notNull(),slot:text('slot').notNull(),mode:text('mode',{enum:['follow','individual']}).notNull(),
 },t=>({pk:primaryKey({columns:[t.projectId,t.appId,t.slot]}),project:foreignKey({columns:[t.projectId,t.appId],foreignColumns:[applicationProjectSettings.projectId,applicationProjectSettings.appId]}).onDelete('cascade')}));
+
+// M16 scheduled plans share the application's existing SQLite transaction boundary.
+export const schedulePlans=sqliteTable('schedule_plans',{
+  id:text('id').primaryKey(),revision:integer('revision').notNull(),schedule:text('schedule').notNull(),config:text('config').notNull(),grace:integer('grace').notNull(),enabled:integer('enabled').notNull(),archived:integer('archived').notNull().default(0),ended:integer('ended').notNull().default(0),nextDue:integer('next_due'),zone:text('zone').notNull(),boundTask:text('bound_task'),repair:text('repair'),createdAt:integer('created_at').notNull(),updatedAt:integer('updated_at').notNull(),
+},t=>({due:index('schedule_due_idx').on(t.nextDue).where(sql`${t.enabled}=1 AND ${t.archived}=0 AND ${t.ended}=0 AND ${t.repair} IS NULL`)}));
+export const scheduleOccurrences=sqliteTable('schedule_occurrences',{
+  id:text('id').primaryKey(),planId:text('plan_id').notNull().references(()=>schedulePlans.id,{onDelete:'restrict'}),revision:integer('revision').notNull(),occurrenceKey:text('occurrence_key').notNull(),trigger:text('trigger').notNull(),due:integer('due').notNull(),claimedAt:integer('claimed_at').notNull(),missedFrom:integer('missed_from'),status:text('status').notNull(),attempts:integer('attempts').notNull().default(0),taskId:text('task_id'),inputId:text('input_id').notNull().unique(),snapshot:text('snapshot').notNull(),turnId:text('turn_id'),reason:text('reason'),startedAt:integer('started_at'),finishedAt:integer('finished_at'),workspaceId:text('workspace_id'),actualConfig:text('actual_config'),
+},t=>({occurrence:uniqueIndex('schedule_occurrence_key').on(t.planId,t.occurrenceKey),plan:uniqueIndex('schedule_active_plan').on(t.planId).where(sql`${t.status} IN ('claimed','preparing','dispatching','running','waiting','unknown')`),target:uniqueIndex('schedule_active_target').on(t.taskId).where(sql`${t.taskId} IS NOT NULL AND ${t.status} IN ('claimed','preparing','dispatching','running','waiting','unknown')`),history:index('schedule_history_idx').on(t.planId,t.claimedAt)}));
+export const scheduleManualRequests=sqliteTable('schedule_manual_requests',{
+  planId:text('plan_id').notNull().references(()=>schedulePlans.id,{onDelete:'restrict'}),requestId:text('request_id').notNull(),semantic:text('semantic').notNull(),receipt:text('receipt').notNull(),runId:text('run_id'),createdAt:integer('created_at').notNull()
+},t=>({pk:primaryKey({columns:[t.planId,t.requestId]})}));
+export const scheduleWorkspaceLinks=sqliteTable('schedule_workspace_links',{
+  id:text('id').primaryKey(),ownerKind:text('owner_kind').notNull(),ownerId:text('owner_id').notNull(),projectId:text('project_id'),repo:text('repo'),path:text('path').notNull().unique(),baseRef:text('base_ref'),baseCommit:text('base_commit'),branch:text('branch'),status:text('status').notNull(),reason:text('reason'),createdAt:integer('created_at').notNull()
+},t=>({owner:uniqueIndex('schedule_workspace_owner').on(t.ownerKind,t.ownerId)}));
+export const scheduledTurnOrigins=sqliteTable('scheduled_turn_origins',{
+  turnId:text('turn_id').primaryKey(),occurrenceId:text('occurrence_id').notNull().references(()=>scheduleOccurrences.id,{onDelete:'restrict'}),taskId:text('task_id').notNull(),inputId:text('input_id').notNull(),rootTurnId:text('root_turn_id').notNull(),parentTurnId:text('parent_turn_id')
+},t=>({input:uniqueIndex('scheduled_origin_input').on(t.taskId,t.inputId),occurrence:index('scheduled_origin_occurrence').on(t.occurrenceId)}));
+export const scheduleNotificationEvents=sqliteTable('schedule_notification_events',{
+  key:text('key').primaryKey(),planId:text('plan_id').notNull(),runId:text('run_id'),taskId:text('task_id'),turnId:text('turn_id'),requestId:text('request_id'),status:text('status').notNull(),createdAt:integer('created_at').notNull(),deliveredAt:integer('delivered_at')
+});

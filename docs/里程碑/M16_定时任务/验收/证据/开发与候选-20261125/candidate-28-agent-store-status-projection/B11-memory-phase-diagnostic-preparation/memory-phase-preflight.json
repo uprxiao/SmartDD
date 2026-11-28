@@ -1,0 +1,256 @@
+{
+  "schema": "M16-B11-C28-memory-phase-diagnostic-static-preflight-v1",
+  "staticOnly": true,
+  "actualAppLaunched": false,
+  "actualCliExecuted": false,
+  "newNativeObservation": false,
+  "formalEligible": false,
+  "launchPins": {
+    "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/build/mac-arm64/WillYou.app",
+    "pin": "5d715b34f16a31a1edf95692501b58e19e70048bc0f131f4bb33ac1bbcb3ba9e",
+    "nativePin": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "cli": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/b11-recovery/verified-codex-0.169.0/package/vendor/aarch64-apple-darwin/bin/codex",
+    "cliPin": "739cda86e15d30a6e2b40cf8dcbbfb988aaf48b305b27065573bb8e9fd41d002",
+    "preservedR6Version": "codex-cli 0.169.0",
+    "adapterVersion": "1.6.0",
+    "adapterBundleSha256": "4dde2615fb8497789d58ba7d2a8dc03a0d5752b4458508ff82f6ad7c2e05b550",
+    "declaredLevels": [
+      "L0.skill",
+      "L0.mcp",
+      "L0.cli",
+      "L1"
+    ],
+    "cliAsset": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/c28/build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-app",
+    "cliAssetSha256": "a216d80cd7813aff8b7a44e2fd9a57a97e657ea5e7d069089b1e286de6cd42ae",
+    "staticAdapterProof": true,
+    "scope": "normal shipped adapter still decides actual sandbox/CLI authorization during the assigned isolated run"
+  },
+  "launchBoundary": "static hash + preserved actual R6 version only; fresh actual native version checked only in coordinator-authorized execution",
+  "sourcePins": {
+    "run-memory-phase-diagnostic.mjs": "f6f0c0232afa1727509344b7990d834becb2a2e44ba2fd44e49a0e71dd346960",
+    "memory-phase-helpers.mjs": "cf3764ee5ab42fe6c7273493a1da0a05d47e00c623af775a5ab1b4d9005bbb93",
+    "own_scope_native_memory_diagnostic.py": "b7eb3a9c852dded34e61e5f16f2507719fc9856ab9f18d163c0027fa9f224ad6",
+    "native-passive-poll.mjs": "03ece11a8c28f26aa601a5ffe7cde7472da55b2aafb3a590e20dca55e699adae",
+    "same-click-point.mjs": "52d622a85b54bcefaebc93fefafbedb7ae2179ebf62428530131d6a7e89b49f2",
+    "scope_mismatch_diagnostics.py": "f2b68064a5d11e30913b27917d3cbbdb89063d0f1211399982d37bc9708e856c",
+    "closure_contract.py": "a2f8bbb1ee87b055a4a5c3856b8d07e78dda38944959985c13869137b86548ba",
+    "coalition_accounting.py": "c22abeab6feac356502ea68de4ac19552302ed4c820a90211c2216897fe9e449",
+    "cpu_collector.py": "1ec08fa17302134094e9d066d4741cf076fd98acba20fda2f28a9caa369b2ab3",
+    "lease_probe.py": "c4e1db4e8df8bc09640a44b2b6612cc413c08b841942467a56e57bcd04215549",
+    "electron-harness.mjs": "fd7cffbe79e831d02156cea651af3ad22a85578c060c84e5d8200d6a6c248220",
+    "electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "wrapper-memory-phase-diagnostic.m": "613fc30554c405f45cdc8e940a203b7c9d19585f3d15c98bdde861a3455aef5e",
+    "launch-memory-phase-diagnostic.mjs": "8d2483a68726acd7cea71009cdefbb12838e2b02dcd6ab2947511feacb6d0213",
+    "cleanup-scope-diagnostic.py": "bd12d12bd88bfedfb2ec42819cab20d35f13a22547444cfb05408964feec3c3c",
+    "own_scope_native.py": "f30c95e43afdae4137f601bf1fe2f87f0b79fc196f9202ac9fb6823ce8c09c5b",
+    "memory-phase-preflight.py": "c176881aa83267badd15b39e03de868ffd3a470f95dd2352ea74a5a214f48070",
+    "memory-phase-replay.mjs": "c6e1a9e7847b3c167edba201f0e91e9735361dd84db13db8542ee7922c28c0be"
+  },
+  "originalR6AndR5SourcePinsUnchanged": true,
+  "actualHistoricalClosedReplay": {
+    "C27": 18,
+    "R6": 44
+  },
+  "actualR4RetryAndR5FatalPreserved": true,
+  "nativeCollectorOnlyThreeNumericFieldsFromPriorBoundUsage": true,
+  "nativeControlledFunctionCases": [
+    {
+      "label": "bound valid identity numeric fields only",
+      "expected": "numeric-only-fields-added",
+      "nativeReadSequence": [
+        "bsd",
+        "cid",
+        "usage",
+        "path",
+        "rss",
+        "bsd",
+        "cid",
+        "path"
+      ]
+    },
+    {
+      "label": "first CID foreign rejects before usage",
+      "expected": "unbound-coalition",
+      "nativeReadSequence": [
+        "bsd",
+        "cid"
+      ]
+    },
+    {
+      "label": "first BSD foreign UID rejects",
+      "expected": "unbound-native-bsd",
+      "nativeReadSequence": [
+        "bsd"
+      ]
+    },
+    {
+      "label": "anchor birth mismatch refuses before RSS",
+      "expected": "anchor-birth-changed",
+      "nativeReadSequence": [
+        "bsd"
+      ]
+    },
+    {
+      "label": "second CID mismatch remains fatal gap",
+      "expected": "identity-raced-after-owned-binding",
+      "nativeReadSequence": [
+        "bsd",
+        "cid",
+        "usage",
+        "path",
+        "rss",
+        "bsd",
+        "cid"
+      ]
+    },
+    {
+      "label": "second path mismatch remains fatal gap",
+      "expected": "identity-raced-after-owned-binding",
+      "nativeReadSequence": [
+        "bsd",
+        "cid",
+        "usage",
+        "path",
+        "rss",
+        "bsd",
+        "cid",
+        "path"
+      ]
+    },
+    {
+      "label": "second BSD ESRCH remains original gap",
+      "expected": "identity-raced-after-owned-binding",
+      "nativeReadSequence": [
+        "bsd",
+        "cid",
+        "usage",
+        "path",
+        "rss",
+        "bsd",
+        "cid"
+      ]
+    },
+    {
+      "label": "first usage permission error remains original gap",
+      "expected": "read-gap-after-owned-binding",
+      "nativeReadSequence": [
+        "bsd",
+        "cid",
+        "usage",
+        "path",
+        "bsd"
+      ]
+    }
+  ],
+  "offlinePhaseReplay": {
+    "cases": [
+      "41 actual R6 steady closed identities",
+      "closed=false rejected",
+      "formal approval rejected",
+      "changed birth rejected",
+      "changed member role rejected",
+      "duplicate identity rejected",
+      "actual prior C23 numeric protocol shape",
+      "missing shell backing field rejected",
+      "non-numeric main heap rejected",
+      "negative shell heap rejected",
+      "numeric allowlist discards other fields",
+      "combined offline protocol shape closes both scope brackets; not a new real observation",
+      "wrong trusted target URL",
+      "own shell identity outside scope",
+      "shell WC changed during numeric query",
+      "after-scope incomplete retained as failure",
+      "numeric main wrong bound PID",
+      "two round natural monotonic schedule, 10 numeric points, 300s idle, no formal claims",
+      "deadline failure stops before any later commands"
+    ],
+    "passed": 19,
+    "actualAppLaunched": false,
+    "actualCliExecuted": false,
+    "syntheticClock": true,
+    "plannedTimeline": [
+      {
+        "label": "round-1-pre",
+        "offset": null,
+        "actual": null
+      },
+      {
+        "label": "round-1-post",
+        "offset": 0,
+        "actual": 0
+      },
+      {
+        "label": "round-1-idle-15",
+        "offset": 15,
+        "actual": 15
+      },
+      {
+        "label": "round-1-idle-60",
+        "offset": 60,
+        "actual": 60
+      },
+      {
+        "label": "round-1-idle-180",
+        "offset": 180,
+        "actual": 180
+      },
+      {
+        "label": "round-1-idle-295",
+        "offset": 295,
+        "actual": 295
+      },
+      {
+        "label": "round-2-pre",
+        "offset": 300,
+        "actual": 300
+      },
+      {
+        "label": "round-2-post",
+        "offset": 0,
+        "actual": 0
+      },
+      {
+        "label": "round-2-idle-15",
+        "offset": 15,
+        "actual": 15
+      },
+      {
+        "label": "round-2-idle-60",
+        "offset": 60,
+        "actual": 60
+      }
+    ],
+    "timing": {
+      "firstTrueIdleSeconds": 300.1,
+      "elapsedSeconds": 373.3,
+      "firstIdleObservationPlanSeconds": [
+        15,
+        60,
+        180,
+        295
+      ],
+      "secondIdleObservationPlanSeconds": [
+        15,
+        60
+      ],
+      "formalEligible": false,
+      "scopeApproved": false,
+      "formalCasePassCandidate": false
+    },
+    "formalEligible": false
+  },
+  "syntax": {
+    "nodeFiles": 8,
+    "pythonFiles": 9,
+    "wrapperSyntaxOnly": true,
+    "cdpLiteralExpressionCheck": {
+      "paths": 1,
+      "literalExpressions": 5,
+      "failures": 0,
+      "executed": false,
+      "dynamicTemplates": "not covered"
+    }
+  },
+  "originalR6WorkloadAndCleanupUnchanged": true,
+  "safetyBoundary": "No new App/CLI/model/process or listener. Static launch pin hashes only. Actual version/permission and fresh owned scope still must pass when coordinator runs."
+}

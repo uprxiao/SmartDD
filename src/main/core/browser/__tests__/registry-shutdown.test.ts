@@ -14,7 +14,7 @@ vi.mock('electron',async()=>{
   }
   return{BaseWindow:class{},WebContentsView:class{webContents:Contents;constructor(options?:{webContents?:Contents}){this.webContents=options?.webContents??new Contents();}setBounds(){}}};
 });
-vi.mock('../park-window',()=>({BrowserParkWindow:class{async park(){f.events.push('park');}remove(){f.events.push('remove');}dispose(){f.events.push('park-disposed');}}}));
+vi.mock('../park-window',()=>({BrowserParkWindow:class{async park(){f.events.push('park');}acquire(){return()=>{};}remove(){f.events.push('remove');}dispose(){f.events.push('park-disposed');}}}));
 vi.mock('../cdp-proxy',()=>({BrowserCdpProxy:class{endpoint='ws://owned';async start(){return this.endpoint;}async stop(){f.proxyStops++;}}}));
 vi.mock('../references',()=>({BrowserReferences:class{async initialize(){}invalidate(){}}}));
 vi.mock('../agent-browser',()=>({BrowserHelper:class{async close(){}}}));
@@ -35,4 +35,17 @@ it('does not allocate an opener popup after the registry has been disposed',asyn
   try{value.createPopup(opener,{},true);}catch(error){failure=error;}
   try{expect(failure).toMatchObject({code:'BROWSER_UNAVAILABLE'});expect(f.contents).toHaveLength(count);}
   finally{await vi.waitFor(()=>expect(f.contents.every(contents=>contents.destroyed)).toBe(true));}
+});
+it('M16 B02/B10 retires a destroyed native tab without logical close and creates a fresh generation of the same logical ID',async()=>{
+  const value=registry(),events:string[]=[];const off=value.observe(e=>events.push(e.type+':'+e.page.id));
+  try{
+    const old=await value.create('task1','project1','persisted-id');
+    old.contents.close({waitForBeforeUnload:false});
+    expect(()=>value.get('task1','persisted-id')).toThrow();
+    const next=await value.create('task1','project1','persisted-id');
+    expect(next.id).toBe(old.id);expect(next.short).not.toBe(old.short);expect(next.contents).not.toBe(old.contents);
+    expect(events).toEqual(['created:persisted-id','lost:persisted-id','created:persisted-id']);
+    expect(value.list('task1')).toEqual([next]);await value.close('task1','persisted-id');
+    expect(events.at(-1)).toBe('closed:persisted-id');
+  }finally{off();}
 });

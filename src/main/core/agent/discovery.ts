@@ -94,7 +94,11 @@ async function probeCodex(executable: string, shellPath: string | undefined, bas
   const env: NodeJS.ProcessEnv = { PATH: shellPath ?? base.PATH, SystemRoot: base.SystemRoot, WINDIR: base.WINDIR,
     HOME: home, USERPROFILE: home, CODEX_HOME: home };
   const missing = new Set<CapabilityName>();
-  const child = spawn(executable, ['app-server'], { cwd: home, env, stdio: ['pipe', 'pipe', 'ignore'] });
+  // This disposable protocol probe only checks RPC capability, just like the
+  // model catalogue preview. Do not start plugin marketplace refresh or hooks:
+  // native background Git children can otherwise outlive this short-lived probe.
+  const child = spawn(executable, ['app-server', '-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'],
+    { cwd: home, env, stdio: ['pipe', 'pipe', 'ignore'] });
   let exited = false;
   const closed = new Promise<void>(resolve => child.once('close', () => { exited = true; resolve(); }));
   const peer = new JsonlRpcPeer(child.stdout, child.stdin, { request() {}, notification() {} }, 2500);

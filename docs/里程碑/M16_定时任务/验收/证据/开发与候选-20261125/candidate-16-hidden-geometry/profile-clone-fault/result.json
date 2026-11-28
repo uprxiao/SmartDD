@@ -1,0 +1,1150 @@
+{
+  "root": "/private/tmp/willyou-m16-f36-profile-c12-PFTcb8",
+  "evidenceRoot": "/private/tmp/willyou-m16-schedule-app-US7kWL/profile-clone-fault-EEFs3h",
+  "pin": "2146bbb1f62ed73f4b5b7c622958ee45cd68aa09f8e8b259bef07a7506bfedf7",
+  "fixture": {
+    "t1": "f401d1a9-3370-4f03-907d-5efb9da3d627",
+    "t2": "b3797b6c-b5a6-438b-86cb-2f837011ad81",
+    "origin": "http://127.0.0.1:3425"
+  },
+  "priorResultSha": "4d16b26733c50dc9f5d17a6a7cf253ed9e9557f5d65c1a748d19074c8d1930f7",
+  "driverSha256": "fac75c2ceca244a499c501936f0b3eac6f0bde1ab36fc8023dbc6747afebc604",
+  "launches": [
+    {
+      "label": "profile-c16-actual-clone-fault",
+      "pid": 92368,
+      "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app",
+      "expected": "2146bbb1f62ed73f4b5b7c622958ee45cd68aa09f8e8b259bef07a7506bfedf7",
+      "exeSha": "0eb8cc6b79911974f93a1d180fa16f4fdbcabe2a83a0e85abd11434e72a009a5",
+      "port": null,
+      "mainPort": null,
+      "at": 1795656286737,
+      "exit": {
+        "pid": 92368,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "label": "profile-c16-deferred-journal-cleanup",
+      "pid": 92547,
+      "bundle": "/Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app",
+      "expected": "2146bbb1f62ed73f4b5b7c622958ee45cd68aa09f8e8b259bef07a7506bfedf7",
+      "exeSha": "0eb8cc6b79911974f93a1d180fa16f4fdbcabe2a83a0e85abd11434e72a009a5",
+      "port": null,
+      "mainPort": null,
+      "at": 1795656294690,
+      "exit": {
+        "pid": 92547,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "injected-own-fifo-exact-private-source",
+      "status": "pass",
+      "source": "project-65e56a6b31b9e275107f1194",
+      "sourcePath": "/private/tmp/willyou-m16-f36-profile-c12-PFTcb8/data/Partitions/wy-browser-project-65e56a6b31b9e275107f1194",
+      "nativePage": 2,
+      "fifo": {
+        "path": "/private/tmp/willyou-m16-f36-profile-c12-PFTcb8/data/Partitions/wy-browser-project-65e56a6b31b9e275107f1194/M16-C16-private-clone-test-5026b8ff-15f7-4961-8778-320efe90e075.fifo",
+        "dev": 16777232,
+        "ino": 391038822,
+        "mode": 384
+      },
+      "noSourceDataMutationExceptOwnTestFile": true
+    },
+    {
+      "name": "real-clone-failure-no-publication-no-staging-original-views-intact",
+      "status": "pass",
+      "error": "Error invoking remote method 'browser.cloneProfile': ApplicationError: 登录态含不能安全复制的文件类型",
+      "intent": {
+        "schemaVersion": 1,
+        "targetId": "9f9a3061-9f84-4c67-9b59-3c90953b5c68",
+        "stagingId": "bc583f7c-bcc5-4aeb-ae65-0b055e8fa854",
+        "sourceId": "project-65e56a6b31b9e275107f1194",
+        "taskId": "f401d1a9-3370-4f03-907d-5efb9da3d627",
+        "projectId": "a19839af-8bc6-42f9-a748-ac248ae2d6f1",
+        "createdAt": 1795656288150
+      },
+      "permittedDeferredRecoveryJournal": true,
+      "profilesUnchanged": true,
+      "allPartitionsUnchanged": true,
+      "sourceA": {
+        "id": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+        "url": "http://127.0.0.1:3425/f36-seed/A",
+        "profile": "project-65e56a6b31b9e275107f1194",
+        "wc": 2,
+        "bounds": {
+          "x": 770,
+          "y": 97,
+          "width": 624,
+          "height": 797
+        }
+      },
+      "sourceB": {
+        "id": 3,
+        "process": 92459,
+        "url": "http://127.0.0.1:3425/f36-seed/B",
+        "page": {
+          "marker": "be2482f4-b54e-457e-95e7-e1e650387b67",
+          "ticks": 14,
+          "form": "C16-SOURCE-B-UNSAVED-SYNTHETIC",
+          "history": 2,
+          "response": "idle",
+          "session": "SYNTHETIC_LOGIN_OK",
+          "title": "测试页面 B"
+        }
+      },
+      "neighbor": {
+        "id": 4,
+        "process": 92461,
+        "url": "http://127.0.0.1:3425/f36-seed/A",
+        "page": {
+          "marker": "c10736ca-ac96-44fa-baeb-20f254e0e7da",
+          "ticks": 13,
+          "form": "C16-NEIGHBOR-INDEPENDENT-SYNTHETIC",
+          "history": 2,
+          "response": "idle",
+          "session": "SYNTHETIC_LOGIN_NONE",
+          "title": "测试页面 A"
+        }
+      },
+      "snapshotsUnchanged": true
+    },
+    {
+      "name": "removed-only-exact-own-fifo",
+      "status": "pass",
+      "path": "/private/tmp/willyou-m16-f36-profile-c12-PFTcb8/data/Partitions/wy-browser-project-65e56a6b31b9e275107f1194/M16-C16-private-clone-test-5026b8ff-15f7-4961-8778-320efe90e075.fifo",
+      "dev": 16777232,
+      "ino": 391038822,
+      "mode": 384,
+      "removed": true,
+      "notOtherSourceFile": true
+    },
+    {
+      "name": "normal-retry-clones-same-own-cookie-with-independent-native-page",
+      "status": "pass",
+      "copy": {
+        "id": "f3b66c62-b15d-4473-ba6c-42521e10bfe3",
+        "label": "项目登录态（副本）",
+        "scope": "isolated",
+        "owner": {
+          "kind": "task",
+          "id": "f401d1a9-3370-4f03-907d-5efb9da3d627"
+        },
+        "importState": "ready"
+      },
+      "clonedPage": {
+        "id": "2d333255-ce2d-4bb6-98de-6dcc39595c45",
+        "url": "http://127.0.0.1:3425/f36-seed/D",
+        "profile": "f3b66c62-b15d-4473-ba6c-42521e10bfe3",
+        "wc": 9,
+        "bounds": {
+          "x": 770,
+          "y": 97,
+          "width": 624,
+          "height": 797
+        }
+      },
+      "clonedState": {
+        "id": 9,
+        "process": 92529,
+        "url": "http://127.0.0.1:3425/f36-seed/D",
+        "page": {
+          "marker": "9f7fbde4-cb0d-46a4-8a87-d73ed69b3bbb",
+          "ticks": 1,
+          "form": "",
+          "history": 2,
+          "response": "idle",
+          "session": "SYNTHETIC_LOGIN_OK",
+          "title": "测试页面 D"
+        }
+      },
+      "oldViewsStillSame": {
+        "id": 4,
+        "process": 92461,
+        "url": "http://127.0.0.1:3425/f36-seed/A",
+        "page": {
+          "marker": "c10736ca-ac96-44fa-baeb-20f254e0e7da",
+          "ticks": 44,
+          "form": "C16-NEIGHBOR-INDEPENDENT-SYNTHETIC",
+          "history": 2,
+          "response": "idle",
+          "session": "SYNTHETIC_LOGIN_NONE",
+          "title": "测试页面 A"
+        }
+      },
+      "sourceProfileStillSelected": true,
+      "historyPreserved": true,
+      "partitionTarget": "/private/tmp/willyou-m16-f36-profile-c12-PFTcb8/data/Partitions/wy-browser-f3b66c62-b15d-4473-ba6c-42521e10bfe3",
+      "failedTargetUnpublished": true,
+      "newLoginPosts": 0
+    },
+    {
+      "name": "actual-deferred-failure-journal-cleaned-on-normal-restart",
+      "status": "pass",
+      "intent": {
+        "schemaVersion": 1,
+        "targetId": "9f9a3061-9f84-4c67-9b59-3c90953b5c68",
+        "stagingId": "bc583f7c-bcc5-4aeb-ae65-0b055e8fa854",
+        "sourceId": "project-65e56a6b31b9e275107f1194",
+        "taskId": "f401d1a9-3370-4f03-907d-5efb9da3d627",
+        "projectId": "a19839af-8bc6-42f9-a748-ac248ae2d6f1",
+        "createdAt": 1795656288150
+      },
+      "originalSourceAndNeighborCookiesStillCorrect": true,
+      "publishedTargetCookieCorrect": true,
+      "stagingAbsent": true,
+      "integrity": [
+        [
+          "ok"
+        ]
+      ],
+      "historyRetained": true
+    }
+  ],
+  "actions": [
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f401d1a9-3370-4f03-907d-5efb9da3d627\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795656286857
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656286981
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "native-page-click",
+      "wc": 2,
+      "selector": "#form",
+      "point": {
+        "x": 186,
+        "y": 152
+      },
+      "at": 1795656287052
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/B\"]",
+      "label": null,
+      "point": {
+        "x": 1021,
+        "y": 22
+      },
+      "at": 1795656287121
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "native-page-click",
+      "wc": 3,
+      "selector": "#form",
+      "point": {
+        "x": 186,
+        "y": 152
+      },
+      "at": 1795656287228
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b3797b6c-b5a6-438b-86cb-2f837011ad81\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 345
+      },
+      "at": 1795656287340
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656287418
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "native-page-click",
+      "wc": 4,
+      "selector": "#form",
+      "point": {
+        "x": 186,
+        "y": 152
+      },
+      "at": 1795656287487
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f401d1a9-3370-4f03-907d-5efb9da3d627\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795656287594
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656287668
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": ".bw-profile",
+      "label": null,
+      "point": {
+        "x": 1297,
+        "y": 70
+      },
+      "at": 1795656287910
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] [role=option]",
+      "label": "项目登录态项目默认 · 当前页面使用中",
+      "point": {
+        "x": 926,
+        "y": 331
+      },
+      "at": 1795656288077
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] button",
+      "label": "克隆",
+      "point": {
+        "x": 1195,
+        "y": 410
+      },
+      "at": 1795656288164
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] button",
+      "label": "完成",
+      "point": {
+        "x": 1336,
+        "y": 735
+      },
+      "at": 1795656288425
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/B\"]",
+      "label": null,
+      "point": {
+        "x": 1021,
+        "y": 22
+      },
+      "at": 1795656288558
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b3797b6c-b5a6-438b-86cb-2f837011ad81\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 345
+      },
+      "at": 1795656288732
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656288805
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f401d1a9-3370-4f03-907d-5efb9da3d627\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795656288913
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656288987
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": ".bw-profile",
+      "label": null,
+      "point": {
+        "x": 1297,
+        "y": 70
+      },
+      "at": 1795656289161
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] [role=option]",
+      "label": "项目登录态项目默认 · 当前页面使用中",
+      "point": {
+        "x": 926,
+        "y": 331
+      },
+      "at": 1795656289328
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] button",
+      "label": "克隆",
+      "point": {
+        "x": 1195,
+        "y": 410
+      },
+      "at": 1795656289410
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] button",
+      "label": "完成",
+      "point": {
+        "x": 1336,
+        "y": 692
+      },
+      "at": 1795656290236
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "button[aria-label=\"打开面板\"]",
+      "label": null,
+      "point": {
+        "x": 1106,
+        "y": 22
+      },
+      "at": 1795656290378
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": ".agent-panel-menu button[title=\"新建网页标签\"]",
+      "label": null,
+      "point": {
+        "x": 1030,
+        "y": 101
+      },
+      "at": 1795656290513
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[aria-label=\"网页地址\"]",
+      "label": null,
+      "point": {
+        "x": 1080,
+        "y": 70
+      },
+      "at": 1795656290586
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": ".bw-profile",
+      "label": null,
+      "point": {
+        "x": 1297,
+        "y": 70
+      },
+      "at": 1795656290787
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] [role=option]",
+      "label": "项目登录态（副本）任务独立",
+      "point": {
+        "x": 926,
+        "y": 440
+      },
+      "at": 1795656290958
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] button",
+      "label": "用于当前页面",
+      "point": {
+        "x": 1110,
+        "y": 410
+      },
+      "at": 1795656291029
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=dialog][aria-label=\"登录态管理\"] button",
+      "label": "完成",
+      "point": {
+        "x": 1336,
+        "y": 692
+      },
+      "at": 1795656291206
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/B\"]",
+      "label": null,
+      "point": {
+        "x": 1021,
+        "y": 22
+      },
+      "at": 1795656291345
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656291519
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b3797b6c-b5a6-438b-86cb-2f837011ad81\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 345
+      },
+      "at": 1795656291751
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656291824
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f401d1a9-3370-4f03-907d-5efb9da3d627\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795656291940
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656292013
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f401d1a9-3370-4f03-907d-5efb9da3d627\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795656294849
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/D\"]",
+      "label": null,
+      "point": {
+        "x": 1139,
+        "y": 22
+      },
+      "at": 1795656294978
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656295151
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b3797b6c-b5a6-438b-86cb-2f837011ad81\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 345
+      },
+      "at": 1795656295375
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656295452
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f401d1a9-3370-4f03-907d-5efb9da3d627\"]",
+      "label": null,
+      "point": {
+        "x": 184,
+        "y": 272
+      },
+      "at": 1795656295622
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "kind": "UI-click",
+      "selector": "[role=\"tab\"][title=\"http://127.0.0.1:3425/f36-seed/A\"]",
+      "label": null,
+      "point": {
+        "x": 904,
+        "y": 22
+      },
+      "at": 1795656295695
+    }
+  ],
+  "requests": [
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/f36-seed/A",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656286972
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656287026
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/f36-seed/B",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656287176
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656287217
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/f36-seed/A",
+      "method": "GET",
+      "logged": false,
+      "at": 1795656287403
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": false,
+      "at": 1795656287443
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/f36-seed/D",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656290646
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656290689
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/f36-seed/D",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656291087
+    },
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656291129
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "path": "/f36-seed/A",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656294964
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656295012
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "path": "/f36-seed/D",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656295038
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": true,
+      "at": 1795656295082
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "path": "/f36-seed/A",
+      "method": "GET",
+      "logged": false,
+      "at": 1795656295435
+    },
+    {
+      "stage": "profile-c16-deferred-journal-cleanup",
+      "path": "/favicon.ico",
+      "method": "GET",
+      "logged": false,
+      "at": 1795656295490
+    }
+  ],
+  "status": "pass-B07.4-actual-clone-failure-retry-only",
+  "scope": "actual C16, exact original synthetic data, no daily state, normal UI clone and retry, fault only one self-owned FIFO in original native source partition",
+  "strippedEnvNames": [
+    "BRAVE_API_KEY",
+    "DEEPSEEK_API_KEY",
+    "FIRECRAWL_API_KEY",
+    "GEMINI_API_KEY",
+    "OPENCODE_API_KEY",
+    "RJMODEL_API_KEY",
+    "SSH_AUTH_SOCK"
+  ],
+  "priorPrivateWorkspaces": {
+    "f401d1a9-3370-4f03-907d-5efb9da3d627": {
+      "version": 1,
+      "tabs": [
+        {
+          "id": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+          "url": "http://127.0.0.1:3425/f36-seed/A",
+          "title": "测试页面 A",
+          "profileId": "project-65e56a6b31b9e275107f1194",
+          "favicon": null
+        },
+        {
+          "id": "433c05c7-7d49-43e0-8071-89bd32cc494d",
+          "url": "http://127.0.0.1:3425/f36-seed/B",
+          "title": "测试页面 B",
+          "profileId": "project-65e56a6b31b9e275107f1194",
+          "favicon": null
+        }
+      ],
+      "activeId": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+      "closed": [
+        {
+          "id": "1cd915b2-1395-44fb-a996-f8144d059eaf",
+          "url": "http://127.0.0.1:3425/f36-seed/C",
+          "title": "测试页面 C",
+          "profileId": "project-65e56a6b31b9e275107f1194",
+          "favicon": null
+        }
+      ]
+    },
+    "b3797b6c-b5a6-438b-86cb-2f837011ad81": {
+      "version": 1,
+      "tabs": [
+        {
+          "id": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+          "url": "http://127.0.0.1:3425/f36-seed/A",
+          "title": "测试页面 A",
+          "profileId": "project-1c1929621163c4cfdd388fee",
+          "favicon": null
+        }
+      ],
+      "activeId": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+      "closed": []
+    }
+  },
+  "pid": 92547,
+  "beforeFault": {
+    "A": {
+      "id": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+      "url": "http://127.0.0.1:3425/f36-seed/A",
+      "profile": "project-65e56a6b31b9e275107f1194",
+      "wc": 2,
+      "bounds": {
+        "x": 770,
+        "y": 97,
+        "width": 624,
+        "height": 797
+      }
+    },
+    "B": {
+      "id": "433c05c7-7d49-43e0-8071-89bd32cc494d",
+      "url": "http://127.0.0.1:3425/f36-seed/B",
+      "profile": "project-65e56a6b31b9e275107f1194",
+      "wc": 3,
+      "bounds": {
+        "x": 770,
+        "y": 97,
+        "width": 624,
+        "height": 797
+      }
+    },
+    "N": {
+      "id": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+      "url": "http://127.0.0.1:3425/f36-seed/A",
+      "profile": "project-1c1929621163c4cfdd388fee",
+      "wc": 4,
+      "bounds": {
+        "x": 770,
+        "y": 97,
+        "width": 624,
+        "height": 797
+      }
+    },
+    "aState": {
+      "id": 2,
+      "process": 92442,
+      "url": "http://127.0.0.1:3425/f36-seed/A",
+      "page": {
+        "marker": "40deb2a1-dba9-472c-86df-8cb4b583c0a7",
+        "ticks": 0,
+        "form": "C16-SOURCE-A-UNSAVED-SYNTHETIC",
+        "history": 2,
+        "response": "idle",
+        "session": "SYNTHETIC_LOGIN_OK",
+        "title": "测试页面 A"
+      }
+    },
+    "bState": {
+      "id": 3,
+      "process": 92459,
+      "url": "http://127.0.0.1:3425/f36-seed/B",
+      "page": {
+        "marker": "be2482f4-b54e-457e-95e7-e1e650387b67",
+        "ticks": 0,
+        "form": "C16-SOURCE-B-UNSAVED-SYNTHETIC",
+        "history": 2,
+        "response": "idle",
+        "session": "SYNTHETIC_LOGIN_OK",
+        "title": "测试页面 B"
+      }
+    },
+    "nState": {
+      "id": 4,
+      "process": 92461,
+      "url": "http://127.0.0.1:3425/f36-seed/A",
+      "page": {
+        "marker": "c10736ca-ac96-44fa-baeb-20f254e0e7da",
+        "ticks": 0,
+        "form": "C16-NEIGHBOR-INDEPENDENT-SYNTHETIC",
+        "history": 2,
+        "response": "idle",
+        "session": "SYNTHETIC_LOGIN_NONE",
+        "title": "测试页面 A"
+      }
+    },
+    "rows": [
+      {
+        "id": "project-65e56a6b31b9e275107f1194",
+        "label": "项目登录态",
+        "scope": "project",
+        "owner": {
+          "kind": "project",
+          "id": "a19839af-8bc6-42f9-a748-ac248ae2d6f1"
+        },
+        "importState": "ready"
+      },
+      {
+        "id": "e072acb7-50f1-4b56-8cf8-823a74c035b1",
+        "label": "Profile first 独立登录态",
+        "scope": "isolated",
+        "owner": {
+          "kind": "task",
+          "id": "f401d1a9-3370-4f03-907d-5efb9da3d627"
+        },
+        "importState": "ready"
+      }
+    ],
+    "otherRows": [
+      {
+        "id": "project-1c1929621163c4cfdd388fee",
+        "label": "项目登录态",
+        "scope": "project",
+        "owner": {
+          "kind": "project",
+          "id": "978fe9cb-8632-4449-8e66-4dd476aafd11"
+        },
+        "importState": "ready"
+      }
+    ],
+    "partitions": [
+      "wy-browser-1cee91cd-8aaa-4f53-9fb6-e4c84434f872",
+      "wy-browser-e072acb7-50f1-4b56-8cf8-823a74c035b1",
+      "wy-browser-project-1c1929621163c4cfdd388fee",
+      "wy-browser-project-65e56a6b31b9e275107f1194"
+    ],
+    "journalNames": [],
+    "initial1": {
+      "activeId": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+      "tabs": [
+        {
+          "id": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+          "url": "http://127.0.0.1:3425/f36-seed/A",
+          "profileId": "project-65e56a6b31b9e275107f1194",
+          "title": "测试页面 A"
+        },
+        {
+          "id": "433c05c7-7d49-43e0-8071-89bd32cc494d",
+          "url": "http://127.0.0.1:3425/f36-seed/B",
+          "profileId": "project-65e56a6b31b9e275107f1194",
+          "title": "测试页面 B"
+        }
+      ],
+      "closed": [
+        {
+          "id": "1cd915b2-1395-44fb-a996-f8144d059eaf",
+          "url": "http://127.0.0.1:3425/f36-seed/C",
+          "profileId": "project-65e56a6b31b9e275107f1194",
+          "title": "测试页面 C"
+        }
+      ]
+    },
+    "initial2": {
+      "activeId": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+      "tabs": [
+        {
+          "id": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+          "url": "http://127.0.0.1:3425/f36-seed/A",
+          "profileId": "project-1c1929621163c4cfdd388fee",
+          "title": "测试页面 A"
+        }
+      ],
+      "closed": []
+    }
+  },
+  "menuHitTests": [
+    {
+      "stage": "profile-c16-actual-clone-fault",
+      "selector": ".agent-panel-menu button[title=\"新建网页标签\"]",
+      "label": null,
+      "point": {
+        "x": 1030,
+        "y": 101
+      },
+      "elapsedMs": 5,
+      "native": [
+        {
+          "id": 1,
+          "title": "WillYou",
+          "visible": true,
+          "minimized": false,
+          "bounds": {
+            "x": 56,
+            "y": 33,
+            "width": 1400,
+            "height": 900
+          },
+          "children": [
+            {
+              "id": 2,
+              "url": "http://127.0.0.1:3425/f36-seed/A",
+              "visible": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 624,
+                "height": 797
+              }
+            },
+            {
+              "id": 3,
+              "url": "http://127.0.0.1:3425/f36-seed/B",
+              "visible": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 624,
+                "height": 797
+              }
+            },
+            {
+              "id": 4,
+              "url": "http://127.0.0.1:3425/f36-seed/A",
+              "visible": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 624,
+                "height": 797
+              }
+            },
+            {
+              "id": 1,
+              "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/release/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 1400,
+                "height": 900
+              }
+            }
+          ]
+        }
+      ],
+      "at": 1795656290507
+    }
+  ],
+  "beforeFinalQuit": {
+    "version": 41,
+    "userVersionPragma": 0,
+    "migrationState": [
+      42,
+      1795617766866,
+      42
+    ],
+    "integrity": [],
+    "workspaces": {
+      "f401d1a9-3370-4f03-907d-5efb9da3d627": {
+        "version": 1,
+        "tabs": [
+          {
+            "id": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+            "url": "http://127.0.0.1:3425/f36-seed/A",
+            "title": "测试页面 A",
+            "profileId": "project-65e56a6b31b9e275107f1194",
+            "favicon": null
+          },
+          {
+            "id": "433c05c7-7d49-43e0-8071-89bd32cc494d",
+            "url": "http://127.0.0.1:3425/f36-seed/B",
+            "title": "测试页面 B",
+            "profileId": "project-65e56a6b31b9e275107f1194",
+            "favicon": null
+          },
+          {
+            "id": "2d333255-ce2d-4bb6-98de-6dcc39595c45",
+            "url": "http://127.0.0.1:3425/f36-seed/D",
+            "title": "测试页面 D",
+            "profileId": "f3b66c62-b15d-4473-ba6c-42521e10bfe3",
+            "favicon": null
+          }
+        ],
+        "activeId": "a9e31ed6-f044-4eb9-afb7-5eac218185fe",
+        "closed": [
+          {
+            "id": "1cd915b2-1395-44fb-a996-f8144d059eaf",
+            "url": "http://127.0.0.1:3425/f36-seed/C",
+            "title": "测试页面 C",
+            "profileId": "project-65e56a6b31b9e275107f1194",
+            "favicon": null
+          }
+        ]
+      },
+      "b3797b6c-b5a6-438b-86cb-2f837011ad81": {
+        "version": 1,
+        "tabs": [
+          {
+            "id": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+            "url": "http://127.0.0.1:3425/f36-seed/A",
+            "title": "测试页面 A",
+            "profileId": "project-1c1929621163c4cfdd388fee",
+            "favicon": null
+          }
+        ],
+        "activeId": "b2f0beb8-35b5-43e0-adee-b5e18c525595",
+        "closed": []
+      }
+    }
+  },
+  "remaining": "Real Cookie import pause/resume requires separate authorized synthetic Chrome/Edge source and OS secure storage; not executed.",
+  "finishedAt": "2026-11-26T01:24:55.880Z"
+}

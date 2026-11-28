@@ -1,4 +1,4 @@
-import {makeAutoObservable} from 'mobx';
+import {makeAutoObservable,reaction} from 'mobx';
 import type {FileScope} from '@shared/files';
 import {navigation} from '@renderer/core/navigation';
 import {invalidateBrowserPresentation} from '@renderer/features/browser/open-presentation';
@@ -12,15 +12,33 @@ class Panels {
   lineage=false;
   diffTurn:string|null=null;
   attachment:MessageAttachmentSelection|null=null;
-  constructor(){makeAutoObservable(this);}
+  constructor(key:string){
+    const storage='willyou-workspace-panels:'+key;
+    const allowed=(value:unknown):value is AgentPanel=>['files','browser','terminal','diff'].includes(String(value));
+    if(key.startsWith('task:')&&typeof localStorage!=='undefined')try{
+      const raw=JSON.parse(localStorage.getItem(storage)??'null');
+      if(raw&&Array.isArray(raw.tabs)){
+        this.tabs=[...new Set(raw.tabs.filter(allowed))] as AgentPanel[];
+        this.active=allowed(raw.active)&&this.tabs.includes(raw.active)?raw.active:this.tabs.at(-1)??'files';
+      }
+    }catch{/* Invalid local UI preference is ignored. */}
+    makeAutoObservable(this);
+    if(key.startsWith('task:')&&typeof localStorage!=='undefined')reaction(
+      ()=>({tabs:this.tabs.filter(allowed),active:this.active}),
+      state=>{try{localStorage.setItem(storage,JSON.stringify(state));}catch{/* UI still works without preferences. */}}
+    );
+  }
+  /** Restoring a known existing page is not an instruction to navigate it. */
+  restoreBrowser(){if(!this.tabs.includes('browser'))this.tabs.push('browser');}
+
   setLineage(open:boolean){this.lineage=open;}
   showAttachment(attachment:MessageAttachmentSelection){
     this.attachment=attachment;
     this.open('attachment');
   }
   open(id:AgentPanel,automatic=false){if(!automatic)invalidateBrowserPresentation();if(!this.tabs.includes(id))this.tabs.push(id);this.active=id;if(id==='terminal')this.drawer=false;if(!navigation.filePanelOpen)navigation.toggleFilePanel();}
-  close(id:AgentPanel){
-    invalidateBrowserPresentation();
+  close(id:AgentPanel,automatic=false){
+    if(!automatic)invalidateBrowserPresentation();
     this.tabs=this.tabs.filter(t=>t!==id);
     if(id==='attachment')this.attachment=null;
     if(this.active===id)this.active=this.tabs.at(-1)??'files';
@@ -30,6 +48,6 @@ class Panels {
 }
 const panels=new Map<string,Panels>();
 export const panelKey=(scope:FileScope)=>scope.kind+':'+(scope.kind==='task'?scope.taskId:scope.projectId);
-export function panelsFor(scope:FileScope){const key=panelKey(scope);let value=panels.get(key);if(!value){value=new Panels();panels.set(key,value);}return value;}
+export function panelsFor(scope:FileScope){const key=panelKey(scope);let value=panels.get(key);if(!value){value=new Panels(key);panels.set(key,value);}return value;}
 class HomeWorkspace {projectId:string|null=null;dirId:string|null=null;cwd:string|null=null;constructor(){makeAutoObservable(this);}set(projectId:string|null,dirId:string|null,cwd:string|null){this.projectId=projectId;this.dirId=dirId;this.cwd=cwd;}}
 export const homeWorkspace=new HomeWorkspace();

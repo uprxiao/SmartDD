@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
+import { Profiler } from 'react';
 import type { AgentLiveFrame } from '@shared/events';
 
 const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), managedSkills: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), stop: vi.fn(), forceStop: vi.fn(), setReplyLiked: vi.fn(), branchFromReply: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
@@ -1287,6 +1288,43 @@ it('shows elapsed stop time and offers manual force stop only once ten seconds h
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: '强制停止' })); });
     expect(mocks.forceStop).toHaveBeenCalledExactlyOnceWith('task', 'original-run', requestedAt);
   } finally {
+    vi.useRealTimers();
+  }
+});
+
+it('不为已结束的时间线按秒重绘，下一回合开始时恢复真实计时', async () => {
+  vi.useFakeTimers();
+  try {
+    const stamp = Date.now();
+    const ended = { turn_id: 'done', status: 'completed', accepted_at: new Date(stamp - 5000).toISOString(), started_at: new Date(stamp - 4000).toISOString(), ended_at: new Date(stamp - 1000).toISOString() };
+    const entries = [{ ...item('user_message', { text: '已经结束' }), turnId: 'done' }];
+    let publish!: (event: { taskId: string; seq: number }) => void;
+    mocks.on.mockImplementation((event, callback) => { if (event.name === 'agentTasks:event') publish = callback; return () => {}; });
+    mocks.snapshot.mockResolvedValue(snapshot({ status: 'completed', turns: [ended], items: entries }));
+    const commits = vi.fn();
+    render(<Profiler id="task-clock" onRender={commits}><AgentTaskView taskId="task" /></Profiler>);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(screen.getByText('用时 3 秒')).toBeTruthy();
+    const idleCommits = commits.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+    expect(screen.getByText('用时 3 秒')).toBeTruthy();
+    expect(commits.mock.calls.length).toBe(idleCommits);
+
+    const start = new Date(Date.now()).toISOString();
+    const running = { turn_id: 'next', status: 'started', accepted_at: start, started_at: start, ended_at: null };
+    mocks.snapshot.mockResolvedValue(snapshot({ seq: 2, status: 'working', turns: [ended, running], items: [...entries, { ...item('user_message', { text: '下一轮' }), itemId: 'next-message', ordinal: 2, turnId: 'next' }] }));
+    await act(async () => { publish({ taskId: 'task', seq: 2 }); await vi.advanceTimersByTimeAsync(80); });
+    expect(screen.getByText('工作中 0 秒')).toBeTruthy();
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+    expect(screen.getByText('工作中 2 秒')).toBeTruthy();
+
+    mocks.snapshot.mockResolvedValue(snapshot({ seq: 3, status: 'completed', turns: [ended, { ...running, status: 'completed', ended_at: new Date(Date.now()).toISOString() }], items: entries }));
+    await act(async () => { publish({ taskId: 'task', seq: 3 }); await vi.advanceTimersByTimeAsync(80); });
+    const completedCommits = commits.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+    expect(commits.mock.calls.length).toBe(completedCommits);
+  } finally {
+    cleanup();
     vi.useRealTimers();
   }
 });

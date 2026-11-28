@@ -5,26 +5,39 @@ import { registerRPCRouter } from '@shared/ipc/rpc';
 import { createPtyController, PtyAccess, registerPtyInput } from './pty-access';
 const windows = vi.hoisted(() => [] as any[]);
 vi.mock('./app/icon', () => ({ appIcon: '' }));
-vi.mock('electron', () => ({ nativeTheme: { shouldUseDarkColors: false }, BrowserWindow: class extends EventEmitter {
-  webContents = { mainFrame: { url: '' }, isDestroyed: (): boolean => false };
-  constructor() { super(); windows.push(this); }
-  isDestroyed() { return false; }
-  async loadURL(url: string) { this.webContents.mainFrame.url = url; }
-  async loadFile(path: string) { this.webContents.mainFrame.url = `file://${path}`; }
-} }));
-import { createMainWindow, isMainRenderer } from './app/window';
+vi.mock('electron', () => ({
+  nativeTheme: { shouldUseDarkColors: false }, app: {quit:vi.fn()},
+  BaseWindow: class extends EventEmitter {
+    contentView={children:[] as any[],addChildView:(view:any)=>{this.contentView.children.push(view);}};
+    visible=false;destroyed=false;
+    constructor(){super();windows.push(this);}
+    isDestroyed(){return this.destroyed;}
+    isVisible(){return this.visible;}
+    show(){this.visible=true;}
+    showInactive(){this.visible=true;}
+    hide(){this.visible=false;}
+    getContentBounds(){return {x:0,y:0,width:1400,height:900};}
+    setBackgroundColor(){}
+    destroy(){this.destroyed=true;this.emit('closed');}
+  },
+  WebContentsView: class {
+    webContents=Object.assign(new EventEmitter(),{mainFrame:{url:''},destroyed:false,isDestroyed:()=>this.webContents.destroyed,send:vi.fn(),close:()=>{this.webContents.destroyed=true;},loadURL:async(url:string)=>{this.webContents.mainFrame.url=url;},loadFile:async(path:string)=>{this.webContents.mainFrame.url=`file://${path}`;}});
+    setBounds(){} setBackgroundColor(){}
+  },
+}));
+import { createMainWindow, getMainWindowContents, isMainRenderer } from './app/window';
 let bus: EventEmitter, off: () => void, event: IpcMainInvokeEvent, active: Map<string, string>, alive: Set<string>;
 let write: Mock<(id: string, data: string) => void>, resize: Mock<(id: string, cols: number, rows: number) => void>, kill: Mock<(id: string) => void>, invoke: Function;
 beforeEach(async () => {
   vi.stubEnv('ELECTRON_RENDERER_URL', 'http://127.0.0.1:5173/');
-  const window = await createMainWindow(); event = { sender: window.webContents, senderFrame: window.webContents.mainFrame } as unknown as IpcMainInvokeEvent;
+  await createMainWindow(); const wc=getMainWindowContents()!; event = { sender: wc, senderFrame: wc.mainFrame } as unknown as IpcMainInvokeEvent;
   active = new Map([['task-a', 'pty-a'], ['task-b', 'pty-b']]); alive = new Set(['pty-a', 'pty-b']);
   write = vi.fn(); resize = vi.fn(); kill = vi.fn();
   const access = new PtyAccess({ trusted: isMainRenderer, activePty: id => active.get(id) ?? null, alive: id => alive.has(id), write, resize, killTask: kill });
   bus = new EventEmitter(); off = registerPtyInput(bus as never, access);
   const handlers = new Map<string, Function>(); registerRPCRouter({ pty: createPtyController(access) }, { handle: (name: string, fn: Function) => handlers.set(name, fn) } as never); invoke = handlers.get('pty.kill')!;
 });
-afterEach(() => { off(); for (const window of windows.splice(0)) window.emit('closed'); vi.unstubAllEnvs(); });
+afterEach(() => { off?.(); for (const window of windows.splice(0)) window.destroy(); vi.unstubAllEnvs(); });
 const payload = { taskId: 'task-a', ptyId: 'pty-a', data: '中文🙂\x03', cols: 120, rows: 32 };
 describe('M9-T-Y27 every raw channel retains main document and current PTY authorization', () => {
   it('accepts CJK/Ctrl input, resize and scoped kill on the same trusted current instance', () => {
@@ -42,7 +55,7 @@ describe('M9-T-Y27 every raw channel retains main document and current PTY autho
     if (scenario === 'subframe') incoming = { ...event, senderFrame: {} } as never;
     if (scenario === 'navigated-document') (event.sender.mainFrame as unknown as { url: string }).url = 'http://127.0.0.1:5173/untrusted';
     if (scenario === 'destroyed-sender') event.sender.isDestroyed = () => true;
-    if (scenario === 'replaced-window') await createMainWindow();
+    if (scenario === 'replaced-window') {windows.at(-1).destroy();await createMainWindow();}
     bus.emit('pty:input', incoming, target); bus.emit('pty:resize', incoming, target);
     expect(() => invoke(incoming, target.taskId, target.ptyId)).toThrow(/TERMINAL_(SENDER|TARGET)_DENIED/);
     expect(write).not.toHaveBeenCalled(); expect(resize).not.toHaveBeenCalled(); expect(kill).not.toHaveBeenCalled();

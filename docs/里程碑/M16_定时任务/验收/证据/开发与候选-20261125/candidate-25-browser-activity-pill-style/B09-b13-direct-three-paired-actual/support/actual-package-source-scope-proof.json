@@ -1,0 +1,37 @@
+{
+  "schema": "C25-old-B13-direct3-actual-asar-source-boundary-readonly",
+  "rows": [
+    {
+      "side": "old",
+      "bundle": "/private/tmp/willyou-m16-old-state-yUD0pJ/WillYou.app",
+      "appAsarSha": "697bb2d273a743c22a2d2c2ebc3c509b0fcee3f9c4bbeeb34146c590b2d9afe2",
+      "nativeSha": "3ea4c07164ebd92391822629e00f4efa4a07a97f33088ef53b3c9b6b532c6040",
+      "actualCompiledMainSHA256": "73a0b2111f8d25003868912c743030e6b6495816d780843cefc4ea1b2347b9da",
+      "actualBrowserSourcesClassSHA256": "81de070619261887735747f9de326880afc5562206befb0959adcf6dd6f3734c",
+      "actualDiscoveryMethodSHA256": "bf55c9788fc635fb3d57f208b2772d752b5a0c2579afb0f9f1b879c99dc26954",
+      "actualPrepareMethodSHA256": "61758a895953b7d28eae7680214ef60486ac1a11486e69948abf8294ea64c81f",
+      "actualSourceInitialization": "this.cookieSources = options.cookieImport?.sources ?? new BrowserCookieSources({ temporaryRoot: node_path.join(options.userData, \"browser/import-source\") });",
+      "effectiveScope": "Node os.homedir from forced private HOME; runtime positive identity required before UI",
+      "sourceDiscoveryNoCookieContentOrKey": true,
+      "sourceMissingDirectoryGuardBeforeCookieAndKey": true,
+      "sourcePrepareBeforeTargetTransaction": true
+    },
+    {
+      "side": "new",
+      "bundle": "/private/tmp/willyou-m16-c25-build.xGjlf6oK/standard/mac-arm64/WillYou.app",
+      "appAsarSha": "71cd6489bd05b185e9a90011112e657bcd2577d6c89ff8b1901dbab002dea319",
+      "nativeSha": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+      "actualCompiledMainSHA256": "286cb9fe0a1c8b27c806fff4972f64f7b82eff077592e18a189e5751673b575e",
+      "actualBrowserSourcesClassSHA256": "81de070619261887735747f9de326880afc5562206befb0959adcf6dd6f3734c",
+      "actualDiscoveryMethodSHA256": "bf55c9788fc635fb3d57f208b2772d752b5a0c2579afb0f9f1b879c99dc26954",
+      "actualPrepareMethodSHA256": "61758a895953b7d28eae7680214ef60486ac1a11486e69948abf8294ea64c81f",
+      "actualSourceInitialization": "this.cookieSources = options.cookieImport?.sources ?? new BrowserCookieSources({ temporaryRoot: node_path.join(options.userData, \"browser/import-source\"), ...options.workspaceHome ? { applicationSupport: node_path.join(options.workspaceHome, \"Library/Application Support\") } : {} });",
+      "effectiveScope": "SMARTDD_CLI_HOME->workspaceHome private path; both forced same HOME and runtime positive identity required",
+      "sourceDiscoveryNoCookieContentOrKey": true,
+      "sourceMissingDirectoryGuardBeforeCookieAndKey": true,
+      "sourcePrepareBeforeTargetTransaction": true
+    }
+  ],
+  "requiredRuntimeGuard": "One new canonical private folder as HOME and SMARTDD_CLI_HOME; exact actual app main process node:os.homedir() must match before any browser source discovery UI on both sides. No path fallback, no system key access, no existing daily source.",
+  "boundary": "Read-only verified pinned own App code. No browser profile discovery or file access on user dirs, no App start, no credential/cookie content inspection. Only metadata fixtures, actual UI source/confirm/cancel, and guaranteed absent owned synthetic profile error before source content/key reading."
+}

@@ -1,9 +1,12 @@
+import {setNativeOverlay,mainWindowForContents} from './app/window-host';
+import {z} from 'zod';
 import { createAgentTransferController } from './core/ai/agent-transfer-controller';
 import { createProviderSetupController } from './core/ai/provider-setup-controller';
 import type { AgentTransferService } from './core/ai/agent-transfer';
 import { createVoiceController } from './core/voice/controller';
 import type { VoiceService } from './core/voice/voice-service';
-import { app, BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
+import { app, dialog, shell, type IpcMainInvokeEvent } from 'electron';
+import {getMainWindow} from './app/window-host';
 import type { AppSettingsKey } from '@shared/app-settings';
 import { createRPCController, createRPCRouter, createScopedRPCController } from '@shared/ipc/rpc';
 import { createAiProfileController } from './core/ai/controller';
@@ -35,6 +38,8 @@ import { createFileController } from './core/files/controller';
 import type { FileService } from './core/files/file-service';
 import { FileWorkspacePersistence } from './core/files/workspace-persistence';
 import { FileTerminalService } from './core/files/terminal-context';
+import {createScheduleController} from './core/schedules/controller';
+import type {ScheduleService} from './core/schedules/service';
 import {createBrowserController} from './core/browser/controller';
 import type {BrowserService} from './core/browser/service';
 import { createAgentTaskController } from './core/agent/controller';
@@ -61,6 +66,7 @@ export interface RpcDeps {
   agentSupport?: AgentSupportService;
   applications?: ApplicationService;
   browser?:BrowserService;
+  schedules?:ScheduleService;
   agentWorkspace?: AgentWorkspace;
   onProjectDeleted?:()=>void;
   ptys: PtyManager;
@@ -94,13 +100,19 @@ export function createRpcRouter(d: RpcDeps) {
     }),
     agentSupport: createScopedRPCController({ status: (event) => { d.ptyAccess.requireSender(event); return d.agentSupport?.status() ?? { state: 'unavailable',errorCode: 'CAPABILITY_UNAVAILABLE',legacyResourceCount: 0,runtimeHash: null,adapters: [],applications: [] } as AgentSupportState; } }),
     applications: createApplicationController(d.applications,event=>d.ptyAccess.requireSender(event)),
+    nativeSurface:createScopedRPCController({overlay:(event,input:{owner:string;open:boolean})=>{
+      if(!d.trustedRenderer(event))throw new Error('仅可信主界面可以控制原生显示层');
+      const root=mainWindowForContents(event.sender);if(!root)throw new Error('原主界面已关闭');
+      const v=z.strictObject({owner:z.string().uuid(),open:z.boolean()}).parse(input);setNativeOverlay(root,v.owner,v.open);
+    }}),
     browser:createBrowserController(d.browser,d.trustedRenderer),
+    schedule:createScheduleController(d.schedules,d.trustedRenderer),
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
-    ...createProjectControllers(d.projects, { agentTasks: d.agentWorkspace?.projectResources, deleted: () => d.onProjectDeleted?.() }),
+    ...createProjectControllers(d.projects, { agentTasks: d.agentWorkspace?.projectResources, deleted: () => { d.onProjectDeleted?.();d.schedules?.auditConfigurations(); } }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
-    ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles),
+    ...createAgentController(d.agents,d.agentTools,d.providers,d.aiProfiles,undefined,()=>d.schedules?.auditConfigurations()),
     codexConfig: createScopedRPCController({
       notices: event => { d.ptyAccess.requireSender(event); return notices.list(); },
       dismissNotice: (event, id: string) => { d.ptyAccess.requireSender(event); notices.dismiss(id); },
@@ -113,13 +125,13 @@ export function createRpcRouter(d: RpcDeps) {
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */
       pickDirectory: async (defaultPath?: string) => {
-        const win = BrowserWindow.getFocusedWindow();
+        const win = getMainWindow();
         const opts: Electron.OpenDialogOptions = { properties: ['openDirectory', 'createDirectory'], defaultPath };
         const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
         return r.canceled ? null : (r.filePaths[0] ?? null);
       },
       pickFile: async (defaultPath?: string) => {
-        const win = BrowserWindow.getFocusedWindow();
+        const win = getMainWindow();
         const opts: Electron.OpenDialogOptions = { properties: ['openFile', 'showHiddenFiles'], defaultPath };
         const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
         return r.canceled ? null : (r.filePaths[0] ?? null);

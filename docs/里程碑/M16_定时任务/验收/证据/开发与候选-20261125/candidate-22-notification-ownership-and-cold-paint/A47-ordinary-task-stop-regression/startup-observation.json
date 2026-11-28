@@ -1,0 +1,163 @@
+{
+  "schema": "C22-A47-ordinary-stop-known-local-plugin-resume",
+  "root": "/private/tmp/willyou-m16-schedule-app-US7kWL/plugin-setup-xJtwwm",
+  "data": "/private/tmp/willyou-m16-schedule-app-US7kWL/plugin-setup-xJtwwm/data",
+  "exe": "/private/tmp/willyou-m16-c22-build.lzva5qim/standard/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "pin": "26485f7f4eeaaa3167da5499170f7f59cf81a0f2f3d5aebe3274c63edb00e533",
+  "stages": [
+    {
+      "stage": "spawned",
+      "at": 1795688084113
+    },
+    {
+      "stage": "discover-trusted-shell",
+      "at": 1795688084113,
+      "budgetMs": 30000,
+      "originalCutoffMs": 15000
+    },
+    {
+      "stage": "connect-original-renderer",
+      "at": 1795688087855
+    },
+    {
+      "stage": "renderer-runtime-enable",
+      "at": 1795688087867
+    },
+    {
+      "stage": "renderer-inspector-enable",
+      "at": 1795688087954
+    },
+    {
+      "stage": "renderer-native-load",
+      "at": 1795688087955,
+      "productShellLoadBudgetMs": 30000,
+      "originalRendererBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-ready",
+      "at": 1795688089312,
+      "originalBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-arm",
+      "at": 1795688089383,
+      "originalBudgetMs": 25000
+    },
+    {
+      "stage": "startup-normal-ready",
+      "at": 1795688089388
+    }
+  ],
+  "rendererEvents": {
+    "Runtime.executionContextCreated": {
+      "count": 2,
+      "firstAt": 1795688087952,
+      "lastAt": 1795688087952
+    }
+  },
+  "requests": [
+    {
+      "id": 1,
+      "method": "Runtime.enable",
+      "stage": "renderer-runtime-enable",
+      "sentAt": 1795688087867,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795688087954
+    },
+    {
+      "id": 2,
+      "method": "Inspector.enable",
+      "stage": "renderer-inspector-enable",
+      "sentAt": 1795688087954,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795688087955
+    },
+    {
+      "id": 3,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-ready",
+      "sentAt": 1795688089313,
+      "budgetMs": 10000,
+      "status": "response",
+      "settledAt": 1795688089383
+    },
+    {
+      "id": 4,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-arm",
+      "sentAt": 1795688089383,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795688089388
+    }
+  ],
+  "boundary": "Exact private child and trusted renderer only; no raw logs, no user data, no storage/credential APIs. Original startup readiness/arm deadlines preserved. Failure observation is bounded separately; no navigation or business retry.",
+  "pid": 85704,
+  "cdpPort": 61596,
+  "discovery": {
+    "originalCutoffMs": 15000,
+    "budgetMs": 30000,
+    "originalCutoff": null,
+    "loaded": {
+      "at": 1795688087855,
+      "elapsedMs": 3742,
+      "observedTargets": 1,
+      "exactTrustedTarget": true
+    }
+  },
+  "selectedTarget": {
+    "id": "3EB18296DFE69FC598C639958A1EDF84",
+    "type": "page",
+    "trustedShell": true,
+    "observedTargets": 1
+  },
+  "nativeReadiness": {
+    "productBudgetMs": 30000,
+    "originalCutoffMs": 10000,
+    "observations": [
+      {
+        "elapsedMs": 0,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 85789,
+        "loading": true
+      },
+      {
+        "elapsedMs": 408,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 85789,
+        "loading": true
+      },
+      {
+        "elapsedMs": 811,
+        "rootId": 1,
+        "visible": false,
+        "wcId": 1,
+        "rendererPid": 85789,
+        "loading": true
+      },
+      {
+        "elapsedMs": 1215,
+        "rootId": 1,
+        "visible": true,
+        "wcId": 1,
+        "rendererPid": 85789,
+        "loading": false
+      }
+    ],
+    "originalCutoff": null,
+    "loaded": {
+      "elapsedMs": 1215,
+      "rootId": 1,
+      "visible": true,
+      "wcId": 1,
+      "rendererPid": 85789,
+      "loading": false
+    }
+  }
+}

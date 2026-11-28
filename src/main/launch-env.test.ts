@@ -4,7 +4,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { PARENT_AGENT_VARS, applicationChildEnvironment, planLaunchEnv, VALUE_PREFIX } from './launch-env';
+import { PARENT_AGENT_VARS, applicationChildEnvironment, applicationScopedHome, planLaunchEnv, VALUE_PREFIX } from './launch-env';
 import { shellWrapped } from './pty-manager';
 
 // A fake home whose rc files export the same variables globally, like the user's ~/.zshrc does.
@@ -122,6 +122,16 @@ describe('planLaunchEnv', () => {
 
 
 describe('application child HOME isolation', () => {
+  it('keeps the native App home unchanged but scopes host-side user-owned work to the same explicit private home as the CLI', () => {
+    const systemHome='/public/system-home';
+    const normal=Object.freeze({HOME:systemHome});
+    const scoped=Object.freeze({HOME:systemHome,SMARTDD_CLI_HOME:home});
+    expect(applicationScopedHome(systemHome,normal)).toBe(systemHome);
+    expect(applicationScopedHome(systemHome,scoped)).toBe(home);
+    expect(applicationScopedHome(systemHome,scoped)).toBe(applicationChildEnvironment(scoped).HOME);
+    expect(scoped.HOME).toBe(systemHome);
+    expect(()=>applicationScopedHome(systemHome,{SMARTDD_CLI_HOME:'relative'})).toThrow('SMARTDD_CLI_HOME');
+  });
   it('keeps the ordinary App environment contract when no child HOME is configured', () => {
     expect(applicationChildEnvironment({HOME:'/public/system-home',PATH:'/usr/bin:/bin',ELECTRON_RUN_AS_NODE:'1',SMARTDD_USER_DATA:'/public/data',SMARTDD_PROBE:'1'})).toEqual({HOME:'/public/system-home',PATH:'/usr/bin:/bin',TERM:'xterm-256color',COLORTERM:'truecolor'});
   });

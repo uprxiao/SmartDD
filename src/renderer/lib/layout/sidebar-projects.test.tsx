@@ -53,7 +53,7 @@ it('renders the project sidebar without a duplicate settings button', () => {
 
 it('clicking the project name toggles its sessions and retains the active task and collapsed state', async () => {
   m.projects.mockReturnValue([m.project, { id: 'p2', name: 'Other', archivedAt: null }]);
-  m.tasksFor.mockImplementation((projectId: string) => [{
+  m.tasksFor.mockImplementation((projectId: string|null) => projectId===null?[]:[{
     projectId,
     taskId: `task-${projectId}`,
     title: projectId === 'p1' ? 'AIS session' : 'Other session',
@@ -80,6 +80,15 @@ it('clicking the project name toggles its sessions and retains the active task a
   await user.keyboard('{Enter}');
   expect(reopenedToggle.getAttribute('aria-expanded')).toBe('true');
   expect(screen.getByRole('button', { name: 'AIS session', current: 'page' })).toBeTruthy();
+});
+
+it('M16 A10 lists standalone tasks in their own untied group without fabricating a project, reusing normal task navigation',async()=>{
+  m.projects.mockReturnValue([]);
+  m.tasksFor.mockImplementation((id:string|null)=>id===null?[{projectId:null,taskId:'standalone-task',title:'独立报表',status:'completed'}]:[]);
+  render(<SidebarProjects/>);const group=screen.getByTestId('sidebar-standalone-tasks');
+  expect(screen.queryByTestId('sidebar-project')).toBeNull();expect(within(group).getByRole('button',{name:'tasks.noProjectGroup'})).toBeTruthy();
+  await userEvent.click(within(group).getByRole('button',{name:'独立报表'}));expect(navigation.currentAgentTaskId).toBe('standalone-task');
+  await userEvent.click(within(group).getByTestId('sidebar-standalone-toggle'));expect(within(group).queryByRole('button',{name:'独立报表'})).toBeNull();
 });
 
 it('opens the project menu and starts a project draft from their own buttons while the project is collapsed', async () => {

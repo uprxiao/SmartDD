@@ -166,15 +166,15 @@ const ArchivedScope = createContext(false);
 const NativeProcessScope = createContext<(item: TimelineItem) => void>(() => {});
 const RelationsScope = createContext<Relations|null>(null);
 const RunInTerminal = createContext<null|((code:string)=>void)>(null);
-function Markdown({ text, itemId, readOnly = false }: { text: string; itemId?: string; readOnly?: boolean }) {
+function Markdown({ text, itemId, readOnly = false,scheduled=false }: { text: string; itemId?: string; readOnly?: boolean;scheduled?:boolean }) {
   const archived=useContext(ArchivedScope),taskId=useContext(TaskScope),terminal=useContext(RunInTerminal);const [menu,setMenu]=useState<{href:string;x:number;y:number}|null>(null);
   const passive = archived || readOnly;
-  const route=(href:string,external=false)=>{if(!itemId){toast.message('这条内容仍在生成，完成后再打开链接');return;}void openMessageLink(taskId,itemId,href,external).catch(e=>toast.error(rpcErrorMessage(e)));};
+  const route=(href:string,external=false)=>{if(!itemId){toast.message('这条内容仍在生成，完成后再打开链接');return;}if(scheduled)navigation.openAgentTask(taskId);void openMessageLink(taskId,itemId,href,external).catch(e=>toast.error(rpcErrorMessage(e)));};
   const html = useMemo(() => {
     const rendered = md.render(text);
-    const body = passive ? rendered.replace(/<button[^>]*class="agent-run-in-terminal"[^>]*>[\s\S]*?<\/button>/g,'') : rendered;
+    const body = passive||scheduled ? rendered.replace(/<button[^>]*class="agent-run-in-terminal"[^>]*>[\s\S]*?<\/button>/g,'') : rendered;
     return readOnly ? body.replace(/<a href="#" data-agent-link="[^"]*">([\s\S]*?)<\/a>/g, '$1') : body;
-  }, [text,passive,readOnly]);
+  }, [text,passive,readOnly,scheduled]);
   return <><div className="agent-md" onContextMenu={e=>{if(passive)return; const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();setMenu({href:decodeURIComponent(link.dataset.agentLink),x:Math.min(e.clientX,window.innerWidth-210),y:Math.min(e.clientY,window.innerHeight-180)});}}} dangerouslySetInnerHTML={{ __html: html }} onClick={e => {
     if (passive) { e.preventDefault(); return; }
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.agent-run-in-terminal');
@@ -182,6 +182,10 @@ function Markdown({ text, itemId, readOnly = false }: { text: string; itemId?: s
     const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();route(decodeURIComponent(link.dataset.agentLink),e.metaKey||e.ctrlKey);}
   }} />{!passive&&menu&&<><button type='button' className='agent-context-scrim' aria-label='关闭链接菜单' onClick={()=>setMenu(null)}/><div className='agent-link-menu' style={{left:menu.x,top:menu.y}}><button type='button' onClick={()=>{route(menu.href);setMenu(null);}}>打开</button><button type='button' onClick={()=>{route(menu.href,true);setMenu(null);}}>在外部编辑器打开</button><button type='button' onClick={()=>{if(itemId)void resolveMessageLink(taskId,itemId,menu.href).then(r=>navigator.clipboard.writeText(r.kind==='file'?r.absolutePath:r.url)).then(()=>toast.success('已复制完整路径')).catch(e=>toast.error(rpcErrorMessage(e)));setMenu(null);}}>复制完整路径</button></div></>}</>;
 }
+export function ScheduledReply({text,itemId,taskId,archived}:{text:string;itemId:string;taskId:string;archived:boolean}){
+  return <TaskScope.Provider value={taskId}><Markdown text={text} itemId={itemId} scheduled readOnly={archived}/></TaskScope.Provider>;
+}
+
 
 const DEFAULT_COMMANDS: Record<string, string[]> = { 'codex-app-server': ['goal', 'compact', 'review'], 'claude-sdk': ['goal', 'compact', 'init'] };
 type RangeChunk = { chunk: string; next: number; done: boolean; revision?: number };
@@ -753,7 +757,7 @@ function RequestFormView({ form, busy, onSubmit }: { form: RequestForm; busy: bo
   </div>;
 }
 
-function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd, mailSlot, onRespond, onStop }: { requests: TimelineRequest[]; more?: number; driverId: string; visiblePlans: ReadonlyMap<string,string>; cwd:string; mailSlot:HTMLDivElement | null; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: (r: TimelineRequest) => void }) {
+function RequestPanel({ requests, more = 0,focusRequestId, driverId, visiblePlans, cwd: taskCwd, mailSlot, onRespond, onStop }: { requests: TimelineRequest[]; more?: number;focusRequestId?:string;driverId: string; visiblePlans: ReadonlyMap<string,string>; cwd:string; mailSlot:HTMLDivElement | null; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: (r: TimelineRequest) => void }) {
   const [index, setIndex] = useState(0);
   const [reason, setReason] = useState<Record<string, string>>({});
   const submitting = useRef(new Set<string>());
@@ -762,6 +766,13 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
   const taskId = useContext(TaskScope);
   const panel = useRef<HTMLDivElement>(null);
   const shown = requests[Math.min(index, requests.length - 1)];
+  useEffect(()=>{
+    if(!focusRequestId)return;
+    const target=requests.findIndex(r=>r.requestId===focusRequestId);if(target<0)return;
+    if(shown.requestId!==focusRequestId){setIndex(target);return;}
+    panel.current?.scrollIntoView({block:'nearest'});panel.current?.focus();
+    const focus=navigation.scheduledTaskFocus;if(focus?.taskId===taskId&&focus.requestId===focusRequestId)navigation.clearScheduledTaskFocus(taskId,focus.turnId);
+  },[focusRequestId,shown.requestId,requests.length,taskId]);
   const effectiveDriver = shown.driverId ?? driverId;
   // 过大的关键请求：先读完整内容再开放批准（复核 NR06）；读不全只能拒绝或停止。
   const [full, setFull] = useState<Record<string, TimelineRequest['payload'] | 'error'>>({});
@@ -1049,6 +1060,22 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const recoveringTimeline = useRef(false);
   const [history, setHistory] = useState({ items: [] as TimelineItem[], turns: [] as TurnInfo[], hasOlder: null as boolean | null, cursor: null as string | null, clipped: false });
   const { items: older, turns: olderTurns } = history;
+  // Completed timeline durations are fixed. Avoid rebuilding the entire visible history every second
+  // while idle; keep the clock for progressing turns, waiting/stop time and live command details.
+  const needsTurnClock = (turn: TurnInfo) => ['dispatching', 'started'].includes(turn.status)
+    || (!turn.ended_at && ['completed', 'interrupted', 'failed', 'unknown'].includes(turn.status));
+  const needsCommandClock = (entry: TimelineItem) => entry.type === 'command_execution'
+    && !entry.terminal && entry.payload?.status === 'running';
+  const ticking = !!snap && (snap.status === 'working' || snap.status === 'waiting' || !!snap.stopping
+    || !!snap.preparingTurnId || !!snap.run?.busy || !!snap.backgroundWork?.length
+    || (snap.turns as TurnInfo[]).some(needsTurnClock) || olderTurns.some(needsTurnClock)
+    || (snap.items as TimelineItem[]).some(needsCommandClock) || older.some(needsCommandClock));
+  useEffect(() => {
+    if (!ticking) return;
+    setNow(Date.now());
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, [ticking, taskId]);
   const olderItems = useRef(older);
   olderItems.current = older;
   const snapshotRef = useRef<Snapshot | null>(null);
@@ -1212,7 +1239,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     const loadProfiles = () => { void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {}); };
     const offToolsChanged = events.on(agentToolsChangedEvent, loadProfiles);
     loadProfiles();
-    const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => {
       alive = false;
       timelineScope.current++;
@@ -1223,7 +1249,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       offLive();
       offWindowShown();
       offToolsChanged();
-      clearInterval(tick);
       window.removeEventListener('focus', onVisible);
       document.removeEventListener('visibilitychange', onVisible);
       if (reloadTimer.current) clearTimeout(reloadTimer.current);
@@ -1231,7 +1256,59 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     };
   }, [taskId, reload, applySnapshot]);
 
-  useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live.items).length, relations?.childrenTotal, childRequests.length]);
+  const loadOlder = async () => {
+    if(!snap)return;
+    const first=older[0]??(snap.items as TimelineItem[])[0];
+    const cursor = history.cursor ?? (older.length ? null : snap.historyCursor) ?? first?.ordinal;
+    if (cursor === undefined || olderRequest.current) return;
+    const request = Symbol();
+    olderRequest.current = request;
+    setLoadingOlder(true);
+    try {
+      let watermark = seqRef.current;
+      const page = await rpc.agentTasks.history(taskId, cursor);
+      if (olderRequest.current !== request) return;
+      let incoming = page.items as TimelineItem[];
+      const ids = incoming.map(item => item.itemId);
+      while (watermark !== seqRef.current) {
+        watermark = seqRef.current;
+        incoming = await readHistoryItems(taskId, ids, () => olderRequest.current === request);
+        if (olderRequest.current !== request) return;
+      }
+      const latest = snapshotRef.current ?? snap;
+      setHistory(prev => {
+        const olderPage = { items: [...incoming, ...prev.items], turns: [...page.turns as TurnInfo[], ...prev.turns] };
+        const kept = retainOlderTimeline(olderPage, { items: latest.items as TimelineItem[], turns: latest.turns as TurnInfo[] });
+        return { ...kept, hasOlder: page.hasOlder, cursor: page.historyCursor, clipped: prev.clipped || kept.clipped };
+      });
+    } catch (e) {
+      if (olderRequest.current === request) toast.error(rpcErrorMessage(e));
+    } finally {
+      if (olderRequest.current === request) {
+        olderRequest.current = null;
+        setLoadingOlder(false);
+      }
+    }
+  };
+  const scheduledFocus=navigation.scheduledTaskFocus,skipScroll=useRef(false);
+  const scheduledRequest=scheduledFocus?.taskId===taskId?scheduledFocus.requestId:undefined;
+  useEffect(()=>{
+    const el=scroller.current;
+    if(scheduledFocus?.taskId===taskId&&snap){
+      const request=scheduledFocus.requestId;
+      if(request&&snap.requests.some(r=>r.requestId===request)){skipScroll.current=true;return;}
+      const target=[...el?.querySelectorAll<HTMLElement>('[data-turn-id]')??[]].find(node=>node.dataset.turnId===scheduledFocus.turnId);
+      if(target){target.scrollIntoView({block:'start'});skipScroll.current=true;navigation.clearScheduledTaskFocus(taskId,scheduledFocus.turnId);}
+      else if((history.hasOlder??snap.hasOlder)&&!loadingOlder&&!olderRequest.current)void loadOlder();
+      else if(!(history.hasOlder??snap.hasOlder)&&!loadingOlder){
+        toast.message('原回合已不可读取；可从定时任务运行记录查看保留证据');
+        skipScroll.current=true;navigation.clearScheduledTaskFocus(taskId,scheduledFocus.turnId);
+      }
+      return;
+    }
+    if(skipScroll.current){skipScroll.current=false;return;}
+    if(el)el.scrollTop=el.scrollHeight;
+  },[snap?.seq,Object.keys(live.items).length,relations?.childrenTotal,childRequests.length,scheduledFocus,older.length,history.hasOlder,loadingOlder]);
 
   const chipsRef = useRef<Chip[]>([]); chipsRef.current = chips;
   const textRef = useRef(''); textRef.current = text;
@@ -1408,39 +1485,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const diagnostics = diagnosticsOpen ? visibleRunDiagnostics(items).sort((a,b)=>a.ordinal-b.ordinal) : [];
   const visiblePlans = new Map<string,string>(items.filter(it => it.type === 'proposed_plan' && !it.payload?.truncated && !isIncomplete(it.payload) && it.turnId).map(it => [it.turnId!, it.payload.plan]));
   const hasOlder = history.hasOlder ?? snap.hasOlder;
-  const loadOlder = async () => {
-    const first = older[0] ?? currentItems[0];
-    const cursor = history.cursor ?? (older.length ? null : snap.historyCursor) ?? first?.ordinal;
-    if (cursor === undefined || olderRequest.current) return;
-    const request = Symbol();
-    olderRequest.current = request;
-    setLoadingOlder(true);
-    try {
-      let watermark = seqRef.current;
-      const page = await rpc.agentTasks.history(taskId, cursor);
-      if (olderRequest.current !== request) return;
-      let incoming = page.items as TimelineItem[];
-      const ids = incoming.map(item => item.itemId);
-      while (watermark !== seqRef.current) {
-        watermark = seqRef.current;
-        incoming = await readHistoryItems(taskId, ids, () => olderRequest.current === request);
-        if (olderRequest.current !== request) return;
-      }
-      const latest = snapshotRef.current ?? snap;
-      setHistory(prev => {
-        const olderPage = { items: [...incoming, ...prev.items], turns: [...page.turns as TurnInfo[], ...prev.turns] };
-        const kept = retainOlderTimeline(olderPage, { items: latest.items as TimelineItem[], turns: latest.turns as TurnInfo[] });
-        return { ...kept, hasOlder: page.hasOlder, cursor: page.historyCursor, clipped: prev.clipped || kept.clipped };
-      });
-    } catch (e) {
-      if (olderRequest.current === request) toast.error(rpcErrorMessage(e));
-    } finally {
-      if (olderRequest.current === request) {
-        olderRequest.current = null;
-        setLoadingOlder(false);
-      }
-    }
-  };
   const working = snap.status === 'working' || snap.status === 'waiting';
   const stopping = snap.stopping;
   const stopElapsed = stopping ? Math.max(0, Math.floor((now - stopping.requestedAt) / 1000)) : 0;
@@ -1768,7 +1812,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       {archived ? <div className="agent-composer agent-archive-composer"><textarea rows={3} disabled aria-label="已归档任务输入" placeholder="恢复后可以继续此会话" /></div> : <>
         <TaskOfflineNotice />
         {/* 2026-11-20 对齐 T3：请求面板在输入框上方，输入框与模型／档位／执行器入口始终保留（A72）。 */}
-        {requests.length > 0 && <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />}
+        {requests.length > 0 && <RequestPanel requests={requests} focusRequestId={scheduledRequest} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />}
         <form className="agent-composer" onSubmit={e => { e.preventDefault(); if (!composerStopping) void send(); }}
           onKeyDown={e => {
             if (e.key !== 'Escape' || !canEscapeStop || e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey

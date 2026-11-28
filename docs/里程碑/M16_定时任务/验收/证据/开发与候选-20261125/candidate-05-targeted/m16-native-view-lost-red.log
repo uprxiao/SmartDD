@@ -1,0 +1,35 @@
+[1125/235606.226157:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1125/235606.368157:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/browser/__tests__/single-host-surface.test.ts (4 tests | 1 failed | 3 skipped) 3ms
+   × M16 B02/B10 removes the native front when Electron has already unset its WebContentsView.webContents getter 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/browser/__tests__/single-host-surface.test.ts > M16 B02/B10 removes the native front when Electron has already unset its WebContentsView.webContents getter
+AssertionError: expected [Function] to not throw an error but 'TypeError: Cannot read properties of …' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"TypeError: Cannot read properties of undefined (reading 'isDestroyed')"
+
+ ❯ src/main/core/browser/__tests__/single-host-surface.test.ts:44:36
+     42|   await f.host.park(a,rect);await f.host.park(b,rect);f.host.foregroun…
+     43|   const held=f.host.acquire(a);destroyed=true;f.root.contentView.remov…
+     44|   expect(()=>f.host.remove(a)).not.toThrow();expect(()=>held()).not.to…
+       |                                    ^
+     45|   f.host.foreground(b,rect);expect(f.children).toEqual([f.shell,b]);
+     46|   expect(f.host.isForeground(a)).toBe(false);expect(f.host.isForegroun…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  23:56:06
+   Duration  125ms (transform 24ms, setup 0ms, import 47ms, tests 3ms, environment 0ms)
+

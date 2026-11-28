@@ -1,0 +1,129 @@
+{
+  "at": "2026-11-26T21:15:41.307763+00:00",
+  "source": {
+    "path": "/private/tmp/willyou-m16-f36-b01-red-close-c24-QW6CEU",
+    "originalResultSHA256": "f1c3162215fa0535255b7d10a50909c5efeb606942db616125b0946a024f1b1c",
+    "unchangedRawFiles": {
+      "B01-red-close-user-receipt-6185d89c-2d92-42cb-9847-90a453290f27.json": "04cc605331b99f227d840de4c54ac39cd1a3b4a174c9aba9f5d6bbe56f1f952e",
+      "focus-before-close.json": "452e335141cbe21d868bf952c5edd64b688b638eb2fc09285ddd0430bf8c150f",
+      "focus-before-close-second.json": "02154e2013d5155b7b5a2490fa4cf49c2d5fb931918bdf58a51145af88d244e0",
+      "explicit-cua-reopen-os-observation.json": "faeb66d03495bb25ede0cea1b14762fcdc0d2ab7e22ddea6901bfb55daf1d8d7",
+      "B01-3-current-native-red-close-redisplay-original-page.png": "4702828e8c4957c1c2cc37b805f06512b6a391e77d60dc6f4802bbd757cf5cb4"
+    }
+  },
+  "originalCriteria": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M16_定时任务/验收/测试用例.md",
+    "line": "| B01.3 A+S | 最小化、恢复、关闭隐藏、重新显示；在双屏实际进/出全屏、切 Space／显示器再返回，等待真实完成事件与稳定几何。 | 正确原窗恢复，真实合成无额外黑框、旧窗或闪动；页面仍可用，与 B03 关联后台执行及尺寸/时延。保存稳定原生画面，不用过渡截图冒充。 |",
+    "sourceSHA256": "b82107fe24da8876803d821afc962c9ac2bec00bee92827f67baa405b506d404",
+    "nativePlan": "/private/tmp/willyou-m16-f36-qa/C22-native-regression-remaining-batch-plan.md",
+    "planSHA256": "52e6f4a7f14d19c0aabf05efa3c40f8a10c5821be98e327b35a8781d9233186c"
+  },
+  "factChecks": {
+    "originalCloseControl": "native CUA AXCloseButton; actual operator receipt, not user confirmation",
+    "normalWindowMenuOnlyOwnTitle": true,
+    "focus": [
+      {
+        "source": "focus-before-close.json",
+        "samples": 14,
+        "elapsedMs": 3299,
+        "startMs": 1795727264157,
+        "lastMs": 1795727267456,
+        "exactPidAndCanonicalPath": true,
+        "allConfirmed": true
+      },
+      {
+        "source": "focus-before-close-second.json",
+        "samples": 14,
+        "elapsedMs": 3298,
+        "startMs": 1795727349714,
+        "lastMs": 1795727353012,
+        "exactPidAndCanonicalPath": true,
+        "allConfirmed": true
+      }
+    ],
+    "rootId": 1,
+    "hide": {
+      "at": 1795727293883,
+      "kind": "hide",
+      "id": 1,
+      "visible": false,
+      "minimized": false,
+      "focused": false,
+      "bounds": {
+        "x": 56,
+        "y": 33,
+        "width": 1400,
+        "height": 900
+      },
+      "display": 1
+    },
+    "show": {
+      "at": 1795727293951,
+      "kind": "show",
+      "id": 1,
+      "visible": true,
+      "minimized": false,
+      "focused": true,
+      "bounds": {
+        "x": 56,
+        "y": 33,
+        "width": 1400,
+        "height": 900
+      },
+      "display": 1
+    },
+    "firstHideToShowMs": 68,
+    "sameRootWCMarkerFormActivePageAndGeometry": true,
+    "firstRestoredDriverVerifiedBeforeReceipt": true,
+    "secondCloseOwnOnScreenNormalWindowCount": 0,
+    "secondReopenObservation": {
+      "active": true,
+      "at": 1795727463493,
+      "exe": "/private/tmp/willyou-m16-c24-build.pn0wa8ey/standard/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "frontIsOwn": true,
+      "ownOnScreenNormalWindows": 1,
+      "pid": 90280
+    },
+    "secondRedisplayEntry": "exact-cua-application-selection",
+    "secondOriginalFormVisibleByOperatorReceipt": true,
+    "afterSecondReceiptDriverFinalOriginalAssertionsNotReached": true,
+    "secondPreQuitNativeChildVisible": true,
+    "dockAttempt": "CUA timeout; no input",
+    "actualDisplays": [
+      {
+        "id": 1,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 982
+        },
+        "scale": 2
+      },
+      {
+        "id": 4,
+        "bounds": {
+          "x": 1512,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scale": 1
+      }
+    ],
+    "redCloseSourceDisplay": 1,
+    "sourceResult": "actual failed receipt check retained, normal process exit distinct",
+    "syntheticOnly": true
+  },
+  "screenshot": {
+    "file": "B01-3-current-native-red-close-redisplay-original-page.png",
+    "sha256": "4702828e8c4957c1c2cc37b805f06512b6a391e77d60dc6f4802bbd757cf5cb4",
+    "dimensions": [
+      2800,
+      1800
+    ],
+    "viewed": true,
+    "boundary": "Actual trusted shell screenshot; native webpage surface not composited. It shows the isolated test project, same selected tab and local address; it does not prove visible native form, absence of transitional black frames, system desktop pixels, or full composition quality."
+  },
+  "classification": "B01.3 partial evidence: actual red close hide and immediate same-root/page/WC/document/form restoration verified; second independently observed on-screen normal windows 0→1 through exact CUA app selection. Do not relabel it as Dock, Window menu or NSRunningApplication activation. Existing receipt validator rejects entry; subsequent full final driver assertions not reached. Two displays detected but no cross-display/Space/fullscreen/composite stable system picture actions newly fulfilled by this batch. Formal increment 0."
+}

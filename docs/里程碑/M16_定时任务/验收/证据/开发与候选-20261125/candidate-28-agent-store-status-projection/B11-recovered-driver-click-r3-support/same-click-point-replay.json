@@ -1,0 +1,99 @@
+{
+  "staticOnly": true,
+  "originalC28": {
+    "source": "/Users/liubu/hx/4.uprxiao/SmartDD/release/m16-qa-support/b11-recovery/run-HZurDd/result.json",
+    "sha256": "aac1687485571d92efaf0fef676a5d1a2ed515e19c7f4fc591b45fb70895774b",
+    "drift": {
+      "before": {
+        "x": 1094,
+        "y": 70
+      },
+      "after": {
+        "x": 1080,
+        "y": 70
+      }
+    },
+    "originalFailedBeforeInput": true,
+    "successfulPriorAddressClicks": 3,
+    "requestPaths": [
+      "/A",
+      "/favicon.ico",
+      "/B",
+      "/favicon.ico",
+      "/C",
+      "/favicon.ico"
+    ],
+    "productNormalExit": {
+      "pid": 77952,
+      "code": 0,
+      "signal": null
+    }
+  },
+  "originalC22": {
+    "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M16_定时任务/验收/证据/开发与候选-20261125/candidate-22-notification-ownership-and-cold-paint/B11-exact-UID-XPC-early-scope-click-guard/index.json",
+    "sha256": "5cb060d9669a86cd43c535c718d92abd54b31ac59d68798a6aa6a9d3eb5529a9",
+    "drift": {
+      "before": {
+        "x": 1094,
+        "y": 70
+      },
+      "after": {
+        "x": 1080,
+        "y": 70
+      }
+    },
+    "previousFailed": true
+  },
+  "originalC27": {
+    "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M16_定时任务/验收/证据/开发与候选-20261125/candidate-27-schedule-active-query-reuse/B11-real-1800s-recheck/archive-safe/result.json.gz",
+    "sha256": "505f0055ef0da5dd209b1e5942851b9e87f1f4c083836c5a1340476cb65ebe47",
+    "successfulAddressPoints": [
+      {
+        "x": 1080,
+        "y": 70
+      },
+      {
+        "x": 1080,
+        "y": 70
+      },
+      {
+        "x": 1080,
+        "y": 70
+      },
+      {
+        "x": 1080,
+        "y": 70
+      },
+      {
+        "x": 1080,
+        "y": 70
+      }
+    ],
+    "recordedNativeMenuChecks": 5
+  },
+  "boundary": "Replay uses retained actual mismatch coordinates, historical stable points and native window stacks. Subsequent DOM sample sequences are synthetic offline controls, not a new real UI pass.",
+  "tests": [
+    "C28 retained immediate x1094→1080 mismatch reacquires and validates fresh point",
+    "C22 retained post-native x1094→1080 mismatch repeats complete target/native guard",
+    "C27 five actual successful address points and five recorded clear native menu stacks",
+    "C28 preceding three successful actual address points remain valid",
+    "hidden native view does not obscure the current point",
+    "persistently overlapping native view blocks every click",
+    "same coordinate with changed semantic task/page identity is forbidden",
+    "no unique visible actual target is bounded and sends no input",
+    "native shell hidden",
+    "native shell minimized",
+    "native shell identity changed despite unchanged coordinates",
+    "point outside native shell bounds",
+    "hover geometry drift triggers fresh target and native clearance checks",
+    "native overlap appearing after hover cannot authorize press",
+    "repeated unstable coordinates never authorize a click",
+    "duplicate real shell identities are refused",
+    "actual driver DOM predicate verifies current exact task/page, unique hit and point",
+    "actual driver DOM predicate rejects a different browser task or page",
+    "actual driver DOM predicate rejects disabled, duplicate and obscured targets",
+    "actual keyboard-input predicate requires same active field and page"
+  ],
+  "passed": 20,
+  "failed": 0
+}

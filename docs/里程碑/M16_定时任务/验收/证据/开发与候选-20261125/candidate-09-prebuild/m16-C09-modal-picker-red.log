@@ -1,0 +1,35 @@
+[1126/005040.906901:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/005041.049007:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/agent-tasks/agent-model-picker.test.tsx (19 tests | 1 failed | 17 skipped) 68ms
+   × M16 A20/A52 places a schedule modal picker below a top anchor and above the modal overlay 59ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/agent-tasks/agent-model-picker.test.tsx > M16 A20/A52 places a schedule modal picker below a top anchor and above the modal overlay
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/features/agent-tasks/agent-model-picker.test.tsx:49:61
+     47|     render(<AgentModelPicker profiles={profiles} profileId="a" modalOv…
+     48|     const dialog=screen.getByRole('dialog');
+     49|     expect(dialog.classList.contains('agent-picker-modal')).toBe(true);
+       |                                                             ^
+     50|     expect(dialog.style.top).toBe('148px');
+     51|     expect(dialog.style.bottom).toBe('');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 17 skipped (19)
+   Start at  00:50:41
+   Duration  727ms (transform 64ms, setup 0ms, import 227ms, tests 68ms, environment 357ms)
+

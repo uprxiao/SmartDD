@@ -33,8 +33,8 @@ it('requests an explicit browser open for each focus event',async()=>{
 it('does not switch tasks or create a page for ordinary shortcuts',async()=>{
   render(<Shortcuts/>);await emit('t1','new');await emit('t1','address');expect(f.navigation.currentAgentTaskId).toBe('t2');expect(f.openPanel).not.toHaveBeenCalled();expect(f.create).not.toHaveBeenCalled();
 });
-it('ignores a deleted or projectless target without starting a conversation',async()=>{
-  f.tasks.byId.set('t0',{taskId:'t0',projectId:null});render(<Shortcuts/>);await emit('deleted');await emit('t0');expect(f.navigation.currentAgentTaskId).toBe('t2');expect(f.openPanel).not.toHaveBeenCalled();
+it('ignores a deleted target but reveals a valid standalone task without starting a conversation',async()=>{
+  f.tasks.byId.set('t0',{taskId:'t0',projectId:null});render(<Shortcuts/>);await emit('deleted');expect(f.navigation.currentAgentTaskId).toBe('t2');expect(f.openPanel).not.toHaveBeenCalled();await emit('t0');expect(f.navigation.currentAgentTaskId).toBe('t0');expect(f.openPanel).toHaveBeenCalledOnce();expect(f.create).not.toHaveBeenCalled();
 });
 
 it('keeps a newer explicit focus request when an older task lookup finishes late',async()=>{

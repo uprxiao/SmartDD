@@ -1,0 +1,87 @@
+{
+  "schema": "C20-hidden-renderhost-preinitialize-before-minimize",
+  "variant": "hidden-shell-before-minimize-cold-WC-after-minimize",
+  "root": "/private/tmp/willyou-m16-f36-c20-min-control-8rHRwU",
+  "pin": "5862b58d4eb01556454aff612e1afe1c7e2108d07fea57f1a050d5ea6eef4d76",
+  "bundle": "/private/tmp/willyou-m16-c20-frozen-8sqi_pp7/WillYou.app",
+  "scope": "One explicitly authorized timing-only synthetic experiment. While original root visible, construct one never-shown focusable=false/skipTaskbar=true hidden host plus own synthetic shell and require actual shell bitmap. No cold page WC or business navigation before main minimize. Only after actual main minimized create a fresh ordinary cold WC, normal about:blank then target navigation once, no business page priming. Three actual current frames required before any single user restore handoff. No programmatic show/activate/restore, no credentials, no A/S claim.",
+  "startedAt": 1795678723257,
+  "recipes": [
+    "warm-control",
+    "cold-temp"
+  ],
+  "requests": [],
+  "samples": [],
+  "captures": [],
+  "settlements": [],
+  "origin": "http://127.0.0.1:50639",
+  "status": "failed-or-incomplete",
+  "error": "AssertionError [ERR_ASSERTION]: Electron debugging target not ready\n    at openElectron (file:///private/tmp/willyou-m16-f36-qa/electron-harness-c20-minimized-native-control-instrumented.mjs:154:5)\n    at async file:///private/tmp/willyou-m16-f36-qa/c20-hidden-renderhost-preinitialize-before-minimize.mjs:40:9",
+  "startupDiagnostic": {
+    "schema": "C20-private-fresh-mock-startup-readonly-instrumentation",
+    "root": "/private/tmp/willyou-m16-f36-c20-min-control-8rHRwU",
+    "data": "/private/tmp/willyou-m16-f36-c20-min-control-8rHRwU/data",
+    "exe": "/private/tmp/willyou-m16-c20-frozen-8sqi_pp7/WillYou.app/Contents/MacOS/WillYou",
+    "pin": "5862b58d4eb01556454aff612e1afe1c7e2108d07fea57f1a050d5ea6eef4d76",
+    "stages": [
+      {
+        "stage": "spawned",
+        "at": 1795678723349
+      },
+      {
+        "stage": "discover-trusted-shell",
+        "at": 1795678723350,
+        "budgetMs": 15000
+      },
+      {
+        "stage": "startup-failed",
+        "at": 1795678738454,
+        "failedStage": "discover-trusted-shell"
+      }
+    ],
+    "rendererEvents": {},
+    "requests": [],
+    "boundary": "Exact private child and trusted renderer only; no raw logs, no user data, no storage/credential APIs. Original startup readiness/arm deadlines preserved. Failure observation is bounded separately; no navigation or business retry.",
+    "pid": 65918,
+    "cdpPort": 50640,
+    "failure": {
+      "stage": "discover-trusted-shell",
+      "kind": "trusted-target-not-ready"
+    },
+    "failureObservation": {
+      "at": 1795678738454,
+      "childLive": true,
+      "selected": null,
+      "initialTargetCount": 0,
+      "wsOpen": false,
+      "actualTargetCount": 0,
+      "originalTrustedTargetStillExact": false,
+      "main": {
+        "identity": {
+          "pid": 65918,
+          "pidMatches": true,
+          "exeMatches": true,
+          "dataMatches": true,
+          "homeMatches": true,
+          "cliHomeMatches": true
+        },
+        "appReady": true,
+        "mockKeychainFixture": true,
+        "roots": []
+      }
+    },
+    "cleanup": {
+      "mode": "exact-normal-app-quit-requested",
+      "pid": 65918,
+      "code": 0,
+      "signal": null,
+      "finishedAt": 1795678738663
+    }
+  },
+  "startupProcess": {
+    "pid": 65918,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": 1795678738663
+}

@@ -84,6 +84,17 @@ describe('Tool discovery publishes data but never creates an agent automatically
     expect(env.CLAUDECODE).toBe('parent'); expect(JSON.stringify(results)).not.toContain('PUBLIC_TEST_ENV');
   });
 
+  it('explicitly isolated detection verifies native executables without probing the host login', async () => {
+    const auth = vi.fn(probe);
+    const tools = new AgentToolService(agents, { env: () => ({HOME:'/private/cli-home',PATH:'/test'}), probeLoginStatus:false, discover, probe:auth, executable:async()=>true });
+    const results = await tools.refresh();
+    expect(results.filter(row=>row.tool.kind!=='antigravity').map(row=>[row.tool.kind,row.tool.installed,row.tool.version,row.tool.login])).toEqual([
+      ['claude',true,'9.9.9','none'],['codex',true,'9.9.9','none'],
+    ]);
+    expect(auth.mock.calls.map(call=>call[1])).toEqual([['--version'],['--version']]);
+    expect(agents.configs()).toEqual([]);
+  });
+
   it('does not accept discovery output alone as proof that the executable can launch', async () => {
     const failing = vi.fn(async (): Promise<CliProbeResult> => ({ code: 127, stdout: '', stderr: 'PUBLIC_TEST_FAILURE' }));
     const tools = new AgentToolService(agents, { env: () => ({}), discover, probe: failing, executable: async () => true });

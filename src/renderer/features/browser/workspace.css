@@ -42,6 +42,8 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
 .bw-dialog{background:var(--bg);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:min(480px,calc(100% - 32px));padding:0;display:flex;flex-direction:column;max-height:calc(100% - 32px);min-width:0}
 .bw-dialog p{color:var(--secondary);margin:12px 0 24px}
 .bw-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 8px 22px}.bw-dialog-head h2{font-size:16px;line-height:22px;font-weight:600;margin:0;color:var(--text)}
+.bw-dialog-head .fw-icon{font-size:13px;line-height:1.5;border-radius:50%;color:var(--secondary)}
+.bw-dialog-head .fw-icon:hover{background:var(--hover);color:var(--text)}
 .bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}.bw-dialog-actions{display:flex;justify-content:flex-end;gap:12px;padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}.bw-dialog-actions button{font-size:12px;padding:8px 12px;border:1px solid var(--border);border-radius:8px}.bw-dialog-actions button:last-child{background:var(--primary);color:var(--on-primary)}
 .bw-hint{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:18px;color:var(--secondary);margin:0}
 .bw-hint>svg{flex-shrink:0;margin-top:3px}
@@ -55,7 +57,14 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
 .bw-radios label{display:flex;align-items:center;gap:8px;font-size:13px}
 .bw-radios input{margin:0}
 .bw-restart{color:#9a6200}
-.bw-row-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bw-mini{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg);color:var(--text);white-space:nowrap}.bw-mini:hover{background:var(--hover)}.bw-mini:disabled{opacity:.45;pointer-events:none}.bw-mini-danger{color:#c0392b;border-color:#e6b0aa}.bw-danger-text{color:#c0392b}.ydark .bw-danger-text{color:#ef8f84}.bw-danger-text{font-size:12px;line-height:18px;overflow-wrap:anywhere}
+.bw-row-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Browser controls keep their own approved style inside the unified work panel,
+   independent of the order of the two stylesheets. */
+.bw-mini,.agent-right-panel .bw-mini{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;height:26px;padding:0 9px;border-width:1px;border-style:solid;border-color:var(--border);border-radius:7px;font-size:12px;line-height:1.5;background:var(--bg);color:var(--text);white-space:nowrap}
+.bw-mini:hover,.agent-right-panel .bw-mini:hover{background:var(--hover)}
+.bw-mini:disabled,.agent-right-panel .bw-mini:disabled{opacity:.45;pointer-events:none}
+.bw-mini-danger,.agent-right-panel .bw-mini-danger{color:#c0392b;border-color:#e6b0aa}
+.bw-danger-text{color:#c0392b}.ydark .bw-danger-text{color:#ef8f84}.bw-danger-text{font-size:12px;line-height:18px;overflow-wrap:anywhere}
 
 /* Approved B12 profile list and site-decision layout. */
 .bw-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -91,8 +100,8 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
 .bw-security{display:inline-flex;align-items:center;flex-shrink:0;color:var(--secondary)}
 .bw-security.bw-certificate{color:#c0392b}
 .bw-failure-actions{display:flex;align-items:center;gap:12px;margin-top:6px}
-.bw-mini-primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.bw-mini-primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.bw-mini-primary,.agent-right-panel .bw-mini-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.bw-mini-primary:hover,.agent-right-panel .bw-mini-primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
 .bw-danger-link{font-size:12px;color:#c0392b;text-decoration:underline}
 :root.ydark .bw-danger-link{color:#ef8f84}
 
@@ -138,7 +147,11 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
 .bw-agent svg,.bw-paused svg{flex-shrink:0;margin-top:2px}
 .bw-agent code,.bw-paused code{font:11px var(--mono);color:var(--secondary)}
 .bw-paused{background:#fdf4e3;color:#6b4500}:root.ydark .bw-paused{background:#3a2e17;color:#f0d29a}
-.bw-pause,.bw-resume{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px}.bw-resume{color:#9a6200;border-color:#e3b55a}
+.bw-pause,.bw-resume{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px}
+/* Keep the browser's original file-toolbar pills above the unified panel's generic button reset. */
+.agent-right-panel .bw-pause,.agent-right-panel .bw-resume{font-size:12px;line-height:18px;font-weight:500;border-width:1px;border-style:solid;border-color:var(--border);border-radius:22px}
+.agent-right-panel .bw-pause:hover,.agent-right-panel .bw-resume:hover{background:var(--hover)}
+.bw-resume,.agent-right-panel .bw-resume{color:#9a6200;border-color:#e3b55a}
 .bw-agent-glow::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 22px color-mix(in srgb,var(--accent) 35%,transparent)}
 .bw-agent-dot{display:block;width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .bw-agent-dot.paused{background:#d08a00;box-shadow:0 0 0 3px #d08a0033}
@@ -166,7 +179,7 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
 .bw-navigation-failure .bw-recovery{display:flex;align-items:center;gap:8px}
 .bw-navigation-failure .bw-recovery .fw-loading{width:13px;height:13px}
 .bw-navigation-failure .bw-error-name{font:11px var(--mono);color:var(--muted)}
-.bw-navigation-failure .fw-pill{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;border-radius:22px;white-space:nowrap;font-weight:500}
+.bw-navigation-failure .fw-pill{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;border-width:1px;border-style:solid;border-color:var(--border);border-radius:22px;white-space:nowrap;font-size:13px;line-height:19.5px;font-weight:500}
 
 /* Keep the required authorization deadline compact inside its actual dialog. */
 [data-browser-panel=access-request] .bw-dialog-body>.bw-hint{margin:0}
@@ -175,8 +188,10 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
 .bw-cert>h2{margin:4px 0 0}
 .bw-cert>p{max-width:min(420px,100%);font-size:13px;line-height:20px;margin:0;overflow-wrap:anywhere}
 .bw-cert>.bw-error-name{font:11px var(--mono);color:var(--muted)}
-.bw-cert .bw-failure-actions>.fw-pill{border-radius:22px;padding:6px 10px}
-.bw-cert .bw-failure-actions>.bw-danger-link{border:0;background:none;padding:0;border-radius:0}
+.bw-cert .bw-failure-actions>.fw-pill{font-size:13px;line-height:19.5px;font-weight:500;color:var(--secondary);border-width:1px;border-style:solid;border-color:var(--border);border-radius:22px;padding:6px 10px;background:transparent}
+.bw-cert .bw-failure-actions>.fw-pill:hover{background:var(--hover)}
+.bw-cert .bw-failure-actions>.bw-danger-link{font-size:12px;line-height:18px;font-weight:430;color:#c0392b;text-decoration:underline;border:0;background:none;padding:0;border-radius:0}
+:root.ydark .bw-cert .bw-failure-actions>.bw-danger-link{color:#ef8f84}
 
 .bw-invalid-address h2{margin:4px 0 0}
 .bw-invalid-address p{max-width:min(420px,100%);line-height:20px;overflow-wrap:anywhere}

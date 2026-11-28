@@ -1,0 +1,56 @@
+{
+  "scope": "Source-level targeted regression after A47 cleanup real reproduction; C21 frozen package unchanged, no new package yet",
+  "date": "2026-11-26 Asia/Singapore",
+  "observedToolResults": [
+    {
+      "command": "pnpm test src/main/core/agent/agent-task-service.test.ts -t 'ordinary task Stop retires'",
+      "phase": "red before implementation",
+      "exit": 1,
+      "testsFailed": 1,
+      "expected": "stopped",
+      "received": "running",
+      "durationMs": 684
+    },
+    {
+      "command": "pnpm test src/main/core/agent/agent-task-service.test.ts -t 'ordinary task Stop retires'",
+      "phase": "green after implementation",
+      "exit": 0,
+      "testsPassed": 1,
+      "durationMs": 509
+    },
+    {
+      "command": "pnpm test src/main/core/agent/agent-task-service.test.ts src/main/core/agent/host-business-requests.test.ts src/main/core/schedules/store.test.ts src/main/core/schedules/scope.test.ts",
+      "exit": 0,
+      "testsPassed": 160,
+      "filesPassed": 4,
+      "durationMs": 6810
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "src/main/core/agent/agent-task-service.test.ts",
+      "sha256": "6d91cbaef71211610ec964c3965e1ab69ec9f3dca51369e86d3c980ccb9cae73"
+    },
+    {
+      "path": "src/main/core/agent/agent-store.ts",
+      "sha256": "066196292e55206941a7efa7cf3f6170a270c6b5f43d134406e0fd8b01cee4b9"
+    },
+    {
+      "path": "src/main/core/agent/host-business-requests.ts",
+      "sha256": "e053866140a2d0e6d68f8ad627ba06a419e61b95d85458cd1befa5de3802e0a5"
+    },
+    {
+      "path": "src/main/core/schedules/service.ts",
+      "sha256": "6e265454aa3d0e4ec4fd1eeba89d99c2f3a205fa2e00e508185fd413892f5caf"
+    },
+    {
+      "path": "src/main/core/schedules/stop-reason.ts",
+      "sha256": "7c62c1186fa56c8974152d54610c470180d637c0f2615c1753e5b0932b240198"
+    }
+  ],
+  "limits": "Observed command result transcription; no new App A/S test or package. Regression fixture is actual store/service/agent task service with fixture driver; no real email or authorization."
+}

@@ -1,0 +1,141 @@
+{
+  "scope": "isolated SQLite query micro-diagnostic and real production test-first statement reuse, not formal B11 outcome",
+  "priorFormalC23": {
+    "exactClosedSyntheticDb": "/private/tmp/willyou-m16-f36-run-agBQfR/data/smartdd.db",
+    "noWalOrShm": true,
+    "aggregateOnly": {
+      "taskCount": 7,
+      "turnCount": 40,
+      "agentEventCount": 864,
+      "scheduleOccurrenceCount": 0,
+      "diffChanged": 317,
+      "itemCreated": 170,
+      "itemUpdated": 50
+    },
+    "why864": "upper bound on agent-event subscription arrivals, microtask coalescing means actual recompile count is not established"
+  },
+  "benchmark": {
+    "script": "active-query.cjs",
+    "scriptSha256": "d6f20425e514fe77de142b2f1861aa107e97a29624be60c45a07d79b6fc05e95",
+    "raw": "result.jsonl",
+    "rawSha256": "b6113fab380a5379d3e8c46008f8d67b0b79933a566a025273bc5f5863268df4",
+    "actualDb": "better-sqlite3 using repository Electron run-as-Node ABI; isolated in-memory production schedule DDL",
+    "modes": {
+      "prepare": {
+        "samples": 3,
+        "countPerSample": 864,
+        "medianQueryMs": 8.795512999999925,
+        "endRssDeltaMiB": [
+          12.140625,
+          11.6875,
+          11.828125
+        ],
+        "endUsedHeapDeltaMiB": [
+          0.07801055908203125,
+          0.08258819580078125,
+          0.09789657592773438
+        ]
+      },
+      "reuse": {
+        "samples": 3,
+        "countPerSample": 864,
+        "medianQueryMs": 0.30183999999998434,
+        "endRssDeltaMiB": [
+          3.625,
+          3.59375,
+          3.625
+        ],
+        "endUsedHeapDeltaMiB": [
+          0.027675628662109375,
+          0.031864166259765625,
+          0.032833099365234375
+        ]
+      }
+    },
+    "forcedGc": false,
+    "boundary": "Six fresh process arms, prepare/reuse alternating. No app, no model, no real data. Event delivery is a tight synthetic upper-bound loop; RSS delta is experimental and cannot be subtracted from the actual 1800s product results."
+  },
+  "sourceManifest": "candidate-27-source.json",
+  "sourceManifestSha256": "4b3bc78330f23ff1b058f3d01edefc390754b62c06baefc1b60cbede22ec665d",
+  "postBuildSourceCount": 153,
+  "postBuildMismatch": 0,
+  "changedFromC26": [
+    "src/main/core/schedules/store.test.ts",
+    "src/main/core/schedules/store.ts"
+  ],
+  "testFirst": {
+    "selector": "reuses the active-occurrence SQLite statement but reads current committed states on every reconcile",
+    "red": {
+      "exit": 1,
+      "sameQueryPreparations": 405,
+      "expected": 1
+    },
+    "green": {
+      "exit": 0,
+      "passed": 1,
+      "sameQueryPreparations": 1,
+      "expectedLiveStates": [
+        "empty",
+        "claimed",
+        "dispatching",
+        "running",
+        "waiting",
+        "unknown",
+        "empty"
+      ]
+    }
+  },
+  "regression": {
+    "command": "pnpm test src/main/core/schedules src/main/core/agent src/renderer/features/agent-tasks src/renderer/features/schedules --maxWorkers=2",
+    "initial": {
+      "passed": 677,
+      "failed": 2,
+      "skipped": 10,
+      "filesPassed": 39,
+      "filesFailed": 1,
+      "filesSkipped": 4,
+      "failure": "listen EPERM 127.0.0.1 in gemini-response-relay.test.ts, both tests before normal fixture network start"
+    },
+    "exactLocalFixtureRerun": {
+      "command": "pnpm test src/main/core/agent/drivers/gemini-response-relay.test.ts --maxWorkers=1",
+      "passed": 2,
+      "failed": 0,
+      "loopbackOnly": true
+    },
+    "uniqueFinalPassed": 679,
+    "skipped": 10
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0
+  },
+  "build": {
+    "bundle": "/private/tmp/willyou-m16-c27-build.M1DDawVE/standard/mac-arm64/WillYou.app",
+    "firstBuild": "sandbox official component verify invalid signature, no package from first attempt",
+    "sameComponentSignedVerificationExit": 0,
+    "buildVerifiedEnvExit": 0,
+    "appAsarSha256": "97f98d831484cb2769f3f8c46a893ce4ddee0fb0b5a3e416348a400842c5064d",
+    "nativeProcessSha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeFilesSha256": "e07fbff84183650e8b3482d8c2499038787c9fd7aea691180cbf86e84fb3aea5",
+    "bundleId": "com.smartdd.desktop",
+    "nativeSmoke": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "codesignDeepStrictExit": 0,
+    "driverSourceRecordSha256": "e7bb04dc98a0d41b1123a751797603d322114ac0d10fe25f26aa9258550166be",
+    "rawFailedBuildLogSha256": "1080a0db55d3d6ea98088644271a6dfff1de6fbc01a4251469eb6a371139fb00",
+    "rawVerifiedBuildLogSha256": "2aba328a12a61f4b383a65da46f51d0951abb5a67683e509b5671764dd260a94",
+    "installed": false,
+    "released": false
+  },
+  "formal": {
+    "B11": "three prior actual red preserved; C27 real long recheck started, no conclusion until authentic complete result",
+    "mainCasesComplete": 55,
+    "mainCasesTotal": 64
+  }
+}

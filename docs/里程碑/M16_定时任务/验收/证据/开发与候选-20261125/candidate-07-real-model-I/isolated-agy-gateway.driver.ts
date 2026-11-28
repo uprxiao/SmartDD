@@ -1,0 +1,45 @@
+import {it,expect} from 'vitest';
+import Database from 'better-sqlite3';
+import {mkdtempSync,mkdirSync,realpathSync,rmSync,writeFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {randomUUID,createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {setTimeout as sleep} from 'node:timers/promises';
+import {runBundledMigrations} from '../../db/migrations';
+import {AgentTaskService,type ResolvedLaunch} from './agent-task-service';
+import {AgentStore} from './agent-store';
+import {AgentRunService} from './agent-run-service';
+import {DRIVERS} from './registry';
+import {MacProcessIdentityReader} from '../applications/process-identity';
+import {resolveProfileLaunch} from './profile-launch';
+import {materializeAgentPlan} from '../ai/agent-launch-files';
+import {evaluateCapabilities} from './capabilities';
+import {providerModelOptions} from '@shared/agent-model-choice';
+import type {ProviderView,CodeAgentTool,RunConfigView} from '@shared/ai-agents';
+import {ScheduleService} from '../schedules/service';
+it('A22 real AGY scheduler service with authorized exact gateway and isolated native conversation',async()=>{
+ const key=process.env.M16_USER_GATEWAY_KEY;if(!key)throw Error('missing authorized private key');
+ const root=realpathSync(mkdtempSync('/private/tmp/m16-real-agy-')), home=join(root,'home'),cwd=join(root,'work'),userData=join(root,'data'),temp=join(root,'tmp'); for(const p of [home,cwd,userData,temp])mkdirSync(p,{mode:0o700});
+ const executable=realpathSync('/Users/liubu/.local/bin/agy');const env:Record<string,string>={HOME:home,USERPROFILE:home,ZDOTDIR:home,TMPDIR:temp,PATH:'/Users/liubu/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin',SHELL:'/bin/zsh',USER:'m16-fixture',LOGNAME:'m16-fixture',XDG_CONFIG_HOME:join(home,'.config'),XDG_DATA_HOME:join(home,'.local/share'),XDG_CACHE_HOME:join(home,'.cache'),CLOUDSDK_CONFIG:join(home,'.config/gcloud'),DISABLE_AUTOUPDATER:'1',DISABLE_TELEMETRY:'1',DO_NOT_TRACK:'1',BROWSER:'/usr/bin/false'};
+ for(const n of ['HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','NO_PROXY','http_proxy','https_proxy','all_proxy','no_proxy'])if(process.env[n])env[n]=process.env[n]!;
+ const version=execFileSync(executable,['--version'],{cwd,env,encoding:'utf8',timeout:15000}).match(/\b\d+\.\d+\.\d+\b/)?.[0];if(!version)throw Error('native version absent');const capabilities=evaluateCapabilities('antigravity-acp',version);
+ const names=['gemini-4-argon','gemini-4-carbon'];const provider:ProviderView={id:'m16-gateway',name:'Authorized test Model Hub',preset:null,identityRevision:1,endpoints:{gemini:'https://rjmodel.rjupc.com'},authType:'bearer',hasKey:true,models:names.map(id=>({id,name:id,contextWindow:null,offline:false,availability:{codex:'untested',claude:'untested',antigravity:'available'},antigravity:{reasoningLevels:['low','medium','high'],defaultReasoning:'low'}})),recommended:{},refreshedAt:null};
+ const tool:CodeAgentTool={id:'agy',kind:'antigravity',installed:true,executable,customPath:executable,version,login:'none'};const profile:RunConfigView={id:'m16-agy',name:'Authorized AGY',toolId:tool.id,kind:'antigravity',source:'provider',providerId:provider.id,models:names,defaultModel:names[0],homeVisible:true,isDefault:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null};
+ const result:{version:string;turns:unknown[];status:string;cleanup:unknown[]}={version,turns:[],status:'started',cleanup:[]};const save=()=>writeFileSync('/private/tmp/m16-real-agy-gateway-result.json',JSON.stringify(result,null,2)+'\n',{mode:0o600});
+ const db=new Database(join(userData,'agent.sqlite'));db.pragma('foreign_keys=ON');runBundledMigrations(db);const store=new AgentStore(db);const helper=new MacProcessIdentityReader(realpathSync('release/mac-arm64/WillYou.app/Contents/Resources/native/willyou-process-identity'));const runs=new AgentRunService({store,drivers:DRIVERS,processes:helper,host:{instanceId:randomUUID(),pid:process.pid,startedAt:helper.read(process.pid)?.startedAt??null}});const identities=new Map<number,{pid:number;startedAt:string}>();runs.onLive(({event})=>{if(event.type==='process'){const x=helper.read(event.pid);if(x)identities.set(event.pid,x);}});
+ const resolver=async(i:{profileId:string;cwd:string;runId:string;model?:string}):Promise<ResolvedLaunch>=>{const p=resolveProfileLaunch({config:profile,tool,provider,key,cwd:i.cwd,userData,runId:i.runId,baseEnv:env,model:i.model,carryExtensions:false});if(!p.stateRoot.startsWith(root+'/')||!p.env.HOME.startsWith(root+'/')||!i.cwd.startsWith(root+'/'))throw Error('isolated path guard');materializeAgentPlan(p.plan,userData,i.cwd);return{driverId:p.driverId,model:p.model,stateRoot:p.stateRoot,env:p.env,executable:{path:p.command,version},compatibility:p.compatibility,extraArgs:p.extraArgs,settingSources:p.settingSources,capabilities:capabilities.capabilities};};
+ const taskService=new AgentTaskService({store,runs,resolveLaunch:resolver,profileDriver:()=> 'antigravity-acp',profileModelSettings:()=>({defaultModel:names[0],providerBacked:true,options:providerModelOptions(provider,profile)}),userData});
+ const schedule=new ScheduleService({agent:{store,tasks:taskService,runs,delegations:{setMode:()=>{}}} as unknown as import('./wiring').AgentWorkspace,home,userData,profile:()=>({available:true,kind:'antigravity',compatibility:'authorized-private-gateway',providerBacked:true,models:names,modelOptions:providerModelOptions(provider,profile)}),changed:()=>{}});
+ async function until(fn:()=>boolean,ms=95000){const end=Date.now()+ms;while(Date.now()<end){if(fn())return;await sleep(100);}throw Error('bounded gateway fixture timeout');}
+ try{
+  schedule.start();const marker='WY-M16-AGY-8247';const config={title:'Independent AGY gateway test',prompt:'Only reply exactly '+marker+'. Do not call tools or access files.',projectId:null,dirId:null,cwd,workspace:'directory' as const,baseRef:null,destination:'reuse' as const,boundTask:null,profileId:profile.id,model:names[0],effort:'low',tier:'ask' as const,delegation:false,notifyCompleted:false};const plan=await schedule.save({schedule:{type:'interval',zone:'UTC',minutes:60},config,grace:60,enabled:false});
+  const dispatch=async (id:string,revision:number,model:string,effort:string)=>{const at=Date.now(),claim=schedule.runNow(plan.id,revision,id);if(!('run'in claim))throw Error('fixture not claimed');await until(()=>['completed','failed','unknown','stopped','skipped'].includes(schedule.store.run(claim.run.id)?.status??''));const r=schedule.store.run(claim.run.id)!,detail=schedule.detail(r.id),runsForTask=r.taskId?runs.runForTask(r.taskId):undefined;const binding=runsForTask?store.binding(runsForTask.bindingId):undefined;
+   const verified={status:r.status,model:r.actualConfig?.model,effort:r.actualConfig?.effort,expectedModel:model,expectedEffort:effort,source:r.turnId?store.turn(r.turnId)?.source_kind:null,marker:typeof detail.result?.payload.text==='string'&&detail.result.payload.text.includes(marker),nativeIdHash:binding?.native_id?createHash('sha256').update(binding.native_id).digest('hex'):null,durationMs:Date.now()-at};result.turns.push(verified);save();expect(verified.status).toBe('completed');expect(verified.model).toBe(model);expect(verified.effort).toBe(effort);expect(verified.marker).toBe(true);expect(verified.source).toBe('system');expect(verified.nativeIdHash).toBeTruthy();return {r,nativeIdHash:verified.nativeIdHash};};
+  const first=await dispatch('first',plan.revision,names[0],'low');const live=runs.runForTask(first.r.taskId!)!;await runs.close(live.runId);await until(()=>!runs.runForTask(first.r.taskId!)&&!runs.closingForTask(first.r.taskId!));
+  expect(taskService.setSelection(first.r.taskId!,{model:names[1],effort:'high'},taskService.snapshot(first.r.taskId!).selectionRevision).ok).toBe(true);
+  const current=schedule.store.plan(plan.id)!;await schedule.save({id:plan.id,revision:current.revision,schedule:current.schedule,config:{...current.config,prompt:'Please repeat the exact synthetic marker from the previous conversation. No tools.'},grace:60,enabled:false});
+  const second=await dispatch('second',schedule.store.plan(plan.id)!.revision,names[1],'high');expect(second.r.taskId).toBe(first.r.taskId);expect(second.nativeIdHash).toBe(first.nativeIdHash);result.status='passed';
+ }catch(e){result.status='failed-or-incomplete';// Do not print arbitrary vendor responses or process environments.
+ throw Error('Controlled native gateway probe did not satisfy all assertions');}
+ finally{await schedule.stop();await taskService.closePrewarms();await runs.closeAll();result.cleanup=[...identities.values()].map(x=>({pid:x.pid,state:helper.state(x)}));db.close();save();rmSync(root,{recursive:true,force:true});}
+},230000);

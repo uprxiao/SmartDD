@@ -24,6 +24,7 @@ class NavigationStore {
   /** M14 新任务区显示的任务。 */
   currentAgentTaskId: string | null = null;
   agentTaskReadOnly = false;
+  scheduledTaskFocus:{taskId:string;turnId:string;requestId?:string}|null=null;
   applicationAgentTaskId:string|null=null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
@@ -85,11 +86,14 @@ class NavigationStore {
     }
   }
 
-  openAgentTask(id: string, readOnly = false): void {
+  openAgentTask(id: string, readOnly = false, focus?:{turnId:string;requestId?:string}): void {
+    this.scheduledTaskFocus=focus?{taskId:id,...focus}:null;
     this.agentTaskReadOnly = readOnly;
     this.currentAgentTaskId = id;
     this.currentViewId = 'agentTask';
   }
+
+  clearScheduledTaskFocus(taskId:string,turnId:string){if(this.scheduledTaskFocus?.taskId===taskId&&this.scheduledTaskFocus.turnId===turnId)this.scheduledTaskFocus=null;}
 
   setAgentTaskReadOnly(id: string, readOnly:boolean): void {
     if (this.currentAgentTaskId===id) this.agentTaskReadOnly=readOnly;

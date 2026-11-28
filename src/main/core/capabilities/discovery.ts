@@ -38,6 +38,8 @@ export interface DiscoveryContext {
   details?: NativeDiscoveryDetails;
   /** Exact version from the host-only --version probe; absent in generic UI discovery. */
   nativeVersion?: string;
+  /** Read only native project Skill paths when preparing a standalone scope. */
+  projectSkillsOnly?: boolean;
   /** Main-only callback. Raw MCP definitions must never enter discovery rows,
    * persistent diagnostics, capability snapshots or renderer responses. */
   onMcpDefinition?:(row:DiscoveredCapability,definition:Record<string,unknown>,policy?:McpNativePolicy)=>void;
@@ -246,7 +248,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
   };
 
   const adapter = skillAdapter(c.runner);
-  for (const root of adapter?.userRoots(c) ?? []) {
+  for (const root of c.projectSkillsOnly ? [] : adapter?.userRoots(c) ?? []) {
     const scope = root === '/etc/codex/skills' ? 'system'
       : c.runner === 'codex' && root === join(c.stateRoot, 'skills') ? 'user compatibility' : 'user';
     scanDir(root, scope);
@@ -258,6 +260,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       for (const entry of rows.slice(start)) entry.projectRoot = project;
     }
   }
+  if(c.projectSkillsOnly)return rows;
 
   if (c.runner === 'claude') {
     const args=c.args??[], options=claudeDiscoveryArgs(args);

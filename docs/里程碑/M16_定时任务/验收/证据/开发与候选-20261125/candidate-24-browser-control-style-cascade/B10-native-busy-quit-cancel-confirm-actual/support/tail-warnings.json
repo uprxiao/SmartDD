@@ -1,0 +1,24 @@
+{
+  "recordedActualWarnings": [
+    {
+      "at": "2026-11-26T21:23:47.638Z",
+      "case": "B10.4-C24-real-busy-native-quit-cancel-confirm",
+      "action": "screenshot-failed",
+      "data": "TypeError: Cannot read properties of null (reading 'cdp')"
+    },
+    {
+      "at": "2026-11-26T21:23:47.642Z",
+      "case": "B10.4-C24-real-busy-native-quit-cancel-confirm",
+      "action": "db-snapshot-error",
+      "data": "Error: Command failed: /usr/bin/sqlite3 -readonly -json /private/tmp/willyou-m16-f36-b10-native-quit-c24-F3iqdD/data/smartdd.db select * from schedule_plans\nError: in prepare, unable to open database file (14)\n"
+    }
+  ],
+  "sourceLocations": {
+    "dbHelperLine": 140,
+    "scenarioGenericPostludeLine": 277,
+    "screenshotHelperLine": 206,
+    "nativeQuitClosedDbReceiptLine": 439,
+    "fixtureCloseBeforeEndLine": 447
+  },
+  "classification": "Exact stderr originates from optional generic schedule snapshot in the scenario finally after successful ordinary native quit, not from the actual B10 main assertions. Final screenshot similarly attempts null app after confirmed normal exit. The post-exit SQLite is WAL-format 2/2 without WAL/SHM; immutable URI aggregate queries succeed. Plain ordinary SQLite opening the closed WAL database likely needs writable WAL/index context; exact internal CLI failure reason not proven beyond the recorded failure, no unsafe plain read replay. No schedule rows fetched; schedule plan count zero; this B10 scope does not require scheduled-plan dump. Original warnings remain."
+}

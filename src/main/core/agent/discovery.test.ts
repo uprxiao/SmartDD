@@ -98,6 +98,9 @@ done`, '缺少新建会话能力'],
     const { link, real } = fakeBin('codex');
     writeFileSync(real, String.raw`#!/bin/sh
 [ "$1" = 'app-server' ] && [ "$HOME" = "$CODEX_HOME" ] && [ "$HOME" = "$PWD" ] && [ -z "$OPENAI_API_KEY" ] || exit 41
+# 本地协议探针不应启动插件/市场同步或 hook；该临时会话只验证 RPC 方法。
+shift
+[ "$#" -eq 6 ] && [ "$1" = '-c' ] && [ "$2" = 'features.hooks=false' ] && [ "$3" = '-c' ] && [ "$4" = 'features.plugins=false' ] && [ "$5" = '-c' ] && [ "$6" = 'features.remote_plugin=false' ] || exit 42
 while IFS= read -r line; do
   id=$(printf '%s' "$line" | sed -n 's/.*"id":\([0-9][0-9]*\).*/\1/p')
   case "$line" in

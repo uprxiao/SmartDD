@@ -105,6 +105,19 @@ describe('Codex app-server 驱动', () => {
     await inst.close();
   });
 
+  it.each([false,true])('M16 A43 checks effective native project Skill exclusion before thread creation (projectEnabled=%s)',async projectEnabled=>{
+    const f=setup((m,s)=>{
+      if(m.method!=='skills/list')return false;
+      s.reply(m.id,{data:[{skills:[{name:'global',path:'/home/.agents/skills/global/SKILL.md',enabled:true},{name:'project',path:'/w/.agents/skills/project/SKILL.md',enabled:projectEnabled}]}]});return true;
+    });
+    try{
+      const opening=f.inst.open({executable:exe,cwd:'/w',env:{},tier:'ask',nativeProjectSkillRoots:['/w/.agents/skills']});
+      if(projectEnabled)await expect(opening).rejects.toThrow('原生项目 Skill 仍启用');
+      else await expect(opening).resolves.toMatchObject({nativeId:'thr-1',confirmed:true});
+      expect(f.server.calls('thread/start')).toHaveLength(projectEnabled?0:1);
+    }finally{await f.inst.close();}
+  });
+
   it('uses the same verified account directory on the first turn and discovers a different account independently', async () => {
     const cache = new Map<string, Awaited<ReturnType<CodexAppServerInstance['modelCatalog']>>>();
     for (const [accountId, expectedQueries] of [['a', 1], ['a', 0], ['b', 1]] as const) {

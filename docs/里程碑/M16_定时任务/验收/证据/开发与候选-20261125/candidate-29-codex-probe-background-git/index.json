@@ -1,0 +1,55 @@
+{
+  "schema": "M16-C29-software-and-independent-qa-package",
+  "baseCommit": "4148950b8",
+  "sourceFiles": 155,
+  "previousC28FilesUnchanged": 153,
+  "changedProduction": [
+    "src/main/core/agent/discovery.ts"
+  ],
+  "changedTests": [
+    "src/main/core/agent/discovery.test.ts"
+  ],
+  "beforeFix": {
+    "failed": 4,
+    "passed": 9,
+    "file": "discovery-before-fix.log"
+  },
+  "afterFix": {
+    "testFiles": 7,
+    "passed": 147,
+    "exit": 0,
+    "typecheckExit": 0
+  },
+  "build": {
+    "command": "pnpm package --output-dir release/m16-qa-support/c29/build",
+    "exit": 0,
+    "nativeSmokePassed": [
+      "sqlite",
+      "pty",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ],
+    "codesignDeepStrictExit": 0
+  },
+  "package": {
+    "path": "release/m16-qa-support/c29/build/mac-arm64/WillYou.app",
+    "asarSha256": "a441402b55f2e4758367d8bede54d4d431867d7b2a7c30d0a0446d61f611d2b3",
+    "nativeProcessIdentitySha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeFilesSha256": "e07fbff84183650e8b3482d8c2499038787c9fd7aea691180cbf86e84fb3aea5",
+    "rendererComparedToC28": {
+      "filesEach": 733,
+      "changed": []
+    }
+  },
+  "postBuildSourceMismatch": 0,
+  "actualB11FormalPass": false,
+  "files": {
+    "regression.log": "2ee04bb43e3ee956a1c9ab43163197b8da5f1288f721eb481ab9c14d31045257",
+    "source.json": "e25bbabe99af4d6b0ac5003816a5b8e20c37d9456f29793d66dd4b5743012535",
+    "discovery-before-fix.log": "420b6917f0e0a18f80efef920d47f380a622cb2491660e9b9c364983803a0a5b",
+    "typecheck.log": "43cf3be635b5127a22c21769845059126ba438a663e10235634c93b509faa758",
+    "build.log": "f7d9732036f5f8a41d6d269cd25fb252199b498e9d3a48704e0a12b3c3e224ff"
+  }
+}

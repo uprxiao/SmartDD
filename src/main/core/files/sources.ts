@@ -8,7 +8,7 @@ import type { RootSource, SourceResolver } from './roots';
 /** Read the explicit source fields, not project connection credentials or a
  * renderer-supplied path. This lookup does no filesystem/network inspection. */
 export class FileSourceResolver implements SourceResolver {
-  constructor(private readonly db: AppDb) {}
+  constructor(private readonly db:AppDb,private readonly scheduleRoot?:(taskId:string)=>{path:string;branch:string}|undefined){}
   sources(scope: FileScope): RootSource[] {
     const result: RootSource[] = [];
     let projectId: string | null;
@@ -16,6 +16,8 @@ export class FileSourceResolver implements SourceResolver {
       const task = this.db.select({ id: tasks.id, projectId: tasks.projectId, cwd: tasks.cwd }).from(tasks).where(eq(tasks.id, scope.taskId)).get();
       if (!task) throw new FileError('MISSING', '任务已不存在');
       projectId = task.projectId;
+      const scheduled=this.scheduleRoot?.(task.id);
+      if(scheduled)return [{kind:'task-cwd',id:task.id,path:scheduled.path,label:'计划工作副本 · '+scheduled.branch,projectId}];
       const agent = this.db.get<{ parent_task_id: string | null }>(sql`SELECT parent_task_id FROM agent_tasks WHERE task_id=${task.id}`);
       if (agent?.parent_task_id) {
         const workspace = this.db.get<{ path: string; branch: string | null; state: string }>(sql`SELECT path,branch,state FROM agent_workspaces WHERE child_task_id=${task.id} ORDER BY rowid DESC LIMIT 1`);

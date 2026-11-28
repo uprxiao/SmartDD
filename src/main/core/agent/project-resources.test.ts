@@ -47,7 +47,7 @@ class RemovalDriver implements DriverInstance {
     this.events.emit({type:'exit',code:0,signal:null});
   }
 }
-function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob) {
+function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob,onTaskRemoved?:(taskId:string)=>void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(),'m14-project-cleanup-')));
   const db = new Database(':memory:');
   db.pragma('foreign_keys=ON');
@@ -65,7 +65,7 @@ function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob) {
     ptys:{spawnInteractiveShell:()=>{ptys.add('fixture-pty');return 'fixture-pty';},has:id=>ptys.has(id),kill:id=>{ptys.delete(id);},on:()=>{}},
     taskCwd:id=>store.task(id)!.cwd,baseEnv:()=>({}),
   });
-  const resources = new AgentProjectResources({store,tasks,diffs,terminals,userData:root});
+  const resources = new AgentProjectResources({store,tasks,diffs,terminals,userData:root,onTaskRemoved});
   tasks.attachAttachmentCleanup((id,value)=>resources.discardAttachments(id,value));
   const projects = createProjectControllers(service,{agentTasks:resources}).projects;
   const makeProject = (name:string) => {
@@ -591,4 +591,12 @@ it('S07 shows the pending stop until native completion and only closes the same 
     await expect(f.tasks.forceStop(task,run.runId,progress.requestedAt)).rejects.toThrow('已变化');
     expect(f.runs.runForTask(task)?.runId).toBe(replacement.runId);
   } finally { now.mockRestore(); }
+});
+
+it('notifies dependent resources only after a permanent single-task deletion commits',async()=>{
+ const removed=vi.fn((taskId:string)=>({deleted:f.store.task(taskId)===undefined,siblingPresent:!!f.store.task(sibling)}));
+ const f=fixture(runDiffJob,removed),p=f.makeProject('browser-owner-deletion'),target=f.create(p,'delete'),sibling=f.create(p,'keep');
+ await f.tasks.archive(target);await expect(f.resources.removeTask(target)).rejects.toThrow(/恢复已归档/);expect(removed).not.toHaveBeenCalled();
+ f.tasks.unarchive(target);await f.resources.removeTask(target);expect(removed).toHaveBeenCalledExactlyOnceWith(target);expect(removed.mock.results[0].value).toEqual({deleted:true,siblingPresent:true});
+ await expect(f.resources.removeTask(target)).rejects.toThrow(/任务不存在/);expect(removed).toHaveBeenCalledTimes(1);
 });

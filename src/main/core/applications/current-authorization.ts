@@ -1,3 +1,4 @@
+import {standaloneTaskId,verifyStandaloneScope} from '../agent/task-application-scope';
 import {hasExternalPluginOwner} from './plugins/legacy-routing';
 import {ApplicationError} from '@shared/applications';
 import {applicationInvocationDeclarations,applicationToolDeclarations,type ApplicationEntry} from '@shared/application-capabilities';
@@ -21,6 +22,11 @@ export class CurrentApplicationAuthorization {
   constructor(private readonly store:ResourceStore,private readonly builtin:Pick<BuiltinPackageRegistry,'packages'|'retainedMetadata'>,private readonly modules=builtinApplicationModules){}
 
   selectedApps(projectId:string):{appId:string;packageHash:string}[]{
+    if(standaloneTaskId(projectId)){
+      if(!verifyStandaloneScope(this.store.sqlite,projectId))return[];
+      const enabled=this.store.sqlite.prepare("SELECT 1 FROM application_catalog_state WHERE app_id='browser' AND added=1 AND enabled=1").get(),active=this.builtin.packages.active('browser');
+      return enabled&&active?[{appId:'browser',packageHash:active.packageHash}]:[];
+    }
     const rows=this.store.sqlite.prepare('SELECT s.app_id AS appId FROM application_project_settings s JOIN application_catalog_state c ON c.app_id=s.app_id WHERE s.project_id=? AND s.enabled=1 AND c.added=1 AND c.enabled=1 ORDER BY s.app_id').all(projectId) as {appId:string}[];
     return rows.filter(({appId})=>this.modules.appIds().some(id=>id===appId)&&!hasExternalPluginOwner(this.store.sqlite,appId)).map(({appId})=>{const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
   }

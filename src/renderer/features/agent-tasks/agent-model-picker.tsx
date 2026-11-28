@@ -1,6 +1,6 @@
 // 已确认 M14 原型 ModelPicker 的三栏布局；数据使用真实配置，扩展偏好由任务服务保存。
 import { Check, ChevronDown, Lock, PlugZap, Search, Settings } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef, useState, type Ref } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type Ref, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { navigation } from '@renderer/core/navigation';
@@ -48,6 +48,8 @@ interface Props {
   pendingSwitch?: AgentModelChoice & { profileId: string };
   defaultPending?: boolean; defaultNotice?: string;
   triggerRef?: Ref<HTMLButtonElement>;
+  /** The portal belongs to an already-open modal rather than the normal composer. */
+  modalOverlay?: boolean;
   onPick(profileId: string, model: string | null, effort?: string | null): Promise<void | boolean> | void | boolean;
   onExtensions(profileId: string, enabled: boolean): Promise<void> | void;
 }
@@ -57,13 +59,24 @@ export function AgentModelPicker(p: Props) {
   const [saving, setSaving] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const popup = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ left: 20, bottom: 40 });
+  const [position, setPosition] = useState<CSSProperties>({ left: 20, bottom: 40 });
   useLayoutEffect(() => {
     if (!open) return;
     const place = () => {
       const r = root.current?.getBoundingClientRect();
-      const width = popup.current?.getBoundingClientRect().width;
-      if (r && width) setPosition({ left: Math.max(20, Math.min(r.right - width, window.innerWidth - width - 20)), bottom: Math.max(12, window.innerHeight - r.top + 10) });
+      const box = popup.current?.getBoundingClientRect();
+      if (!r || !box?.width) return;
+      const gap = 10, edge = 12;
+      const above = Math.max(0, r.top - gap - edge);
+      const below = Math.max(0, window.innerHeight - r.bottom - gap - edge);
+      // Keep the ordinary bottom-composer orientation whenever it fits; an
+      // anchor near the top of a modal opens below, not outside the viewport.
+      const desiredHeight = Math.max(380, box.height);
+      const preferAbove = above >= desiredHeight || above >= below;
+      const left = Math.max(20, Math.min(r.right - box.width, window.innerWidth - box.width - 20));
+      setPosition(preferAbove
+        ? { left, bottom: Math.max(edge, window.innerHeight - r.top + gap), maxHeight: above }
+        : { left, top: Math.max(edge, r.bottom + gap), maxHeight: below });
     };
     place(); window.addEventListener('resize', place); window.addEventListener('scroll', place, true);
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
@@ -165,7 +178,7 @@ export function AgentModelPicker(p: Props) {
       </span>)}</span>
       <ChevronDown size={12} />
     </button>
-    {open && target && createPortal(<div ref={popup} style={position} className="agent-picker" role="dialog" aria-label="选择智能体与模型">
+    {open && target && createPortal(<div ref={popup} style={position} className={p.modalOverlay ? "agent-picker agent-picker-modal" : "agent-picker"} role="dialog" aria-label="选择智能体与模型">
       <div className="agent-picker-main">
         <div className="agent-picker-rail" aria-label="智能体">
           {p.profiles.map(profile => <button type="button" key={profile.profileId} title={p.locked && profile.profileId !== p.profileId ? `${profileLabel(profile)}：清除目标后才能切换` : profileLabel(profile)} disabled={!profile.available || (!!p.locked && profile.profileId !== p.profileId)} aria-label={profileLabel(profile)} aria-pressed={rail === profile.profileId} className={rail === profile.profileId ? 'on' : ''} onClick={() => { setRail(profile.profileId); setQuery(''); }}><AgentIcon tool={profile.kind} provider={profile.provider} size={20} /></button>)}

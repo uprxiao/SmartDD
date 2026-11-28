@@ -1,0 +1,166 @@
+{
+  "schema": "C22-A51-QA-NSWorkspace-fresh-mock-native-load-readiness-instrumentation",
+  "root": "/private/tmp/willyou-m16-f36-qa/a51-c22-qa-ls-system-t7xpeg",
+  "data": "/private/tmp/willyou-m16-f36-qa/a51-c22-qa-ls-system-t7xpeg/data",
+  "exe": "/private/tmp/willyou-m16-c22-build.lzva5qim/qa/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "pin": "26485f7f4eeaaa3167da5499170f7f59cf81a0f2f3d5aebe3274c63edb00e533",
+  "stages": [
+    {
+      "stage": "launch-services-returned",
+      "at": 1795684953165
+    },
+    {
+      "stage": "discover-trusted-shell",
+      "at": 1795684953165,
+      "budgetMs": 30000,
+      "originalCutoffMs": 15000
+    },
+    {
+      "stage": "connect-original-renderer",
+      "at": 1795684985988
+    },
+    {
+      "stage": "renderer-runtime-enable",
+      "at": 1795684985995
+    },
+    {
+      "stage": "renderer-inspector-enable",
+      "at": 1795684986000
+    },
+    {
+      "stage": "renderer-native-load",
+      "at": 1795684986001,
+      "productShellLoadBudgetMs": 30000,
+      "originalRendererBudgetMs": 10000
+    },
+    {
+      "stage": "connect-exact-owned-main-inspector",
+      "at": 1795684986001
+    },
+    {
+      "stage": "renderer-ready",
+      "at": 1795684992995,
+      "originalBudgetMs": 10000
+    },
+    {
+      "stage": "renderer-arm",
+      "at": 1795684992997,
+      "originalBudgetMs": 25000
+    },
+    {
+      "stage": "startup-normal-ready",
+      "at": 1795684992998
+    }
+  ],
+  "rendererEvents": {
+    "Runtime.executionContextCreated": {
+      "count": 2,
+      "firstAt": 1795684985999,
+      "lastAt": 1795684985999
+    }
+  },
+  "requests": [
+    {
+      "id": 1,
+      "method": "Runtime.enable",
+      "stage": "renderer-runtime-enable",
+      "sentAt": 1795684985995,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795684986000
+    },
+    {
+      "id": 2,
+      "method": "Inspector.enable",
+      "stage": "renderer-inspector-enable",
+      "sentAt": 1795684986000,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795684986001
+    },
+    {
+      "id": 3,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-ready",
+      "sentAt": 1795684992995,
+      "budgetMs": 10000,
+      "status": "response",
+      "settledAt": 1795684992997
+    },
+    {
+      "id": 4,
+      "method": "Runtime.evaluate",
+      "stage": "renderer-arm",
+      "sentAt": 1795684992997,
+      "budgetMs": 25000,
+      "status": "response",
+      "settledAt": 1795684992998
+    }
+  ],
+  "boundary": "Exact private child and trusted renderer only; no raw logs, no user data, no storage/credential APIs. Original startup readiness/arm deadlines preserved. Failure observation is bounded separately; no navigation or business retry.",
+  "pid": 66144,
+  "cdpPort": 57931,
+  "mainPort": 57932,
+  "actualLaunchServices": {
+    "kind": "launched",
+    "executable": "/private/tmp/willyou-m16-c22-build.lzva5qim/qa/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "launcherReturnNotAppExitCode": true,
+    "pid": 66144,
+    "bundlePath": "/private/tmp/willyou-m16-c22-build.lzva5qim/qa/mac-arm64/WillYou.app",
+    "bundle": "com.smartdd.desktop.qa.m16-notifications",
+    "localizedName": "WillYou QA M16 Notifications"
+  },
+  "discovery": {
+    "originalCutoffMs": 15000,
+    "budgetMs": 30000,
+    "originalCutoff": {
+      "at": 1795684971441,
+      "elapsedMs": 18276,
+      "childLive": true,
+      "observedTargets": 0,
+      "exactTrustedTarget": false
+    },
+    "loaded": {
+      "at": 1795684978720,
+      "elapsedMs": 25555,
+      "observedTargets": 1,
+      "exactTrustedTarget": true
+    }
+  },
+  "selectedTarget": {
+    "id": "1ED3C0087C0890DF6E4B26FEEC1364DC",
+    "type": "page",
+    "trustedShell": true,
+    "observedTargets": 1
+  },
+  "nativeReadiness": {
+    "productBudgetMs": 30000,
+    "originalCutoffMs": 10000,
+    "observations": [
+      {
+        "elapsedMs": 0,
+        "rootId": 1,
+        "visible": true,
+        "wcId": 1,
+        "rendererPid": 67264,
+        "loading": false
+      }
+    ],
+    "originalCutoff": null,
+    "loaded": {
+      "elapsedMs": 0,
+      "rootId": 1,
+      "visible": true,
+      "wcId": 1,
+      "rendererPid": 67264,
+      "loading": false
+    }
+  },
+  "actualEnvironmentCheck": {
+    "exactEnv": true,
+    "nonemptySensitive": 0,
+    "unexpectedNonempty": 0,
+    "actualMock": true,
+    "actualCdp": true
+  }
+}

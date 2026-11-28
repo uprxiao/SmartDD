@@ -1,0 +1,66 @@
+{
+  "candidate": "C22",
+  "sourceManifestSha256": "e3fa792e6c219031178a19f6fe601039e6fe9b291c41979ca412106374384afa",
+  "sourceFiles": 150,
+  "base": "4148950b8664d35d37802e2d8e5488efce13e045",
+  "standard": {
+    "path": "/private/tmp/willyou-m16-c22-build.lzva5qim/standard/mac-arm64/WillYou.app",
+    "bundleId": "com.smartdd.desktop",
+    "appAsar": "26485f7f4eeaaa3167da5499170f7f59cf81a0f2f3d5aebe3274c63edb00e533",
+    "nativeProcessIdentitySha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeSmoke": "6/6 passed"
+  },
+  "notificationQa": {
+    "path": "/private/tmp/willyou-m16-c22-build.lzva5qim/qa/mac-arm64/WillYou.app",
+    "bundleId": "com.smartdd.desktop.qa.m16-notifications",
+    "displayName": "WillYou QA M16 Notifications",
+    "appAsar": "26485f7f4eeaaa3167da5499170f7f59cf81a0f2f3d5aebe3274c63edb00e533",
+    "nativeProcessIdentitySha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "sameAsar": true,
+    "sameNative": true,
+    "nativeSmoke": "6/6 passed",
+    "scope": "native system notification delivery and click only; same application bytes; test-only signature/bundle metadata; no installation",
+    "CFBundleName": "WillYou",
+    "metadataRepair": {
+      "firstLaunch": "SIGTRAP before ready, actual stderr Electron_main_delegate_mac.mm:66 Unable to find helper app",
+      "correction": "restore CFBundleName matching actual Helper; separate CFBundleDisplayName and identifier remain",
+      "asarNativeBytesUnchanged": true,
+      "reSignDeepStrict": "passed",
+      "nativeSmoke": "6/6 passed",
+      "qaStartupBusinessPhase": "retest pending"
+    }
+  },
+  "sourceChanges": "temporary cold-page paint host: real inert surface, safe pending ownership and same-view migration; notification strong ownership and explicit minimized restoration; ordinary scheduled host request stop; MCP fixture correction",
+  "softwareResults": {
+    "wideRelatedBeforeReservation": {
+      "files": 66,
+      "passed": 606
+    },
+    "newReservationRedThenGreen": {
+      "red": "1 failed/12 passed",
+      "green": "13/13"
+    },
+    "targetedAfterReservation": {
+      "files": 6,
+      "passed": 38
+    },
+    "typecheck": "passed",
+    "finalWideRelated": {
+      "files": 66,
+      "passed": 607,
+      "failed": 0
+    }
+  },
+  "logs": {
+    "package.log": "671c89e5fd9aea26122fb009748af6e0914cd13903059995fc8defb76af48b8f",
+    "qa-package.log": "e961ada80d64e7213b3c102e9bacc8605523936f040c6dcb8b3421f84f5d82a3",
+    "qa-notifications.config.cjs": "23c33e5172710c0d7681bd8d4e72b0cfa4ba9fffb2341978da6a3ffdc33ba2b9",
+    "qa-info.json": "0096ad845ffdd8f4c00480f356eb610168f0a68b960948e917ffeb3b75e5da75",
+    "qa-v1-info.plist": "ebb204ab267ada273648a2ab3e048bd018fa8ce74ca4b3db939a157d7a7b449f",
+    "qa-v2-info.plist": "63b999d5ead52a31309aff6dcb0a0bd6aa89a94d93323159783af17ea19feb4b",
+    "qa-metadata-repair.log": "87fb7545b3c3c365bddb4ee38eb996e051ad27d52173b3a42fe4f9232c2601b8",
+    "qa-notifications-v2.config.cjs": "ac6235ed57e385224bff827e4046cd7e395ae5005979ac4bc7bc4a64f2caf393",
+    "final-related-tests.log": "58a98b360b607fc3089d4f0f7192b3fe317ffef41b1b3b2b62d120b44e7ea706"
+  },
+  "actualAppTests": "pending, no main pass claimed"
+}

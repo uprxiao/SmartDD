@@ -1,0 +1,46 @@
+
+> smartdd@0.1.7 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/process-identity.test.ts src/main/core/applications/__tests__/agent-bridge-processes.test.ts --maxWorkers 1
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/applications/__tests__/agent-bridge-processes.test.ts (9 tests | 1 failed) 5459ms
+     × does not treat a socket disconnect as exit and retains leases while a proved child is still alive or its identity is unknown 551ms
+stdout | src/main/core/applications/__tests__/process-identity.test.ts > kernel process identity and actual owned process lifecycles
+{"kind":"fresh-native-test-precondition","elapsedMs":2}
+
+ ❯ src/main/core/applications/__tests__/process-identity.test.ts (5 tests | 1 failed) 748ms
+     × observes a bounded batch of exact known identities with the same state as individual probes 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/agent-bridge-processes.test.ts > kernel Unix peer provenance and Agent-delegated immutable bridge lifetimes > does not treat a socket disconnect as exit and retains leases while a proved child is still alive or its identity is unknown
+AssertionError: expected "vi.fn()" to be called with arguments: [ [ { pid: 56878, …(1) } ] ]
+
+Number of calls: 0
+
+ ❯ src/main/core/applications/__tests__/agent-bridge-processes.test.ts:57:891
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/process-identity.test.ts > kernel process identity and actual owned process lifecycles > observes a bounded batch of exact known identities with the same state as individual probes
+TypeError: reader.states is not a function
+ ❯ src/main/core/applications/__tests__/process-identity.test.ts:33:19
+     31|     const expected = input.map(identity=>reader.state(identity));
+     32|     expect(expected).toEqual(['running','running','stopped','stopped',…
+     33|     expect(reader.states(input)).toEqual(expected);
+       |                   ^
+     34|     expect(reader.states([])).toEqual([]);
+     35|     expect(new MacProcessIdentityReader(join(build,'not-present')).sta…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 12 passed (14)
+   Start at  03:55:36
+   Duration  6.83s (transform 245ms, setup 0ms, import 493ms, tests 6.21s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

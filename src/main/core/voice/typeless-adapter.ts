@@ -17,7 +17,7 @@ export interface VoiceAdapter {
 
 export class TypelessAdapter implements VoiceAdapter {
   supported = process.platform === 'darwin';
-  constructor(private binary: string) {}
+  constructor(private binary: string, private home: string = homedir()) {}
   private call<T>(command: string, data: object, signal?: AbortSignal): Promise<T> {
     return new Promise((resolve, reject) => {
       execFile(this.binary, [command, JSON.stringify(data)], { timeout: 7000, maxBuffer: 4096, signal }, (error, stdout) => {
@@ -32,10 +32,10 @@ export class TypelessAdapter implements VoiceAdapter {
     const seen = new Set<string>(); const result: ShortcutCandidate[] = [];
     for (const name of ['Typeless', 'typeless', 'now.typeless.desktop']) {
       try {
-        const file = await realpath(join(homedir(), 'Library/Application Support', name, 'app-settings.json'));
+        const file = await realpath(join(this.home, 'Library/Application Support', name, 'app-settings.json'));
         if (seen.has(file)) continue; seen.add(file);
         const meta = await stat(file); if (!meta.isFile() || meta.size > 1024 * 1024) continue;
-        result.push(...shortcutCandidates(JSON.parse(await readFile(file, 'utf8')), await typelessVersion()));
+        result.push(...shortcutCandidates(JSON.parse(await readFile(file, 'utf8')), await typelessVersion(this.home)));
       } catch { /* Missing/unreadable/invalid settings are an unresolved candidate, not a guessed shortcut. */ }
     }
     return result;
@@ -49,8 +49,8 @@ export class TypelessAdapter implements VoiceAdapter {
 const execFileAsync = promisify(execFile);
 
 /** Installed Typeless version (CFBundleShortVersionString), or null when it cannot be read. */
-async function typelessVersion(): Promise<string | null> {
-  for (const app of ['/Applications/Typeless.app', join(homedir(), 'Applications/Typeless.app')]) {
+async function typelessVersion(home:string): Promise<string | null> {
+  for (const app of ['/Applications/Typeless.app', join(home, 'Applications/Typeless.app')]) {
     try {
       const { stdout } = await execFileAsync('/usr/bin/plutil', ['-extract', 'CFBundleShortVersionString', 'raw', '-o', '-', join(app, 'Contents/Info.plist')], { timeout: 3000 });
       const v = stdout.trim(); if (/^\d+(\.\d+)*$/.test(v)) return v;

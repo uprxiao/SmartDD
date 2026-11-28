@@ -179,7 +179,53 @@ static int owned_group(int argc,char **argv) {
  std::printf("{\"schema\":5,\"state\":\"%s\",\"rootPid\":%ld,\"rootStartedAt\":%s,\"processes\":[",group.empty()?"stopped":"running",pid,escaped(argv[3]).c_str());
  for(size_t i=0;i<group.size();i++){std::printf("%s{\"pid\":%u,\"startedAt\":",i?",":"",group[i].pbi_pid);birth(group[i]);std::printf("}");}std::puts("]}");return 0;
 }
+enum class IdentityState { Running, Stopped, Unknown };
+struct IdentityObservation { IdentityState state; proc_bsdinfo info; };
+// Same kernel read and failure classification for both the single and batched
+// observation paths. No process discovery or inspection beyond explicit PIDs.
+static IdentityObservation observe_pid(int requested) {
+  proc_bsdinfo info = {}; errno = 0;
+  int n = proc_pidinfo(requested, PROC_PIDTBSDINFO, 0, &info, sizeof(info));
+  if (n != sizeof(info)) return {errno == ESRCH ? IdentityState::Stopped : IdentityState::Unknown, {}};
+  if (info.pbi_pid != requested || info.pbi_start_tvsec == 0) return {IdentityState::Unknown, {}};
+  if (info.pbi_status == SZOMB) return {IdentityState::Stopped, {}};
+  return {IdentityState::Running, info};
+}
+static bool valid_birth(const char *value) {
+  const std::string s(value);
+  const std::string prefix = "darwin-proc-v1:";
+  if (s.size() > 128 || s.rfind(prefix,0) != 0) return false;
+  const auto sep = s.find(':',prefix.size());
+  if (sep == std::string::npos || sep == prefix.size() || sep+1 == s.size() || s[prefix.size()] == '0') return false;
+  for (size_t i=prefix.size(); i<s.size(); ++i) if (i!=sep&&(s[i]<'0'||s[i]>'9')) return false;
+  return true;
+}
+static int observe_owned_identities(int argc, char **argv) {
+  const auto unknown=[](){std::puts("{\"schema\":6,\"state\":\"unknown\"}");return 0;};
+  if(argc<4 || (argc-2)%2 || (argc-2)/2>64) return unknown();
+  struct Request { int pid; const char *expected; };
+  std::vector<Request> requests;
+  for(int at=2;at<argc;at+=2){
+    unsigned long long pid=0;
+    if(!numeric(argv[at],pid)||pid<1||pid>INT_MAX||!valid_birth(argv[at+1]))return unknown();
+    requests.push_back({static_cast<int>(pid),argv[at+1]});
+  }
+  std::printf("{\"schema\":6,\"state\":\"observed\",\"entries\":[");
+  for(size_t i=0;i<requests.size();++i){
+    const auto &r=requests[i];const auto observed=observe_pid(r.pid);
+    const char *state="unknown";
+    if(observed.state==IdentityState::Stopped)state="stopped";
+    else if(observed.state==IdentityState::Running){
+      char actual[128]={};
+      std::snprintf(actual,sizeof(actual),"darwin-proc-v1:%llu:%llu",static_cast<unsigned long long>(observed.info.pbi_start_tvsec),static_cast<unsigned long long>(observed.info.pbi_start_tvusec));
+      state=std::strcmp(actual,r.expected)==0?"running":"stopped";
+    }
+    std::printf("%s{\"pid\":%d,\"startedAt\":%s,\"state\":\"%s\"}",i?",":"",r.pid,escaped(r.expected).c_str(),state);
+  }
+  std::puts("]}");return 0;
+}
 int main(int argc, char **argv) {
+  if(argc>=2&&std::strcmp(argv[1],"--observe-owned-identities")==0)return observe_owned_identities(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--owned-process-group")==0)return owned_group(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--owned-native-child")==0)return owned_native_child(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--sqlite-files")==0)return sqlite_files(argc,argv);
@@ -195,15 +241,10 @@ int main(int argc, char **argv) {
   if (argc != 2 || errno || !end || *end || requested < 1 || requested > INT_MAX) {
     std::puts("{\"schema\":1,\"state\":\"unknown\"}"); return 0;
   }
-  proc_bsdinfo info = {}; errno = 0;
-  int n = proc_pidinfo(static_cast<int>(requested), PROC_PIDTBSDINFO, 0, &info, sizeof(info));
-  if (n != sizeof(info)) {
-    std::puts(errno == ESRCH ? "{\"schema\":1,\"state\":\"stopped\"}" : "{\"schema\":1,\"state\":\"unknown\"}"); return 0;
+  const auto observed=observe_pid(static_cast<int>(requested));
+  if (observed.state != IdentityState::Running) {
+    std::puts(observed.state==IdentityState::Stopped ? "{\"schema\":1,\"state\":\"stopped\"}" : "{\"schema\":1,\"state\":\"unknown\"}"); return 0;
   }
-  if (info.pbi_pid != requested || info.pbi_start_tvsec == 0) {
-    std::puts("{\"schema\":1,\"state\":\"unknown\"}"); return 0;
-  }
-  if (info.pbi_status == SZOMB) { std::puts("{\"schema\":1,\"state\":\"stopped\"}"); return 0; }
-  std::printf("{\"schema\":1,\"state\":\"running\",\"pid\":%u,\"startedAt\":",info.pbi_pid);birth(info);std::puts("}");
+  std::printf("{\"schema\":1,\"state\":\"running\",\"pid\":%u,\"startedAt\":",observed.info.pbi_pid);birth(observed.info);std::puts("}");
   return 0;
 }

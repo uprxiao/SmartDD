@@ -104,6 +104,15 @@ export function shellWrapped(command: string, args: string[], scriptArgs: string
 export const PARENT_AGENT_VARS = ['CLAUDECODE', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_SSE_PORT'];
 
 
+/** Use the explicitly scoped home for user-owned CLI resources and Skills.
+ * The App's native OS/safeStorage HOME is deliberately not changed. */
+export function applicationScopedHome(systemHome:string, source:Record<string,string|undefined>):string {
+  const home=source.SMARTDD_CLI_HOME;
+  if(!home)return systemHome;
+  if(!isAbsolute(home))throw new Error('SMARTDD_CLI_HOME 必须是绝对路径');
+  return home;
+}
+
 /** Keep OS/safeStorage HOME on the App, while giving its CLI and discovery
  * children an explicitly scoped home. The control option never reaches them. */
 export function applicationChildEnvironment(source:Record<string,string|undefined>):Record<string,string> {
@@ -113,8 +122,7 @@ export function applicationChildEnvironment(source:Record<string,string|undefine
   }
   const childHome=source.SMARTDD_CLI_HOME;
   if(childHome){
-    if(!isAbsolute(childHome))throw new Error('SMARTDD_CLI_HOME 必须是绝对路径');
-    env.HOME=childHome;
+    env.HOME=applicationScopedHome(childHome,source);
   }
   env.TERM='xterm-256color';env.COLORTERM='truecolor';
   return env;

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {readFileSync} from 'node:fs';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {BrowserProfileSiteStates,type ProfileSiteStates} from './profile-site-states';
 const api=vi.hoisted(()=>({revokeCertificate:vi.fn(),recoverCookies:vi.fn(),clearCookies:vi.fn(),createProfile:vi.fn(),cloneProfile:vi.fn(),useProfile:vi.fn(),deleteProfile:vi.fn()}));vi.mock('@renderer/lib/ipc',()=>({rpc:{browser:api}}));
@@ -31,4 +32,38 @@ it('retains the selected source after clone failure and sends no retry or page s
 });
 it('requires delete confirmation, preserves data on failure, and updates the list only after explicit successful retry',async()=>{
   api.deleteProfile.mockRejectedValueOnce(Error('删除未确认')).mockResolvedValueOnce({records:initial,result:'copy'});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="copy" initial={[...initial,copy]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'删除'}));expect(api.deleteProfile).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await screen.findByText('删除未确认');expect(screen.getByRole('option',{name:/项目登录态（副本）/})).toBeTruthy();expect(api.deleteProfile).toHaveBeenCalledTimes(1);fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await waitFor(()=>expect(notices.success).toHaveBeenCalledWith('已删除登录态，使用它的页面改用项目登录态'));expect(screen.getAllByRole('option')).toHaveLength(1);expect(api.deleteProfile).toHaveBeenLastCalledWith({taskId:'t1',profileId:'copy',confirmed:true});
+});
+
+
+it.each([false, true])('keeps browser control styles across unified panel stylesheet orders (panel last: %s)', (panelLast) => {
+  const browser = readFileSync('src/renderer/features/browser/workspace.css', 'utf8');
+  const panel = readFileSync('src/renderer/features/agent-tasks/agent-tasks.css', 'utf8');
+  const files = readFileSync('src/renderer/features/files/workspace-baseline.css', 'utf8');
+  const style = document.createElement('style');
+  style.textContent = [files, ...(panelLast ? [browser, panel] : [panel, browser])].join('\n');
+  document.head.append(style);
+  try {
+    render(<div className="agent-right-panel" style={{fontSize:14, lineHeight:1.5, color:'rgb(41, 41, 41)', '--border':'#e9e9e9', '--bg':'#ffffff', '--text':'#292929', '--secondary':'#707070', '--accent':'#3478df'} as React.CSSProperties}>
+      <BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="copy" initial={[...initial,copy]} onClose={()=>{}}/>
+      <button className="bw-mini bw-mini-primary" data-testid="browser-primary">允许</button>
+      <button data-testid="ordinary-panel-button">普通面板按钮</button>
+    </div>);
+    const buttonStyle = (name: string) => getComputedStyle(screen.getByRole('button',{name}));
+    const ordinary = getComputedStyle(screen.getByTestId('ordinary-panel-button'));
+    expect(ordinary.borderWidth).toBe('0px');
+    expect(ordinary.borderRadius).toBe('5px');
+    const mini = buttonStyle('克隆');
+    expect([mini.fontSize,mini.borderWidth,mini.borderRadius]).toEqual(['12px','1px','7px']);
+    const disabled = buttonStyle('用于当前页面');
+    expect(disabled.opacity).toBe('0.45');
+    expect(disabled.pointerEvents).toBe('none');
+    const primary = getComputedStyle(screen.getByTestId('browser-primary'));
+    expect([primary.fontSize,primary.borderWidth,primary.borderRadius,primary.color]).toEqual(['12px','1px','7px','rgb(255, 255, 255)']);
+    const close = buttonStyle('关闭');
+    expect([close.fontSize,close.borderRadius]).toEqual(['13px','50%']);
+    fireEvent.click(screen.getByRole('button',{name:'删除'}));
+    const dangerous = buttonStyle('确认删除');
+    expect([dangerous.fontSize,dangerous.borderWidth,dangerous.borderRadius,dangerous.color,dangerous.borderColor]).toEqual(['12px','1px','7px','rgb(192, 57, 43)','rgb(230, 176, 170)']);
+    expect(api.deleteProfile).not.toHaveBeenCalled();
+  } finally { style.remove(); }
 });

@@ -51,7 +51,15 @@ export class AgentBridgeProcesses {
  poll():Promise<void>{return this.sweep(false);}
  private async sweep(allowClosed:boolean):Promise<void>{
   if(this.closed&&!allowClosed||this.polling)return;this.polling=true;
-  try{for(const[id,entry]of this.tracked){if(this.closed&&!allowClosed)break;if(entry.exiting)continue;const state=this.processes.state(entry.identity);if(state!=='stopped'){entry.state=state==='unknown'?'unknown':'active';continue;}
+  try{
+   const entries=[...this.tracked].filter(([,entry])=>!entry.exiting);
+   const identities=entries.map(([,entry])=>entry.identity);
+   // Observe only already-attested identities, at the same poll cadence. No
+   // cache, no new authority, and signal/attachment checks remain individual.
+   let states:ReturnType<NonNullable<ProcessIdentityReader['states']>>|undefined;
+   try{states=this.processes.states?.(identities);}catch{/* Preserve the original individual observations. */}
+   if(states&&(states.length!==entries.length||states.some(state=>!['running','stopped','unknown'].includes(state))))states=undefined;
+   for(let i=0;i<entries.length;i++){const[id,entry]=entries[i];if(this.closed&&!allowClosed)break;if(entry.exiting||this.tracked.get(id)!==entry)continue;const state=states?states[i]:this.processes.state(entry.identity);if(state!=='stopped'){entry.state=state==='unknown'?'unknown':'active';continue;}
    const work=entry.handle.exited();entry.exiting=work;this.pending.add(work);try{await work;entry.detach();if(this.tracked.get(id)===entry)this.tracked.delete(id);}catch{entry.exiting=undefined;entry.state='unknown';}finally{this.pending.delete(work);}
   }}finally{this.polling=false;}
  }

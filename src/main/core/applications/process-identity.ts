@@ -7,6 +7,9 @@ export type ProcessState = 'running' | 'stopped' | 'unknown';
 export interface ProcessIdentityReader {
   read(pid: number): ProcessIdentity | null;
   state(identity: ProcessIdentity): ProcessState;
+  /** Fresh bounded observations of explicit host-owned identities in input order.
+   * This is not authorization or a cached replacement for a signal-time check. */
+  states?(identities: readonly ProcessIdentity[]): ProcessState[];
   /** Only descend from an exact host-owned launch; ambiguous targets grant nothing. */
   nativeChild?(root:ProcessIdentity,executable:string):OwnedNativeProcess|null;
   sqliteFiles?(identity:ProcessIdentity,executable:string):NativeSqliteFile[]|null;
@@ -19,6 +22,7 @@ const response = z.discriminatedUnion('state',[
 ]);
 const birthSchema=z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/);
 const pidSchema=z.number().int().positive().max(2147483647);
+const batchResponse=z.object({schema:z.literal(6),state:z.literal('observed'),entries:z.array(z.object({pid:pidSchema,startedAt:birthSchema,state:z.enum(['running','stopped','unknown'])}).strict()).max(64)}).strict();
 const pathSchema=z.string().startsWith('/').max(4096).regex(/^[^\x00\r\n]+$/);
 const sqliteResponse=z.object({schema:z.literal(3),state:z.literal('running'),pid:pidSchema,startedAt:birthSchema,executable:pathSchema,files:z.array(z.object({path:pathSchema,dev:z.string().regex(/^[0-9]{1,24}$/),ino:z.string().regex(/^[0-9]{1,24}$/)}).strict()).max(256)}).strict();
 const childResponse=z.object({schema:z.literal(4),state:z.literal('running'),rootPid:pidSchema,rootStartedAt:birthSchema,pid:pidSchema,startedAt:birthSchema,executable:pathSchema}).strict();
@@ -45,6 +49,26 @@ export class MacProcessIdentityReader implements ProcessIdentityReader {
     const result = this.inspect(identity.pid);
     if (result.state !== 'running') return result.state;
     return result.pid === identity.pid && result.startedAt === identity.startedAt ? 'running' : 'stopped';
+  }
+  states(identities: readonly ProcessIdentity[]): ProcessState[] {
+    const result:ProcessState[]=identities.map(()=> 'unknown');
+    if(process.platform!=='darwin')return result;
+    const valid=identities.map((identity,index)=>({identity,index})).filter(({identity})=>pidSchema.safeParse(identity.pid).success&&birthSchema.safeParse(identity.startedAt).success);
+    for(let offset=0;offset<valid.length;offset+=64){
+      const chunk=valid.slice(offset,offset+64);
+      try{
+        if(chunk.length===1){const row=chunk[0];result[row.index]=this.state(row.identity);continue;}
+        const args=chunk.flatMap(({identity})=>[String(identity.pid),identity.startedAt]);
+        const observed=batchResponse.parse(JSON.parse(execFileSync(this.helper,['--observe-owned-identities',...args],{timeout:2000,maxBuffer:64*1024,encoding:'utf8',windowsHide:true,stdio:['ignore','pipe','ignore']})));
+        if(observed.entries.length!==chunk.length||observed.entries.some((entry,i)=>entry.pid!==chunk[i].identity.pid||entry.startedAt!==chunk[i].identity.startedAt))throw new Error('Unexpected identity observation');
+        for(let i=0;i<chunk.length;i++)result[chunk[i].index]=observed.entries[i].state;
+      }catch{
+        // Old/missing/malformed helper protocol: keep the original exact probes.
+        // Unknown observations are never promoted into a confirmed exit.
+        for(const row of chunk)result[row.index]=this.state(row.identity);
+      }
+    }
+    return result;
   }
   private metadata(mode:string,identity:ProcessIdentity,executable:string):unknown {
     if(process.platform!=='darwin'||!pidSchema.safeParse(identity.pid).success||!birthSchema.safeParse(identity.startedAt).success||!pathSchema.safeParse(executable).success)return null;

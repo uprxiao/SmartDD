@@ -5,6 +5,7 @@ import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { WebContents } from 'electron';
 import { WebSocket, WebSocketServer } from 'ws';
 import { BrowserError } from './errors';
+import type { NativeHostVisibility } from './park-window';
 
 export type CdpParams = Record<string, unknown>;
 export type CdpSend = <T = CdpParams>(method: string, params?: CdpParams, sessionId?: string) => Promise<T>;
@@ -29,7 +30,7 @@ export class BrowserCdpProxy {
   private capture?: BrowserAXTree[];
   private frameInitializer?: (sessionId: string) => Promise<void>;
   private frameInitializations = new Map<string, Promise<void>>();
-  constructor(readonly contents: WebContents, private readonly trace: (event: CdpParams) => void = () => {}) {}
+  constructor(readonly contents: WebContents, private readonly trace: (event: CdpParams) => void = () => {}, private readonly hostVisibility:()=>NativeHostVisibility=()=> 'visible',private readonly acquireNativeCapture:()=>()=>void=()=>()=>{}) {}
   get endpoint(): string { return `ws://127.0.0.1:${this.port}/${this.token}`; }
   get discoveryEndpoint(): string { return `http://127.0.0.1:${this.port}/${this.token}`; }
   get sessions(): ReadonlyMap<string, CdpParams> { return this.frameSessions; }
@@ -42,12 +43,43 @@ export class BrowserCdpProxy {
   initializeFrames(work: (sessionId: string) => Promise<void>): void { this.frameInitializer = work; }
   async frameReady(sessionId?: string): Promise<void> { if (sessionId) await this.frameInitializations.get(sessionId); }
 
+  private nativeViewportRequest(method:string,params:CdpParams,sessionId?:string):boolean {
+    if(method!=='Page.captureScreenshot'||sessionId)return false;
+    if(Object.keys(params).some(key=>!['format','quality','captureBeyondViewport','fromSurface'].includes(key)))return false;
+    const format=params.format===undefined?'png':params.format,quality=params.quality;
+    return (format==='png'||format==='jpeg')&&(params.captureBeyondViewport===undefined||params.captureBeyondViewport===false)&&
+      (params.fromSurface===undefined||params.fromSurface===true)&&
+      (quality===undefined||format==='jpeg'&&typeof quality==='number'&&Number.isInteger(quality)&&quality>=0&&quality<=100);
+  }
+
+  private async captureNativeViewport(params:CdpParams,visibility:Exclude<NativeHostVisibility,'visible'>):Promise<{data:string}> {
+    // A minimized parent can leave Chromium's CDP screenshot waiting for a
+    // compositor frame even while DOM and timers advance. Electron capturePage
+    // requests that same owned view's actual frame without showing its window.
+    // On a completely hidden host the capturer must request page visibility to
+    // obtain a fresh compositor frame; this does not present the native window.
+    // Keep the separate, already verified minimized-host behavior unchanged.
+    const release=this.acquireNativeCapture();
+    try{
+      // This independent lease is retained until the actual native promise
+      // settles, even if the caller-facing CDP timeout has already fired.
+      const image=await this.contents.capturePage(undefined,{stayHidden:visibility==='minimized'});
+      if(this.stopped||this.contents.isDestroyed())throw new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭');
+      if(image.isEmpty())throw new BrowserError('BROWSER_ERROR','网页截图没有可用画面');
+      const bytes=params.format==='jpeg'?image.toJPEG(typeof params.quality==='number'?params.quality:80):image.toPNG();
+      if(!bytes.length)throw new BrowserError('BROWSER_ERROR','网页截图没有可用画面');
+      return{data:bytes.toString('base64')};
+    }finally{release();}
+  }
+
   readonly send: CdpSend = async <T = CdpParams>(method: string, params: CdpParams = {}, sessionId?: string): Promise<T> => {
     if (this.stopped || this.contents.isDestroyed()) throw new BrowserError('BROWSER_TAB_CLOSED', '网页已经关闭');
     if (sessionId && !this.frameSessions.has(sessionId)) throw new BrowserError('BROWSER_TAB_CHANGED', '网页框架会话已经失效');
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const native=(sessionId?this.contents.debugger.sendCommand(method,params,sessionId):this.contents.debugger.sendCommand(method,params)) as Promise<T>;
+      const visibility=this.nativeViewportRequest(method,params,sessionId)?this.hostVisibility():'visible';
+      const native=(visibility!=='visible'?this.captureNativeViewport(params,visibility):
+        sessionId?this.contents.debugger.sendCommand(method,params,sessionId):this.contents.debugger.sendCommand(method,params)) as Promise<T>;
       if(method==='Input.dispatchMouseEvent'){
         this.mouseInputs.add(native);
         void native.then(()=>{this.mouseInputs.delete(native);},()=>{this.mouseInputs.delete(native);});
@@ -230,12 +262,16 @@ export class BrowserCdpProxy {
   async stop(): Promise<void> {
     if (this.stopped) return;
     this.stopped = true;
-    this.contents.debugger.removeListener('message', this.message);
-    this.contents.debugger.removeListener('detach', this.detached);
+    // A renderer can destroy its WebContents before the registry tears down the
+    // proxy. Electron throws when accessing the debugger wrapper after loss;
+    // the independent loopback/socket resources must still be closed.
+    if(!this.contents.isDestroyed()){
+      try{this.contents.debugger?.removeListener('message',this.message);this.contents.debugger?.removeListener('detach',this.detached);}catch(error){if(!this.contents.isDestroyed())console.warn('[browser] debugger listener cleanup failed',error instanceof Error?error.name:'Error');}
+    }
     for (const { socket } of this.clients) socket.terminate();
     this.clients.clear(); this.frameSessions.clear(); this.frameInitializations.clear(); this.listeners.clear();
     this.sockets?.close();
     if (this.server) await new Promise<void>(resolve => this.server!.close(() => resolve()));
-    if (!this.contents.isDestroyed() && this.contents.debugger.isAttached()) this.contents.debugger.detach();
+    if(!this.contents.isDestroyed())try{if(this.contents.debugger?.isAttached())this.contents.debugger.detach();}catch(error){if(!this.contents.isDestroyed())throw error;}
   }
 }

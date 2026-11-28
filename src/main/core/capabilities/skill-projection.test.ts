@@ -17,6 +17,13 @@ const skill=(name:string,project=false)=>file(join(root,project?'project':'home'
 const git=(cwd:string,...args:string[])=>{const r=spawnSync('git',['-C',cwd,...args],{encoding:'utf8',env:{PATH:process.env.PATH,HOME:root,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'}});if(r.status!==0)throw Error(r.stderr);return r.stdout.trim();};
 beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'m13-project-')));sqlite=new Database(':memory:');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema});mkdirSync(join(root,'project'),{recursive:true});contexts=[{runner:'claude',home:join(root,'home'),stateRoot:join(root,'home/.claude'),cwd:join(root,'project'),projectRoot:join(root,'project'),path:''}];registry=new CapabilityRegistryService(db,()=>contexts,()=>Date.now(),{revoke:id=>projection.revoke(id),afterScan:()=>projection.reconcileSources()});projection=new SkillProjectionService(db,registry);input={runner:'codex',home:join(root,'home'),stateRoot:join(root,'home/.codex'),cwd:join(root,'project'),runRoot:join(root,'runs/a'),nativeLogin:false};});
 afterEach(()=>{sqlite.close();rmSync(root,{recursive:true,force:true});});
+it('M16 A43 unassociated scope at the same physical cwd selects only adopted user skills instead of project skills',()=>{
+  const global=skill('global-fixture'),project=skill('project-fixture',true);registry.scan();registry.adoptAll();
+  const scoped=projection.prepare({...input,runner:'claude',globalOnly:true,runRoot:join(root,'runs/standalone')});
+  expect(scoped.references.map(r=>r.name)).toEqual(['global-fixture']);expect(realpathSync(scoped.references[0].path)).toBe(global);
+  const related=projection.prepare({...input,runner:'claude',runRoot:join(root,'runs/project')});
+  expect(related.references.map(r=>r.name).sort()).toEqual(['global-fixture','project-fixture']);expect(realpathSync(related.references.find(r=>r.name==='project-fixture')!.path)).toBe(project);
+});
 it('discovers Antigravity Skills and keeps the adopted project Skill scoped across executors', () => {
   const home = join(root, 'home');
   const project = join(root, 'project');

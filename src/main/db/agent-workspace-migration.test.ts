@@ -32,8 +32,9 @@ it('opens the installed reply-preview schema and preserves existing feedback', (
              VALUES('reply-1', 't1', 'assistant_message', 1, 'original payload', ?, ?, 1)`).run(at, at);
   const ledger = d.prepare('SELECT * FROM __drizzle_migrations ORDER BY id');
   const recorded = ledger.all();
+  expect(runBundledMigrations(d)).toEqual(['0041_rare_skrulls']);
+  expect(ledger.all().slice(0,recorded.length)).toEqual(recorded);
   expect(runBundledMigrations(d)).toEqual([]);
-  expect(ledger.all()).toEqual(recorded);
   expect(d.prepare('SELECT payload_ref, liked FROM agent_items').get()).toEqual({ payload_ref: 'original payload', liked: 1 });
   expect(d.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
 });
@@ -44,7 +45,7 @@ it('keeps legacy run rows byte-for-byte and leaves foreign keys consistent', () 
   d.exec("INSERT INTO capability_session_snapshots VALUES('old-task',2,'snapshot bytes','old-hash',?,'created','active')".replace('?', `'${at}'`));
   d.exec(`INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,pty_id,bindings_json) VALUES('old-run','old-task','p','codex','stopped','${at}','old-hash','pty-1','[{"x":1}]')`);
   const before = d.prepare('SELECT * FROM capability_runs').all() as object[];
-  expect(runBundledMigrations(d)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup','0039_agent_task_pin','0040_agent_reply_like']);
+  expect(runBundledMigrations(d)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup','0039_agent_task_pin','0040_agent_reply_like','0041_rare_skrulls']);
   expect(d.prepare('SELECT * FROM capability_runs').all()).toEqual(before.map(r => ({ ...r, binding_id: null, capability_session_id: null, generation: null, driver_id: null, launch_plan_hash: null })));
   expect(d.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
   // 子表仍引用 capability_runs（重建后名称不变）
@@ -57,7 +58,7 @@ it('replays without rebuilding twice when the watermark is lost after commit', (
   seedNewTask(d);
   insertRun(d, 'r1', 't1', 'b1', 'claude-sdk', 1);
   d.prepare('DELETE FROM __drizzle_migrations WHERE created_at>=?').run(bundledMigrations()[38].when);
-  expect(runBundledMigrations(d)).toEqual(['0038_agent_resource_cleanup','0039_agent_task_pin','0040_agent_reply_like']);
+  expect(runBundledMigrations(d)).toEqual(['0038_agent_resource_cleanup','0039_agent_task_pin','0040_agent_reply_like','0041_rare_skrulls']);
   expect(d.prepare('SELECT run_id,binding_id,generation FROM capability_runs').all()).toEqual([{ run_id: 'r1', binding_id: 'b1', generation: 1 }]);
 });
 

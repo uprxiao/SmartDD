@@ -1,0 +1,100 @@
+{
+  "scope": "C26 real test-first certificate-warning display only and independent package; no actual full App acceptance nor trust changes",
+  "base": "4148950b8",
+  "priorCandidate": "C25",
+  "sourceManifest": "../candidate-26-source.json",
+  "sourceManifestSha256": "4ad0a20d45af3e61cc9274353ae00d0ac12abaaf07b42b9337f49b8600e8faf4",
+  "frozenFileCount": 153,
+  "changedFromC25": [
+    "src/renderer/features/browser/workspace.css",
+    "src/renderer/features/browser/workspace.test.tsx"
+  ],
+  "actualPriorRed": "../candidate-25-browser-activity-pill-style/B09-certificate-warning-new-only-actual-visual-red/index.json",
+  "testFirst": {
+    "command": "pnpm exec vitest run src/renderer/features/browser/workspace.test.tsx -t 'preserves the original certificate warning control display'",
+    "before": {
+      "exit": 1,
+      "failed": 4,
+      "themeAndLoadOrderCombinations": 4,
+      "actualReturnShape": [
+        "14px",
+        "1.5",
+        "430",
+        "0px",
+        "none",
+        "22px",
+        "6px",
+        "10px"
+      ],
+      "expectedOriginalShape": [
+        "13px",
+        "19.5px",
+        "500",
+        "1px",
+        "solid",
+        "22px",
+        "6px",
+        "10px"
+      ]
+    },
+    "final": {
+      "exit": 0,
+      "passed": 4,
+      "failed": 0,
+      "ordinaryPanelResetRetained": true,
+      "continueCertificateInvocationsInTest": 0
+    }
+  },
+  "relatedTests": {
+    "command": "pnpm test src/renderer/features/browser src/renderer/features/agent-tasks --maxWorkers=2",
+    "exit": 0,
+    "filesPassed": 22,
+    "passed": 254
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0
+  },
+  "build": {
+    "command": "pnpm package --output-dir /private/tmp/willyou-m16-c26-build.ZoH3ewhK/standard",
+    "exit": 0,
+    "bundle": "/private/tmp/willyou-m16-c26-build.ZoH3ewhK/standard/mac-arm64/WillYou.app",
+    "appAsarSha256": "f8c0a8b23824692b8713098907816c6f66fe1ec6dd4d6eef41573b66dc4ce259",
+    "nativeProcessIdentitySha256": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "nativeSmoke": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "codesignDeepStrictExit": 0,
+    "postBuildSourceMismatches": 0,
+    "installed": false,
+    "released": false
+  },
+  "rawLogPrivatePins": {
+    "red": {
+      "path": "/private/tmp/willyou-m16-c26-cert-red.log",
+      "sha256": "c168002efaf21ac9dd7d1b109951b7fa94f190d7c7d18ebf12de57313e88d480"
+    },
+    "green": {
+      "path": "/private/tmp/willyou-m16-c26-cert-green.log",
+      "sha256": "1463ff33e66a7878f06f25afdc76215bb0c380dff54e698d303ef837ad4271be"
+    },
+    "related": {
+      "path": "/private/tmp/willyou-m16-c26-cert-related.log",
+      "sha256": "7f842ee74ef8b6c0821a3a09dd0ef1945658febee97331423cea762fca3d8143"
+    },
+    "typecheck": {
+      "path": "/private/tmp/willyou-m16-c26-cert-typecheck.log",
+      "sha256": "43cf3be635b5127a22c21769845059126ba438a663e10235634c93b509faa758"
+    },
+    "build": {
+      "path": "/private/tmp/willyou-m16-c26-build.ZoH3ewhK/build.log",
+      "sha256": "04c3b48bafa3526f959887a13119d22d3660ae149d5d23b7d8a252c9655ea8be"
+    }
+  },
+  "bounds": "Only original warning return pill and red underlined risk text in certificate-warning dialog CSS; no trust/permission/security behavior or other controls changed; real C26 warning-only acceptance pending."
+}

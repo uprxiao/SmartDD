@@ -14,7 +14,7 @@ export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:da
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 /** M14 统一 Agent 工作区：已提交的任务事件（含 seq）与只推在线订阅者的流式增量。 */
-export const agentTaskEvent = defineEvent<{ taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }>('agentTasks:event');
+export const agentTaskEvent = defineEvent<{ taskId: string; seq: number; type: string; itemId: string | null; payload: unknown; scheduled?:boolean }>('agentTasks:event');
 export interface AgentCommandPreview { revision: number; text: string; truncated: boolean }
 export interface AgentLiveFrame { taskId: string; runId: string; itemKey: string; text: string; previewIncomplete?: boolean; commandRevision?: number }
 export const agentTaskLiveEvent = defineEvent<AgentLiveFrame>('agentTasks:live');
@@ -54,3 +54,6 @@ export const voiceStatusChangedEvent = defineEvent<void>('voice:changed');
 export const voiceGlobalErrorEvent = defineEvent<VoiceError>('voice:global-error');
 
 export const fileViewerUiEvent = defineEvent<ViewerUiEvent>('files:viewer-ui');
+
+export const scheduleChangedEvent=defineEvent<undefined>('schedule:changed');
+export const scheduleOpenEvent=defineEvent<{planId:string;runId?:string;taskId?:string;turnId?:string;requestId?:string}>('schedule:open');

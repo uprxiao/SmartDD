@@ -20,4 +20,4 @@ export const browserCreateInput=browserTaskInput.extend({address:z.string().opti
 export const browserTabInput=browserTaskInput.extend({tabId:id}).strict();
 export const browserNavigationInput=browserTabInput.extend({address:z.string()}).strict();
 export const browserActionInput=browserTabInput.extend({action:z.enum(['reload','hard-reload','stop','back','forward','focus'])}).strict();
-export const browserPlacementInput=browserTabInput.extend({rect:z.object({x:z.number().finite(),y:z.number().finite(),width:z.number().positive().finite(),height:z.number().positive().finite()}).strict().nullable()}).strict();
+export const browserPlacementInput=browserTabInput.extend({rect:z.object({x:z.number().finite(),y:z.number().finite(),width:z.number().positive().finite(),height:z.number().positive().finite()}).strict().nullable(),instance:z.number().int().positive().optional(),sequence:z.number().int().positive().optional()}).strict();

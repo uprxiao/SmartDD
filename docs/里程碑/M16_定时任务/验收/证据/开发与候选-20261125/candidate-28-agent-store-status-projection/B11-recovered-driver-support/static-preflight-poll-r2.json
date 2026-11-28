@@ -1,0 +1,114 @@
+{
+  "staticOnly": true,
+  "previousStaticPreflightSha256": "a6ea4e0b39f19fae5bfa03aca9ed54cc2047edd7409fb4fc017f3723a822d3c6",
+  "unchangedPackagePins": {
+    "app.asar": "5d715b34f16a31a1edf95692501b58e19e70048bc0f131f4bb33ac1bbcb3ba9e",
+    "willyou-process-identity": "5958e696d973ee8e304333442dc4c55d58402f22a8714af164c6b182fb3d3080",
+    "source-and-package.json": "118c3a0c40b4952b277df394a6cfcb931317f0660b6cd1a4b3ab5c59b2ac85cf"
+  },
+  "nativeCodex": {
+    "executable": "/Users/liubu/.local/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "version": "codex-cli 0.171.0",
+    "sha256": "fc8d77cf7585aded2b9bc487dad29c4ee2f066123e4e76dd3b17653a8322ce42"
+  },
+  "nativeBinaryPublicContractStrings": {
+    "write_stdin": true,
+    "Writes characters to an existing unified exec session": true,
+    "Identifier of the running unified exec session": true,
+    "Bytes to write to stdin": true,
+    "session_id": true,
+    "chars": true,
+    "yield_time_ms": true,
+    "max_output_tokens": true,
+    "Process running with session ID": true,
+    "Process exited with code": true,
+    "Chunk ID:": true,
+    "Original token count:": true,
+    "Output:": true
+  },
+  "runtimeContractBoundary": "Binary strings are local static confirmation. The actual provider body must advertise unique function-tool write_stdin with session_id number/integer and chars string. No model is started by preflight.",
+  "replaySha256": "567fa4fa4019f81736bd173685f41605564c4d3e98f12f471958f6f22ddaf5e2",
+  "replay": {
+    "staticOnly": true,
+    "originalC27": {
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/\u91cc\u7a0b\u7891/M16_\u5b9a\u65f6\u4efb\u52a1/\u9a8c\u6536/\u8bc1\u636e/\u5f00\u53d1\u4e0e\u5019\u9009-20261125/candidate-27-schedule-active-query-reuse/B11-real-1800s-recheck/archive-safe/result.json.gz",
+      "sha256": "505f0055ef0da5dd209b1e5942851b9e87f1f4c083836c5a1340476cb65ebe47",
+      "directTerminalReceipts": 40,
+      "firstPendingTrue": 0,
+      "realCompletedPollChains": 0
+    },
+    "originalC22": {
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/\u91cc\u7a0b\u7891/M16_\u5b9a\u65f6\u4efb\u52a1/\u9a8c\u6536/\u8bc1\u636e/\u5f00\u53d1\u4e0e\u5019\u9009-20261125/candidate-22-notification-ownership-and-cold-paint/B11-native-pending-reply-driver-red/result.json",
+      "sha256": "9b3c50e8e7a11a7dedf8bb70032feeb41cd0d40b1b9438141d5a54be15f3dc4e",
+      "retainedActualRunningSession": 66729,
+      "priorDriverFailed": true,
+      "actualSuccessfulPollResultAvailable": false
+    },
+    "boundary": "C22 retained actual running frame and C27 retained actual terminal frames are verified independently. Synthetic concatenation and malformed controls do not claim a prior or current actual completed pending chain. Current runtime write_stdin schema is validated before issuing only the empty-input poll.",
+    "tests": [
+      "all 40 original C27 direct terminal receipts",
+      "retained C22 actual running reply is pending, never a terminal receipt",
+      "synthetic control combining retained C22 running frame with C27 terminal frame",
+      "synthetic control for two successive same-session polls",
+      "synthetic split bytes reconstructed before result validation",
+      "exact current call output selected with earlier call outputs retained in history",
+      "old actual C22 empty output cannot count as CLI success",
+      "actual C27 terminal from another page cannot satisfy C22 command",
+      "native exit nonzero even with otherwise valid original JSON",
+      "unrecognized terminal header",
+      "session ID must be positive",
+      "invalid session ID cannot be polled",
+      "native session changed while polling",
+      "native pending timeout/poll count is bounded",
+      "duplicate terminal response rejected",
+      "stale call output must never be accepted",
+      "duplicated exact output is ambiguous",
+      "missing write_stdin native tool must not fall back to exec",
+      "unknown required native poll field",
+      "non-string chars rejected",
+      "wrong page URL",
+      "ambiguous duplicate CLI result",
+      "wrong operation origin",
+      "wrong operation effect",
+      "valid JSON already printed while running does not certify the command"
+    ],
+    "passed": 25,
+    "failed": 0
+  },
+  "nodeSyntax": "pass",
+  "cdpLiteralChecks": 5,
+  "changedSourcePins": {
+    "launch.mjs": {
+      "previous": "f2746be3c50d95b9317d71b197c90a54d6975570d42e7e21bd4115349490afc2",
+      "current": "972dcb629d265a974557b3717d97f029bfa14fb0e6746ab8933f7a655bdfb1ba"
+    },
+    "native-passive-poll-replay.mjs": {
+      "previous": null,
+      "current": "a75614773b70991d96de62cdc799dab311a4935dbbb96114c37ca7a44bccf5c3"
+    },
+    "native-passive-poll.mjs": {
+      "previous": null,
+      "current": "03ece11a8c28f26aa601a5ffe7cde7472da55b2aafb3a590e20dca55e699adae"
+    },
+    "run.mjs": {
+      "previous": "f73e83c301205e234b2926b0c60c1fd77db05fabf2a96131f948dcc4ae97dab3",
+      "current": "3d96479a025a5d9ab91d8ba2bc5ff8ba2b5d853567a5d2a3a7e4fe854d44df21"
+    }
+  },
+  "sourcePins": {
+    "cleanup.py": "e0b558a51e31ccb428976798972638c339fc2e99a0ca701d0e0c7362014b16ab",
+    "closure_contract.py": "c6b6dabd1fc65650011024065b3819583fb292e10331e4bd6f478ffc3dbd1897",
+    "coalition_accounting.py": "c22abeab6feac356502ea68de4ac19552302ed4c820a90211c2216897fe9e449",
+    "cpu_collector.py": "1ec08fa17302134094e9d066d4741cf076fd98acba20fda2f28a9caa369b2ab3",
+    "electron-harness.mjs": "fd7cffbe79e831d02156cea651af3ad22a85578c060c84e5d8200d6a6c248220",
+    "electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "launch.mjs": "972dcb629d265a974557b3717d97f029bfa14fb0e6746ab8933f7a655bdfb1ba",
+    "lease_probe.py": "c4e1db4e8df8bc09640a44b2b6612cc413c08b841942467a56e57bcd04215549",
+    "native-passive-poll-replay.mjs": "a75614773b70991d96de62cdc799dab311a4935dbbb96114c37ca7a44bccf5c3",
+    "native-passive-poll.mjs": "03ece11a8c28f26aa601a5ffe7cde7472da55b2aafb3a590e20dca55e699adae",
+    "own_scope_native.py": "93387465efc7791f279d07f08f7c27d2f40072e5530871a29210a1f4a67858ca",
+    "run.mjs": "3d96479a025a5d9ab91d8ba2bc5ff8ba2b5d853567a5d2a3a7e4fe854d44df21",
+    "wrapper-business-codex.m": "2c0556ac616c398836de0f01e2fe406ca00f33c2961ad69f4b3f21e8960658a7"
+  },
+  "collectorAndMetricDependenciesUnchanged": true
+}

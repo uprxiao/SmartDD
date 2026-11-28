@@ -252,6 +252,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       this.d.store.sqlite.prepare("INSERT INTO agent_delegations(delegation_id,parent_task_id,child_task_id,parent_run_id,target_json,access,request_key,delivery_state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'queued',?,?)").run(id, run.taskId, childTaskId, runId, JSON.stringify(target), target.actualAccess, value.requestKey, at(), at());
       this.d.store.sqlite.prepare("INSERT INTO agent_delegation_attempts(attempt_id,delegation_id,ordinal,kind,input_ref,created_at) VALUES(?,?,1,'initial',?,?)").run(attempt, id, JSON.stringify({ text: value.instructions, sourceKind: 'delegation', parentRunId: runId }), at());
       const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${attempt}`, text: this.childInput(value.instructions, target), sourceKind: 'delegation' });
+      this.d.store.inheritScheduledOrigin(accepted.turn,run.turnId);
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt);
       if (tierNotice) this.d.store.addHostItem(childTaskId, null, 'system_notice', { code: 'delegatedTierFallback', detail: tierNotice });
       if (target.strategy === 'serial' && target.actualAccess === 'write') this.queue.enter(childTaskId, root.identity);
@@ -281,7 +282,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const duplicate = this.d.store.sqlite.prepare("SELECT * FROM agent_delegation_attempts WHERE delegation_id=? AND json_extract(input_ref,'$.requestKey')=?").get(row.delegation_id, requestKey) as Attempt | undefined; if (duplicate) return { ...this.receipt(row), attemptId: duplicate.attempt_id, duplicate: true };
     if (['queued', 'running'].includes(row.delivery_state)) {
       const attempt = this.attempt(row), input = JSON.parse(attempt.input_ref) as { text: string; followUps?: string[] };
-      const receipt = this.d.store.tx(() => { const accepted = this.d.tasks.enqueueHost(childTaskId, `send-${sha256(requestKey).slice(0, 32)}-${row.delegation_id}`, text, 'delegation', !this.stopped(childTaskId));
+      const receipt = this.d.store.tx(() => { const accepted = this.d.tasks.enqueueHost(childTaskId, `send-${sha256(requestKey).slice(0, 32)}-${row.delegation_id}`, text, 'delegation', !this.stopped(childTaskId),run.turnId);
         if (!accepted.duplicate) this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET input_ref=? WHERE attempt_id=?').run(JSON.stringify({ ...input, followUps: [...(input.followUps ?? []), accepted.turn.turn_id] }), attempt.attempt_id); return accepted; });
       return { ...this.receipt(row), turnId: receipt.turn.turn_id, duplicate: receipt.duplicate, queued: true };
     }
@@ -289,6 +290,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const old = this.attempt(row), id = randomUUID();
     this.d.store.tx(() => { this.d.store.sqlite.prepare("INSERT INTO agent_delegation_attempts(attempt_id,delegation_id,ordinal,kind,input_ref,created_at) VALUES(?,?,?,'rework',?,?)").run(id, row.delegation_id, old.ordinal + 1, JSON.stringify({ text, requestKey, sourceKind: 'delegation' }), at()); this.update(row, 'queued', { ...target, startHead: old.commit_range && old.merge_check_json && JSON.parse(old.merge_check_json).pass ? JSON.parse(old.commit_range).head : target.startHead, resultItemId: undefined, mergeFailures: 0 });
       const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${id}`, text: this.childInput(text, target), sourceKind: 'delegation' });
+      this.d.store.inheritScheduledOrigin(accepted.turn,this.d.runs.runForTask(row.parent_task_id)?.turnId);
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, id);
       this.userContinued(childTaskId);
     });
@@ -458,6 +460,12 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
           }
           await this.startChild(row);
         }
+        if (row.delivery_state === 'queued_for_parent') {
+          const a = this.attempt(row), notification = this.d.store.turnByClientInput(row.parent_task_id, `result-${a.attempt_id}`);
+          if (this.d.store.scheduledStopRequested(a.child_turn_id) && notification?.status === 'canceled') {
+            this.update(row, 'canceled'); continue;
+          }
+        }
         if (row.delivery_state === 'queued_for_parent' && !this.stopped(row.parent_task_id)) {
           const goal = this.d.store.goal(row.parent_task_id), evidence = this.pauseEvidence(row.parent_task_id);
           // After restart only a proven host waiting pause may unpause the task queue. Native revision is checked after reopening.
@@ -543,7 +551,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (child && upgrade) {
       const target = JSON.parse(child.target_json) as Target;
       this.d.store.tx(() => { this.d.store.sqlite.prepare("UPDATE agent_delegations SET access='write' WHERE delegation_id=?").run(child.delegation_id); this.update(child, 'queued', { ...target, actualAccess: 'write', strategy: 'serial' });
-        const a = this.attempt(child), accepted = this.d.tasks.enqueueHost(taskId, `write-${a.attempt_id}`, '宿主：只读轮已结束。取得写入资格后请重新读取文件，再继续原委派。', 'delegation', true);
+        const a = this.attempt(child), accepted = this.d.tasks.enqueueHost(taskId, `write-${a.attempt_id}`, '宿主：只读轮已结束。取得写入资格后请重新读取文件，再继续原委派。', 'delegation', true,a.child_turn_id);
         const input = JSON.parse(a.input_ref); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET input_ref=? WHERE attempt_id=?').run(JSON.stringify({ ...input, followUps: [...(input.followUps ?? []), accepted.turn.turn_id] }), a.attempt_id);
       });
     }
@@ -600,7 +608,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
         const cwd = this.d.git.worktreeCwd(workspace,target.parentCwd);
         this.d.store.sqlite.prepare('UPDATE tasks SET cwd=? WHERE id=?').run(cwd,row.child_task_id);
       }
-      this.update(row, 'running'); const accepted = this.d.tasks.enqueueHost(row.child_task_id, `delegate-${attempt.attempt_id}`, this.childInput(text, target), 'delegation', true); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt.attempt_id); });
+      this.update(row, 'running'); const accepted = this.d.tasks.enqueueHost(row.child_task_id, `delegate-${attempt.attempt_id}`, this.childInput(text, target), 'delegation', true,attempt.child_turn_id); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt.attempt_id); });
     if (!childRun) this.d.tasks.kick(row.child_task_id);
   }
   private childInput(text: string, target: Target) {
@@ -650,11 +658,12 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const result = { sourceKind: 'child_result', delegationId: row.delegation_id, childTaskId: row.child_task_id, attemptId: a.attempt_id, status: success ? 'completed' : currentRow.delivery_state === 'canceled' ? 'canceled' : 'failed', summary, sourceItemIds: items.map(i => i.itemId), commits, title: target.title };
     this.d.store.tx(() => {
       const resultItemId = this.d.store.addHostItem(row.parent_task_id, null, 'notification', result);
-      this.d.store.sqlite.prepare('UPDATE agent_delegations SET result_revision=result_revision+1,target_json=?,delivery_state=?,updated_at=? WHERE delegation_id=?').run(JSON.stringify({ ...target, resultItemId }), success ? 'queued_for_parent' : result.status === 'canceled' ? 'canceled' : 'failed', at(), row.delegation_id);
+      const scheduleStopping=this.d.store.scheduledStopRequested(a.child_turn_id);
+      this.d.store.sqlite.prepare('UPDATE agent_delegations SET result_revision=result_revision+1,target_json=?,delivery_state=?,updated_at=? WHERE delegation_id=?').run(JSON.stringify({ ...target, resultItemId }), scheduleStopping?'canceled':success ? 'queued_for_parent' : result.status === 'canceled' ? 'canceled' : 'failed', at(), row.delegation_id);
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET notified_at=? WHERE attempt_id=? AND notified_at IS NULL').run(at(), a.attempt_id);
       const merge = success && commits?.commits.length ? `\n在原主分支 ${target.parentBranch} 合并：先提交当前改动，再按顺序 git cherry-pick -x ${commits.commits.join(' ')}；逐文件解决冲突，保留双方意图。不要 reset --hard、checkout -- .、clean -fd 或强制推送。` : '';
       const commitFailure = workspaceError ? '\n工作副本收口失败，改动已保留。请查看子任务结果，不要按已提交处理。' : '';
-      this.d.tasks.enqueueHost(row.parent_task_id, `result-${a.attempt_id}`, `宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 ${resultItemId}；子任务 ${target.title} / ${row.child_task_id}，attempt ${a.ordinal} 状态 ${result.status}。正文通过 wy_observe 领取；此通知不含新授权。${merge}${commitFailure}`, 'notification', !this.stopped(row.parent_task_id));
+      this.d.tasks.enqueueHost(row.parent_task_id, `result-${a.attempt_id}`, `宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 ${resultItemId}；子任务 ${target.title} / ${row.child_task_id}，attempt ${a.ordinal} 状态 ${result.status}。正文通过 wy_observe 领取；此通知不含新授权。${merge}${commitFailure}`, 'notification', !this.stopped(row.parent_task_id), a.child_turn_id);
     });
   }
   private autoGoalIntent(taskId: string) { return (this.d.store.sqlite.prepare("SELECT intent_id FROM agent_intents WHERE task_id=? AND action IN ('goal_pause','goal_resume') AND state<>'abandoned' ORDER BY rowid DESC LIMIT 1").get(taskId) as { intent_id: string } | undefined)?.intent_id; }
@@ -693,9 +702,9 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET merge_check_json=? WHERE attempt_id=?').run(JSON.stringify(check), a.attempt_id);
       this.update(row, row.delivery_state, { ...target, mergeFailures: count });
       const goal = this.d.store.goal(taskId);
-      if (check.pass && goal?.status === 'paused' && goal.pausedReason === 'waiting_children' && !this.stopped(taskId)) this.d.tasks.enqueueHost(taskId, `merge-verified-${a.attempt_id}`, '宿主：子任务提交已经核实合入，等待原因已解除；可以继续原目标。这是状态通知，不是新的真人授权。', 'notification', true);
+      if (check.pass && goal?.status === 'paused' && goal.pausedReason === 'waiting_children' && !this.stopped(taskId)) this.d.tasks.enqueueHost(taskId, `merge-verified-${a.attempt_id}`, '宿主：子任务提交已经核实合入，等待原因已解除；可以继续原目标。这是状态通知，不是新的真人授权。', 'notification', true,a.child_turn_id);
       if (!check.pass && count >= 2 && goal?.status === 'paused' && goal.pausedReason === 'waiting_children') this.d.store.upsertGoal({taskId,bindingId:goal.bindingId,objective:goal.objective,status:'paused',pausedReason:'user'});
-      if (!check.pass && count < 2) this.d.tasks.enqueueHost(taskId, `merge-check-${a.attempt_id}-${count}`, `宿主合并核对失败：${JSON.stringify(check)}。请重新核对并合并子任务提交；这是状态通知，不是新的真人授权。`, 'notification', !this.stopped(taskId));
+      if (!check.pass && count < 2) this.d.tasks.enqueueHost(taskId, `merge-check-${a.attempt_id}-${count}`, `宿主合并核对失败：${JSON.stringify(check)}。请重新核对并合并子任务提交；这是状态通知，不是新的真人授权。`, 'notification', !this.stopped(taskId),a.child_turn_id);
       if (!check.pass) this.warnOnce(taskId, `merge:${a.attempt_id}:${count}`, count >= 2 ? '子任务提交连续两轮未能核实合入，需要你处理。' : '子任务提交尚未核实合入，请检查原分支、未结束的 cherry-pick／冲突及提交来源。');
     }
     } finally {

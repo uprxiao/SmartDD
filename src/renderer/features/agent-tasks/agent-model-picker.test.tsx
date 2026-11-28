@@ -37,6 +37,55 @@ it('anchors the popup to the trigger using its rendered width', () => {
   }
 });
 
+it('M16 A20/A52 places a schedule modal picker below a top anchor and above the modal overlay',()=>{
+  const bounds=vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){
+    if(this.classList.contains('agent-model-picker'))return new DOMRect(window.innerWidth-330,110,290,28);
+    if(this.classList.contains('agent-picker'))return new DOMRect(0,0,480,380);
+    return new DOMRect();
+  });
+  try{
+    render(<AgentModelPicker profiles={profiles} profileId="a" modalOverlay onPick={()=>{}} onExtensions={()=>{}}/>);open();
+    const dialog=screen.getByRole('dialog');
+    expect(dialog.classList.contains('agent-picker-modal')).toBe(true);
+    expect(dialog.style.top).toBe('148px');
+    expect(dialog.style.bottom).toBe('');
+    expect(Number.parseInt(dialog.style.maxHeight,10)).toBeLessThanOrEqual(window.innerHeight-148-12);
+  }finally{bounds.mockRestore();}
+});
+it('M16 A52 keeps the ordinary bottom-anchored composer picker above the trigger',()=>{
+  const y=window.innerHeight-45,bounds=vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){
+    if(this.classList.contains('agent-model-picker'))return new DOMRect(300,y,180,28);
+    if(this.classList.contains('agent-picker'))return new DOMRect(0,0,480,380);
+    return new DOMRect();
+  });
+  try{
+    render(<AgentModelPicker profiles={profiles} profileId="a" onPick={()=>{}} onExtensions={()=>{}}/>);open();
+    const dialog=screen.getByRole('dialog');
+    expect(dialog.classList.contains('agent-picker-modal')).toBe(false);
+    expect(dialog.style.bottom).toBe('55px');
+    expect(dialog.style.top).toBe('');
+  }finally{bounds.mockRestore();}
+});
+it('M16 A52 bounds the picker to available height and repositions after a narrow form scrolls',()=>{
+  const old=Object.getOwnPropertyDescriptor(window,'innerHeight');
+  Object.defineProperty(window,'innerHeight',{configurable:true,value:420});
+  let top=170;
+  const bounds=vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){
+    if(this.classList.contains('agent-model-picker'))return new DOMRect(300,top,180,28);
+    if(this.classList.contains('agent-picker'))return new DOMRect(0,0,480,380);
+    return new DOMRect();
+  });
+  try{
+    render(<AgentModelPicker profiles={profiles} profileId="a" modalOverlay onPick={()=>{}} onExtensions={()=>{}}/>);open();
+    const dialog=screen.getByRole('dialog');
+    expect(dialog.style.top).toBe('208px');expect(dialog.style.maxHeight).toBe('200px');
+    top=315;fireEvent(window,new Event('scroll'));
+    expect(dialog.style.top).toBe('');expect(dialog.style.bottom).toBe('115px');expect(dialog.style.maxHeight).toBe('293px');
+  }finally{
+    bounds.mockRestore();
+    if(old)Object.defineProperty(window,'innerHeight',old);else Reflect.deleteProperty(window,'innerHeight');
+  }
+});
 it('distinguishes loading and failure, retries and reveals reasoning for the native default', async () => {
   const scope = { kind: 'task' as const, taskId: 't' };
   const loading = { status: 'loading', models: [] };

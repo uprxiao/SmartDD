@@ -8415,7 +8415,19 @@
         }
       },
       "required": [],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "required": [
+            "pageId"
+          ]
+        }
+      ]
     },
     "usage": "willyou-app browser tab open (--url <网址> | --pageId <标签ID>) [--intent <reuse-or-new|new>] [--presentation <show|background>] [--profileId <身份ID>] [--ready <JSON对象>]",
     "cases": [

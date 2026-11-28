@@ -1,4 +1,5 @@
-import { BrowserWindow, dialog, type IpcMainInvokeEvent } from 'electron';
+import { dialog, type IpcMainInvokeEvent } from 'electron';
+import {mainWindowForContents} from '@main/app/window-host';
 import { z } from 'zod';
 import { createScopedRPCController } from '@shared/ipc/rpc';
 import { agentExportSelectionSchema, type AgentExportSelection } from '@shared/agent-transfer';
@@ -34,14 +35,14 @@ export function createAgentTransferController(service:AgentTransferService){
     export:(e,input:AgentExportSelection)=>run(e,async(_id,check)=>{
       const selection=agentExportSelectionSchema.parse(input);
       if(selection.includeKeys){if(typeof selection.confirmation!=='string')throw new AgentTransferError('请再次输入导出口令');const issue=passphraseIssue(selection.password??'',selection.confirmation);if(issue)throw new AgentTransferError(issue);}
-      const win=BrowserWindow.fromWebContents(e.sender);
+      const win=mainWindowForContents(e.sender);
       const options:Electron.SaveDialogOptions={title:'导出智能体配置',defaultPath:'willyou-ai-config.json',properties:['showOverwriteConfirmation','createDirectory']};
       const result=win?await dialog.showSaveDialog(win,options):await dialog.showSaveDialog(options);
       check();if(result.canceled||!result.filePath)return null;
       return service.exportTo(result.filePath,selection,check);
     }),
     chooseImport:e=>run(e,async(id,check)=>{
-      const win=BrowserWindow.fromWebContents(e.sender),options:Electron.OpenDialogOptions={title:'导入智能体配置',properties:['openFile']};
+      const win=mainWindowForContents(e.sender),options:Electron.OpenDialogOptions={title:'导入智能体配置',properties:['openFile']};
       const result=win?await dialog.showOpenDialog(win,options):await dialog.showOpenDialog(options);
       check();if(result.canceled||!result.filePaths[0])return null;
       return service.choose(id,result.filePaths[0]);

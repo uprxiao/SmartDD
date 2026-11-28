@@ -376,11 +376,11 @@ def runtime_contract(row):
 catalogue = [runtime_contract(row) for row in rows if row[7] != '不适用']
 catalogue.append({
     'id': 'browser.tab.open', 'command': ['browser', 'tab', 'open'], 'semantics': 'write',
-    'input': obj({
+    'input': {**obj({
         'url': {'type': 'string', 'maxLength': 8192}, 'pageId': STRING, 'profileId': STRING,
         'intent': {'enum': ['reuse-or-new', 'new']}, 'presentation': {'enum': ['show', 'background']},
         'ready': obj({key: OBSERVATION_INPUT['properties'][key] for key in ['selector', 'text', 'timeout']}, []),
-    }, []),
+    }, []), 'oneOf': [{'required': ['url']}, {'required': ['pageId']}]},
     'usage': 'willyou-app browser tab open (--url <网址> | --pageId <标签ID>) [--intent <reuse-or-new|new>] [--presentation <show|background>] [--profileId <身份ID>] [--ready <JSON对象>]',
     'cases': ['M15-A01', 'M15-A02', 'M15-A03', 'M15-A04', 'M15-A05', 'M15-A06', 'M15-A07', 'M15-A08', 'M15-A09'],
     'output': obj({'pageId': STRING, 'url': STRING, 'operationId': STRING, 'reused': BOOLEAN,

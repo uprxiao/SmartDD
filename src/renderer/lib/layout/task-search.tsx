@@ -29,7 +29,7 @@ export const TaskSearchDialog = observer(function TaskSearchDialog() {
   }, [open]);
 
   const term = query.trim().toLowerCase();
-  const inProject = (id: string | null) => projectFilter==='all'||id===projectFilter;
+  const inProject = (id: string | null) => projectFilter==='all'||(projectFilter==='standalone'?id===null:id===projectFilter);
   const all = agentTasksStore.tasks
     .filter(task=>inProject(task.projectId)&&task.title.toLowerCase().includes(term))
     .map(task=>({id:task.taskId,title:task.title,projectName:projects.find(p=>p.id===task.projectId)?.name,archivedAt:null,aiProfileColor:null}));
@@ -75,7 +75,7 @@ export const TaskSearchDialog = observer(function TaskSearchDialog() {
           />
           <kbd>Esc</kbd>
         </div>
-        <div className="m6-search-filter"><span>{t('projects.sidebar')}</span><Select value={projectFilter} onValueChange={(value) => { setProjectFilter(String(value)); setSelected(0); }}><SelectTrigger aria-label={t('m6.filterProject')}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{t('m6.allProjects')}</SelectItem>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
+        <div className="m6-search-filter"><span>{t('projects.sidebar')}</span><Select value={projectFilter} onValueChange={(value) => { setProjectFilter(String(value)); setSelected(0); }}><SelectTrigger aria-label={t('m6.filterProject')}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{t('m6.allProjects')}</SelectItem><SelectItem value="standalone">{t('tasks.noProjectGroup')}</SelectItem>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
         <div ref={listRef} className="max-h-96 overflow-y-auto p-1.5">
           {results.length === 0 && (
             <div className="px-3 py-6 text-center text-sm text-foreground-passive">

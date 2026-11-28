@@ -1,0 +1,110 @@
+{
+  "appAsar": "7213788860b8d0bb66baa28398fd8a5d70062b44dea570f0ddcdcf7a283204a7",
+  "packagedBrowserVersion": "0.1.5",
+  "manifestSha256": "cd4a1ed623fe1e261fff3218bc665d8182a6ec7baeb1fb83148eee2d7c5824fb",
+  "schemaSha256": "bebd0c3414a5815f79262cbf60a73a9c63b888829f277f35f0c3048d8f6970cd",
+  "capability": {
+    "binding": {
+      "cli": {
+        "command": [
+          "browser",
+          "tab",
+          "open"
+        ]
+      },
+      "mcp": {
+        "tool": "smartdd_browser_tab_open_v2"
+      }
+    },
+    "contractMajor": 2,
+    "id": "browser.tab.open",
+    "inputSchemaPath": "schemas/capabilities/smartdd_browser_tab_open_v2.input.json",
+    "outputSchemaPath": "schemas/capabilities/smartdd_browser_tab_open_v2.output.json",
+    "permission": "browser.write",
+    "protection": {
+      "key": "requestId",
+      "kind": "operation-receipt",
+      "object": "browser_operation"
+    },
+    "retry": "never",
+    "semantics": "write",
+    "slots": {
+      "conditional": [],
+      "required": []
+    },
+    "title": "browser tab open"
+  },
+  "schema": {
+    "additionalProperties": false,
+    "description": "Open or reuse a WillYou tab in the current task. Supply exactly one HTTP(S) url or an existing pageId; pageId keeps its original identity. For a new target or intent use a new request ID. Returns a pageId and navigation phase early. Keep the pageId to observe that tab.",
+    "oneOf": [
+      {
+        "required": [
+          "url"
+        ]
+      },
+      {
+        "required": [
+          "pageId"
+        ]
+      }
+    ],
+    "properties": {
+      "intent": {
+        "enum": [
+          "reuse-or-new",
+          "new"
+        ]
+      },
+      "pageId": {
+        "type": "string"
+      },
+      "presentation": {
+        "enum": [
+          "show",
+          "background"
+        ]
+      },
+      "profileId": {
+        "type": "string"
+      },
+      "ready": {
+        "additionalProperties": false,
+        "properties": {
+          "selector": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout": {
+            "maximum": 15000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "url": {
+        "maxLength": 8192,
+        "type": "string"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "generatedCliSourceSha256": "257829162558e84c941fce11afc776e9f58fa3c286e6575a5785b294106fd9b6",
+  "generatedCliUsage": "willyou-app browser tab open (--url <网址> | --pageId <标签ID>) [--intent <reuse-or-new|new>] [--presentation <show|background>] [--profileId <身份ID>] [--ready <JSON对象>]",
+  "outsideHostCliProbe": {
+    "status": "AUTH_REQUIRED",
+    "effectState": "not-started",
+    "exit": 3,
+    "layer": "auth",
+    "scope": "not a supported native Agent CLI acceptance"
+  }
+}

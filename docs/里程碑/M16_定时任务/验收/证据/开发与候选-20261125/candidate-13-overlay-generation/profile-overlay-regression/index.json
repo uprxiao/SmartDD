@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "scope": "C13 affected real A overlay/profile regression, fresh isolated fixture; ordinary UI only",
+  "candidateAsar": "54433425b60925be764f786f793d0bc555b315bfa813b8d0792d304160f015ec",
+  "actualStatus": "C13-overlay-actual-recheck-pass",
+  "actualActions": 53,
+  "actualNativeParkedSnapshotChecks": 10,
+  "actualSameNativeDocumentRestores": 8,
+  "checks": [
+    {
+      "name": "profile-badge-native-park-and-same-document-restore",
+      "status": "pass"
+    },
+    {
+      "name": "menu-settings-ownership-transfer-and-restore",
+      "status": "pass"
+    },
+    {
+      "name": "menu-profile-ownership-transfer-and-restore",
+      "status": "pass"
+    },
+    {
+      "name": "task-switch-old-overlay-leave-and-reentry",
+      "status": "pass"
+    },
+    {
+      "name": "new-identity-switch-original-page-and-other-task-no-interference",
+      "status": "pass"
+    },
+    {
+      "name": "normal-exit-and-real-v1-integrity",
+      "status": "pass"
+    }
+  ],
+  "actualParkLabels": [
+    "badge-open",
+    "menu-open",
+    "menu-to-settings",
+    "menu-second-open",
+    "menu-to-profile-management",
+    "original-profile-left-open",
+    "second-task-menu",
+    "first-task-profile-reentry",
+    "new-profile-open",
+    "new-identity-badge"
+  ],
+  "restoredLabels": [
+    "badge-close",
+    "settings-close",
+    "menu-profile-close",
+    "second-task-menu-close",
+    "original-return",
+    "reentry-close",
+    "create-does-not-switch",
+    "new-identity-close"
+  ],
+  "source": {
+    "path": "/private/tmp/willyou-m16-f36-qa/browser-driver-overlay-c13.mjs",
+    "sha256": "61d30a3a129fb5f87d1b5d9a0d1ea41a2ebc036c4544a810480cd98db3602fa3",
+    "bytes": 31981
+  },
+  "result": {
+    "path": "/private/tmp/willyou-m16-f36-overlay-c13-ZjFWCt/C13-overlay-result.json",
+    "sha256": "c474214b2f371c143f3321f041d520ec873c659b0de7c43809b80a2b5fe0e7cf",
+    "bytes": 48787
+  },
+  "screenshots": [
+    {
+      "path": "/private/tmp/willyou-m16-f36-overlay-c13-ZjFWCt/C13-menu-settings.png",
+      "sha256": "f5b3e3fa1668b712b285aab38c6a01093754c7471f9676c54dab5241a2e2e218",
+      "bytes": 291786
+    },
+    {
+      "path": "/private/tmp/willyou-m16-f36-overlay-c13-ZjFWCt/C13-profile-badge.png",
+      "sha256": "b33ef2cc194616366d0985ea6843aec3cbba8047c5eaf272b8e2da02b6b0c288",
+      "bytes": 246415
+    }
+  ],
+  "cleanExit": {
+    "path": "/private/tmp/willyou-m16-f36-overlay-c13-ZjFWCt/independent-cleanup.json",
+    "sha256": "b8ba6aec83de87f649f861a1f7726324bfd2e7ed01b36597d533e6d8f256508c",
+    "bytes": 354
+  },
+  "scopeBoundary": [
+    "C13 regular actual user overlay transitions and task switches, not forced mocked delayed race; race order U/I separately.",
+    "Does not replace remaining B07.4 cookie import/clone failure, B09 other system or B10 unrelated coverage.",
+    "No Chrome/Edge data discovered or touched; own loopback only. No production changes or new public case count."
+  ]
+}

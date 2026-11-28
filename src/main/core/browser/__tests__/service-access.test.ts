@@ -18,10 +18,10 @@ vi.mock('electron',()=>({app:{userAgentFallback:'WillYou/0.1 Electron/42 Chrome/
 // lifecycle and queues. Only the native page/clone boundaries are substituted.
 const fixtures:{service:BrowserService;sqlite:Database.Database;root:string;runs:Map<string,AbortController>}[]=[];
 afterEach(async()=>{for(const f of fixtures.splice(0)){for(const run of f.runs.values())run.abort();await f.service.dispose();f.sqlite.close();rmSync(f.root,{recursive:true,force:true});}vi.restoreAllMocks();});
-function fixture(){
+function fixture(scheduledRun?:(id:string)=>boolean){
   const sqlite=new Database(':memory:');sqlite.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at INTEGER NOT NULL);CREATE TABLE tasks(id TEXT PRIMARY KEY,project_id TEXT,title TEXT,cwd TEXT);CREATE TABLE projects(id TEXT PRIMARY KEY,name TEXT);');sqlite.exec(readFileSync('drizzle/0030_browser_operations.sql','utf8'));
   const root=mkdtempSync(join(tmpdir(),'willyou-access-service-')),projects=new Map([['T1','P1'],['T2','P1'],['T3','P2']]);for(const[id,project]of projects)sqlite.prepare('INSERT INTO tasks VALUES(?,?,?,?)').run(id,project,id+' title',root);sqlite.prepare('INSERT INTO projects VALUES(?,?)').run('P1','Project One');
-  const runs=new Map<string,AbortController>(),service=new BrowserService({sqlite,userData:root,helper:{executable:'/must-not-run',sha256:'0'.repeat(64)},taskProject:id=>projects.get(id)??null,taskDirectory:()=>root});fixtures.push({service,sqlite,root,runs});
+  const runs=new Map<string,AbortController>(),service=new BrowserService({sqlite,userData:root,helper:{executable:'/must-not-run',sha256:'0'.repeat(64)},taskProject:id=>projects.get(id)??null,taskDirectory:()=>root,scheduledRun});fixtures.push({service,sqlite,root,runs});
   const scope=(taskId='T1',runId='R1'):BrowserScope=>{let run=runs.get(runId);if(!run){run=new AbortController();runs.set(runId,run);}return{taskId,projectId:projects.get(taskId)!,runId,requestId:randomUUID(),operationId:randomUUID(),runSignal:run.signal,signal:new AbortController().signal,assertActive:()=>{}};};
   const grant=async(mode:'observe'|'control'='control',caller=scope(),target='T2',chosen?:'observe'|'control')=>{const result=service.execute(caller,'access request',{task:target,mode});const request=service.access.snapshot().requests.at(-1)!;service.respondAccess(request.id,true,chosen);await result;return request.id;};
   const page=(taskId='T2',profileId=service.profiles.ensureProject('P1').id)=>{
@@ -31,6 +31,19 @@ function fixture(){
   return{service,sqlite,scope,grant,page,runs,root,projects};
 }
 describe('actual caller and target authority in the browser service',()=>{
+  it('M16 A48 preserves ordinary own-tab authority and denies new cross-task grants during scheduled turns only',async()=>{
+    const scheduled=new Set(['R1','R2','R3']),f=fixture(id=>scheduled.has(id));
+    for(const runId of ['R1','R2','R3']){
+      const scope=f.scope('T1',runId);
+      await expect(f.service.execute(scope,'access request',{task:'T2',mode:'observe'})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+      expect(f.service.access.snapshot()).toEqual({requests:[],grants:[]});
+      await expect(f.service.execute(f.scope('T1',runId),'tab list',{})).resolves.toBeDefined();
+    }
+    scheduled.delete('R1');const ownManual=f.scope('T1','R1');
+    await f.grant('observe',ownManual,'T2');
+    expect(f.service.access.snapshot().grants).toMatchObject([{runId:'R1',targetTaskId:'T2',mode:'observe'}]);
+  });
+
   it('reserves one pending tab for equivalent opens and preserves the original request receipt',async()=>{
     const f=fixture();
     const scope={...f.scope(),assertRetained:()=>{}};
@@ -51,6 +64,37 @@ describe('actual caller and target authority in the browser service',()=>{
     release();
     await vi.waitFor(()=>expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({summary:{phase:'ready'}}));
     expect(load).toHaveBeenCalledOnce();
+  });
+  it('M16 B04 shares navigation across independent callers, rolls off all-cancelled reservations, and preserves adopted or existing tabs',async()=>{
+    const f=fixture(),page=f.page('T1');
+    const gates=new Map<string,{signal:AbortSignal;release:()=>void}>();
+    const load=vi.spyOn(f.service.workspace,'loadAgentOpen').mockImplementation(async(_task,id,signal,authorize)=>{
+      await new Promise<void>(resolve=>gates.set(id,{signal,release:resolve}));
+      signal.throwIfAborted();authorize();return page;
+    });
+    const own=(runId:string)=>({...f.scope('T1',runId),assertRetained:()=>{}});
+    const open=async(scope:BrowserScope,args:{url?:string;pageId?:string})=>await f.service.execute(scope,'tab open',{...args,presentation:'background'}) as {pageId:string};
+    const finished=(scope:BrowserScope,phase:string)=>vi.waitFor(()=>expect(f.service.operations.receipt(scope.runId,scope.requestId)).toMatchObject({summary:{phase}}));
+    const workspace=()=>JSON.parse((f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:T1') as {value:string}).value) as {tabs:{id:string}[];closed:unknown[];activeId:string|null};
+    try{
+      const a=own('cancel-one-a'),b=own('cancel-one-b'),first=await open(a,{url:'https://fixture.example/one'}),second=await open(b,{url:'https://fixture.example/one'});
+      expect(second.pageId).toBe(first.pageId);await vi.waitFor(()=>expect(gates.has(first.pageId)).toBe(true));
+      f.runs.get(a.runId)!.abort();await finished(a,'cancelled');expect(gates.get(first.pageId)!.signal.aborted).toBe(false);
+      gates.get(first.pageId)!.release();await finished(b,'ready');expect(workspace().tabs.map(t=>t.id)).toContain(first.pageId);
+      const c=own('cancel-all-a'),d=own('cancel-all-b'),old=await open(c,{url:'https://fixture.example/all'}),same=await open(d,{url:'https://fixture.example/all'});expect(same.pageId).toBe(old.pageId);
+      await vi.waitFor(()=>expect(gates.has(old.pageId)).toBe(true));f.runs.get(c.runId)!.abort();f.runs.get(d.runId)!.abort();await finished(c,'cancelled');await finished(d,'cancelled');
+      expect(gates.get(old.pageId)!.signal.aborted).toBe(true);
+      const e=own('new-owner'),fresh=await open(e,{url:'https://fixture.example/all'});expect(fresh.pageId).not.toBe(old.pageId);await vi.waitFor(()=>expect(gates.has(fresh.pageId)).toBe(true));
+      gates.get(old.pageId)!.release();await vi.waitFor(()=>expect(workspace().tabs.map(t=>t.id)).not.toContain(old.pageId));expect(workspace().closed).toEqual([]);
+      gates.get(fresh.pageId)!.release();await finished(e,'ready');expect(workspace().tabs.map(t=>t.id)).toContain(fresh.pageId);
+      const adopted=own('adopted'),ad=await open(adopted,{url:'https://fixture.example/adopt'});await vi.waitFor(()=>expect(gates.has(ad.pageId)).toBe(true));
+      f.service.workspace.select('T1',ad.pageId);f.runs.get(adopted.runId)!.abort();await finished(adopted,'cancelled');gates.get(ad.pageId)!.release();
+      await vi.waitFor(()=>expect(f.service.workspace.snapshot('T1').tabs.find(t=>t.id===ad.pageId)?.pendingUrl).toBeUndefined());
+      expect(workspace()).toMatchObject({activeId:ad.pageId,closed:[]});expect(workspace().tabs.map(t=>t.id)).toContain(ad.pageId);
+      const existing=own('existing'),ex=await open(existing,{pageId:ad.pageId});expect(ex.pageId).toBe(ad.pageId);await vi.waitFor(()=>expect(load).toHaveBeenCalledTimes(5));
+      f.runs.get(existing.runId)!.abort();await finished(existing,'cancelled');gates.get(ex.pageId)!.release();
+      await new Promise<void>(resolve=>setImmediate(resolve));expect(workspace().tabs.map(t=>t.id)).toContain(ad.pageId);expect(workspace().closed).toEqual([]);
+    }finally{for(const gate of gates.values())gate.release();}
   });
   it('does not start a deferred tab navigation after the original authority ends',async()=>{
     const f=fixture(),scope={...f.scope(),assertRetained:()=>{}};
@@ -83,6 +127,35 @@ describe('actual caller and target authority in the browser service',()=>{
     const anchor=await open({url:'https://fixture.example/desk?month=12#details'});
     expect(new Set([first.pageId,second.pageId,month.pageId,anchor.pageId]).size).toBe(4);
     expect(f.service.workspace.savedTab('T1',first.pageId)?.url).toBe(url);
+  });
+  it('M16 B05 rejects conflicting targets and semantic request replays without creating or navigating another tab',async()=>{
+    const f=fixture(),page=f.page('T1');
+    const load=vi.spyOn(f.service.workspace,'loadAgentOpen').mockResolvedValue(page);
+    const own=()=>({...f.scope('T1','contract-run'),assertRetained:()=>{}});
+    const call=(scope:BrowserScope,args:Record<string,unknown>)=>f.service.execute(scope,'tab open',args);
+    const url='https://fixture.example/desk?month=11#report',profile=f.service.profiles.ensureProject('P1').id;
+    const otherProfile=f.service.profiles.create({taskId:'T1',projectId:'P1'},'Other own fixture profile').id;
+    const unknownPage=randomUUID();
+    for(const args of [{},{url,pageId:unknownPage},{pageId:unknownPage,intent:'new'},{pageId:unknownPage,profileId:profile}]){
+      await expect(call(own(),args)).rejects.toMatchObject({code:'INVALID_INPUT'});
+    }
+    expect(f.service.workspace.snapshot('T1').tabs).toEqual([]);expect(load).not.toHaveBeenCalled();
+    await expect(call(own(),{pageId:unknownPage})).rejects.toMatchObject({code:'BROWSER_TAB_NOT_FOUND'});
+    const original=own(),args={url,profileId:profile,intent:'reuse-or-new',presentation:'background'};
+    const first=await call(original,args) as {pageId:string;operationId:string};
+    await vi.waitFor(()=>expect(f.service.operations.receipt(original.runId,original.requestId)).toMatchObject({summary:{phase:'ready'}}));
+    const replay=await call({...original,operationId:randomUUID()},args);
+    expect(replay).toMatchObject({pageId:first.pageId,operationId:first.operationId,phase:'ready'});
+    for(const changed of [{...args,url:'https://fixture.example/other'},{...args,profileId:otherProfile},{...args,intent:'new'},{...args,presentation:'show'},{pageId:first.pageId}]){
+      await expect(call(original,changed)).rejects.toMatchObject({code:'REQUEST_CONFLICT'});
+    }
+    expect(load).toHaveBeenCalledOnce();expect(f.service.workspace.snapshot('T1').tabs.map(t=>t.id)).toEqual([first.pageId]);
+    const freshScope=own(),fresh=await call(freshScope,{...args,intent:'new'}) as {pageId:string};
+    expect(fresh.pageId).not.toBe(first.pageId);await vi.waitFor(()=>expect(f.service.operations.receipt(freshScope.runId,freshScope.requestId)).toMatchObject({summary:{phase:'ready'}}));
+    await f.service.workspace.close('T1',first.pageId);
+    await expect(call(own(),{pageId:first.pageId})).rejects.toMatchObject({code:'BROWSER_TAB_NOT_FOUND'});
+    expect(await call(original,args)).toMatchObject({pageId:first.pageId,operationId:first.operationId,phase:'ready'});
+    expect(load).toHaveBeenCalledTimes(2);expect(f.service.workspace.snapshot('T1').tabs.map(t=>t.id)).toEqual([fresh.pageId]);
   });
   it('preserves action and verification separately across runs and blocks a dependent write',async()=>{
     const f=fixture(),page=f.page('T1');

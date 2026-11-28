@@ -1,0 +1,502 @@
+[1126/005455.308740:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1126/005455.452584:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1126/005455.452623:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/wiring.test.ts (11 tests | 1 failed | 10 skipped) 37ms
+   × M16 A23 validates a native model and reasoning choice for a schedule with no project or task yet 37ms
+ ❯ src/renderer/features/schedules/workspace.test.tsx (3 tests | 1 failed | 2 skipped) 1081ms
+   × M16 A23 exposes the normal native model catalog before a no-project schedule is created 1081ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/wiring.test.ts > M16 A23 validates a native model and reasoning choice for a schedule with no project or task yet
+Error: 所选模型不在智能体当前可用目录
+ ❯ ScheduleService.save src/main/core/schedules/service.ts:83:27
+
+ ❯ src/main/core/agent/wiring.test.ts:270:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/schedules/workspace.test.tsx > M16 A23 exposes the normal native model catalog before a no-project schedule is created
+AssertionError: expected { modalOverlay: true, …(9) } to match object { scope: { kind: 'standalone' } }
+(9 matching properties omitted from actual)
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"schedule-content"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"schedule-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h1>[39m
+              [0m全部计划[0m
+            [36m</h1>[39m
+            [36m<p>[39m
+              [0m按指定时间自动执行 Agent 任务[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"schedule-primary"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-plus"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"15"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"15"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M5 12h14"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 5v14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0m 新建计划[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"schedule-filter"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mplaceholder[39m=[32m"搜索计划"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<select>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"all"[39m
+            [36m>[39m
+              [0m全部状态[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"已启用"[39m
+            [36m>[39m
+              [0m已启用[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"已暂停"[39m
+            [36m>[39m
+              [0m已暂停[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"需修正"[39m
+            [36m>[39m
+              [0m需修正[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"已结束"[39m
+            [36m>[39m
+              [0m已结束[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"已删除"[39m
+            [36m>[39m
+              [0m已删除[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</div>[39m
+        [36m<table>[39m
+          [36m<thead>[39m
+            [36m<tr>[39m
+              [36m<th>[39m
+                [0m名称[0m
+              [36m</th>[39m
+              [36m<th>[39m
+                [0m执行频率[0m
+              [36m</th>[39m
+              [36m<th>[39m
+                [0m智能体[0m
+              [36m</th>[39m
+              [36m<th>[39m
+                [0m下次执行[0m
+              [36m</th>[39m
+              [36m<th>[39m
+                [0m最近结果[0m
+              [36m</th>[39m
+              [36m<th>[39m
+                [0m状态[0m
+              [36m</th>[39m
+            [36m</tr>[39m
+          [36m</thead>[39m
+          [36m<tbody>[39m
+            [36m<tr[39m
+              [33mtabindex[39m=[32m"0"[39m
+            [36m>[39m
+              [36m<td>[39m
+                [0m验收计划[0m
+                [36m<small>[39m
+                  [0m未关联项目[0m
+                [36m</small>[39m
+              [36m</td>[39m
+              [36m<td>[39m
+                [0m每天 09:00[0m
+              [36m</td>[39m
+              [36m<td>[39m
+                [0mCodex[0m
+                [0m · Fixture Hub[0m
+                [36m<small>[39m
+                  [0mfixture-model[0m
+                  [0m [0m
+                  [0mmedium[0m
+                [36m</small>[39m
+              [36m</td>[39m
+              [36m<td>[39m
+                [0m1/1/1970, 7:30:01 AM[0m
+              [36m</td>[39m
+              [36m<td>[39m
+                [36m<span>[39m
+                  [0m已完成[0m
+                [36m</span>[39m
+                [36m<small[39m
+                  [33mclass[39m=[32m"schedule-summary"[39m
+                  [33mtitle[39m=[32m"最终回复"[39m
+                [36m>[39m
+                  [0m最终回复[0m
+                [36m</small>[39m
+              [36m</td>[39m
+              [36m<td>[39m
+                [0m已启用[0m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"暂停 验收计划"[39m
+                  [33mclass[39m=[32m"schedule-list-toggle"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-pause"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"13"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"13"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<rect[39m
+                      [33mheight[39m=[32m"18"[39m
+                      [33mrx[39m=[32m"1"[39m
+                      [33mwidth[39m=[32m"5"[39m
+                      [33mx[39m=[32m"14"[39m
+                      [33my[39m=[32m"3"[39m
+                    [36m/>[39m
+                    [36m<rect[39m
+                      [33mheight[39m=[32m"18"[39m
+                      [33mrx[39m=[32m"1"[39m
+                      [33mwidth[39m=[32m"5"[39m
+                      [33mx[39m=[32m"5"[39m
+                      [33my[39m=[32m"3"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+          [36m</tbody>[39m
+        [36m</table>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"schedule-modal-overlay"[39m
+        [36m>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"新建定时任务"[39m
+            [33mclass[39m=[32m"schedule-form"[39m
+            [33mrole[39m=[32m"dialog"[39m
+          [36m>[39m
+            [36m<header>[39m
+              [36m<strong>[39m
+                [0m新建计划[0m
+              [36m</strong>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"关闭"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-x"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"16"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"16"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M18 6 6 18"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 6 12 12"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</header>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"schedule-form-body"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"schedule-prompt"[39m
+              [36m>[39m
+                [36m<label>[39m
+                  [0m计划名称[0m
+                  [36m<input[39m
+                    [33mplaceholder[39m=[32m"例如：每日研发摘要"[39m
+                    [33mvalue[39m=[32m""[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"schedule-prompt-text"[39m
+                [36m>[39m
+                  [0m提示词[0m
+                  [36m<textarea[39m
+                    [33mplaceholder[39m=[32m"每次执行需要 Agent 完成什么？"[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<small>[39m
+                  [0m支持普通任务的 Skill、@文件引用和工具能力。[0m
+                [36m</small>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"schedule-fields"[39m
+              [36m>[39m
+                [36m<label>[39m
+                  [0m智能体[0m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m权限[0m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"ask"[39m
+                    [36m>[39m
+                      [0m请求批准[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"auto"[39m
+                    [36m>[39m
+                      [0m帮我批准[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"full"[39m
+                    [36m>[39m
+                      [0m完全访问[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m项目[0m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m""[39m
+                    [36m>[39m
+                      [0m未关联项目[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m工作目录[0m
+                  [36m<button>[39m
+                    [0m自动分配独立目录[0m
+                  [36m</button>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m任务去向[0m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"new"[39m
+                    [36m>[39m
+                      [0m每次新建任务[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"reuse"[39m
+                    [36m>[39m
+                      [0m持续复用同一任务[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"existing"[39m
+                    [36m>[39m
+                      [0m继续指定任务[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m运行方式[0m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"false"[39m
+                    [36m>[39m
+                      [0m单 Agent[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"true"[39m
+                    [36m>[39m
+                      [0m多 Agent[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m日程[0m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"interval"[39m
+                    [36m>[39m
+                      [0m固定间隔[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"daily"[39m
+                    [36m>[39m
+                      [0m每天[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"workdays"[39m
+                    [36m>[39m
+                      [0m工作日[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"weekly"[39m
+                    [36m>[39m
+                      [0m每周[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"monthly"[39m
+                    [36m>[39m
+                      [0m每月[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"once"[39m
+                    [36m>[39m
+                      [0m指定日期[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"cron"[39m
+                    [36m>[39m
+                      [0mCron[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m时间[0m
+                  [36m<input[39m
+                    [33mtype[39m=[32m"time"[39m
+                    [33mvalue[39m=[32m"09:00"[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m时区[0m
+                  [36m<input[39m
+                    [33mplaceholder[39m=[32m"跟随本机（留空）"[39m
+                    [33mvalue[39m=[32m""[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<label>[39m
+                  [0m宽限期[0m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"0"[39m
+                    [36m>[39m
+                      [0m不补跑[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"10"[39m
+                    [36m>[39m
+                      [0m10 分钟[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"60"[39m
+                    [36m>[39m
+                      [0m1 小时[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"720"[39m
+                    [36m>[39m
+                      [0m12 小时[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"schedule-preview"[39m
+                [36m>[39m
+                  [36m<strong>[39m
+                    [0m接下来执行时间[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m暂无有效时间[0m
+                  [36m</small>[39m
+                [36m</div>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"schedule-check"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mchecked[39m=[32m""[39m
+                    [33mtype[39m=[32m"checkbox"[39m
+                  [36m/>[39m
+                  [0m保存后启用[0m
+                [36m</label>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"schedule-check"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mtype[39m=[32m"checkbox"[39m
+                  [36m/>[39m
+                  [0m完成时通知[0m
+                [36m</label>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<footer>[39m
+              [36m<button>[39m
+                [0m取消[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"schedule-primary"[39m
+                [33mdisabled[39m=[32m""[39m
+              [36m>[39m
+                [0m创建[0m
+              [36m</button>[39m
+            [36m</footer>[39m
+          [36m</section>[39m
+        [36m</div>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+
+- Expected
++ Received
+
+  {
+-   "scope": {
+-     "kind": "standalone",
+-   },
++   "scope": undefined,
+  }
+
+ ❯ src/renderer/features/schedules/workspace.test.tsx:25:61
+     23| it('M16 A23 exposes the normal native model catalog before a no-projec…
+     24|   render(<ScheduleWorkspace/>);fireEvent.click(await screen.findByRole…
+     25|   await waitFor(()=>expect(h.picker.mock.calls.at(-1)?.[0]).toMatchObj…
+       |                                                             ^
+     26| });
+     27|
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 12 skipped (14)
+   Start at  00:54:55
+   Duration  1.56s (transform 526ms, setup 0ms, import 877ms, tests 1.12s, environment 221ms)
+

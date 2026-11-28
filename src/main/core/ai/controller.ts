@@ -8,11 +8,9 @@ import { PARENT_AGENT_VARS } from '../../launch-env';
 import type { AiProfileService } from './ai-profile-service';
 import type { ProfileHealth } from './profile-health';
 
-const defaultZshrc = () => join(homedir(), '.zshrc');
-
 // The file is read here in main and never sent to the renderer: only the masked preview leaves.
-async function readRc(path?: string | null): Promise<string> {
-  const file = path?.trim() || defaultZshrc();
+async function readRc(path: string | null | undefined, defaultFile:string): Promise<string> {
+  const file = path?.trim() || defaultFile;
   try {
     return await readFile(file, 'utf8');
   } catch (e) {
@@ -21,6 +19,7 @@ async function readRc(path?: string | null): Promise<string> {
 }
 
 export function createAiProfileController(svc: AiProfileService, health: ProfileHealth, baseEnv: () => Record<string, string>) {
+  const defaultZshrc = () => join(baseEnv().HOME??homedir(), '.zshrc');
   const detectEnv = () => {
     const env = { ...baseEnv() };
     for (const k of PARENT_AGENT_VARS) delete env[k];
@@ -46,9 +45,9 @@ export function createAiProfileController(svc: AiProfileService, health: Profile
       delete: (id: string) => svc.delete(id),
       setDefault: (id: string) => svc.setDefault(id),
       defaultZshrcPath: () => defaultZshrc(),
-      previewZshrc: async (path?: string | null) => svc.previewZshrc(await readRc(path)),
+      previewZshrc: async (path?: string | null) => svc.previewZshrc(await readRc(path,defaultZshrc())),
       importZshrc: async (path: string | null, accounts: string[]) => {
-        const r = svc.importZshrc(await readRc(path), accounts);
+        const r = svc.importZshrc(await readRc(path,defaultZshrc()), accounts);
         for (const v of r.created) health.testInBackground(v.id, 'auto');
         return { ...r, created: r.created.map((v) => health.withChecking(v)) };
       },

@@ -111,13 +111,13 @@ const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskS
         {task.pinnedAt && <Pin className="agent-sidebar-pinned" aria-label="已置顶" size={13} />}
         {(task.stopping || AGENT_STATUS[task.status]) && <span className={`task-state-tail agent-tail ${task.status}`}>{task.stopping ? '正在停止…' : task.goalRunning ? '目标进行中' : AGENT_STATUS[task.status]}</span>}
         <div className="agent-sidebar-actions">
-          <button type="button" className="row-action" title={pinLabel} aria-label={pinLabel} disabled={busy} onClick={pin}><PinIcon size={14} /></button>
+          {task.projectId&&<button type="button" className="row-action" title={pinLabel} aria-label={pinLabel} disabled={busy} onClick={pin}><PinIcon size={14} /></button>}
           <button type="button" className="row-action" title="归档" aria-label="归档" disabled={busy} onClick={archive}><Archive size={14} /></button>
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem disabled={busy} onClick={() => { setName(task.title); setDialog('rename'); }}><Edit3 />重命名</ContextMenuItem>
-        <ContextMenuItem disabled={busy} onClick={pin}><PinIcon />{pinLabel}</ContextMenuItem>
+        {task.projectId&&<ContextMenuItem disabled={busy} onClick={pin}><PinIcon />{pinLabel}</ContextMenuItem>}
         <ContextMenuSeparator />
         <ContextMenuItem disabled={busy} onClick={archive}><Archive />归档</ContextMenuItem>
         <ContextMenuItem disabled={busy} variant="destructive" onClick={() => setDialog('delete')}><Trash2 />永久删除</ContextMenuItem>
@@ -153,8 +153,10 @@ export const SidebarProjects = observer(function SidebarProjects() {
   const [creating, setCreating] = useState(0);
   const projectActions = useRef<HTMLButtonElement>(null);
   const [showArchivedProjects, setShowArchivedProjects] = useState(false);
+  const [showStandalone,setShowStandalone]=useState(true);
   const activeProjects = all.filter((p) => p.archivedAt === null);
   const archivedProjects = all.filter((p) => p.archivedAt !== null);
+  const standalone=agentTasksStore.of(null);
 
   return (
     <div className="reference-projects">
@@ -167,6 +169,10 @@ export const SidebarProjects = observer(function SidebarProjects() {
         {activeProjects.map((p) => (
           <ProjectNode key={p.id} project={p} />
         ))}
+        {standalone.length>0&&<div className="reference-project-group" data-testid="sidebar-standalone-tasks">
+          <Toggle testId="sidebar-standalone-toggle" open={showStandalone} onClick={()=>setShowStandalone(v=>!v)} label={t('tasks.noProjectGroup')}/>
+          {showStandalone&&<div className="reference-project-tasks">{standalone.map(task=><AgentTaskRow key={task.taskId} task={task}/>)}</div>}
+        </div>}
         {archivedProjects.length > 0 && (
           <>
             <Toggle

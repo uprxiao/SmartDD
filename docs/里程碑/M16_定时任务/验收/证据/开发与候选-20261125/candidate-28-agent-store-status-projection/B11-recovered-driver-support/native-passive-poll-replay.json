@@ -1,0 +1,47 @@
+{
+  "staticOnly": true,
+  "originalC27": {
+    "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M16_定时任务/验收/证据/开发与候选-20261125/candidate-27-schedule-active-query-reuse/B11-real-1800s-recheck/archive-safe/result.json.gz",
+    "sha256": "505f0055ef0da5dd209b1e5942851b9e87f1f4c083836c5a1340476cb65ebe47",
+    "directTerminalReceipts": 40,
+    "firstPendingTrue": 0,
+    "realCompletedPollChains": 0
+  },
+  "originalC22": {
+    "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M16_定时任务/验收/证据/开发与候选-20261125/candidate-22-notification-ownership-and-cold-paint/B11-native-pending-reply-driver-red/result.json",
+    "sha256": "9b3c50e8e7a11a7dedf8bb70032feeb41cd0d40b1b9438141d5a54be15f3dc4e",
+    "retainedActualRunningSession": 66729,
+    "priorDriverFailed": true,
+    "actualSuccessfulPollResultAvailable": false
+  },
+  "boundary": "C22 retained actual running frame and C27 retained actual terminal frames are verified independently. Synthetic concatenation and malformed controls do not claim a prior or current actual completed pending chain. Current runtime write_stdin schema is validated before issuing only the empty-input poll.",
+  "tests": [
+    "all 40 original C27 direct terminal receipts",
+    "retained C22 actual running reply is pending, never a terminal receipt",
+    "synthetic control combining retained C22 running frame with C27 terminal frame",
+    "synthetic control for two successive same-session polls",
+    "synthetic split bytes reconstructed before result validation",
+    "exact current call output selected with earlier call outputs retained in history",
+    "old actual C22 empty output cannot count as CLI success",
+    "actual C27 terminal from another page cannot satisfy C22 command",
+    "native exit nonzero even with otherwise valid original JSON",
+    "unrecognized terminal header",
+    "session ID must be positive",
+    "invalid session ID cannot be polled",
+    "native session changed while polling",
+    "native pending timeout/poll count is bounded",
+    "duplicate terminal response rejected",
+    "stale call output must never be accepted",
+    "duplicated exact output is ambiguous",
+    "missing write_stdin native tool must not fall back to exec",
+    "unknown required native poll field",
+    "non-string chars rejected",
+    "wrong page URL",
+    "ambiguous duplicate CLI result",
+    "wrong operation origin",
+    "wrong operation effect",
+    "valid JSON already printed while running does not certify the command"
+  ],
+  "passed": 25,
+  "failed": 0
+}

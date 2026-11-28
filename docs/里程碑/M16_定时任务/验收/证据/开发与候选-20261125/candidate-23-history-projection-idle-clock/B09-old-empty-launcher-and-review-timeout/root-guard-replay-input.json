@@ -1,0 +1,85 @@
+{
+  "guardSource": "function visualRootsGuard(roots,side){const mains=roots.filter(w=>w.children.some(c=>/\\/out\\/renderer\\/index\\.html(?:[?#]|$)/.test(c.url)));assert.equal(mains.length,1,'one exact trusted shell root');const win=mains[0],extras=roots.filter(w=>w.id!==win.id);assert(win.visible&&!win.minimized&&win.bounds.width===1440&&win.bounds.height===900,'actual matched screenshot geometry');if(side==='old-clean'){assert(extras.length<=1&&extras.every(w=>w.title==='WillYou browser background'),'only historically verified old paint host may exist on old baseline');}else{assert.equal(side,'new');assert.equal(extras.length,0,'current ordinary foreground candidate must not have an extra host');}return win;}",
+  "guardSourceSha256": "0239a6b35192a142c0682008a5086c2d60101bc0ad2da329400b881902f83e1c",
+  "originalDriverSha256": "3c4bd0e8174c2b1dee06c05f6dc1d82bd83c9d2f1677abd227b31e32ae4f24f8",
+  "correctedDriverSha256": "5d3f74fda729247c06972253af91ccf55ab9ede039cac85f92b03a63883ab45a",
+  "actualPriorOldWindows": [
+    {
+      "id": 2,
+      "title": "WillYou browser background",
+      "visible": true,
+      "minimized": false,
+      "bounds": {
+        "x": 0,
+        "y": 33,
+        "width": 1512,
+        "height": 949
+      },
+      "children": []
+    },
+    {
+      "id": 1,
+      "title": "WillYou",
+      "visible": true,
+      "minimized": false,
+      "bounds": {
+        "x": 56,
+        "y": 33,
+        "width": 1440,
+        "height": 900
+      },
+      "children": [
+        {
+          "id": 1,
+          "url": "file:///private/tmp/willyou-m16-old-state-yUD0pJ/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+          "visible": true,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          }
+        },
+        {
+          "id": 2,
+          "url": "http://127.0.0.1:3425/m16-visual-long?data=abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789&end=VISIBLE_END",
+          "visible": true,
+          "bounds": {
+            "x": 539,
+            "y": 97,
+            "width": 895,
+            "height": 797
+          }
+        }
+      ]
+    }
+  ],
+  "actualPriorBlankWindows": [
+    {
+      "id": 1,
+      "title": "WillYou",
+      "visible": true,
+      "minimized": false,
+      "bounds": {
+        "x": 56,
+        "y": 33,
+        "width": 1440,
+        "height": 900
+      },
+      "children": [
+        {
+          "id": 1,
+          "url": "file:///private/tmp/willyou-m16-old-state-yUD0pJ/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+          "visible": true,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          }
+        }
+      ]
+    }
+  ],
+  "boundary": "Read-only verifier for captured own window metadata, no new native action."
+}

@@ -6,6 +6,7 @@ import { createAgentTransferController } from './agent-transfer-controller';
 import type { AgentTransferService } from './agent-transfer';
 
 const native=vi.hoisted(()=>({open:vi.fn(),save:vi.fn()}));
+vi.mock('@main/app/window-host',()=>({mainWindowForContents:()=>({isDestroyed:()=>false})}));
 vi.mock('electron',()=>({BrowserWindow:{fromWebContents:()=>({})},dialog:{showOpenDialog:native.open,showSaveDialog:native.save}}));
 const input={agentIds:['a'],providerIds:[],includeKeys:false};
 const event=(id=4)=>{

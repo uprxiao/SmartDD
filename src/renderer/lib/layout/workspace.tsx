@@ -1,3 +1,4 @@
+import {ScheduleSidebar,ScheduleWorkspace,useScheduleEvents} from '@renderer/features/schedules/workspace';
 import {AgentWorkspacePanels} from '@renderer/features/agent-tasks/workspace-panels';
 import {AgentTerminalDrawer} from '@renderer/features/agent-tasks/agent-terminal';
 import {homeWorkspace,panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
@@ -35,6 +36,7 @@ export const Workspace = observer(function Workspace() {
   const view = navigation.currentViewId;
   useApplicationEvents();
   useBrowserShortcuts();
+  useScheduleEvents();
   const apps=view==='apps';
   const settings = view === 'settings';
   const scheduled = view === 'scheduled';
@@ -73,7 +75,7 @@ export const Workspace = observer(function Workspace() {
         onPointerMove={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) resize(e.clientX - 52); }}
         onPointerUp={(e) => { e.currentTarget.releasePointerCapture(e.pointerId); localStorage.setItem('smartdd-sidebar-width', String(width)); }}
         onKeyDown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); const next = Math.max(240, Math.min(420, width + (e.key === 'ArrowRight' ? 10 : -10))); resize(next); localStorage.setItem('smartdd-sidebar-width', String(next)); } }} />}
-      {scheduled && <aside className="sidebar scheduled-sidebar"><h2>{t('m6.scheduled')}</h2><button className="nav-row" disabled><Plus size={18} />{t('nav.newTask')}</button><p>{t('m6.upcoming')}</p><span className="scheduled-empty">{t('m6.noScheduled')}</span></aside>}
+      {scheduled && <ScheduleSidebar/>}
       <MainContent key="main" taskTitlebar={taskTitlebar} panelTitlebar={panelTitlebar} />
     </div>
   );
@@ -129,7 +131,7 @@ const MainContent = observer(function MainContent({ taskTitlebar, panelTitlebar 
       <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
       <ViewSlot active={view === 'settings'}><SettingsView /></ViewSlot>
       <ViewSlot active={view === 'project'}><ProjectView key={navigation.currentProjectId ?? ''} /></ViewSlot>
-      <ViewSlot active={view === 'scheduled'}><div className="scheduled-placeholder"><div className="scheduled-clock">🕘</div><h1>{t('m6.arrangeTasks')}</h1><p>{t('m6.scheduleDescription')}</p><span className="scheduled-planned">{t('m6.planned')}</span><p className="scheduled-note">{t('m6.scheduleNote')}</p></div></ViewSlot>
+      <ViewSlot active={view === 'scheduled'}>{view==='scheduled'&&<ScheduleWorkspace/>}</ViewSlot>
     </div>
     {navigation.filePanelOpen && fileScope && <>{!maximized && <div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
       onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId) && split.current) navigation.setFilePanelWidth(split.current.getBoundingClientRect().right - event.clientX, available, directoryOnly); }}

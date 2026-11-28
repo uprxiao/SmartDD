@@ -1,3 +1,4 @@
+import {standaloneKey} from './task-application-scope';
 // M14 新表的读写（技术方案 T1.5 §2、§3.1）。投影、事件与递增 seq 同事务，提交后再通知订阅者。
 import type BetterSqlite3 from 'better-sqlite3';
 import { DriverError } from './driver';
@@ -95,6 +96,9 @@ function timelineItem(row: TimelineRow) {
 export class AgentStore {
   private readonly transactionEvents: StoredEvent[][] = [];
   private readonly listeners = new Set<EventListener>();
+  private eventSequenceQuery?: BetterSqlite3.Statement<[string], { seq: number }>;
+  private eventInsertQuery?: BetterSqlite3.Statement<[string, number, string, string | null, number | null, string, string]>;
+  private turnStatusQuery?: BetterSqlite3.Statement<{ taskId: string }, { has_active: 0 | 1; has_running: 0 | 1; turn_id: string | null; status: string | null }>;
   /** 超限正文的 artifact 目录（技术方案 §3.1“超限正文转 artifact”，复核 U01）；不设时降级为结构化截短。 */
   private readonly artifactDir?: string;
   /** 最近读过的一个原文（分段读取连续命中）；按文件身份与修改时间失效，改动或替换都会重新核对摘要。 */
@@ -175,11 +179,14 @@ export class AgentStore {
   subscribe(listener: EventListener) { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
   private notify(events: StoredEvent[]) { for (const e of events) for (const l of [...this.listeners]) { try { l(e); } catch { /* 订阅者自身负责 */ } } }
 
+  private nextEventSequence(taskId: string) {
+    return (this.eventSequenceQuery ??= this.sqlite.prepare<[string], { seq: number }>('SELECT COALESCE(MAX(seq),0)+1 AS seq FROM agent_events WHERE task_id=?')).get(taskId)!.seq;
+  }
   /** 在事务内追加事件；返回已提交事件，由调用方在事务外 notify。 */
   private appendIn(taskId: string, type: string, payload: unknown, itemId: string | null = null, revision: number | null = null): StoredEvent {
-    const { seq } = this.sqlite.prepare('SELECT COALESCE(MAX(seq),0)+1 AS seq FROM agent_events WHERE task_id=?').get(taskId) as { seq: number };
+    const seq = this.nextEventSequence(taskId);
     const stored = boundedJson(payload);
-    this.sqlite.prepare('INSERT INTO agent_events(task_id,seq,event_type,item_id,revision,payload,created_at) VALUES(?,?,?,?,?,?,?)').run(taskId, seq, type, itemId, revision, stored, now());
+    (this.eventInsertQuery ??= this.sqlite.prepare<[string, number, string, string | null, number | null, string, string]>('INSERT INTO agent_events(task_id,seq,event_type,item_id,revision,payload,created_at) VALUES(?,?,?,?,?,?,?)')).run(taskId, seq, type, itemId, revision, stored, now());
     // 即时通知与持久事件同一有界形状：超过 32 KiB 的事件只带截断标记，订阅者按水位重读（复核 FR02）。
     return { taskId, seq, type, itemId, payload: stored === JSON.stringify(payload ?? null) ? payload : JSON.parse(stored) };
   }
@@ -369,7 +376,7 @@ export class AgentStore {
       const revision = (this.sqlite.prepare('SELECT COALESCE(MAX(revision),0)+1 AS n FROM agent_capability_sessions WHERE binding_id=?').get(r.bindingId) as { n: number }).n;
       this.sqlite.prepare('INSERT INTO agent_capability_sessions(capability_session_id,binding_id,revision,content_hash,snapshot_json,created_at) VALUES(?,?,?,?,?,?)').run(sessionId, r.bindingId, revision, sha256(text), text, now());
       this.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,owner_instance_id,owner_pid,owner_started_at,binding_id,capability_session_id,driver_id,generation,launch_plan_hash,binding_mode) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,?,?,'run')")
-        .run(r.runId, r.taskId, r.projectId ?? '', r.driverId, now(), r.owner.instanceId, r.owner.pid, r.owner.startedAt, r.bindingId, sessionId, r.driverId, r.generation, r.launchPlanHash);
+        .run(r.runId, r.taskId, r.projectId ?? standaloneKey(r.taskId), r.driverId, now(), r.owner.instanceId, r.owner.pid, r.owner.startedAt, r.bindingId, sessionId, r.driverId, r.generation, r.launchPlanHash);
       emit(r.taskId, 'run.preparing', { runId: r.runId, bindingId: r.bindingId, generation: r.generation, driverId: r.driverId });
     });
   }
@@ -432,6 +439,33 @@ export class AgentStore {
   itemById(taskId: string, itemId: string) {
     const r = this.sqlite.prepare('SELECT item_id,type,revision,payload_ref FROM agent_items WHERE task_id=? AND item_id=?').get(taskId, itemId) as { item_id: string; type: string; revision: number; payload_ref: string } | undefined;
     return r ? { itemId: r.item_id, type: r.type, revision: r.revision, payloadJson: r.payload_ref } : undefined;
+  }
+  /** Update the immutable occurrence's actual dispatch choices only for its original
+   * root turn after the existing native adapter accepted that turn. */
+  recordScheduledDispatch(turnId:string,model:string|undefined,effort:string|undefined,tier:string):void{
+    const row=this.scheduledOrigin(turnId);if(!row||row.root_turn_id!==turnId)return;
+    const payload=JSON.stringify({model:model??null,effort:effort??null,tier});
+    this.sqlite.prepare("UPDATE schedule_occurrences SET actual_config=json_patch(actual_config,?) WHERE id=? AND turn_id=? AND actual_config IS NOT NULL").run(payload,row.occurrence_id,turnId);
+  }
+  scheduledOrigin(turnId:string|null|undefined){if(!turnId)return undefined;return this.sqlite.prepare('SELECT occurrence_id,root_turn_id,task_id FROM scheduled_turn_origins WHERE turn_id=?').get(turnId) as {occurrence_id:string;root_turn_id:string;task_id:string}|undefined;}
+  scheduledStopRequested(turnId:string|null|undefined){if(!turnId)return false;return !!this.sqlite.prepare("SELECT 1 FROM scheduled_turn_origins o JOIN schedule_occurrences r ON r.id=o.occurrence_id WHERE o.turn_id=? AND (r.reason='user_stop_requested' OR r.status='stopped')").get(turnId);}
+  /** Only an actual, unexecuted host request being retired by task Stop can mark
+   * its active scheduled occurrence. Call inside the request-retirement transaction. */
+  stopScheduledHostRequest(taskId:string,requestId:string,turnId:string|null|undefined):string|undefined{
+    if(!turnId)return undefined;
+    const owned=this.sqlite.prepare(`SELECT o.occurrence_id AS id FROM scheduled_turn_origins o
+      JOIN schedule_occurrences s ON s.id=o.occurrence_id
+      JOIN agent_requests r ON r.task_id=o.task_id AND json_extract(r.origin_json,'$.turnId')=o.turn_id
+      WHERE r.request_id=? AND r.task_id=? AND o.turn_id=? AND r.class='host_business'
+        AND r.status IN ('pending','approved_pending_bind')
+        AND json_extract(r.payload_ref,'$.phase') IN ('waiting_user','approved_pending_bind','queued_for_slot')
+        AND s.status IN ('running','waiting')`).get(requestId,taskId,turnId) as {id:string}|undefined;
+    if(!owned)return undefined;
+    return this.sqlite.prepare("UPDATE schedule_occurrences SET reason='user_stop_requested' WHERE id=? AND status IN ('running','waiting')").run(owned.id).changes?owned.id:undefined;
+  }
+  inheritScheduledOrigin(turn:TurnRow,parentTurnId:string|null|undefined){
+    const origin=this.scheduledOrigin(parentTurnId);if(!origin)return;
+    this.sqlite.prepare('INSERT OR IGNORE INTO scheduled_turn_origins(turn_id,occurrence_id,task_id,input_id,root_turn_id,parent_turn_id) VALUES(?,?,?,?,?,?)').run(turn.turn_id,origin.occurrence_id,turn.task_id,turn.client_input_id,origin.root_turn_id,parentTurnId);
   }
   turnByClientInput(taskId: string, clientInputId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(taskId, clientInputId) as TurnRow | undefined; }
   inputForTurn(turnId: string) {
@@ -644,7 +678,7 @@ export class AgentStore {
 
   deleteTask(taskId: string, purge: () => void) {
     const event = this.sqlite.transaction(() => {
-      const { seq } = this.sqlite.prepare('SELECT COALESCE(MAX(seq),0)+1 AS seq FROM agent_events WHERE task_id=?').get(taskId) as { seq: number };
+      const seq = this.nextEventSequence(taskId);
       purge();
       this.sqlite.prepare('DELETE FROM tasks WHERE id=?').run(taskId);
       return { taskId, seq, type: 'task.removed', itemId: null, payload: {} };
@@ -662,6 +696,14 @@ export class AgentStore {
   }
   turns(taskId: string) {
     return this.sqlite.prepare('SELECT turn_id,client_input_id,status,native_turn_id,accepted_at,started_at,ended_at,error_code,run_id,source_kind FROM agent_turns WHERE task_id=? ORDER BY accepted_at,rowid').all(taskId) as Record<string, any>[];
+  }
+  /** 状态摘要不物化完整历史；每次仍读实时 ledger，末轮顺序和 turns() 完全一致。 */
+  turnStatusSummary(taskId: string) {
+    return (this.turnStatusQuery ??= this.sqlite.prepare<{ taskId: string }, { has_active: 0 | 1; has_running: 0 | 1; turn_id: string | null; status: string | null }>(`SELECT EXISTS(SELECT 1 FROM agent_turns WHERE task_id=@taskId AND status IN ('accepted','dispatching','started')) AS has_active,
+  EXISTS(SELECT 1 FROM agent_turns WHERE task_id=@taskId AND status IN ('dispatching','started')) AS has_running,
+  last.turn_id, last.status
+  FROM (SELECT 1) dummy
+  LEFT JOIN (SELECT turn_id,status FROM agent_turns WHERE task_id=@taskId AND status<>'canceled' ORDER BY accepted_at DESC,rowid DESC LIMIT 1) last ON 1=1`)).get({ taskId })!;
   }
   /** Foreground time excludes the union of blocking waits on the same run and turn. */
   turnsWithNativeWait(taskId: string) {
@@ -711,6 +753,36 @@ export class AgentStore {
     const limit = Math.min(opts.limit ?? 2000, 2000);
     return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at,liked FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
       .map(timelineItem);
+  }
+  /** The status projection uses exactly the same 200 visible-item boundary as items().
+   * Filter by turn/type after applying the limit, without decoding unrelated bodies. */
+  hasRecentLimitedError(taskId: string, turnId: string) {
+    const rows = this.sqlite.prepare(`SELECT payload_ref FROM (
+      SELECT turn_id,type,payload_ref FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<?
+      ORDER BY ordinal DESC LIMIT 200
+    ) WHERE turn_id=? AND type='error'`).iterate(taskId, Number.MAX_SAFE_INTEGER, turnId) as Iterable<{payload_ref:string}>;
+    // Preserve JS truthiness (including an empty object), not SQLite JSON truthiness.
+    for (const row of rows) if (JSON.parse(row.payload_ref)?.limited) return true;
+    return false;
+  }
+  /** Decode the next newest visible item only when the snapshot/page body budget needs it. */
+  *itemsNewestFirst(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
+    const limit = Math.min(opts.limit ?? 2000, 2000);
+    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at,liked
+      FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<?
+      ORDER BY ordinal DESC LIMIT ?`).iterate(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as Iterable<TimelineRow>;
+    for (const row of rows) yield timelineItem(row);
+  }
+  /** Query the occurrence first, then page the timeline. A reused task may
+   * contain thousands of unrelated later items; they must not hide old runs. */
+  scheduledItems(occurrenceId:string){
+    const rows=this.sqlite.prepare(`SELECT i.* FROM agent_items i JOIN scheduled_turn_origins o ON o.turn_id=i.turn_id AND o.task_id=i.task_id
+      WHERE o.occurrence_id=? AND i.type NOT IN ('subagent_message','subagent_status') ORDER BY i.created_at,i.ordinal LIMIT 2001`).all(occurrenceId) as (TimelineRow&{task_id:string})[];
+    return{items:rows.slice(0,2000).map(row=>({...timelineItem(row),taskId:row.task_id})),hasMore:rows.length>2000};
+  }
+  scheduledFinalReply(taskId:string,turnId:string){
+    const row=this.sqlite.prepare("SELECT * FROM agent_items WHERE task_id=? AND turn_id=? AND type='assistant_message' AND terminal_state='completed' ORDER BY ordinal DESC LIMIT 1").get(taskId,turnId) as TimelineRow|undefined;
+    return row?{...timelineItem(row),taskId}:null;
   }
 
   activeBackgroundItems(taskId: string, runId: string) {

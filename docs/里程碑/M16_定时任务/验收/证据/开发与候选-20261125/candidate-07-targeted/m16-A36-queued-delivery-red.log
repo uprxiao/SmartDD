@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/agent/delegation-service.test.ts (42 tests | 1 failed | 41 skipped) 2567ms
+   × M16 A36 retires only the owned result delivery when stopping its already queued parent notification 2567ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > M16 A36 retires only the owned result delivery when stopping its already queued parent notification
+Error: until: 超时
+ ❯ until src/main/core/agent/test-doubles.ts:36:49
+     34| export async function until(cond: () => boolean, ms = 2000) {
+     35|   const end = Date.now() + ms;
+     36|   while (!cond()) { if (Date.now() > end) throw new Error('until: 超时')…
+       |                                                 ^
+     37| }
+     38|
+ ❯ src/main/core/agent/delegation-service.test.ts:289:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 41 skipped (42)
+   Start at  00:31:54
+   Duration  3.11s (transform 422ms, setup 0ms, import 477ms, tests 2.57s, environment 0ms)
+

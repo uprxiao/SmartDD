@@ -1,0 +1,31 @@
+diff --git a/src/main/core/agent/agent-task-service.test.ts b/src/main/core/agent/agent-task-service.test.ts
+index a68b89dbb..900b266f9 100644
+--- a/src/main/core/agent/agent-task-service.test.ts
++++ b/src/main/core/agent/agent-task-service.test.ts
+@@ -1771,6 +1771,26 @@ describe('M16 real AgentStore scheduled acceptance boundary',()=>{
+ describe('M16 scheduler lifecycle with actual AgentTaskService and fixture driver',()=>{
+   const baseConfig={title:'定时摘要',prompt:'固定原始提示词',projectId:null,dirId:null,cwd:null,workspace:'directory' as const,baseRef:null,destination:'new' as const,boundTask:null,profileId:'cd',tier:'ask' as const,delegation:false,notifyCompleted:false};
+   async function host(options:Parameters<typeof setup>[0]={}){const f=setup({distinctNativeIds:true,...options}),root=mkdtempSync(join(tmpdir(),'m16-scheduler-i-'));const {ScheduleService}=await import('../schedules/service');let compatibility='fixture-profile';const delivered:unknown[]=[];const agent={store:f.store,tasks:f.svc,runs:f.runs,delegations:{setMode:()=>{}}} as unknown as import('./wiring').AgentWorkspace;const schedule=new ScheduleService({agent,home:root,userData:root,profile:()=>({available:true,compatibility}),changed:()=>{},notify:n=>delivered.push(n)});return{...f,root,schedule,agent,delivered,setCompatibility:(value:string)=>{compatibility=value;},async close(){await schedule.stop();await f.runs.closeAll();rmSync(root,{recursive:true,force:true});}};}
++  it('A27 simulated suspension and resume use the current clock and preserve the consumed occurrence after rollback',async()=>{
++    const f=await host();const start=Date.parse('2026-11-25T10:00:00Z'),due=start+60000;let clock=start;
++    const now=vi.spyOn(Date,'now').mockImplementation(()=>clock);
++    try{
++      const once={type:'once' as const,zone:'UTC',date:'2026-11-25',time:'10:01'};
++      const inside=f.schedule.store.save({schedule:once,config:{...baseConfig,title:'wake within grace',compatibility:'fixture-profile'},grace:10,enabled:true},start);
++      const outside=f.schedule.store.save({schedule:once,config:{...baseConfig,title:'wake outside grace',compatibility:'fixture-profile'},grace:0,enabled:true},start);
++      f.schedule.start();expect(f.schedule.store.history(inside.id)).toEqual([]);expect(f.schedule.store.history(outside.id)).toEqual([]);
++      clock=due+5*60000;
++      // Advance the injected wall clock without running the scheduler or OS timers.
++      expect(f.schedule.store.history(inside.id)).toEqual([]);expect(f.schedule.store.history(outside.id)).toEqual([]);expect(f.insts).toHaveLength(0);
++      f.schedule.tick('resume');await until(()=>f.insts.length===1&&f.insts[0].turns.length===1);
++      const accepted=f.schedule.store.history(inside.id)[0],missed=f.schedule.store.history(outside.id)[0];
++      expect(accepted).toMatchObject({trigger:'scheduled',due,claimedAt:clock});expect(accepted.turnId).toBeTruthy();
++      expect(missed).toMatchObject({trigger:'scheduled',due,status:'skipped',reason:'missed_grace',taskId:null,turnId:null});
++      f.insts[0].finish();await until(()=>f.schedule.store.run(accepted.id)?.status==='completed');
++      clock=start;f.schedule.tick('resume');clock=due+6*60000;f.schedule.tick('resume');
++      expect(f.schedule.store.history(inside.id).map(r=>r.id)).toEqual([accepted.id]);expect(f.schedule.store.history(outside.id).map(r=>r.id)).toEqual([missed.id]);expect(f.insts).toHaveLength(1);
++    }finally{now.mockRestore();await f.close();}
++  });
+   it('A24 fifty plans with ten due together create one receipt per due plan without serial model waits',async()=>{
+     const f=await host();try{
+       const now=Date.now(),plans=Array.from({length:50},(_,i)=>f.schedule.store.save({schedule:{type:'interval',zone:'UTC',minutes:1},config:{...baseConfig,title:'plan-'+i,compatibility:'fixture-profile'},grace:60,enabled:true},i<10?now-60000:now));

@@ -6,8 +6,9 @@ import { z } from 'zod';
 import { AgentStore, sha256, type RequestRow } from './agent-store';
 import { DriverError } from './driver';
 import type { RunHandle } from './agent-run-service';
+import { occurrenceStopReason } from '../schedules/stop-reason';
 const now = () => new Date().toISOString();
-export interface BusinessOrigin { taskId: string; bindingId: string; runId: string; generation: number }
+export interface BusinessOrigin { taskId: string; bindingId: string; runId: string; generation: number; turnId?:string|null }
 export interface BusinessPayload {
   businessKind: string; title: string; review: unknown; data: unknown;
   phase: 'waiting_user' | 'queued_for_slot' | 'approved_pending_bind' | 'executing' | 'finished' | 'failed' | 'unknown';
@@ -54,7 +55,7 @@ export class HostBusinessRequests {
     currentTurn?(runId:string):string|null|undefined;
     /** Includes a closing owner; normal turn-end is not equivalent to no owner. */
     hasOwner(taskId: string): boolean;
-    notify(taskId: string, id: string, text: string, wake: boolean): void;
+    notify(taskId: string, id: string, text: string, wake: boolean, parentTurnId?:string|null): void;
     wakeLogin?(taskId:string):void;
     acquire?(taskId: string, operationId: string, signal: AbortSignal): Promise<() => void>;
     executionMs?: number;
@@ -105,12 +106,13 @@ export class HostBusinessRequests {
     const run = this.d.store.run(origin.runId), task = this.d.store.task(origin.taskId);
     if (!task || task.archived_at || !run || run.task_id !== origin.taskId || run.binding_id !== origin.bindingId || run.generation !== origin.generation || run.state !== 'active' || this.stopped(origin.taskId)) throw new DriverError('REJECTED', '业务请求来源不是当前登记运行');
     if (!this.handlers.has(input.kind)) throw new DriverError('UNSUPPORTED', '宿主尚不支持该业务确认');
+    const actualTurn=this.d.currentTurn?.(origin.runId);const {turnId:_untrustedTurn,...identity}=origin;origin={...identity,...(actualTurn?{turnId:actualTurn}:{})};
     const payload: BusinessPayload = { businessKind: input.kind, title: input.title, review: input.review, data: input.data, phase: 'waiting_user', ...(input.options ? { options: input.options } : {}) };
     if (Buffer.byteLength(JSON.stringify(payload)) > 1024 * 1024) throw new DriverError('REJECTED', '业务请求超过审阅保存上限，请缩小范围');
     const reviewHash = sha256(JSON.stringify(payload.review));
     return this.d.store.tx(emit => {
       const old = this.d.store.sqlite.prepare("SELECT request_id,review_hash,origin_json FROM agent_requests WHERE class='host_business' AND operation_id=?").get(input.operationId) as { request_id: string; review_hash: string; origin_json: string } | undefined;
-      if (old) { if (old.review_hash !== reviewHash || old.origin_json !== JSON.stringify(origin)) throw new DriverError('REJECTED', '相同业务编号已用于其他请求'); return { requestId: old.request_id, operationId: input.operationId, state: 'awaiting_user' as const, duplicate: true }; }
+      if (old) { const previous=JSON.parse(old.origin_json) as BusinessOrigin;const comparable={...origin,...(!previous.turnId?{turnId:undefined}:{})};if (old.review_hash !== reviewHash || JSON.stringify(previous) !== JSON.stringify(comparable)) throw new DriverError('REJECTED', '相同业务编号已用于其他请求'); return { requestId: old.request_id, operationId: input.operationId, state: 'awaiting_user' as const, duplicate: true }; }
       const id = randomUUID();
       this.d.store.sqlite.prepare("INSERT INTO agent_requests(request_id,task_id,class,origin_json,kind,payload_ref,status,operation_id,review_hash,account_identity,created_at,updated_at) VALUES(?,?,'host_business',?,?,?,'pending',?,?,?,?,?)").run(id, origin.taskId, JSON.stringify(origin), 'host_business', JSON.stringify(payload), input.operationId, reviewHash, input.accountIdentity ?? null, now(), now());
       emit(origin.taskId, 'request.opened', { requestId: id, kind: 'host_business', origin });
@@ -241,7 +243,7 @@ export class HostBusinessRequests {
   private pendingBind(record: BusinessRecord, decision: unknown) {
     if (record.payload.phase !== 'approved_pending_bind') this.update(record, 'approved_pending_bind', { ...record.payload, decision, phase: 'approved_pending_bind' });
     if(record.payload.businessKind==='browser_login')this.d.wakeLogin?.(record.row.task_id);
-    else this.d.notify(record.row.task_id, `business-bind-${record.row.request_id}`, '宿主：浏览器请求已批准，待新运行登记和重新校验后绑定；绑定前尚无可用权限，操作尚未执行。这是状态通知，不是新的真人授权。', true);
+    else this.d.notify(record.row.task_id, `business-bind-${record.row.request_id}`, '宿主：浏览器请求已批准，待新运行登记和重新校验后绑定；绑定前尚无可用权限，操作尚未执行。这是状态通知，不是新的真人授权。', true,record.origin.turnId);
     return { state: 'approved_pending_bind' };
   }
   private execute(record:BusinessRecord,handler:BusinessHandler,decision:unknown,run?:RunHandle,sender?:ApplicationUiSender){const work=this.executeOwned(record,handler,decision,run,sender);this.inflight.add(work);void work.finally(()=>this.inflight.delete(work)).catch(()=>{});return work;}
@@ -295,7 +297,7 @@ export class HostBusinessRequests {
               ? '请先用浏览器工具只读检查原标签和原操作回执，根据核对到的实际页面决定下一步。请勿重发原操作。'
               : '请查看原标签的当前页面或原操作回执，再决定下一步。';
           }
-          this.d.notify(taskId, `business-result-${id}`, message, !this.stopped(taskId));
+          this.d.notify(taskId, `business-result-${id}`, message, !this.stopped(taskId),record.origin.turnId);
         }
       });
       if(record.payload.businessKind==='browser_login'&&terminal==='finished')this.d.wakeLogin?.(taskId);
@@ -307,14 +309,20 @@ export class HostBusinessRequests {
       throw e;
     } finally { release?.(); this.executing.delete(id); }
   }
-  retire(id: string, reason: string, wake=true) {
+  retire(id: string, reason: string, wake=true, stopScheduledOccurrence=false) {
     const record = this.record(id); this.executing.get(id)?.abort(new Error(reason));
     if (!['pending','approved_pending_bind'].includes(record.row.status)) return;
-    this.d.store.tx(emit => { this.d.store.sqlite.prepare("UPDATE agent_requests SET status='retired',revision=revision+1,updated_at=? WHERE request_id=? AND status IN ('pending','approved_pending_bind')").run(now(), id); emit(record.row.task_id, 'request.retired', { requestId: id, reason }); });
+    this.d.store.tx(emit => {
+      // A normal task Stop already explicitly retires this request. Preserve the
+      // exact occurrence's stop intent before its retirement notification is queued.
+      const occurrence=stopScheduledOccurrence?this.d.store.stopScheduledHostRequest(record.row.task_id,id,record.origin.turnId):undefined;
+      if(occurrence)reason=occurrenceStopReason(occurrence);
+      this.d.store.sqlite.prepare("UPDATE agent_requests SET status='retired',revision=revision+1,updated_at=? WHERE request_id=? AND status IN ('pending','approved_pending_bind')").run(now(), id); emit(record.row.task_id, 'request.retired', { requestId: id, reason });
+    });
     try{const cleanup=this.handlers.get(record.payload.businessKind)?.retire?.(record);if(cleanup){this.inflight.add(cleanup);void cleanup.catch(e=>{if(!this.closed)this.d.store.addHostItem(record.row.task_id,null,'system_notice',{code:'businessRetirementPending',detail:'请求已退役；原业务清理仍需核对：'+String((e as Error).message)});}).finally(()=>this.inflight.delete(cleanup));}}catch(e){this.d.store.addHostItem(record.row.task_id,null,'system_notice',{code:'businessRetirementPending',detail:'请求已退役；原业务清理仍需核对：'+String((e as Error).message)});}
     this.d.store.addHostItem(record.row.task_id, null, 'system_notice', { code: 'businessRequestRetired', detail: reason });
     if(record.payload.businessKind!=='browser_login')
-      this.d.notify(record.row.task_id,`business-retired-${id}`,`宿主业务请求已退役：${record.payload.title}。${reason}。未批准的操作不会执行；这是状态通知，不是新的真人授权。`,wake&&!this.stopped(record.row.task_id));
+      this.d.notify(record.row.task_id,`business-retired-${id}`,`宿主业务请求已退役：${record.payload.title}。${reason}。未批准的操作不会执行；这是状态通知，不是新的真人授权。`,wake&&!this.stopped(record.row.task_id),record.origin.turnId);
   }
   stop(taskId: string) {
     for(const h of this.handlers.values())h.stop?.(taskId);
@@ -323,7 +331,7 @@ export class HostBusinessRequests {
         this.d.store.endTurn(turn.turn_id,'canceled','BROWSER_LOGIN_REVOKED');
     }
     for (const r of this.d.store.pendingRequests(taskId))
-      if (r.class === 'host_business') this.retire(r.requestId, '任务已停止，业务请求及待绑定授权已撤销',false);
+      if (r.class === 'host_business') this.retire(r.requestId, '任务已停止，业务请求及待绑定授权已撤销',false,true);
   }
   busy(taskId: string) { return this.d.store.pendingRequests(taskId).some(r => r.class === 'host_business') || [...this.executing.keys()].some(id => this.d.store.request(id)?.task_id === taskId); }
   async reconcile(){if(this.closed||this.reconciling)return;this.reconciling=true;try{for(const row of this.d.store.sqlite.prepare("SELECT request_id FROM agent_requests WHERE class='host_business' AND status IN ('pending','approved_pending_bind')").all() as {request_id:string}[]){if(this.deciding.has(row.request_id)||this.executing.has(row.request_id))continue;const r=this.record(row.request_id);try{this.current(r);const h=this.handlers.get(r.payload.businessKind);if(!h)continue;await h.validate(r,r.payload.decision??{choice:r.payload.options?.[0]?.value??'allow'},this.d.run(r.row.task_id));if(r.payload.businessKind==='browser_login'&&r.row.status==='approved_pending_bind')this.d.wakeLogin?.(r.row.task_id);}catch(e){this.retire(row.request_id,'业务请求已失效：'+(e as Error).message);}}}finally{this.reconciling=false;}}

@@ -17,6 +17,7 @@ const cipher: SecretCipher = { isAvailable: () => true, encrypt: (p) => Buffer.f
 let sqlite: Database.Database;
 let dir: string;
 let tested: [string, string][];
+let env: Record<string,string>;
 let ctl: ReturnType<typeof createAiProfileController>['aiProfiles'];
 
 beforeEach(() => {
@@ -26,13 +27,14 @@ beforeEach(() => {
   const svc = new AiProfileService(db, new SecretsStore(db, cipher));
   dir = mkdtempSync(join(tmpdir(), 'smartdd-ctl-'));
   tested = [];
+  env = {};
   // Only the wiring is under test here: which calls start a background test.
   const health = {
     testInBackground: (id: string, source: string) => void tested.push([id, source]),
     test: async (id: string, source: string) => (tested.push([id, source]), null),
     withChecking: (v: { id: string }) => ({ ...v, checking: tested.some(([id]) => id === v.id) }),
   } as unknown as ProfileHealth;
-  ctl = createAiProfileController(svc, health, () => ({})).aiProfiles;
+  ctl = createAiProfileController(svc, health, () => env).aiProfiles;
 });
 afterEach(() => {
   sqlite.close();
@@ -74,5 +76,15 @@ describe('aiProfiles controller', () => {
   it('never tests on its own: listing does not start anything', () => {
     ctl.list();
     expect(tested).toEqual([]);
+  });
+
+  it('uses the effective isolated CLI home for the default rc path and import', async () => {
+    env.HOME=dir;
+    const rc=join(dir,'.zshrc');
+    writeFileSync(rc,'claude_with_account() {\n case $1 in\n  isolated) export ANTHROPIC_AUTH_TOKEN=synthetic-test;;\n esac\n}\n');
+    expect(ctl.defaultZshrcPath()).toBe(rc);
+    const r=await ctl.importZshrc(null,['isolated']);
+    expect(r.created).toHaveLength(1);
+    expect(tested).toEqual([[r.created[0].id,'auto']]);
   });
 });

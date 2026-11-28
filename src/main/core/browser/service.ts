@@ -1,3 +1,5 @@
+import {verifyStandaloneScope,standaloneTaskId} from '../agent/task-application-scope';
+import {BrowserPresentationRequests,type PresentationStatus} from './presentation';
 import {BrowserJavascriptDialogs} from './javascript-dialogs';
 import { ApplicationError } from '@shared/applications';
 import { applicationPreflightFailure } from '../applications/capability-preflight';
@@ -6,7 +8,7 @@ import { BrowserArtifacts, browserDigest } from './artifacts';
 import { BrowserOperations } from './operations';
 import { BrowserError, staleReference } from './errors';
 import type Database from 'better-sqlite3';
-import { app, nativeImage, session, type BrowserWindow } from 'electron';
+import { app, nativeImage, session, type BaseWindow } from 'electron';
 import { BrowserInputInterrupted, type BrowserHelperOptions } from './agent-browser';
 import { join,resolve,isAbsolute,dirname } from 'node:path';
 import {readFile,realpath,stat} from 'node:fs/promises';
@@ -201,8 +203,9 @@ export class BrowserService {
       throw error;
     }
   }
-  private presentOpen?:(scope:BrowserScope,pageId:string)=>void;
-  attachOpenPresentation(present:(scope:BrowserScope,pageId:string)=>void){this.presentOpen=present;}
+  readonly presentation=new BrowserPresentationRequests();
+  private presentOpen?:(scope:BrowserScope,pageId:string)=>void|Promise<PresentationStatus>;
+  attachOpenPresentation(present:(scope:BrowserScope,pageId:string)=>void|Promise<PresentationStatus>){this.presentOpen=present;}
   private taskAccess?:{accept(scope:BrowserScope,targetTaskId:string,mode:BrowserAccessMode):unknown|undefined;revoke(id:string):boolean};
   attachTaskAccess(value:NonNullable<BrowserService['taskAccess']>){this.taskAccess=value;}
   accessTarget(taskId:string,reviewedPageIds:readonly string[]=[]){
@@ -250,8 +253,9 @@ export class BrowserService {
   private readonly conditions=new WeakMap<BrowserPage,BrowserConditionWait>();
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
   private reconciling?:Promise<void>;
+  private reconcileAgain=false;
   private reconcileTimer?:ReturnType<typeof setTimeout>;
-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;promptPreloadPath?:string;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
+  constructor(private readonly options:{userData:string;workspaceHome?:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskOwnerExists?:(taskId:string)=>boolean;taskDirectory?:(taskId:string)=>string|null;promptPreloadPath?:string;window?:()=>BaseWindow|null;ensureWindow?:()=>Promise<BaseWindow>;scheduledRun?:(runId:string)=>boolean;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
     this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.checkpoints=new BrowserCheckpoints(options.sqlite,this.operations);this.audit=new BrowserAudit(this.operations);this.importAudit=new BrowserCookieImportAudit(this.operations,options.taskProject);
     this.access=new BrowserAccess({taskProject:options.taskProject,changed:options.accessChanged,audit:event=>this.auditAccess(event)});
     this.automation=new BrowserAutomation({changed:options.changed,ended:runId=>this.access.endRun(runId)});
@@ -286,12 +290,12 @@ export class BrowserService {
     this.tabOpen=new BrowserTabOpen(this.workspace,this.operations);
     this.artifacts=new BrowserArtifacts(join(options.userData,'browser/artifacts'));
     this.scripts=new BrowserScriptRunner({
-      db:options.sqlite,root:resolve(options.userData,'browser'),home:()=>app.getPath('home'),
+      db:options.sqlite,root:resolve(options.userData,'browser'),home:()=>options.workspaceHome??app.getPath('home'),
       workerPath:()=>app.isPackaged?join(process.resourcesPath,'browser-runner/worker.mjs'):join(app.getAppPath(),'resources/browser-runner/worker.mjs'),
       pages:this.pages,artifacts:this.artifacts,downloads:this.downloads,
       changed:(taskId,id)=>this.scriptChanged?.(taskId,id),
     });
-    this.cookieSources=options.cookieImport?.sources??new BrowserCookieSources({temporaryRoot:join(options.userData,'browser/import-source')});
+    this.cookieSources=options.cookieImport?.sources??new BrowserCookieSources({temporaryRoot:join(options.userData,'browser/import-source'),...(options.workspaceHome?{applicationSupport:join(options.workspaceHome,'Library/Application Support')}:{} )});
     const partition=(profile:BrowserProfile)=>session.fromPartition(profile.partition);
     const pause=new BrowserImportPagePause({pages:this.pages,session:partition,address:page=>page.hostNavigation??this.workspace.list(page.taskId).find(tab=>tab.pageId===page.id)?.url??page.contents.getURL(),changed:taskId=>options.changed?.(taskId)});
     this.imports=new BrowserImportCoordinator({profiles:this.profiles,journals:new BrowserImportJournals(options.userData,options.cookieImport?.cipher??safeStorageCipher),sources:this.cookieSources,
@@ -404,6 +408,7 @@ export class BrowserService {
       taskId=this.admit(scope,args,read,command==='access request');
       if(taskId!==scope.taskId&&command!=='access request')recordGrant();
       if(command==='access request'){
+        if(standaloneTaskId(scope.projectId)||this.options.scheduledRun?.(scope.runId))throw new ApplicationError('SCOPE_DENIED','定时任务不能发起新的跨任务浏览器授权');
         const mode=args.mode;if(mode!=='observe'&&mode!=='control')throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
         const durable=this.taskAccess?.accept(scope,taskId,mode);if(durable)return {result:durable};
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};send();
@@ -522,9 +527,9 @@ export class BrowserService {
         };
         const result=this.tabOpen.start(scope,input,profileId,{authorize,dispatch:()=>{dispatched=true;},
           ready:(opened,conditions,signal,check)=>this.conditions.get(opened)!.run({...conditions,load:'domcontentloaded'},signal,check),
+          present:pageId=>this.presentOpen?.(scope,pageId),
         });
         state.audit?.page(result.pageId);
-        if(dispatched&&input.presentation==='show')this.presentOpen?.(scope,result.pageId);
         return result;
       }
       if(command==='tab show'||command==='tab current'){
@@ -795,7 +800,9 @@ export class BrowserService {
           // cancellation and a missing native completion still remain bounded.
           const completionSignal=command==='tab close'?AbortSignal.any([scope.signal,deadline.signal]):signal;
           try{
-            const value=await awaitBrowserNavigation(perform(),completionSignal);
+            const release=command==='tab close'?()=>{}:this.pages.acquirePaint(target);
+            const physical=perform();void physical.finally(release).catch(()=>{});
+            const value=await awaitBrowserNavigation(physical,completionSignal);
             if(signal.aborted&&command!=='tab close')throw signal.reason;
             if(!observation)return value;
             if(deferredClickPending)return{action:{state:'unknown',result:value},observation:{state:'unavailable',pageId:target.id}};
@@ -925,13 +932,16 @@ export class BrowserService {
   /** Task completion keeps profiles. Only missing task/project owners retire a
    * partition; this also repairs cleanup interrupted by a previous App exit. */
   reconcile():Promise<void>{
-    if(this.closed)return Promise.resolve();if(this.reconciling)return this.reconciling;
+    if(this.closed)return Promise.resolve();
+    if(this.reconciling){this.reconcileAgain=true;return this.reconciling;}
     this.reconciling=(async()=>{
+      do {
+      this.reconcileAgain=false;
       await this.imports.initialize();
       await this.clones.initialize();
       await this.workspace.reconcile();let busy=false;
       for(const profile of this.profiles.all()){
-        const exists=profile.owner.kind==='task'?this.options.taskProject(profile.owner.id)!==null:!!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(profile.owner.id);
+        const exists=profile.owner.kind==='task'?(this.options.taskOwnerExists?.(profile.owner.id)??this.options.taskProject(profile.owner.id)!==null):!!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(profile.owner.id);
         if(exists)continue;
         let release:()=>void;
         try{release=this.profiles.lock(profile.id,'清理');}catch(error){if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'){busy=true;continue;}throw error;}
@@ -943,9 +953,23 @@ export class BrowserService {
         }finally{release();}
       }
       const recent=this.options.sqlite.prepare('SELECT key FROM app_settings WHERE key LIKE ?').all('browserRecent.v1:%') as {key:string}[];
-      for(const row of recent)if(!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(row.key.slice('browserRecent.v1:'.length)))this.options.sqlite.prepare('DELETE FROM app_settings WHERE key=?').run(row.key);
+      for(const row of recent){
+        const scope=row.key.slice('browserRecent.v1:'.length),standalone=standaloneTaskId(scope);
+        // An archived task is inaccessible to new commands, but is still a
+        // durable owner. Unrelated deletions must not erase its login/history.
+        const exists=!!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(scope)||!!(standalone&&(this.options.taskOwnerExists?.(standalone)??verifyStandaloneScope(this.options.sqlite,scope)));
+        if(!exists)this.options.sqlite.prepare('DELETE FROM app_settings WHERE key=?').run(row.key);
+      }
       if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
-    })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
+      // A second owner can disappear after the first scan took its snapshot.
+      // Drain another pass before reporting the shared cleanup complete.
+      } while(this.reconcileAgain&&!this.closed);
+    })().finally(()=>{
+      this.reconciling=undefined;
+      // A request queued during the promise's final settlement must also be
+      // observed; attach its pass to the same completion promise.
+      if(this.reconcileAgain&&!this.closed)return this.reconcile();
+    });return this.reconciling;
   }
-  async dispose():Promise<void>{this.closed=true;this.access.dispose();this.automation.dispose();clearTimeout(this.reconcileTimer);await this.scripts.close();await this.reconciling;await this.workspace.dispose();this.downloads.dispose();this.javascriptDialogs.stop();try{await this.pages.dispose();}finally{try{this.javascriptDialogs.dispose();}finally{this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}}}
+  async dispose():Promise<void>{this.closed=true;this.presentation.invalidate();this.access.dispose();this.automation.dispose();clearTimeout(this.reconcileTimer);await this.scripts.close();await this.reconciling;await this.workspace.dispose();this.downloads.dispose();this.javascriptDialogs.stop();try{await this.pages.dispose();}finally{try{this.javascriptDialogs.dispose();}finally{this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}}}
 }

@@ -1,3 +1,4 @@
+import {nativeDialogLayer} from '@renderer/lib/ui/native-dialog-layer';
 import {useTreePathTooltip} from '@renderer/features/files/tree-path-tooltip';
 import {useBrowserTabTooltip,type BrowserTabTooltip} from './tab-tooltip';
 import {BrowserJavascriptDialogView} from './javascript-dialog';
@@ -23,6 +24,10 @@ import {BrowserAuthDialog} from './auth-dialog';
 import {BrowserAccessSurface} from './access-dialog';
 import {browserAccess} from './access-store';
 
+let browserSurfaceInstance=0;
+let browserOverlayViewInstance=0;
+type BrowserOverlayChannel='settings'|'access'|'auth'|'javascript';
+type BrowserOverlayLease={taskId:string;tabId:string;owner:string;instance:string;channel:BrowserOverlayChannel};
 export function useBrowserShortcuts(){
   useEffect(()=>{
     const stopWatchingView=observeBrowserPresentationView();
@@ -40,7 +45,7 @@ export function useBrowserShortcuts(){
       const generation=++showGeneration;
       const reveal=()=>{
         const task=agentTasksStore.tasks.find(t=>t.taskId===event.taskId);
-        if(generation!==showGeneration||!task?.projectId)return;
+        if(generation!==showGeneration||!task)return;
         navigation.openAgentTask(task.taskId);
         panelsFor({kind:'task',taskId:task.taskId}).open('browser');
       };
@@ -55,16 +60,20 @@ interface BrowserHeader {
   active: boolean;
   onActivate: () => void;
   onClose: () => void;
+  onAutoClose?: () => void;
 }
 function tabAddress(tab:BrowserTabState){
   return tab.url===BROWSER_BLANK_URL?tab.pendingUrl??tab.failure?.url??'':tab.url;
 }
 
-export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: string; workspaceHeader?: BrowserHeader }) {
+export function AgentBrowserSurface({ taskId, workspaceHeader,menuSnapshot }: { taskId: string; workspaceHeader?: BrowserHeader;menuSnapshot?:{tabId:string;image:string|null}|null }) {
   const store = browserWorkspaceFor(taskId);
   const { state, error } = useSyncExternalStore(store.subscribe, store.snapshot);
+  const browserActive = workspaceHeader?.active ?? true;
+  const titleTip = useTreePathTooltip(JSON.stringify([taskId,browserActive,state?.activeId,state?.tabs.map(tab=>[tab.id,tab.title,tab.url,tab.pendingUrl,tab.failure?.url])]), { recoverPointerMove: true });
+  const titleTooltip:BrowserTabTooltip|null = browserActive&&titleTip.target?{target:titleTip.target,element:titleTip.element,dismiss:titleTip.dismiss}:null;
   const hadTabs = useRef(false);
-  const onCloseSurface = workspaceHeader?.onClose;
+  const onCloseSurface = workspaceHeader?.onAutoClose ?? workspaceHeader?.onClose;
   const openingTab = store.openingTab;
   useEffect(() => {
     void store.refresh();
@@ -87,7 +96,8 @@ export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: strin
     const title = pendingHost || failedHost || tab.title || '新标签页';
     const selected = (workspaceHeader?.active ?? true) && tab.id === state.activeId;
     return <div key={tab.id} className={`agent-surface-tab ${selected ? 'on' : ''}`}>
-      <button type="button" role="tab" aria-selected={selected} title={address || tab.url} onClick={() => {
+      <button type="button" role="tab" aria-selected={selected} data-browser-url={address || tab.url} title={browserActive?undefined:address||tab.url} {...(browserActive?titleTip.bind([title,address||tab.url].filter(Boolean).join('\n')):{})} onClick={() => {
+        titleTip.dismiss();
         workspaceHeader?.onActivate();
         if (tab.id !== state.activeId) void store.select(tab.id);
       }}>
@@ -102,21 +112,54 @@ export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: strin
       <button type="button" role="tab" aria-selected={workspaceHeader.active} onClick={workspaceHeader.onActivate}><Globe size={14}/>浏览器</button>
       <button type="button" aria-label="关闭浏览器面板" onClick={workspaceHeader.onClose}><X size={11}/></button>
     </div>, workspaceHeader.target)}
-    {(workspaceHeader?.active ?? true) && <div className="agent-browser-surface">
+    {browserActive && <div className="agent-browser-surface">
       {!workspaceHeader && <div className="agent-webtabs" role="tablist" aria-label="网页标签">{tabs}<button type="button" title="新建网页标签" onClick={() => void store.create()}>+</button></div>}
-      {state?.activeId ? <BrowserView state={state} store={store} error={error} titleTooltip={null}/> : <div className="agent-panel-empty"><p>{error || (state ? '还没有网页' : '正在读取网页')}</p><button type="button" onClick={() => void store.create()}>新建网页标签</button></div>}
+      {state?.activeId ? <BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip} menuSnapshot={menuSnapshot}/> : <div className="agent-panel-empty"><p>{error || (state ? '还没有网页' : '正在读取网页')}</p><button type="button" onClick={() => void store.create()}>新建网页标签</button></div>}
     </div>}
   </>;
 }
-function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null}){
+function BrowserView({state,store,error,titleTooltip,menuSnapshot}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null;menuSnapshot?:{tabId:string;image:string|null}|null}){
   const access=useSyncExternalStore(browserAccess.subscribe,browserAccess.snapshot),accessOpen=!!access.state.requests.length||access.grantsOpen,[accessReady,setAccessReady]=useState(false);
   const tab=state.tabs.find(t=>t.id===state.activeId)!;
   const taskId=state.taskId,tabId=tab.id;
+  const modalLayer=useSyncExternalStore(nativeDialogLayer.subscribe,nativeDialogLayer.snapshot);
+  const modalImage=modalLayer.leases.find(lease=>lease.target?.taskId===taskId&&lease.target.tabId===tabId&&lease.image)?.image;
+  const shellSnapshot=menuSnapshot?.tabId===tabId?menuSnapshot:null;
   const authAddress=state.auth?.pageId===tabId?state.auth.url:state.authCancelled?.pageId===tabId?state.authCancelled.url:undefined;
   const displayedAddress=authAddress??(tab.certificate?.challengeId?tab.failure?.url:undefined)??tabAddress(tab);
   const [address,setAddress]=useState(displayedAddress),[find,setFind]=useState(false),[menu,setMenu]=useState(false);
   const input=useRef<HTMLInputElement>(null),searchInput=useRef<HTMLInputElement>(null),viewport=useRef<HTMLDivElement>(null),[query,setQuery]=useState('');
-  const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[pageImage,setPageImage]=useState<string|null>(null),[initialImport,setInitialImport]=useState(false),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),[authOpenId,setAuthOpenId]=useState<string|null>(null),[javascriptOpenId,setJavascriptOpenId]=useState<string|null>(null),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
+  const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[initialImport,setInitialImport]=useState(false),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),[authOpenId,setAuthOpenId]=useState<string|null>(null),[javascriptOpenId,setJavascriptOpenId]=useState<string|null>(null),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
+  const overlayView=useRef(0),overlaySequence=useRef(0),overlayLeases=useRef(new Map<BrowserOverlayChannel,BrowserOverlayLease>());
+  if(!overlayView.current)overlayView.current=++browserOverlayViewInstance;
+  const [overlayImages,setOverlayImages]=useState<Partial<Record<BrowserOverlayChannel,{lease:BrowserOverlayLease;image:string|null}>>>({});
+  const currentOverlay=(lease:BrowserOverlayLease)=>overlayLeases.current.get(lease.channel)===lease;
+  const overlayInput=({taskId,tabId,owner,instance}:BrowserOverlayLease)=>({taskId,tabId,owner,instance});
+  const setOverlayImage=(lease:BrowserOverlayLease,image:string|null)=>{
+    if(currentOverlay(lease))setOverlayImages(previous=>({...previous,[lease.channel]:{lease,image}}));
+  };
+  const releaseOverlay=async(lease:BrowserOverlayLease|undefined)=>{
+    if(!lease)return;
+    try{await rpc.browser.overlay({...overlayInput(lease),open:false});}
+    finally{
+      if(currentOverlay(lease))overlayLeases.current.delete(lease.channel);
+      setOverlayImages(previous=>previous[lease.channel]?.lease===lease?{...previous,[lease.channel]:undefined}:previous);
+    }
+  };
+  const acquireOverlay=(channel:BrowserOverlayChannel,capture=true)=>{
+    const previous=overlayLeases.current.get(channel);
+    const lease={taskId,tabId,channel,owner:`browser-surface:${overlayView.current}:${channel}`,instance:String(++overlaySequence.current)};
+    overlayLeases.current.set(channel,lease);
+    // Acquisition is published before awaiting capture. Closing an old
+    // acquisition can therefore never dismiss another surface's parked page.
+    const image=rpc.browser.overlay({...overlayInput(lease),open:true,...(!capture?{capture:false}:{})});
+    if(previous&&(previous.taskId!==taskId||previous.tabId!==tabId))void releaseOverlay(previous).catch(()=>{});
+    return {lease,image};
+  };
+  const imageOf=(channel:BrowserOverlayChannel)=>{
+    const entry=overlayImages[channel];return entry?.lease.taskId===taskId&&entry.lease.tabId===tabId?entry.image:null;
+  };
+  const pageImage=(accessOpen&&accessReady?imageOf('access'):null)||(state.auth&&authOpenId===state.auth.id?imageOf('auth'):null)||((menu||preferences||profileRecords||downloadsOpen)?imageOf('settings'):null);
   const [addressIssue,setAddressIssue]=useState<{taskId:string;tabId:string;committedUrl:string;input:string;shown:boolean}|null>(null);
   const invalidAddress=addressIssue?.taskId===taskId&&addressIssue.tabId===tabId&&addressIssue.committedUrl===tab.url&&addressIssue.shown&&tab.importState!=='importing'&&tab.importState!=='needs-attention'?addressIssue:null;
   const invalidMessage='请输入有效的 http(s) 或 localhost 地址';
@@ -159,19 +202,22 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
   useEffect(()=>events.on(browserShortcutEvent,event=>{if(event.taskId===taskId)shortcut(event.action);}),[taskId,tabId]);
   const hasCommittedPage=tab.url!==BROWSER_BLANK_URL;
   const blank=!hasCommittedPage&&!tab.pendingUrl&&!tab.failure&&!state.auth&&!state.authCancelled&&!state.javascriptDialog;
-  const surfaceOpen=accessOpen||!!state.auth||!!state.authCancelled||!!state.javascriptDialog||preferences!==null||profileRecords!==null||menu||downloadsOpen;
+  const surfaceOpen=modalLayer.blocked||accessOpen||!!state.auth||!!state.authCancelled||!!state.javascriptDialog||preferences!==null||profileRecords!==null||menu||downloadsOpen;
   const pageBlocked=surfaceOpen||!!invalidAddress||tab.importState==='importing'||tab.importState==='needs-attention'||blank||!!tab.failure;
   const titleOverlay=useBrowserTabTooltip({taskId,tabId,tooltip:titleTooltip,pageBlocked,surfaceOpen});
-  const blocked=pageBlocked||titleOverlay.parked;
+  const blocked=pageBlocked||titleOverlay.parked||!!shellSnapshot;
   useEffect(()=>{
     if(!accessOpen){setAccessReady(false);return;}
-    let active=true;setAccessReady(false);
-    run(async()=>{let image:string|null=null;try{image=await rpc.browser.overlay({taskId,tabId,open:true});}catch{await rpc.browser.placement({taskId,tabId,rect:null});}if(active){setPageImage(image);setAccessReady(true);}});
-    return()=>{active=false;setAccessReady(false);setPageImage(null);void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});};
+    let active=true;setAccessReady(false);const pending=acquireOverlay('access');let lease=pending.lease;
+    run(async()=>{let image:string|null=null;try{image=await pending.image;}catch{
+      if(!active||!currentOverlay(lease))return;
+      const fallback=acquireOverlay('access',false);lease=fallback.lease;await fallback.image;
+    }if(active&&currentOverlay(lease)){setOverlayImage(lease,image);setAccessReady(true);}});
+    return()=>{active=false;setAccessReady(false);void releaseOverlay(lease).catch(()=>{});};
   },[accessOpen,taskId,tabId]);
-  const closeMenu=(after?:()=>void)=>{settingsGeneration.current++;run(async()=>{await rpc.browser.overlay({taskId,tabId,open:false});setMenu(false);setPageImage(null);after?.();});};
-  const toggleMenu=()=>{if(menu){closeMenu();return;}run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setDownloadsOpen(false);setMenu(true);});};
-  const closeSettings=()=>{settingsGeneration.current++;run(async()=>{try{await rpc.browser.overlay({taskId,tabId,open:false});}finally{setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setPageImage(null);}});};
+  const closeMenu=(after?:()=>void)=>{const generation=++settingsGeneration.current,lease=overlayLeases.current.get('settings');run(async()=>{await releaseOverlay(lease);if(generation!==settingsGeneration.current)return;setMenu(false);after?.();});};
+  const toggleMenu=()=>{if(menu){closeMenu();return;}run(async()=>{const generation=++settingsGeneration.current,{lease,image:pending}=acquireOverlay('settings');try{const image=await pending;if(generation!==settingsGeneration.current||!currentOverlay(lease)){await releaseOverlay(lease);return;}setOverlayImage(lease,image);setDownloadsOpen(false);setMenu(true);}catch(error){await releaseOverlay(lease).catch(()=>{});if(generation===settingsGeneration.current)throw error;}});};
+  const closeSettings=()=>{const generation=++settingsGeneration.current,lease=overlayLeases.current.get('settings');run(async()=>{try{await releaseOverlay(lease);}finally{if(generation===settingsGeneration.current){setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);}}});};
   useLayoutEffect(()=>{
     if(!downloadsOpen)return;
     // Removing the focused menu item leaves focus on body. Keep Escape working
@@ -185,25 +231,25 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
     return()=>document.removeEventListener('keydown',escape);
   },[downloadsOpen,taskId,tabId]);
   const showSettings=()=>run(async()=>{
-    const generation=++settingsGeneration.current;
+    const generation=++settingsGeneration.current,lease=overlayLeases.current.get('settings');
     try{const value=await rpc.browser.preferences({taskId});if(generation!==settingsGeneration.current)return;setMenu(false);setPreferences(value);}
-    catch(error){await rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});throw error;}
+    catch(error){if(generation===settingsGeneration.current){await releaseOverlay(lease).catch(()=>{});throw error;}}
   });
-  const showProfiles=(importNow=false,capture=false)=>run(async()=>{const generation=++settingsGeneration.current;try{const image=capture?await rpc.browser.overlay({taskId,tabId,open:true}):null;if(generation!==settingsGeneration.current)return;const records=await rpc.browser.profileSiteStates({taskId});if(generation!==settingsGeneration.current)return;if(capture)setPageImage(image);setBadgeProfile(records.find(item=>item.profile.id===tab.profileId)?.profile??null);setBadgeLoading(false);setMenu(false);setInitialImport(importNow);setProfileRecords(records);}catch(error){if(generation!==settingsGeneration.current)return;await rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});throw error;}});
-  const showDownloads=()=>run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setMenu(false);setPageImage(image);setDownloadsOpen(true);});
+  const showProfiles=(importNow=false,capture=false)=>run(async()=>{const generation=++settingsGeneration.current,existing=overlayLeases.current.get('settings'),pending=capture||!existing?acquireOverlay('settings',capture):null,lease=pending?.lease??existing!;try{const image=pending?await pending.image:null;if(generation!==settingsGeneration.current||!currentOverlay(lease)){if(pending)await releaseOverlay(lease);return;}const records=await rpc.browser.profileSiteStates({taskId});if(generation!==settingsGeneration.current||!currentOverlay(lease)){if(pending)await releaseOverlay(lease);return;}if(pending)setOverlayImage(lease,image);setBadgeProfile(records.find(item=>item.profile.id===tab.profileId)?.profile??null);setBadgeLoading(false);setMenu(false);setInitialImport(importNow);setProfileRecords(records);}catch(error){if(pending||generation===settingsGeneration.current)await releaseOverlay(lease).catch(()=>{});if(generation===settingsGeneration.current)throw error;}});
+  const showDownloads=()=>run(async()=>{const generation=++settingsGeneration.current,{lease,image:pending}=acquireOverlay('settings');try{const image=await pending;if(generation!==settingsGeneration.current||!currentOverlay(lease)){await releaseOverlay(lease);return;}setMenu(false);setOverlayImage(lease,image);setDownloadsOpen(true);}catch(error){await releaseOverlay(lease).catch(()=>{});if(generation===settingsGeneration.current)throw error;}});
   useEffect(()=>{const latest=state.downloads?.[0]?.id;if(latest&&latest!==seenDownload.current&&!preferences&&!profileRecords&&!menu&&!state.auth){seenDownload.current=latest;showDownloads();}if(downloadsOpen&&!state.downloads?.length)closeSettings();},[state.downloads?.[0]?.id,preferences,profileRecords,menu,downloadsOpen,state.auth?.id]);
-  useEffect(()=>{setMenu(false);setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setAuthOpenId(null);setJavascriptOpenId(null);setPageImage(null);return()=>{settingsGeneration.current++;void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});};},[taskId,tabId]);
+  useEffect(()=>{setMenu(false);setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setAuthOpenId(null);setJavascriptOpenId(null);return()=>{settingsGeneration.current++;for(const lease of overlayLeases.current.values())if(lease.taskId===taskId&&lease.tabId===tabId)void releaseOverlay(lease).catch(()=>{});};},[taskId,tabId]);
   useEffect(()=>{
     const id=state.auth?.id;if(!id||state.javascriptDialog||preferences||profileRecords||menu||downloadsOpen)return;
-    let active=true;const generation=++settingsGeneration.current;
-    run(async()=>{const image=await rpc.browser.overlay({taskId,tabId,open:true});if(!active||generation!==settingsGeneration.current){if(generation===settingsGeneration.current)await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setAuthOpenId(id);});
-    return()=>{active=false;if(generation===settingsGeneration.current){settingsGeneration.current++;setAuthOpenId(null);setPageImage(null);void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});}};
+    let active=true;const generation=++settingsGeneration.current,{lease,image:pending}=acquireOverlay('auth');
+    run(async()=>{try{const image=await pending;if(!active||generation!==settingsGeneration.current||!currentOverlay(lease)){await releaseOverlay(lease);return;}setOverlayImage(lease,image);setAuthOpenId(id);}catch(error){await releaseOverlay(lease).catch(()=>{});if(active&&generation===settingsGeneration.current)throw error;}});
+    return()=>{active=false;if(generation===settingsGeneration.current){settingsGeneration.current++;setAuthOpenId(null);}void releaseOverlay(lease).catch(()=>{});};
   },[state.auth?.id,state.javascriptDialog?.id,taskId,tabId,preferences,profileRecords,menu,downloadsOpen]);
   useEffect(()=>{
     const id=state.javascriptDialog?.id;if(!id||accessOpen||preferences||profileRecords||menu||downloadsOpen)return;
-    let active=true;const generation=++settingsGeneration.current;
-    run(async()=>{await rpc.browser.overlay({taskId,tabId,open:true,capture:false});if(!active||generation!==settingsGeneration.current){if(generation===settingsGeneration.current)await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(null);setJavascriptOpenId(id);});
-    return()=>{active=false;if(generation===settingsGeneration.current){settingsGeneration.current++;setJavascriptOpenId(null);setPageImage(null);void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});}};
+    let active=true;const generation=++settingsGeneration.current,{lease,image:pending}=acquireOverlay('javascript',false);
+    run(async()=>{try{await pending;if(!active||generation!==settingsGeneration.current||!currentOverlay(lease)){await releaseOverlay(lease);return;}setJavascriptOpenId(id);}catch(error){await releaseOverlay(lease).catch(()=>{});if(active&&generation===settingsGeneration.current)throw error;}});
+    return()=>{active=false;if(generation===settingsGeneration.current){settingsGeneration.current++;setJavascriptOpenId(null);}void releaseOverlay(lease).catch(()=>{});};
   },[state.javascriptDialog?.id,accessOpen,taskId,tabId,preferences,profileRecords,menu,downloadsOpen]);
   useEffect(()=>{setFind(false);setQuery('');if(blank)void rpc.browser.focusChrome().then(()=>input.current?.focus());},[tabId]);
   useEffect(()=>{let active=true;if(find)void rpc.browser.focusChrome().then(()=>{if(active)searchInput.current?.focus();});return()=>{active=false;if(find)void rpc.browser.find({taskId,tabId,text:'',forward:true,next:false}).catch(()=>{});};},[find,tabId]);
@@ -211,11 +257,12 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
   const closeFind=()=>{setFind(false);run(async()=>{await rpc.browser.find({taskId,tabId,text:'',forward:true,next:false});await rpc.browser.action({taskId,tabId,action:'focus'});});};
   useEffect(()=>{
     const node=viewport.current;if(!node||blocked||!hasCommittedPage)return;
-    let active=true,frame=0;const place=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(!active)return;const r=node.getBoundingClientRect(),edge=2;if(r.width>2*edge&&r.height>2*edge)void rpc.browser.placement({taskId,tabId,rect:{x:Math.round(r.x)+edge,y:Math.round(r.y)+edge,width:Math.round(r.width)-2*edge,height:Math.round(r.height)-2*edge}}).catch(()=>{});});};
+    const instance=++browserSurfaceInstance;let sequence=0;
+    let active=true,frame=0;const place=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(!active)return;const r=node.getBoundingClientRect(),edge=2;if(r.width>2*edge&&r.height>2*edge)void rpc.browser.placement({taskId,tabId,instance,sequence:++sequence,rect:{x:Math.round(r.x)+edge,y:Math.round(r.y)+edge,width:Math.round(r.width)-2*edge,height:Math.round(r.height)-2*edge}}).catch(()=>{});});};
     const observer=new ResizeObserver(place);observer.observe(node);window.addEventListener('resize',place);place();
-    return()=>{active=false;cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',place);void rpc.browser.placement({taskId,tabId,rect:null}).catch(()=>{});};
+    return()=>{active=false;cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',place);void rpc.browser.placement({taskId,tabId,instance,sequence:++sequence,rect:null}).catch(()=>{});};
   },[taskId,tabId,blocked,hasCommittedPage,find,titleOverlay.revision]);
-  return <div className="bw-workspace" data-browser-task={taskId} onKeyDown={event=>{
+  return <div className="bw-workspace" data-browser-task={taskId} data-browser-page={tabId} onKeyDown={event=>{
     if(downloadsOpen&&event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSettings();return;}
     if(menu&&event.key==='Escape'){event.preventDefault();event.stopPropagation();closeMenu();return;}
     if(event.target instanceof Element&&event.target.closest('[role=dialog]'))return;
@@ -239,7 +286,7 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
     {find&&<div className="bw-find" role="search" aria-label="页内查找"><input ref={searchInput} aria-label="页内查找" placeholder="在页面中查找" value={query} onChange={event=>{setQuery(event.target.value);search(event.target.value);}} onKeyDown={event=>{if(event.key==='Escape')closeFind();else if(event.key==='Enter'){event.preventDefault();search(query,true,!event.shiftKey);}}}/><span className="bw-find-count" role="status" aria-live="polite">{query?(state.find.total?`第 ${state.find.active} / ${state.find.total} 个`:'无结果'):''}</span><button className="fw-icon" aria-label="上一个" disabled={!state.find.total} onClick={()=>search(query,true,false)}><ChevronUp size={15}/></button><button className="fw-icon" aria-label="下一个" disabled={!state.find.total} onClick={()=>search(query,true,true)}><ChevronDown size={15}/></button><button className="fw-icon" aria-label="关闭页内查找" onClick={closeFind}><X size={15}/></button></div>}
     {tab.loading&&!blocked&&<div className="bw-progress" role="status" aria-label="网页正在加载"/>}
     <div className={'bw-page'+(tab.agentActive&&!state.paused?' bw-agent-glow':'')} ref={viewport} data-testid="browser-viewport">
-      {!invalidAddress&&tab.importState!=='importing'&&tab.importState!=='needs-attention'&&(pageImage||titleOverlay.image)&&<img className="bw-page-snapshot" src={(pageImage||titleOverlay.image)!} alt="网页预览"/>}
+      {!invalidAddress&&tab.importState!=='importing'&&tab.importState!=='needs-attention'&&(pageImage||titleOverlay.image||shellSnapshot?.image||modalImage)&&<img className="bw-page-snapshot" src={(pageImage||titleOverlay.image||shellSnapshot?.image||modalImage)!} alt="网页预览"/>}
       {invalidAddress?<div className="bw-failure bw-invalid-address" role="alert"><AlertTriangle size={26}/><h2>{invalidMessage}</h2><p>你输入的是：<code>{invalidAddress.input}</code></p></div>:tab.importState==='importing'?<div className="bw-failure" role="status"><UserRound size={26}/><h2>正在导入登录态</h2><p>完成后将按原地址重新加载此页面。</p></div>:tab.importState==='needs-attention'?null:blank?<div className="bw-launcher" aria-label="新标签页"><section><h2>工具</h2><div className="bw-launcher-tools"><button type="button" className="bw-launcher-tool" onClick={()=>{void store.select(null);}}><Files size={17} strokeWidth={1.65}/><span>文件</span><kbd>⌘P</kbd></button></div></section><section><h2>推荐</h2>{state.recent.length?<div className="bw-launcher-sites">{state.recent.map(site=><button key={site.host} type="button" className="bw-launcher-site" title={site.title+' · '+site.host} onClick={()=>run(()=>rpc.browser.navigate({taskId,tabId,address:site.url}))}><span className="bw-launcher-icon"><Globe size={26} strokeWidth={1.4}/></span><span className="bw-launcher-name">{site.title}</span></button>)}</div>:<p className="bw-launcher-empty">本项目还没有访问记录。在上方地址栏输入网址或搜索内容，访问过的网站会出现在这里。</p>}</section></div>:state.authCancelled?<div className="bw-failure" role="alert"><KeyRound size={26}/><h2>401 · 需要认证</h2><p>你取消了 {state.authCancelled.host} 的登录。</p><button type="button" onClick={()=>run(()=>rpc.browser.retryAuthentication({taskId,tabId:state.authCancelled!.pageId}))}>重新登录</button></div>:tab.failure?<div className={'bw-failure'+(tab.certificate?.challengeId?' bw-cert':' bw-navigation-failure')} role="alert">{tab.certificate?.challengeId?<><ShieldAlert size={26}/><h2>此连接不受信任</h2><p><strong>{tab.certificate.host}</strong> 的证书不是由受信任的机构签发的（常见于内网测试环境的自签名证书）。继续访问时，你与该站点之间的通信可能被他人读取或篡改。</p><small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" disabled={!tab.canGoBack} onClick={()=>action('back')}>返回</button><button type="button" className="bw-danger-link" onClick={()=>run(()=>rpc.browser.continueCertificate({taskId,tabId,challengeId:tab.certificate!.challengeId!}))}>我了解风险，继续访问</button></div><p className="bw-hint">只有你可以在这里放行；Agent 命令无法添加证书例外。例外按主机记在当前登录态中，可在登录态管理里撤销。</p></>:<>{tab.failure.kind==='offline'?<WifiOff size={26}/>:<AlertTriangle size={26}/>}<h2>{tab.failure.title}</h2>{tab.failure.kind==='not-running'?<p>请先启动这个地址的开发服务。</p>:tab.failure.kind==='refused'?<p>站点可能已停止，或者地址有误。</p>:tab.failure.kind==='dns'?<p>请检查地址拼写。</p>:null}{tab.failure.recovery&&<p className="bw-recovery"><span className="fw-loading"/>{tab.failure.recovery==='poll'?'服务启动后会自动重新加载':'网络恢复后会自动重新加载'}</p>}<small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" onClick={()=>action('reload')}><RotateCw size={13}/>重试</button></div></>}</div>:null}
     </div>
     {state.javascriptDialog&&javascriptOpenId===state.javascriptDialog.id&&<BrowserJavascriptDialogView key={state.javascriptDialog.id} dialog={state.javascriptDialog} onRespond={async(accept,text)=>{await rpc.browser.respondJavascriptDialog({taskId,id:state.javascriptDialog!.id,accept,text});await store.refresh();}}/>}

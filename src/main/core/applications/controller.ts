@@ -1,5 +1,6 @@
 import type {BuiltinPluginId,BuiltinPluginDefault,BuiltinPluginDelete,BuiltinPluginProject} from '@shared/builtin-plugin-preferences';
-import {BrowserWindow,dialog} from 'electron';
+import {dialog} from 'electron';
+import {mainWindowForContents} from '@main/app/window-host';
 import {FileError} from '@shared/files';
 import type {ApplicationImpactQuery} from '@shared/application-impact';
 import type {SessionChangeQuery} from '@shared/session-change-impact';
@@ -35,7 +36,7 @@ export function createApplicationController(service:ApplicationService|undefined
     pluginStartupStatus:(event)=>run(event,current=>current.pluginStartupStatus(event)),
     pluginChoose:(event,kind:'directory'|'zip',target?:string)=>run(event,async current=>{
       if(kind!=='directory'&&kind!=='zip')throw new ApplicationError('INVALID_INPUT','请选择本地文件夹或压缩包');
-      const window=BrowserWindow.fromWebContents(event.sender);if(!window)throw new ApplicationError('SCOPE_DENIED','没有可用的插件安装窗口');
+      const window=mainWindowForContents(event.sender);if(!window)throw new ApplicationError('SCOPE_DENIED','没有可用的插件安装窗口');
       const chosen=await dialog.showOpenDialog(window,{title:target?'选择更新插件包':'选择插件包',properties:[kind==='directory'?'openDirectory':'openFile','dontAddToRecent'],...(kind==='zip'?{filters:[{name:'插件压缩包',extensions:['zip']}]}:{})});
       if(chosen.canceled||!chosen.filePaths[0])return null;
       return current.pluginInspect(event,chosen.filePaths[0],kind,target);
@@ -120,9 +121,9 @@ export function createApplicationController(service:ApplicationService|undefined
     saveAttachment:(event,projectId:string,input:unknown)=>run(event,async current=>{
       const id=event.sender.id;if(saving.has(id))throw new ApplicationError('RESOURCE_BUSY','请先完成当前附件保存');saving.add(id);
       try{return await current.saveAttachment(event,projectId,input,async suggested=>{
-        requireSender(event);const win=BrowserWindow.fromWebContents(event.sender);if(!win||win.isDestroyed())throw new ApplicationError('SCOPE_DENIED','保存窗口已关闭');
-        try{const chosen=await dialog.showSaveDialog(win,{title:'保存附件',buttonLabel:'保存附件',defaultPath:suggested,showsTagField:false,filters:[{name:'所有文件',extensions:['*']}],properties:['createDirectory','showOverwriteConfirmation']});if(chosen.canceled||!chosen.filePath)return null;requireSender(event);if(win.isDestroyed()||BrowserWindow.fromWebContents(event.sender)!==win)throw new ApplicationError('SCOPE_DENIED','保存窗口已变化，未写入所选位置');return chosen.filePath;}
-        finally{if(!win.isDestroyed()&&win.isFocused())win.webContents.focus();}
+        requireSender(event);const win=mainWindowForContents(event.sender);if(!win||win.isDestroyed())throw new ApplicationError('SCOPE_DENIED','保存窗口已关闭');
+        try{const chosen=await dialog.showSaveDialog(win,{title:'保存附件',buttonLabel:'保存附件',defaultPath:suggested,showsTagField:false,filters:[{name:'所有文件',extensions:['*']}],properties:['createDirectory','showOverwriteConfirmation']});if(chosen.canceled||!chosen.filePath)return null;requireSender(event);if(win.isDestroyed()||mainWindowForContents(event.sender)!==win)throw new ApplicationError('SCOPE_DENIED','保存窗口已变化，未写入所选位置');return chosen.filePath;}
+        finally{if(!win.isDestroyed()&&win.isFocused()&&!event.sender.isDestroyed()&&mainWindowForContents(event.sender)===win)event.sender.focus();}
       });}finally{saving.delete(id);}
     }),
     confirmAttachmentSave:(event,projectId:string,input:unknown)=>run(event,current=>current.confirmAttachmentSave(event,projectId,input)),
